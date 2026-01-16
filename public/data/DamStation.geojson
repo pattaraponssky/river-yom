@@ -1,0 +1,10 @@
+{
+"type": "FeatureCollection",
+"name": "DAM Station",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "Name": "ปตร.ท่านางงาม", "auxiliary_storage_labeling_positionx": null, "auxiliary_storage_labeling_positiony": null }, "geometry": { "type": "Point", "coordinates": [ 100.111450479718599, 16.76511834615857, 0.0 ] } },
+{ "type": "Feature", "properties": { "Name": "ปตร.วังสะตือ", "auxiliary_storage_labeling_positionx": 100.03921703042342, "auxiliary_storage_labeling_positiony": 16.871325929438122 }, "geometry": { "type": "Point", "coordinates": [ 100.025860121499505, 16.873065878948239, 0.0 ] } },
+{ "type": "Feature", "properties": { "Name": "ปตร.คลองปลากด", "auxiliary_storage_labeling_positionx": 99.991090024366969, "auxiliary_storage_labeling_positiony": 16.882431990894197 }, "geometry": { "type": "Point", "coordinates": [ 100.025342112924505, 16.874487507052461, 0.0 ] } }
+]
+}

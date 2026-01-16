@@ -1,0 +1,342 @@
+import React, { useState } from 'react';
+import ApexCharts from 'react-apexcharts';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import { ArrowDropDownIcon } from '@mui/x-date-pickers';
+import DownloadIcon from '@mui/icons-material/Download';
+import TableChartIcon from '@mui/icons-material/TableChart';
+import TextSnippetIcon from '@mui/icons-material/TextSnippet';
+import { Box, Button, Menu, MenuItem } from '@mui/material';
+
+interface DataChartProps {
+  data: any; // หรือกำหนด type ให้ละเอียดขึ้นได้
+  type: string;
+  height?: number;
+  sta_code?: string;
+  mode?: 'daily' | 'hourly';
+}
+const menuStyle = {
+    fontFamily: "Noto Sans Thai",
+    fontSize: "1rem",
+    backgroundColor: '#fff',
+
+  };
+
+const BASE_YEAR = 2000;
+
+const flowAnnotations: Record<string, ApexAnnotations> = {
+  'T.1': {
+    yaxis: [
+      { y: 1.50, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 1.50 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
+      { y: 1.38, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 1.38 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
+      { y: 1.25, borderColor: 'green', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 1.25 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'green' } } },
+    ],
+  },
+  'T.10': {
+    yaxis: [
+      { y: 3.50, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 3.50 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
+      { y: 3.20, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 3.20 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
+      { y: 2.90, borderColor: 'green', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 2.90 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'green' } } },
+    ]
+  },
+  'T.13': {
+    yaxis: [  
+      { y: 2.40, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 2.40 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
+      { y: 2.28, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 2.28 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
+      { y: 2.16, borderColor: 'green', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 2.16 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'green' } } },
+      ]
+  },
+  'T.14': {
+    yaxis: [
+      { y: 1.50, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 1.50 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
+      { y: 1.35, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 1.35 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
+      { y: 1.20, borderColor: 'green', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 1.20 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'green' } } },
+    ]
+  },
+  'T.15': {
+    yaxis: [
+      { y: 1.80, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 1.80 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
+      { y: 1.70, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 1.70 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
+      { y: 1.60, borderColor: 'green', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 1.60 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'green' } } },
+    ]
+  },
+  '': {
+    yaxis: [
+    ]
+  },
+};
+
+
+const flowYAxisRange: Record<string, { min: number; max: number }> = {
+  'T.1': { min: -10, max: 2 },
+  'T.10': { min: -2.5, max: 7 },
+  'T.13': { min: -4, max: 3 },
+  'T.14': { min: -9, max: 2 },
+  'T.15': { min: -6, max: 3 },
+};
+
+const chartOptionsMap = {
+  discharge: {
+    chart: {
+      id: 'flow-data',
+      zoom: { enabled: true },
+      // toolbar: { show: false },
+      fontFamily: "Noto Sans Thai", 
+      stacked: false,
+    },
+    title: {
+      text: 'อัตราการไหล',
+      align: "center" as const,
+      style: {
+        fontSize: '16px',
+        color: '#333',
+        fontFamily: 'Noto Sans Thai',
+      },
+    },
+    stroke: {
+      width: Array(20).fill(4),
+      dashArray:  Array(20).fill(0),
+      curve: 'smooth' as const,
+    },  
+    xaxis: {
+      type: 'datetime',
+      min: new Date(`${BASE_YEAR}-01-01`).getTime(),
+      max: new Date(`${BASE_YEAR}-12-31`).getTime(),
+      labels: { datetimeUTC: false, format: 'dd MMM HH:mm', },
+    },
+    yaxis: [
+        {
+          seriesName: 'อัตราการไหล (ลบ.ม./วินาที)',
+          labels: {
+            formatter: (val: number) => val.toFixed(2),
+            style: { fontSize: '12px', color: '#3366FF' },
+          },
+          title: {
+            text: 'อัตราการไหล (ลบ.ม./วินาที)',
+            style: { fontSize: '16px', color: '#3366FF' },
+          },
+        },
+
+      ],
+
+    tooltip: {  enabled: true, intersect: true,shared: false,followCursor: false, x: { format: 'dd MMM HH:mm' } },
+    colors: ['#3366FF','#FF0033','#00FF33','#CD853F','#FF9900','#66CCFF','#9933FF','green','#000000','#FFD700'],
+  },
+  wl: {
+    chart: {
+      id: 'flow-wl',
+      zoom: { enabled: true },
+      toolbar: { show: true },
+      fontFamily: "Noto Sans Thai", 
+ 
+    },
+    markers: {
+      size: 0,
+      strokeWidth: 0,
+      hover: {
+        sizeOffset: 0,
+      },
+    },
+    title: {
+      text: 'ระดับน้ำ',
+      align: "center" as const,
+      style: {
+        fontSize: '18px',
+        color: '#333',
+        fontFamily: 'Noto Sans Thai',
+      },
+    },
+    stroke: {
+      width: Array(20).fill(4),
+      dashArray:  Array(20).fill(0),
+      curve: 'smooth' as const,
+    },
+    xaxis: {
+      type: 'datetime',
+      min: new Date(`${BASE_YEAR}-01-01`).getTime(),
+      max: new Date(`${BASE_YEAR}-12-31`).getTime(),
+      labels: { datetimeUTC: false, format: 'dd MMM', },
+    },
+    yaxis: [
+        {
+          seriesName: 'ระดับน้ำ (ม.รทก.)',
+          labels: {
+            formatter: (val: number) => val.toFixed(2),
+            style: { fontSize: '12px', color: '#2196F3' },
+          },
+          title: {
+            text: 'ระดับน้ำ (ม.รทก.)',
+            style: { fontSize: '16px', color: '#2196F3' },
+          },
+        }
+      ],
+    tooltip: { intersect: false, x: { format: 'dd MMM HH:mm' } },
+    colors: ['#3366FF','#FF0033','#00FF33','#CD853F','#FF9900','#66CCFF','#9933FF','green','#000000','#FFD700'],
+  }
+};
+
+const FlowChart: React.FC<DataChartProps> = ({ data, type = 'wl', height = 350 ,sta_code ,mode = 'daily'}) => {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+  
+  if (!data || !data.series) return null;
+
+  // เลือก options ตาม type
+  const baseOptions = chartOptionsMap[type as 'wl' | 'discharge'] as ApexCharts.ApexOptions;
+  const annotations = sta_code && type === 'wl' ? flowAnnotations[sta_code] || { yaxis: [] } : undefined;
+  let yaxis = baseOptions.yaxis;
+  if (type === 'wl' && sta_code && flowYAxisRange[sta_code]) {
+    yaxis = [{
+      ...(Array.isArray(baseOptions.yaxis) ? baseOptions.yaxis[0] : baseOptions.yaxis),
+      min: flowYAxisRange[sta_code].min,
+      max: flowYAxisRange[sta_code].max,
+    }];
+  }
+
+  const options = {
+    ...baseOptions,
+    ...(annotations && { annotations }),
+    ...(yaxis && { yaxis }),
+    tooltip: {
+      shared: true,
+      intersect: false,
+      x: {
+        format: mode === 'hourly' 
+          ? 'dd MMM HH:mm' 
+          : 'dd MMM'  // รายวัน → ไม่แสดงเวลาเลย
+      },
+      y: {
+        formatter: (val: number) => 
+          type === 'wl' 
+            ? `${val.toFixed(2)} ม.รทก.` 
+            : `${val.toFixed(1)} ลบ.ม./วินาที`
+      }
+    },
+    // responsive: [{
+    //         breakpoint: 768, 
+    //         options: {
+    //             chart: {
+    //                 height: 300, // ลดความสูงบนมือถือ
+    //             },
+    //             title: {
+    //                 style: { fontSize: '14px' }, // ลดขนาด Title
+    //             },
+    //             xaxis: {
+    //                 labels: { style: { fontSize: '10px' } }, // ลดขนาด Label แกน X
+    //             },
+    //             yaxis: [{
+    //                 labels: { style: { fontSize: '10px' } }, // ลดขนาด Label แกน Y
+    //                 title: { style: { fontSize: '12px' } }, // ลดขนาด Title แกน Y
+    //             }],
+    //             tooltip: {
+    //                 style: { fontSize: '10px' }, // ลดขนาด Tooltip
+    //             },
+    //             legend: {
+    //                 fontSize: '10px', // ลดขนาด Legend
+    //             },
+    //         }
+    //     }],
+  };
+
+    const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+      setAnchorEl(event.currentTarget);
+    };
+  
+    const handleClose = () => {
+      setAnchorEl(null);
+    };
+  
+  
+  const handleExport = async (format: "png" | "jpg" | "jpeg" | "pdf") => {
+    handleClose();
+    const chartElement = document.getElementById("chart-container");
+    if (!chartElement) return;
+
+    // สร้าง canvas จาก html2canvas
+    const canvas = await html2canvas(chartElement);
+
+    // สำหรับ png / jpg / jpeg
+    if (format === "png" || format === "jpg" || format === "jpeg") {
+      const imgData =
+        format === "jpg" || format === "jpeg"
+          ? canvas.toDataURL("image/jpeg", 1.0)
+          : canvas.toDataURL("image/png", 1.0);
+
+      const link = document.createElement("a");
+      link.href = imgData;
+      link.download = `chart.${format}`;
+      link.click();
+    }
+
+    else if (format === "pdf") {
+      const imgData = canvas.toDataURL("image/png"); // pdf ต้องใช้ PNG
+      const pdf = new jsPDF("landscape");
+      const imgProps = (pdf as any).getImageProperties(imgData);
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+      pdf.save("chart.pdf");
+    }
+  };
+
+  return (
+    <Box position="relative">
+      <Box
+        position="absolute"
+        top={{ xs: 22, sm: 0 }}    // xs เลื่อนลง 22px, sm+ อยู่บนสุด
+        left={{ xs: '50%', sm: 10, md: 'auto' }}  // xs กึ่งกลาง, sm+ ซ้าย/right ตามต้องการ
+        right={{ xs: 'auto', sm: 'auto', md: 150 }}
+        zIndex={10}
+        sx={{
+          display:{md:"block",sm:"none",xs:"none"},
+          transform: { xs: 'translateX(-50%)', sm: 'none' } // xs กึ่งกลาง, sm+ ไม่ต้องแปลง
+        }}
+      >
+        <Button
+          variant="contained"
+          color="success"
+          onClick={handleClick}
+          endIcon={<ArrowDropDownIcon />}
+          sx={{ borderRadius: '8px', textTransform: 'none', px: 3 }}
+        >
+          Export Chart
+        </Button>
+        <Menu
+          anchorEl={anchorEl}
+          open={open}
+          onClose={handleClose}
+        >
+          <MenuItem sx={menuStyle} onClick={() => handleExport("png")}>
+            <TableChartIcon sx={{ mr: 1 }} />
+            Export PNG
+          </MenuItem>
+          <MenuItem sx={menuStyle} onClick={() => handleExport("jpg")}>
+            <DownloadIcon sx={{ mr: 1 }} />
+            Export JPG
+          </MenuItem>
+          <MenuItem sx={menuStyle} onClick={() => handleExport("jpeg")}>
+            <DownloadIcon sx={{ mr: 1 }} />
+            Export JPEG
+          </MenuItem>
+          <MenuItem sx={menuStyle} onClick={() => handleExport("pdf")}>
+            <TextSnippetIcon sx={{ mr: 1 }} />
+            Export PDF
+          </MenuItem>
+        </Menu>
+
+      </Box>
+
+      {/* กราฟ */}
+      <div id="chart-container">
+        <ApexCharts
+          options={options}
+          series={data.series}
+          type="line"
+          height={height}
+        />
+      </div>
+    </Box>
+  );
+};
+
+export default FlowChart;

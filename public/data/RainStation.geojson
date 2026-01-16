@@ -1,0 +1,11 @@
+{
+"type": "FeatureCollection",
+"name": "Rain Station",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "FID": 23, "No": 23, "Region": "Hyd 02", "Code": "120161", "Name": "P.7A", "River": "แม่น้ำปิง", "Basin": "ลุ่มน้ำปิง", "Detail": "ในเมือง", "Amphoe": "อ.เมือง", "Province": "จ.กำแพงเพชร", "Lat": 16.477723, "Long": 99.517919, "Time": "Daily", "F13": "P.7A ในเมือง อ.เมือง จ.กำแพงเพชร" }, "geometry": { "type": "Point", "coordinates": [ 99.517919, 16.477723 ] } },
+{ "type": "Feature", "properties": { "FID": 24, "No": 24, "Region": "Hyd 02", "Code": "160221", "Name": "Y.26", "River": "ห้วยแม่มอก", "Basin": "ลุ่มน้ำยม", "Detail": "บ้านแม่พุ", "Amphoe": "อ.เถิน", "Province": "จ.ลำปาง", "Lat": 17.331887, "Long": 99.46181, "Time": "Daily", "F13": "Y.26 บ้านแม่พุ อ.เถิน จ.ลำปาง" }, "geometry": { "type": "Point", "coordinates": [ 99.46181, 17.331887 ] } },
+{ "type": "Feature", "properties": { "FID": 25, "No": 26, "Region": "Hyd 02", "Code": "590121", "Name": "Y.6", "River": "แม่น้ำยม", "Basin": "ลุ่มน้ำยม", "Detail": "บ้านแก่งหลวง", "Amphoe": "อ.ศรีสัชนาลัย", "Province": "จ.สุโขทัย", "Lat": 17.436684, "Long": 99.787617, "Time": "Daily", "F13": "Y.6 บ้านแก่งหลวง อ.ศรีสัชนาลัย จ.สุโขทัย" }, "geometry": { "type": "Point", "coordinates": [ 99.787617, 17.436684 ] } },
+{ "type": "Feature", "properties": { "FID": 26, "No": 25, "Region": "Hyd 02", "Code": "390220", "Name": "ศูนย์อุทกวิทยา", "River": "แม่น้ำน่าน", "Basin": "ลุ่มน้ำน่าน", "Detail": "ศอช.ภาคเหนือตอนล่าง", "Amphoe": "อ.เมือง", "Province": "จ.พิษณุโลก", "Lat": 16.789109, "Long": 100.205613, "Time": "Daily", "F13": "ศอช.ภาคเหนือตอนล่าง อ.เมือง จ.พิษณุโลก" }, "geometry": { "type": "Point", "coordinates": [ 100.205613, 16.789109 ] } }
+]
+}
