@@ -14,7 +14,7 @@ interface DataChartProps {
   height?: number;
 }
 const menuStyle = {
-    fontFamily: "Noto Sans Thai",
+    fontFamily: "Prompt",
     fontSize: "1rem",
     backgroundColor: '#fff',
 
@@ -28,7 +28,7 @@ const chartOptionsMap = {
       id: 'sea-wl',
       zoom: { enabled: true },
       toolbar: { show: true },
-      fontFamily: "Noto Sans Thai", 
+      fontFamily: "Prompt", 
  
     },
     markers: {
@@ -45,7 +45,7 @@ const chartOptionsMap = {
       style: {
         fontSize: '18px',
         color: '#333',
-        fontFamily: 'Noto Sans Thai',
+        fontFamily: 'Prompt',
       },
     },
     stroke: {

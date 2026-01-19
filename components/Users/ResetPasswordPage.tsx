@@ -103,11 +103,11 @@ const ResetPasswordPage: React.FC = () => {
         justifyContent: "center",
         alignItems: "center",
         backgroundColor: "#f0f2f5",
-        fontFamily: "'Noto Sans Thai', sans-serif",
+        fontFamily: "'Prompt', sans-serif",
       }}
     >
       <Paper sx={{ p: 4, borderRadius: 2, textAlign: "center", maxWidth: 450, width: "100%" }}>
-        <Typography variant="h5" sx={{ fontWeight: "bold", mb: 2, color: "#28378B",fontFamily: "'Noto Sans Thai', sans-serif", }}>
+        <Typography variant="h5" sx={{ fontWeight: "bold", mb: 2, color: "#28378B",fontFamily: "'Prompt', sans-serif", }}>
           ตั้งรหัสผ่านใหม่
         </Typography>
 
@@ -122,7 +122,7 @@ const ResetPasswordPage: React.FC = () => {
                 <Button
                   variant="contained"
                   onClick={() => navigate("/")}
-                  sx={{ mt: 1, fontFamily: "Noto Sans Thai" }}
+                  sx={{ mt: 1, fontFamily: "Prompt" }}
                 >
                   กลับเข้าสู่ระบบ
                 </Button>
@@ -156,7 +156,7 @@ const ResetPasswordPage: React.FC = () => {
                   variant="contained"
                   color="primary"
                   onClick={handleSubmit}
-                  sx={{ fontFamily: "Noto Sans Thai" }}
+                  sx={{ fontFamily: "Prompt" }}
                 >
                   ตั้งรหัสผ่านใหม่
                 </Button>

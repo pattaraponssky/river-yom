@@ -236,7 +236,7 @@
 //   const options: ApexCharts.ApexOptions = {
 //     chart: {
 //       zoom: { enabled: true },
-//       fontFamily: 'Noto Sans Thai',
+//       fontFamily: 'Prompt',
 //       toolbar: { show: true },
 //     },
 //     title: {

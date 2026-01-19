@@ -17,7 +17,7 @@ const formatThaiDate = (isoDateStr: string) => {
 
 const HeaderCellStyle = {
     border: "1px solid #ddd",
-    fontFamily: "Noto Sans Thai",
+    fontFamily: "Prompt",
     fontWeight: "bold",
     textAlign: "center",
     backgroundColor: "rgb(1, 87, 155)",
@@ -30,12 +30,12 @@ const HeaderCellStyle = {
     padding: "5px",
     backgroundColor: index % 2 === 0 ? "#FAFAFA" : "#FFF",
     textAlign: "center",
-    fontFamily: "Noto Sans Thai",
+    fontFamily: "Prompt",
     fontSize: { xs: "0.8rem", sm: "0.9rem" , md: "1rem"},
   });
   
   const menuStyle = {
-    fontFamily: "Noto Sans Thai",
+    fontFamily: "Prompt",
     fontSize: "1rem",
     backgroundColor: '#fff',
 
@@ -189,13 +189,13 @@ const SeaExportTable: React.FC<Props> = ({
             <FormControl size="small" sx={{ minWidth: {md:150,xs:100} }}>
             <InputLabel>เลือกปี</InputLabel>
             <Select
-                sx={{fontFamily:"Noto Sans Thai"}}
+                sx={{fontFamily:"Prompt"}}
                 value={selectedYear}
                 label="เลือกปี"
                 onChange={(e) => setSelectedYear(e.target.value)}
             >
                 {availableYears.map((year) => (
-                <MenuItem key={year} value={year}  sx={{fontFamily:"Noto Sans Thai"}}>
+                <MenuItem key={year} value={year}  sx={{fontFamily:"Prompt"}}>
                     
                     {year === "ทั้งหมด" ? "ทั้งหมด" : Number(year) + 543}
                 </MenuItem>

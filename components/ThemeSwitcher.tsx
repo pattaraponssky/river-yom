@@ -44,11 +44,11 @@ export default function ThemeSwitcher() {
   const getIcon = () => {
     switch (mode) {
       case 'light':
-        return <LightMode sx={{ color: '#f57f17' }} />;
+        return <LightMode sx={{ color: '#f57f17', width: '16px', height: '16px' }} />;
       case 'dark':
-        return <DarkMode sx={{ color: '#90caf9' }} />;
+        return <DarkMode sx={{ color: '#90caf9', width: '16px', height: '16px' }} />;
       default: // system
-        return <SettingsBrightness sx={{ color: '#ffb74d' }} />;
+        return <SettingsBrightness sx={{ color: '#ffb74d', width: '16px', height: '16px' }} />;
     }
   };
 
@@ -131,6 +131,8 @@ export default function ThemeSwitcher() {
             invisible={mode !== 'system'} // แสดงจุดเล็กเมื่อเป็น System Mode
             overlap="circular"
             sx={{
+            width: '16px',
+            height: '16px',
               '& .MuiBadge-dot': {
                 width: 10,
                 height: 10,

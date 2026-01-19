@@ -8,31 +8,10 @@ import ListAltIcon from '@mui/icons-material/ListAlt';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { textStyle } from '../../theme/style';
-
-const HeaderCellStyle = {
-  whiteSpace: "nowrap",
-  border: "1px solid #ddd",
-  fontFamily: "Noto Sans Thai",
-  fontWeight: "bold",
-  textAlign: "center",
-  backgroundColor: "rgb(1, 87, 155)",
-  color: "white",
-  fontSize: { xs: "0.7rem", sm: "0.9rem", md: "1rem" },
-  padding: { xs: "8px 4px", sm: "12px 8px" },
-};
-
-const getCellStyle = (index: number) => ({
-  whiteSpace: "nowrap",
-  border: "1px solid #ddd",
-  padding: { xs: "2px", sm: "5px" },
-  backgroundColor: index % 2 === 0 ? "#FAFAFA" : "#FFF",
-  textAlign: "center",
-  fontFamily: "Noto Sans Thai",
-  fontSize: { xs: "0.8rem", sm: "0.9rem", md: "1rem" },
-});
+import { getCellStyle, HeaderCellStyle } from '../../theme/style';
 
 const menuStyle = {
-  fontFamily: "Noto Sans Thai",
+  fontFamily: "Prompt",
   fontSize: "1rem",
 };
 
@@ -160,15 +139,15 @@ const ReservoirExportTable: React.FC<Props> = ({
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 2 }}>
         <FormControl size="small" sx={{ minWidth: 120 }}>
-          <InputLabel sx={{ fontFamily: "Noto Sans Thai" }}>เลือกปี</InputLabel>
+          <InputLabel sx={{ fontFamily: "Prompt" }}>เลือกปี</InputLabel>
           <Select
             value={selectedYear}
             label="เลือกปี"
             onChange={(e) => setSelectedYear(e.target.value)}
-            sx={{ fontFamily: "Noto Sans Thai" }}
+            sx={{ fontFamily: "Prompt" }}
           >
             {availableYears.map((year) => (
-              <MenuItem key={year} value={year} sx={{ fontFamily: "Noto Sans Thai" }}>
+              <MenuItem key={year} value={year} sx={{ fontFamily: "Prompt" }}>
                 {year === "ทั้งหมด" ? "ทั้งหมด" : `${Number(year) + 543}`}
               </MenuItem>
             ))}
@@ -214,7 +193,7 @@ const ReservoirExportTable: React.FC<Props> = ({
           <TableBody>
             {allDataRows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} align="center" sx={{ py: 4, fontFamily: "Noto Sans Thai" }}>
+                <TableCell colSpan={4} align="center" sx={{ py: 4, fontFamily: "Prompt" }}>
                   ไม่พบข้อมูล
                 </TableCell>
               </TableRow>

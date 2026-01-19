@@ -37,7 +37,7 @@ const ImageComponent: React.FC<ImageProps> = ({ src, alt, title, width, height }
   const dynamicHeight = getStyleValue(height);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "10px", fontFamily: "Noto Sans Thai", maxWidth: "100%" }}>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "10px", fontFamily: "Prompt", maxWidth: "100%" }}>
       <Typography sx={{ marginBottom: {md:"1rem", xs:"0.6"}, fontWeight: 600, ...titleStyle, color: "#28378B" }}>
         {title}
       </Typography>

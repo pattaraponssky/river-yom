@@ -82,7 +82,7 @@ const ForgotPasswordDialog: React.FC<ForgotPasswordDialogProps> = ({ open, onClo
                 textAlign: "center",
                 fontWeight: "bold",
                 fontSize: "1.6rem",
-                fontFamily: "Noto Sans Thai"
+                fontFamily: "Prompt"
               }}
             >
               ลืมรหัสผ่าน
@@ -105,7 +105,7 @@ const ForgotPasswordDialog: React.FC<ForgotPasswordDialogProps> = ({ open, onClo
               </Stack>
             </DialogContent>
             <DialogActions sx={{ justifyContent: "space-between", px: 3, pb: 2 }}>
-              <Button onClick={onClose} color="inherit" disabled={loading} sx={{ ...textStyle, fontFamily: "Noto Sans Thai" }}>
+              <Button onClick={onClose} color="inherit" disabled={loading} sx={{ ...textStyle, fontFamily: "Prompt" }}>
                 ยกเลิก
               </Button>
               <Button
@@ -113,7 +113,7 @@ const ForgotPasswordDialog: React.FC<ForgotPasswordDialogProps> = ({ open, onClo
                 color="primary"
                 onClick={handleSubmit}
                 disabled={loading}
-                sx={{ ...textStyle, fontFamily: "Noto Sans Thai" }}
+                sx={{ ...textStyle, fontFamily: "Prompt" }}
               >
                 {loading ? "กำลังส่ง..." : "ส่งลิงก์รีเซ็ตรหัสผ่าน"}
               </Button>

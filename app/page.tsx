@@ -21,7 +21,7 @@ export default function Home() {
         variant="h6"
         color="text.secondary"
         paragraph
-        sx={{ mb: 6, maxWidth: '800px', mx: 'auto', fontFamily: 'Noto Sans Thai' }}
+        sx={{ mb: 6, maxWidth: '800px', mx: 'auto', fontFamily: 'Prompt' }}
       >
         แม่น้ำยมฝั่งขวา - ข้อมูล real-time และประวัติการบริหารจัดการน้ำ
       </Typography>

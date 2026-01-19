@@ -13,10 +13,9 @@ import ReservoirChart from '@/components/data/ReservoirChartData';
 import ReservoirCard from '@/components/dashboard/ReservoirCard';
 import GateCard from '@/components/dashboard/GateCard';
 import { BoxStyle } from '@/theme/style';
-import DrawerMenu from '../../components/layout/Drawer';
 
 export default function Dashboard() {
-  const mapKey = '41d9c404abaa381e761eb903ccbaa5d8';
+  const mapKey = process.env.LONGDO_MAP_KEY!;
   const [data, setData] = useState<any>(null);
 
    useEffect(() => {
@@ -31,7 +30,6 @@ export default function Dashboard() {
     `${Path_URL}data/ProjectArea.geojson`,
   ];
 
-  console.log("Daily Summary Data:", data);
   return (
   <>
     <Container maxWidth="xl" sx={{ py: 2 }}>

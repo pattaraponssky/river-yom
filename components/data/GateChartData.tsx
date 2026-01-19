@@ -15,7 +15,7 @@ interface DataChartProps {
   sta_code?: string;
 }
 const menuStyle = {
-    fontFamily: "Noto Sans Thai",
+    fontFamily: "Prompt",
     fontSize: "1rem",
     backgroundColor: '#fff',
 
@@ -72,7 +72,7 @@ const chartOptionsMap = {
       id: 'gate-data',
       zoom: { enabled: true },
       toolbar: { show: true },
-      fontFamily: "Noto Sans Thai", 
+      fontFamily: "Prompt", 
     },
     title: {
       text: 'อัตราการไหล',
@@ -80,7 +80,7 @@ const chartOptionsMap = {
       style: {
         fontSize: '16px',
         color: '#333',
-        fontFamily: 'Noto Sans Thai',
+        fontFamily: 'Prompt',
       },
     },
     stroke: {
@@ -117,7 +117,7 @@ const chartOptionsMap = {
       id: 'gate-wl_lower',
       zoom: { enabled: true },
       toolbar: { show: true },
-      fontFamily: "Noto Sans Thai", 
+      fontFamily: "Prompt", 
  
     },
     markers: {
@@ -133,7 +133,7 @@ const chartOptionsMap = {
       style: {
         fontSize: '18px',
         color: '#333',
-        fontFamily: 'Noto Sans Thai',
+        fontFamily: 'Prompt',
       },
     },
     stroke: {
@@ -168,7 +168,7 @@ const chartOptionsMap = {
       id: 'gate-wl_upper',
       zoom: { enabled: true },
       toolbar: { show: true },
-      fontFamily: "Noto Sans Thai", 
+      fontFamily: "Prompt", 
  
     },
     markers: {
@@ -184,7 +184,7 @@ const chartOptionsMap = {
       style: {
         fontSize: '18px',
         color: '#333',
-        fontFamily: 'Noto Sans Thai',
+        fontFamily: 'Prompt',
       },
     },
     stroke: {

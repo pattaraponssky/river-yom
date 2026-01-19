@@ -1,10 +1,10 @@
 export const textStyle = {
-  fontFamily: "Noto Sans Thai",
+  fontFamily: "Prompt",
   fontSize: { md: "1rem", xs: "0.75rem" },
 };
 
 export const titleStyle = {
-  fontFamily: "Noto Sans Thai",
+  fontFamily: "Prompt",
   fontSize: { md: "1.2rem", xs: "0.95rem" },
   textAlign:{ md:"start",xs:"center"}
 };
@@ -17,10 +17,15 @@ export const BoxStyle = {
   padding: {md:"20px", xs:"5px"},
 };
 
+export const fontInfo = {
+  fontFamily: "Prompt",
+  fontSize:{md: "1.1rem", xs: "0.9rem"},
+};
+
 
 export const HeaderCellStyle = {
   position: "sticky",
-  top: { xs: 115, md: 60 },
+  // top: { xs: 115, md: 60 },
   border: "1px solid #ddd",
   fontFamily: "Prompt",
   fontWeight: "bold",

@@ -96,7 +96,7 @@ const RegisterDialog: React.FC<RegisterDialogProps> = ({ open, onClose }) => {
         <Box display="flex" flexDirection={isMobile ? "column" : "row"} height={isMobile ? "auto" : 600}>
           <Box flex={1} p={2} display="flex" flexDirection="column" justifyContent="center" sx={{ backgroundColor: "#fff" }}>
             <Box sx={{ textAlign: "center", pb: 2 }}>
-              <DialogTitle sx={{ fontWeight: "bold", fontSize: "1.6rem", fontFamily: "Noto Sans Thai" }}>
+              <DialogTitle sx={{ fontWeight: "bold", fontSize: "1.6rem", fontFamily: "Prompt" }}>
                 สมัครสมาชิก
               </DialogTitle>
               <Typography variant="body2" color="text.secondary" sx={{ ...textStyle}}>
@@ -158,11 +158,11 @@ const RegisterDialog: React.FC<RegisterDialogProps> = ({ open, onClose }) => {
             </DialogContent>
 
             <DialogActions sx={{ justifyContent: "space-between", px: 3, pb: 2 }}>
-              <Button onClick={onClose} color="inherit" disabled={loading} sx={{ ...textStyle, fontFamily: "Noto Sans Thai" }}>
+              <Button onClick={onClose} color="inherit" disabled={loading} sx={{ ...textStyle, fontFamily: "Prompt" }}>
                 ยกเลิก
               </Button>
               <Button
-                sx={{ ...textStyle, fontFamily: "Noto Sans Thai" }}
+                sx={{ ...textStyle, fontFamily: "Prompt" }}
                 variant="contained"
                 color="primary"
                 onClick={handleRegister}

@@ -57,11 +57,11 @@ const VerifyEmailPage: React.FC = () => {
         alignItems: "center",
         minHeight: "100vh",
         backgroundColor: "#f0f2f5",
-        fontFamily: "'Noto Sans Thai', sans-serif",
+        fontFamily: "'Prompt', sans-serif",
       }}
     >
       <Paper sx={{ p: 4, borderRadius: 2, textAlign: "center", maxWidth: 500, width: "100%" }}>
-        <Typography variant="h5" sx={{ fontWeight: "bold", mb: 2, color: "#28378B",fontFamily: "Noto Sans Thai"  }}>
+        <Typography variant="h5" sx={{ fontWeight: "bold", mb: 2, color: "#28378B",fontFamily: "Prompt"  }}>
           สถานะการยืนยันอีเมล
         </Typography>
         {status === "loading" && (
@@ -72,7 +72,7 @@ const VerifyEmailPage: React.FC = () => {
         )}
         {status === "success" && (
           <Alert severity="success" sx={{ mb: 2 }}>
-            <Typography sx={{ fontFamily: "Noto Sans Thai" }}>
+            <Typography sx={{ fontFamily: "Prompt" }}>
               {message}
               {username && (
                 <Box component="span" sx={{ display: "block", mt: 1 }}>
@@ -85,11 +85,11 @@ const VerifyEmailPage: React.FC = () => {
         )}
         {status === "error" && (
           <Alert severity="error" sx={{ mb: 2 }}>
-            <Typography sx={{fontSize:"1.1rem", fontFamily: "Noto Sans Thai" }}>{message}</Typography>
+            <Typography sx={{fontSize:"1.1rem", fontFamily: "Prompt" }}>{message}</Typography>
           </Alert>
         )}
         {/* อาจเพิ่มปุ่มกลับหน้า Login หรือ Home */}
-        <Button variant="contained" href="/" sx={{ fontSize:"1.1rem",mt: 2, fontFamily: "Noto Sans Thai" }}>
+        <Button variant="contained" href="/" sx={{ fontSize:"1.1rem",mt: 2, fontFamily: "Prompt" }}>
           กลับสู่หน้าหลัก
         </Button>
       </Paper>

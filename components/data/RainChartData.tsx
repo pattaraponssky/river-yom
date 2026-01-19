@@ -14,7 +14,7 @@ interface DataChartProps {
   height?: number;
 }
 const menuStyle = {
-    fontFamily: "Noto Sans Thai",
+    fontFamily: "Prompt",
     fontSize: "1rem",
     backgroundColor: '#fff',
 
@@ -27,7 +27,7 @@ const chartOptionsMap = {
       id: 'rain-data',
       zoom: { enabled: true },
       // toolbar: { show: false },
-      fontFamily: "Noto Sans Thai", 
+      fontFamily: "Prompt", 
       stacked: false,
     },
     title: {
@@ -36,7 +36,7 @@ const chartOptionsMap = {
       style: {
         fontSize: '18px',
         color: '#333',
-        fontFamily: 'Noto Sans Thai',
+        fontFamily: 'Prompt',
       },
     },
     stroke: {
@@ -80,7 +80,7 @@ const chartOptionsMap = {
       id: 'rain-rain',
       zoom: { enabled: true },
       toolbar: { show: true },
-      fontFamily: "Noto Sans Thai", 
+      fontFamily: "Prompt", 
  
     },
     markers: {
@@ -97,7 +97,7 @@ const chartOptionsMap = {
       style: {
         fontSize: '18px',
         color: '#333',
-        fontFamily: 'Noto Sans Thai',
+        fontFamily: 'Prompt',
       },
     },
     stroke: {

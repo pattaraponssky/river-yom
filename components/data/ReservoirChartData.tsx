@@ -16,7 +16,7 @@ interface DataChartProps {
 }
 
 const menuStyle = {
-    fontFamily: "Noto Sans Thai",
+    fontFamily: "Prompt",
     fontSize: "1rem",
     backgroundColor: '#fff',
 
@@ -74,13 +74,13 @@ const chartOptionsMap = {
     chart: {
       id: 'reservoir',
       zoom: { enabled: true, allowMouseWheelZoom: false },
-      fontFamily: "Noto Sans Thai",
+      fontFamily: "Prompt",
       // stacked: false,
     },
     title: {
       text: 'ปริมาณน้ำในอ่างเก็บน้ำ',
       align: "center",
-      style: { fontSize: '16px', color: '#333', fontFamily: 'Noto Sans Thai' },
+      style: { fontSize: '16px', color: '#333', fontFamily: 'Prompt' },
     },
     stroke: {
       width: Array(13).fill(3),
@@ -114,12 +114,12 @@ const chartOptionsMap = {
       id: 'reservoir-inflow',
       zoom: { enabled: true, allowMouseWheelZoom: false },
       type: 'line',
-      fontFamily: "Noto Sans Thai",
+      fontFamily: "Prompt",
     },
     title: {
       text: 'ปริมาณน้ำไหลเข้าอ่างเก็บน้ำ',
       align: "center",
-      style: { fontSize: '16px', color: '#333', fontFamily: 'Noto Sans Thai' },
+      style: { fontSize: '16px', color: '#333', fontFamily: 'Prompt' },
     },
     stroke: {
       width: Array(13).fill(3),
@@ -152,12 +152,12 @@ const chartOptionsMap = {
       id: 'reservoir-outflow',
       zoom: { enabled: true, allowMouseWheelZoom: false },
       type: 'line',
-      fontFamily: "Noto Sans Thai",
+      fontFamily: "Prompt",
     },
     title: {
       text: 'ปริมาณน้ำระบายออกอ่างเก็บน้ำ',
       align: "center",
-      style: { fontSize: '16px', color: '#333', fontFamily: 'Noto Sans Thai' },
+      style: { fontSize: '16px', color: '#333', fontFamily: 'Prompt' },
     },
     stroke: {
       width: Array(13).fill(3),

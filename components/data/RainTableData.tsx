@@ -20,29 +20,7 @@ import TableChartIcon from '@mui/icons-material/TableChart';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { textStyle } from '../../theme/style';
-
-const HeaderCellStyle = {
-  whiteSpace: "nowrap",
-  border: "1px solid #ddd",
-  fontFamily: "Noto Sans Thai",
-  fontWeight: "bold",
-  textAlign: "center",
-  backgroundColor: "rgb(1, 87, 155)",
-  color: "white",
-  fontSize: { xs: "0.8rem", sm: "1rem", md: "1.1rem" },
-  padding: "8px",
-};
-
-const getCellStyle = (index: number) => ({
-  whiteSpace: "nowrap",
-  border: "1px solid #ddd",
-  padding: "5px",
-  backgroundColor: index % 2 === 0 ? "#FAFAFA" : "#FFF",
-  textAlign: "center",
-  fontFamily: "Noto Sans Thai",
-  fontSize: { xs: "0.8rem", sm: "0.9rem", md: "1rem" },
-});
-
+import { getCellStyle, HeaderCellStyle } from '../../theme/style';
 interface GroupedData {
   [year: string]: [number, number | null][]; // รองรับ null
 }
@@ -158,15 +136,15 @@ const RainExportTable: React.FC<Props> = ({
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 2 }}>
         <FormControl size="small" sx={{ minWidth: 150 }}>
-          <InputLabel sx={{ fontFamily: "Noto Sans Thai" }}>เลือกปี</InputLabel>
+          <InputLabel sx={{ fontFamily: "Prompt" }}>เลือกปี</InputLabel>
           <Select
             value={selectedYear}
             label="เลือกปี"
             onChange={(e) => setSelectedYear(e.target.value)}
-            sx={{ fontFamily: "Noto Sans Thai" }}
+            sx={{ fontFamily: "Prompt" }}
           >
             {availableYears.map(year => (
-              <MenuItem key={year} value={year} sx={{ fontFamily: "Noto Sans Thai" }}>
+              <MenuItem key={year} value={year} sx={{ fontFamily: "Prompt" }}>
                 {year === "ทั้งหมด" ? "ทั้งหมด" : `พ.ศ. ${Number(year) + 543}`}
               </MenuItem>
             ))}
@@ -184,13 +162,13 @@ const RainExportTable: React.FC<Props> = ({
         </Button>
 
         <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
-          <MenuItem onClick={() => { exportToXLSX(); handleClose(); }} sx={{ fontFamily: "Noto Sans Thai" }}>
+          <MenuItem onClick={() => { exportToXLSX(); handleClose(); }} sx={{ fontFamily: "Prompt" }}>
             <TableChartIcon sx={{ mr: 1 }} /> Export XLSX
           </MenuItem>
-          <MenuItem onClick={() => { exportToCSV(); handleClose(); }} sx={{ fontFamily: "Noto Sans Thai" }}>
+          <MenuItem onClick={() => { exportToCSV(); handleClose(); }} sx={{ fontFamily: "Prompt" }}>
             <DownloadIcon sx={{ mr: 1 }} /> Export CSV
           </MenuItem>
-          <MenuItem onClick={() => { exportToTXT(); handleClose(); }} sx={{ fontFamily: "Noto Sans Thai" }}>
+          <MenuItem onClick={() => { exportToTXT(); handleClose(); }} sx={{ fontFamily: "Prompt" }}>
             <TextSnippetIcon sx={{ mr: 1 }} /> Export TXT
           </MenuItem>
         </Menu>

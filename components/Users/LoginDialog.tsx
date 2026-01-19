@@ -105,7 +105,7 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose, onLoginSuccess
               mb={2}
               fontWeight="bold"
               textAlign="center"
-              sx={{ fontFamily: "Noto Sans Thai" }}
+              sx={{ fontFamily: "Prompt" }}
             >
               เข้าสู่ระบบ
             </Typography>

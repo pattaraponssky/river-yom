@@ -32,7 +32,7 @@ interface User {
 
 const HeaderCellStyle = {
     border: "0px solid #ddd",
-    fontFamily: "Noto Sans Thai",
+    fontFamily: "Prompt",
     fontWeight: "bold",
     textAlign: "center" as const,
     backgroundColor: "rgb(1, 87, 155)",
@@ -45,12 +45,12 @@ const HeaderCellStyle = {
     padding: "10px",
     backgroundColor: index % 2 === 0 ? "#FAFAFA" : "#FFF",
     textAlign: "center" as const,
-    fontFamily: "Noto Sans Thai",
+    fontFamily: "Prompt",
     fontSize: { xs: "0.8rem", sm: "0.9rem" , md: "1rem"},
   });
 
 const HeaderFont = {
-    fontFamily: "Noto Sans Thai",
+    fontFamily: "Prompt",
     fontWeight: "bold",
 }
 
@@ -253,7 +253,7 @@ const UserManagement: React.FC = () => {
 
       {/* Edit Dialog */}
       <Dialog open={!!selectedUser} onClose={handleCloseDialog} fullWidth maxWidth="sm">
-        <DialogTitle sx={{fontFamily: "Noto Sans Thai",fontWeight:"bold"}}>แก้ไขผู้ใช้งาน</DialogTitle>
+        <DialogTitle sx={{fontFamily: "Prompt",fontWeight:"bold"}}>แก้ไขผู้ใช้งาน</DialogTitle>
         <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
           <TextField
             sx={{mt:1,}}
@@ -292,10 +292,10 @@ const UserManagement: React.FC = () => {
       </Dialog>
 
       <Dialog open={openTempDialog} onClose={() => setOpenTempDialog(false)} fullWidth maxWidth="md">
-       <DialogTitle sx={{ fontFamily: "Noto Sans Thai", fontWeight: "bold" }}><Users style={{ marginRight: 8 }} /> คำขอลงทะเบียน</DialogTitle>
+       <DialogTitle sx={{ fontFamily: "Prompt", fontWeight: "bold" }}><Users style={{ marginRight: 8 }} /> คำขอลงทะเบียน</DialogTitle>
         <DialogContent>
             {tempUsers.length === 0 ? (
-            <Typography sx={{ fontFamily: "Noto Sans Thai" }}>ไม่มีคำขอลงทะเบียน</Typography>
+            <Typography sx={{ fontFamily: "Prompt" }}>ไม่มีคำขอลงทะเบียน</Typography>
             ) : (
             <Table>
                 <TableHead>
@@ -359,7 +359,7 @@ const UserManagement: React.FC = () => {
      
       <Dialog open={showAlertDialog} onClose={() => setShowAlertDialog(false)}>
 
-            <DialogTitle sx={{ fontFamily: "Noto Sans Thai", fontWeight: "bold", textAlign: "center" }}>
+            <DialogTitle sx={{ fontFamily: "Prompt", fontWeight: "bold", textAlign: "center" }}>
                 มีคำขอลงทะเบียนใหม่
             </DialogTitle>
       
@@ -383,7 +383,7 @@ const UserManagement: React.FC = () => {
         </Dialog>
 
         <Dialog open={openAddDialog} onClose={() => setOpenAddDialog(false)} fullWidth maxWidth="sm">
-            <DialogTitle sx={{ fontFamily: "Noto Sans Thai", fontWeight: "bold" }}>เพิ่มผู้ใช้งาน</DialogTitle>
+            <DialogTitle sx={{ fontFamily: "Prompt", fontWeight: "bold" }}>เพิ่มผู้ใช้งาน</DialogTitle>
             <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
                 <TextField label="Username" value={newUser.Username} onChange={(e) => setNewUser({ ...newUser, Username: e.target.value })} fullWidth />
                 <TextField label="ชื่อผู้ใช้" value={newUser.Name} onChange={(e) => setNewUser({ ...newUser, Name: e.target.value })} fullWidth />

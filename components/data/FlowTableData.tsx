@@ -1,4 +1,7 @@
-import React, { useState, useMemo, useEffect } from 'react';
+// src/components/FlowExportTable.tsx
+'use client';
+
+import React, { useState, useMemo, useEffect } from "react";
 import {
   Box,
   Button,
@@ -12,40 +15,18 @@ import {
   TableCell,
   TableHead,
   TableRow,
-} from '@mui/material';
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import DownloadIcon from '@mui/icons-material/Download';
-import TableChartIcon from '@mui/icons-material/TableChart';
-import * as XLSX from 'xlsx';
-import { saveAs } from 'file-saver';
-import TextSnippetIcon from '@mui/icons-material/TextSnippet';
-
-const textStyle = { fontFamily: "Noto Sans Thai" };
-
-const HeaderCellStyle = {
-  whiteSpace: "nowrap",
-  border: "1px solid #ddd",
-  fontWeight: "bold",
-  textAlign: "center",
-  backgroundColor: "rgb(1, 87, 155)",
-  color: "white",
-  fontSize: { xs: "0.8rem", sm: "1rem", md: "1.1rem" },
-  fontFamily: "Noto Sans Thai",
-  padding: "8px",
-};
-
-const getCellStyle = (index: number) => ({
-  whiteSpace: "nowrap",
-  border: "1px solid #ddd",
-  padding: "5px",
-  backgroundColor: index % 2 === 0 ? "#FAFAFA" : "#FFF",
-  textAlign: "center",
-  fontFamily: "Noto Sans Thai",
-  fontSize: { xs: "0.8rem", sm: "0.9rem", md: "1rem" },
-});
+  useTheme,
+} from "@mui/material";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import DownloadIcon from "@mui/icons-material/Download";
+import TableChartIcon from "@mui/icons-material/TableChart";
+import TextSnippetIcon from "@mui/icons-material/TextSnippet";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
+import { HeaderCellStyle, getCellStyle } from '../../theme/style';
 
 interface GroupedData {
-  [year: string]: [number, number | null][]; // รองรับ null
+  [year: string]: [number, number | null][];
 }
 
 interface Props {
@@ -60,6 +41,9 @@ const FlowExportTable: React.FC<Props> = ({
   wlGroupedData = {},
   mode,
 }) => {
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
+
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedYear, setSelectedYear] = useState("ทั้งหมด");
 
@@ -191,17 +175,36 @@ const FlowExportTable: React.FC<Props> = ({
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 2 }}>
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        mb: 3, 
+        flexWrap: 'wrap', 
+        gap: 2,
+        backgroundColor: theme.palette.background.paper,
+        p: 2,
+        borderRadius: 2,
+        boxShadow: 1,
+      }}>
         <FormControl size="small" sx={{ minWidth: 150 }}>
-          <InputLabel sx={{ fontFamily: "Noto Sans Thai" }}>เลือกปี</InputLabel>
+          <InputLabel sx={{ fontFamily: "Prompt" }}>เลือกปี</InputLabel>
           <Select
             value={selectedYear}
             label="เลือกปี"
-            onChange={(e) => setSelectedYear(e.target.value)}
-            sx={{ fontFamily: "Noto Sans Thai" }}
+            onChange={(e) => setSelectedYear(e.target.value as string)}
+            sx={{ 
+              fontFamily: "Prompt",
+              backgroundColor: theme.palette.background.default,
+              color: theme.palette.text.primary,
+            }}
           >
             {yearsFromData.map(year => (
-              <MenuItem key={year} value={year} sx={{ fontFamily: "Noto Sans Thai" }}>
+              <MenuItem 
+                key={year} 
+                value={year} 
+                sx={{ fontFamily: "Prompt" }}
+              >
                 {year === "ทั้งหมด" ? "ทั้งหมด" : `พ.ศ. ${Number(year) + 543}`}
               </MenuItem>
             ))}
@@ -213,57 +216,141 @@ const FlowExportTable: React.FC<Props> = ({
           color="success"
           endIcon={<ArrowDropDownIcon />}
           onClick={handleClick}
-          sx={{ borderRadius: '8px', textTransform: 'none', px: 3, ...textStyle }}
+          sx={{ 
+            borderRadius: '8px', 
+            textTransform: 'none', 
+            px: 3,
+            background: theme.palette.mode === 'dark' 
+              ? 'linear-gradient(90deg, #388e3c, #4caf50)'
+              : 'linear-gradient(90deg, #43a047, #66bb6a)',
+            '&:hover': {
+              background: theme.palette.mode === 'dark' 
+                ? 'linear-gradient(90deg, #2e7d32, #388e3c)'
+                : 'linear-gradient(90deg, #388e3c, #4caf50)',
+            },
+          }}
         >
           Export File
         </Button>
 
-        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-          <MenuItem onClick={() => { exportToXLSX(); handleClose(); }} sx={{ fontFamily: "Noto Sans Thai" }}>
-            <TableChartIcon sx={{ mr: 1 }} /> Export XLSX
+        <Menu 
+          anchorEl={anchorEl} 
+          open={Boolean(anchorEl)} 
+          onClose={handleClose}
+          PaperProps={{
+            sx: {
+              backgroundColor: theme.palette.background.paper,
+              color: theme.palette.text.primary,
+            }
+          }}
+        >
+          <MenuItem onClick={() => { exportToXLSX(); handleClose(); }}>
+            <TableChartIcon sx={{ mr: 1, color: theme.palette.success.main }} /> 
+            Export XLSX
           </MenuItem>
-          <MenuItem onClick={() => { exportToCSV(); handleClose(); }} sx={{ fontFamily: "Noto Sans Thai" }}>
-            <DownloadIcon sx={{ mr: 1 }} /> Export CSV
+          <MenuItem onClick={() => { exportToCSV(); handleClose(); }}>
+            <DownloadIcon sx={{ mr: 1, color: theme.palette.info.main }} /> 
+            Export CSV
           </MenuItem>
-          <MenuItem onClick={() => { exportToTXT(); handleClose(); }} sx={{ fontFamily: "Noto Sans Thai" }}>
-            <TextSnippetIcon sx={{ mr: 1 }} /> Export TXT
+          <MenuItem onClick={() => { exportToTXT(); handleClose(); }}>
+            <TextSnippetIcon sx={{ mr: 1, color: theme.palette.warning.main }} /> 
+            Export TXT
           </MenuItem>
         </Menu>
       </Box>
 
-      <Box sx={{ maxHeight: '70vh', overflow: 'auto', border: '1px solid #ddd', borderRadius: 1 }}>
+      {/* ตารางข้อมูล */}
+      <Box sx={{ 
+        maxHeight: '70vh', 
+        overflowY: 'auto', 
+        border: `1px solid ${theme.palette.divider}`, 
+        borderRadius: 2,
+        backgroundColor: theme.palette.background.paper,
+        boxShadow: theme.palette.mode === 'dark' ? 6 : 2,
+      }}>
         <Table size="small" stickyHeader>
           <TableHead>
             <TableRow>
-              <TableCell sx={HeaderCellStyle}>
+              <TableCell sx={{
+                ...HeaderCellStyle,
+                backgroundColor: isDark ? '#1a237e' : 'rgb(1, 87, 155)',
+                color: isDark ? '#e0e7ff' : 'white',
+                borderColor: theme.palette.divider,
+              }}>
                 {mode === "hourly" ? "วันที่/เวลา" : "วันที่"}
               </TableCell>
               {hasDischarge && (
-                <TableCell sx={HeaderCellStyle}>อัตราการไหล (ลบ.ม./วินาที)</TableCell>
+                <TableCell sx={{
+                  ...HeaderCellStyle,
+                  backgroundColor: isDark ? '#1a237e' : 'rgb(1, 87, 155)',
+                  color: isDark ? '#e0e7ff' : 'white',
+                  borderColor: theme.palette.divider,
+                }}>
+                  อัตราการไหล (ลบ.ม./วินาที)
+                </TableCell>
               )}
               {hasWL && (
-                <TableCell sx={HeaderCellStyle}>ระดับน้ำ (ม.รทก.)</TableCell>
+                <TableCell sx={{
+                  ...HeaderCellStyle,
+                  backgroundColor: isDark ? '#1a237e' : 'rgb(1, 87, 155)',
+                  color: isDark ? '#e0e7ff' : 'white',
+                  borderColor: theme.palette.divider,
+                }}>
+                  ระดับน้ำ (ม.รทก.)
+                </TableCell>
               )}
             </TableRow>
           </TableHead>
           <TableBody>
             {rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={hasDischarge && hasWL ? 3 : 2} sx={{ py: 4, ...getCellStyle(0) }}>
+                <TableCell 
+                  colSpan={hasDischarge && hasWL ? 3 : 2} 
+                  sx={{ 
+                    py: 6, 
+                    textAlign: 'center', 
+                    color: theme.palette.text.secondary,
+                    fontFamily: "Prompt",
+                  }}
+                >
                   ไม่มีข้อมูลสำหรับปีที่เลือก
                 </TableCell>
               </TableRow>
             ) : (
               rows.map((row, idx) => (
-                <TableRow key={row.timestamp}>
-                  <TableCell sx={getCellStyle(idx)}>{row.datetime}</TableCell>
+                <TableRow 
+                  key={row.timestamp}
+                  sx={{
+                    backgroundColor: idx % 2 === 0 
+                      ? (isDark ? '#1e293b' : '#FAFAFA') 
+                      : (isDark ? '#111827' : '#FFF'),
+                    '&:hover': {
+                      backgroundColor: isDark ? '#263238' : '#f5f5f5',
+                    },
+                  }}
+                >
+                  <TableCell sx={{ 
+                    ...getCellStyle(idx), 
+                    color: theme.palette.text.primary,
+                    borderColor: theme.palette.divider,
+                  }}>
+                    {row.datetime}
+                  </TableCell>
                   {hasDischarge && (
-                    <TableCell sx={getCellStyle(idx)}>
+                    <TableCell sx={{ 
+                      ...getCellStyle(idx), 
+                      color: theme.palette.text.primary,
+                      borderColor: theme.palette.divider,
+                    }}>
                       {row.discharge !== null ? row.discharge.toFixed(3) : '-'}
                     </TableCell>
                   )}
                   {hasWL && (
-                    <TableCell sx={getCellStyle(idx)}>
+                    <TableCell sx={{ 
+                      ...getCellStyle(idx), 
+                      color: theme.palette.text.primary,
+                      borderColor: theme.palette.divider,
+                    }}>
                       {row.wl !== null ? row.wl.toFixed(3) : '-'}
                     </TableCell>
                   )}

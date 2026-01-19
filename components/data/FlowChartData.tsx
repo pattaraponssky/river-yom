@@ -16,7 +16,7 @@ interface DataChartProps {
   mode?: 'daily' | 'hourly';
 }
 const menuStyle = {
-    fontFamily: "Noto Sans Thai",
+    fontFamily: "Prompt",
     fontSize: "1rem",
     backgroundColor: '#fff',
 
@@ -81,7 +81,7 @@ const chartOptionsMap = {
       id: 'flow-data',
       zoom: { enabled: true },
       // toolbar: { show: false },
-      fontFamily: "Noto Sans Thai", 
+      fontFamily: "Prompt", 
       stacked: false,
     },
     title: {
@@ -90,7 +90,7 @@ const chartOptionsMap = {
       style: {
         fontSize: '16px',
         color: '#333',
-        fontFamily: 'Noto Sans Thai',
+        fontFamily: 'Prompt',
       },
     },
     stroke: {
@@ -127,7 +127,7 @@ const chartOptionsMap = {
       id: 'flow-wl',
       zoom: { enabled: true },
       toolbar: { show: true },
-      fontFamily: "Noto Sans Thai", 
+      fontFamily: "Prompt", 
  
     },
     markers: {
@@ -143,7 +143,7 @@ const chartOptionsMap = {
       style: {
         fontSize: '18px',
         color: '#333',
-        fontFamily: 'Noto Sans Thai',
+        fontFamily: 'Prompt',
       },
     },
     stroke: {
@@ -175,7 +175,7 @@ const chartOptionsMap = {
   }
 };
 
-const FlowChart: React.FC<DataChartProps> = ({ data, type = 'wl', height = 350 ,sta_code ,mode = 'daily'}) => {
+const FlowChart: React.FC<DataChartProps> = ({ data, type, height = 350 ,sta_code ,mode = 'daily'}) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   
@@ -212,30 +212,7 @@ const FlowChart: React.FC<DataChartProps> = ({ data, type = 'wl', height = 350 ,
             : `${val.toFixed(1)} ลบ.ม./วินาที`
       }
     },
-    // responsive: [{
-    //         breakpoint: 768, 
-    //         options: {
-    //             chart: {
-    //                 height: 300, // ลดความสูงบนมือถือ
-    //             },
-    //             title: {
-    //                 style: { fontSize: '14px' }, // ลดขนาด Title
-    //             },
-    //             xaxis: {
-    //                 labels: { style: { fontSize: '10px' } }, // ลดขนาด Label แกน X
-    //             },
-    //             yaxis: [{
-    //                 labels: { style: { fontSize: '10px' } }, // ลดขนาด Label แกน Y
-    //                 title: { style: { fontSize: '12px' } }, // ลดขนาด Title แกน Y
-    //             }],
-    //             tooltip: {
-    //                 style: { fontSize: '10px' }, // ลดขนาด Tooltip
-    //             },
-    //             legend: {
-    //                 fontSize: '10px', // ลดขนาด Legend
-    //             },
-    //         }
-    //     }],
+    
   };
 
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
