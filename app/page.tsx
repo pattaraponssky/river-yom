@@ -14,7 +14,7 @@ export default function Home() {
         gutterBottom
         sx={{ fontFamily: 'Prompt, sans-serif' }}
       >
-        ยินดีต้อนรับสู่ ระบบเฝ้าระวังสถานการณ์น้ำ
+        ยินดีต้อนรับ
       </Typography>
 
       <Typography
@@ -23,7 +23,7 @@ export default function Home() {
         paragraph
         sx={{ mb: 6, maxWidth: '800px', mx: 'auto', fontFamily: 'Prompt' }}
       >
-        แม่น้ำยมฝั่งขวา - ข้อมูล real-time และประวัติการบริหารจัดการน้ำ
+        ระบบติดตามสถานการณ์น้ำระยะไกลอัตโนมัติ พื้นที่ฝั่งขวาแม่น้ำยม สำหรับงานเพิ่มประสิทธิภาพการบริหารจัดการน้ำฝั่งขวาแม่น้ำยมในเขตอำเภอบางระกำ จังหวัดพิษณุโลก 
       </Typography>
 
       <Box sx={{ display: 'flex', justifyContent: 'center', gap: 3, flexWrap: 'wrap' }}>
@@ -42,7 +42,7 @@ export default function Home() {
             fontFamily: 'Prompt, sans-serif',
           }}
         >
-          เข้าสู่ Dashboard
+          เข้าสู่หน้าหลัก
         </Button>
 
         <Button

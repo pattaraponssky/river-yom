@@ -59,6 +59,11 @@ const publicMenuItems = [
     text: "ผลพยากรณ์",
     path: "/forecast",
   },
+ {
+    icon: <InfoIcon sx={{ marginRight: "15px" }} />,
+    text: "เกี่ยวกับเรา",
+    path: "/aboutus",
+  },
 ];
 
 // เมนูที่ต้องมีสิทธิ์ระดับ 1-2
@@ -81,11 +86,6 @@ const adminMenuItems = [
     icon: <GroupIcon sx={{ marginRight: "15px" }} />,
     text: "ผู้ใช้งาน",
     path: "/users",
-  },
-  {
-    icon: <InfoIcon sx={{ marginRight: "15px" }} />,
-    text: "เกี่ยวกับเรา",
-    path: "/aboutus",
   },
 ];
 
@@ -266,7 +266,6 @@ const DrawerComponent: React.FC<DrawerProps> = ({ open, setOpen }) => {
                 { path: "/rain", icon: <WaterDropIcon />, text: "สถานีวัดน้ำฝน" },
                 { path: "/flow", icon: <PlaceIcon />, text: "สถานีน้ำท่า" },
                 { path: "/gate", icon: <OpacityIcon />, text: "ประตูระบายน้ำ" },
-                { path: "/sealevel", icon: <TsunamiIcon />, text: "สถานีวัดระดับน้ำทะเล" },
               ].map((item) => (
                 <ListItem
                   key={item.path}

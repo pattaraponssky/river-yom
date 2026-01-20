@@ -179,13 +179,9 @@ const FlowExportTable: React.FC<Props> = ({
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center', 
-        mb: 3, 
+        mb: 2, 
         flexWrap: 'wrap', 
         gap: 2,
-        backgroundColor: theme.palette.background.paper,
-        p: 2,
-        borderRadius: 2,
-        boxShadow: 1,
       }}>
         <FormControl size="small" sx={{ minWidth: 150 }}>
           <InputLabel sx={{ fontFamily: "Prompt" }}>เลือกปี</InputLabel>

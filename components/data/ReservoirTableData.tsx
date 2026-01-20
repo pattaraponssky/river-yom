@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useMemo } from 'react';
 import { Box, Button, FormControl, InputLabel, Menu, MenuItem, Select, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
@@ -7,16 +9,11 @@ import TableChartIcon from '@mui/icons-material/TableChart';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-import { textStyle } from '../../theme/style';
+import { textStyle, menuStyle } from '../../theme/style';
 import { getCellStyle, HeaderCellStyle } from '../../theme/style';
 
-const menuStyle = {
-  fontFamily: "Prompt",
-  fontSize: "1rem",
-};
-
 interface GroupedData {
-  [year: string]: [number, number | null][]; // รองรับ null
+  [year: string]: [number, number | null][]; 
 }
 
 interface Props {
@@ -202,13 +199,13 @@ const ReservoirExportTable: React.FC<Props> = ({
                 <TableRow key={`${row.date}-${idx}`}>
                   <TableCell sx={getCellStyle(idx)}>{formatThaiDate(row.date)}</TableCell>
                   <TableCell sx={getCellStyle(idx)}>
-                    {row.volume !== null ? row.volume.toFixed(2) : '-'}
+                    {row.volume !== null ? Number(row.volume).toFixed(2) : '-'}
                   </TableCell>
                   <TableCell sx={getCellStyle(idx)}>
-                    {row.inflow !== null ? row.inflow.toFixed(2) : '-'}
+                    {row.inflow !== null ? Number(row.inflow).toFixed(2) : '-'}
                   </TableCell>
                   <TableCell sx={getCellStyle(idx)}>
-                    {row.outflow !== null ? row.outflow.toFixed(2) : '-'}
+                    {row.outflow !== null ? Number(row.outflow).toFixed(2) : '-'}
                   </TableCell>
                 </TableRow>
               ))
@@ -218,6 +215,6 @@ const ReservoirExportTable: React.FC<Props> = ({
       </Box>
     </Box>
   );
-};
+};22
 
 export default ReservoirExportTable;

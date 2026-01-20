@@ -260,7 +260,8 @@ const DataGateStation: React.FC<DataGateStationProps> = ({propsSelectedStation})
                 objectFit: "cover",
                 borderRadius: "10px",
                 boxShadow: "0px 3px 6px rgba(0, 0, 0, 0.56)"
-              }}
+                }}
+              onError={(e) => (e.currentTarget.src = `${Path_URL}images/default_img.png`)}
             />
           </Box>
         </Grid>
@@ -271,7 +272,7 @@ const DataGateStation: React.FC<DataGateStationProps> = ({propsSelectedStation})
             {/* Dropdown สถานี */}
             <Grid size={{xs:12,md:4.5}}>
               <FormControl fullWidth>
-                <InputLabel sx={{ fontFamily: "Noto Sans Thai" }}>เลือกสถานี</InputLabel>
+                <InputLabel sx={{ fontFamily: "Prompt" }}>เลือกสถานี</InputLabel>
                 <Select value={selectedStation || ""} label="เลือกสถานี" onChange={handleStationSelect} sx={fontInfo}>
                   {stations.map((s: any) => (
                     <MenuItem key={s.sta_code} value={s.sta_code}>
@@ -285,7 +286,7 @@ const DataGateStation: React.FC<DataGateStationProps> = ({propsSelectedStation})
             {/* ปีเริ่มต้น */}
             <Grid size={{xs:12,md:2.5}}>
               <FormControl fullWidth>
-                <InputLabel sx={{ fontFamily: "Noto Sans Thai" }}>ปีเริ่มต้น</InputLabel>
+                <InputLabel sx={{ fontFamily: "Prompt" }}>ปีเริ่มต้น</InputLabel>
                 <Select value={startYear} label="ปีเริ่มต้น" onChange={handleStartYearChange} sx={fontInfo}>
                   {availableYears
                     .filter(y => !endYear || parseInt(y) >= parseInt(endYear) - 5)
@@ -299,7 +300,7 @@ const DataGateStation: React.FC<DataGateStationProps> = ({propsSelectedStation})
             {/* ปีสิ้นสุด */}
             <Grid size={{xs:12,md:2.5}}>
               <FormControl fullWidth>
-                <InputLabel sx={{ fontFamily: "Noto Sans Thai" }}>ปีสิ้นสุด</InputLabel>
+                <InputLabel sx={{ fontFamily: "Prompt" }}>ปีสิ้นสุด</InputLabel>
                 <Select value={endYear} label="ปีสิ้นสุด" onChange={handleEndYearChange} sx={fontInfo}>
                   {availableYears
                     .filter((y) => {
@@ -391,7 +392,7 @@ const DataGateStation: React.FC<DataGateStationProps> = ({propsSelectedStation})
       {/* ข้อความเมื่อยังไม่กดแสดงผล */}
       {!isSubmitted && selectedStation && (
         <Box sx={{ textAlign: "center", mt: 10 }}>
-          <Typography sx={{ fontFamily: "Noto Sans Thai", fontSize: "1.3rem", color: "#555" }}>
+          <Typography sx={{ fontFamily: "Prompt", fontSize: "1.3rem", color: "#555" }}>
             กรุณาเลือกสถานี ช่วงปี และกดปุ่ม <strong style={{ color: "#01579b" }}>"แสดงผล"</strong>
           </Typography>
         </Box>

@@ -17,6 +17,19 @@ export const BoxStyle = {
   padding: {md:"20px", xs:"5px"},
 };
 
+export const fontTitle = {
+  fontFamily: "Prompt",
+  fontSize: {md:"1.2rem", xs:"1rem"},
+  fontWeight: 600,
+};
+
+export const menuStyle = {
+    fontFamily: "Prompt",
+    fontSize: "1rem",
+    backgroundColor: '#fff',
+
+  };
+
 export const fontInfo = {
   fontFamily: "Prompt",
   fontSize:{md: "1.1rem", xs: "0.9rem"},

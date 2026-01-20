@@ -28,21 +28,23 @@ const formattedDate = currentDate.toLocaleDateString('th-TH', {
   month: 'long', 
   day: 'numeric'
 });
-interface GateDataItem {
+interface RainDataItem {
   sta_code: string;
   date: string;
   wl: string | null;
-  discharge: string | null;
+  volume: string | null;
+  rain_mm: string | null;
+  rainSeries: string | null;
 }
 
-const GateMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,height }) => {
+const RainMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,height }) => {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const [JsonDataList, setJsonDataList] = useState<any[]>([]);
   const [isMapReady, setIsMapReady] = useState<boolean>(false);
   const [, setMarkers] = useState<any[]>([]);
-  const [gateData, setGateData] = useState<any[]>([]);
-  const [gateApiData, setGateApiData] = useState<GateDataItem[]>([]);
-  const [latestGateData, setLatestGateData] = useState<GateDataItem[]>([]);
+  const [rainData, setRainData] = useState<any[]>([]);
+  const [rainApiData, setRainApiData] = useState<RainDataItem[]>([]);
+  const [latestRainData, setLatestRainData] = useState<RainDataItem[]>([]);
   const todayStr = new Date().toISOString().slice(0, 10); 
   
   useEffect(() => {
@@ -86,17 +88,17 @@ const GateMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,heig
   }, [isMapReady]);
 
   useEffect(() => {
-    fetch(`${API_URL}/api/gate_data_last_14_days`)
+    fetch(`${API_URL}/api/rain_data_last_14_days`)
       .then(res => res.json())
       .then(result => {
         if (result.status === 'success') {
-          const rawData: GateDataItem[] = result.data;
+          const rawData: RainDataItem[] = result.data;
   
           // เก็บข้อมูลทั้งหมด
-          setGateApiData(rawData);
+          setRainApiData(rawData);
   
           // สร้าง Map เพื่อเก็บเฉพาะรายการล่าสุดต่อ sta_code
-          const latestDataMap = new Map<string, GateDataItem>();
+          const latestDataMap = new Map<string, RainDataItem>();
   
           rawData.forEach(item => {
             const existing = latestDataMap.get(item.sta_code);
@@ -106,7 +108,7 @@ const GateMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,heig
           });
   
           const latestData = Array.from(latestDataMap.values());
-          setLatestGateData(latestData);
+          setLatestRainData(latestData);
         }
       });
   }, []);
@@ -119,7 +121,7 @@ const GateMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,heig
   
         try {
           let apiUrl = "";
-          apiUrl = `${API_URL}/api/gate_info`;
+          apiUrl = `${API_URL}/api/rain_info`;
   
           if (!apiUrl) return;
   
@@ -130,7 +132,7 @@ const GateMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,heig
           console.log(`✅ ดึงข้อมูลจาก ${stationType}:`, result);
   
       
-          setGateData(result.data || []);
+          setRainData(result.data || []);
   
         } catch (error) {
           console.error("❌ เกิดข้อผิดพลาดขณะดึงข้อมูล:", error);
@@ -149,10 +151,10 @@ const GateMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,heig
       map.location({ lat: 14.4, lon: 99.9 }, true);
       map.zoom(9, true);
       console.log("🌍 แผนที่พร้อมแล้ว กำลังเพิ่ม markers...");    
-      console.log("🏞️ gateData:", gateData);
+      console.log("🏞️ rainData:", rainData);
       const addMarkers = async () => {
         try {
-          if (gateData.length > 0) await addMarkersFromGateData();
+          if (rainData.length > 0) await addMarkersFromRainData();
       
           await addTopoJsonMarkers();
           await addGeoJsonPolygons();
@@ -169,7 +171,7 @@ const GateMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,heig
         console.log(`Latitude: ${mouseLocation.lat}, Longitude: ${mouseLocation.lon}`);
       });
     }
-  }, [isMapReady, gateData]); // รอให้ข้อมูลทั้งหมดพร้อมก่อน
+  }, [isMapReady, rainData]); // รอให้ข้อมูลทั้งหมดพร้อมก่อน
   
   
 
@@ -208,68 +210,63 @@ const GateMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,heig
       language: "th",
     });
   };
-const prepareChartDataForGate = (rawData: any[], targetStaCode: string) => {
-      const filtered = rawData
-        .filter(d => d.sta_code === targetStaCode)
-        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-      
-  
-      const dischargeSeries = filtered.map(d => ({
-        x: new Date(d.date).getTime(),
-        y: parseFloat(d.discharge),
-      }));
-  
-      const wlUpperSeries = filtered.map(d => ({
-        x: new Date(d.date).getTime(),
-        y: parseFloat(d.wl_upper),
-      }));
 
-      const wlLowerSeries = filtered.map(d => ({
-        x: new Date(d.date).getTime(),
-        y: parseFloat(d.wl_lower),
-      }));
-    
-      return { dischargeSeries, wlLowerSeries, wlUpperSeries};
-    };
+  // ฟังก์ชันเตรียมข้อมูลสำหรับกราฟ
+  const prepareChartDataForRain = (rawData: any[], targetStaCode: string) => {
+    const filtered = rawData
+      .filter(d => d.sta_code === targetStaCode)
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    const rain_mmSeries = filtered.map(d => ({
+      x: new Date(d.date).getTime(),
+      y: parseFloat(d.rain_mm),
+    }));
+
+    let cumulative = 0;
+
+    const rainSeries = filtered.map(d => {
+        const rain = parseFloat(d.rain_mm);
+        cumulative += isNaN(rain) ? 0 : rain;
+        return {
+          x: new Date(d.date).getTime(), // สำหรับแสดงบนกราฟ
+          y: parseFloat(cumulative.toFixed(2)),
+        };
+      });
+
+    return { rain_mmSeries, rainSeries};
+  };
 
 
 
   const chartsInstances: Record<string, Record<string, ApexCharts>> = {};
 
-  const renderChartPart = (sta_code: string, type: 'discharge' | 'wl_upper' | 'wl_lower') => {
-    const safeStaCode = sta_code.replace(/\./g, '_');
-    const chartId = `chart-${type}-${safeStaCode}`;
-    const element = document.getElementById(chartId) as HTMLElement;
+  const renderChartPart = (sta_code: string, type: 'rain_mm' | 'rain_series') => {
+    const chartId = `chart-${type}-${sta_code}`;
+    const element = document.querySelector(`#${chartId}`) as HTMLElement;
     if (!element) {
       console.warn(`ไม่พบ element ${chartId}`);
       return;
     }
   
     // เตรียมข้อมูล
-    const raw = gateApiData.filter((d: any) => d.sta_code === sta_code);
-    const chartData = prepareChartDataForGate(raw, sta_code);
+    const raw = rainApiData.filter((d: any) => d.sta_code === sta_code);
+    const chartData = prepareChartDataForRain(raw, sta_code);
     let seriesData = [];
     let title = '';
     let color = '';
     let types = ''; // กำหนดค่าเริ่มต้นเป็น 'line'
     switch (type) {
-        case 'discharge':
-            seriesData = chartData.dischargeSeries;
-            title = 'อัตราการไหล (ลบ.ม./วินาที)';
+        case 'rain_mm':
+            seriesData = chartData.rain_mmSeries;
+            title = 'ปริมาณน้ำฝน (มม.)';
             color = '#1e88e5';
-            types = 'line';
+            types = 'bar';
           break;
-        case 'wl_upper':
-            seriesData = chartData.wlUpperSeries;
-            title = 'ระดับน้ำเหนือ (ม.รทก.)';
+        case 'rain_series':
+            seriesData = chartData.rainSeries;
+            title = 'ปริมาณน้ำฝนสะสม (มม.)';
             color = '#e53935';
-            types = 'line';
-          break;
-        case 'wl_lower':
-            seriesData = chartData.wlLowerSeries;
-            title = 'ระดับน้ำท้าย (ม.รทก.)';
-            color = '#e53935';
-            types = 'line';
+            types = 'line'; 
           break;
       }
 
@@ -282,8 +279,8 @@ const prepareChartDataForGate = (rawData: any[], targetStaCode: string) => {
     chartsInstances[sta_code] = {}; // ✅ เคลียร์ object
   
     // ✅ ซ่อนทุก div
-    ['discharge', 'wl_upper', 'wl_lower'].forEach(t => {
-      const el = document.querySelector(`[id="chart-${t}-${sta_code}"]`) as HTMLElement;
+    ['rain_mm', 'rainSeries'].forEach(t => {
+      const el = document.querySelector(`#chart-${t}-${sta_code}`) as HTMLElement;
       if (el) el.style.display = 'none';
     });
   
@@ -299,7 +296,7 @@ const prepareChartDataForGate = (rawData: any[], targetStaCode: string) => {
       colors: [color],
       dataLabels: {
         enabled: true,
-        offsetY: -10,
+        offsetY: -20,
         style: {
           fontSize: '12px',
           colors: ["#304758"]
@@ -338,7 +335,7 @@ const prepareChartDataForGate = (rawData: any[], targetStaCode: string) => {
   
   useEffect(() => {
     (window as any).renderChartPart = renderChartPart;
-  }, [gateApiData]);
+  }, [rainApiData]);
   
 
   const addGeoJsonPolygons = () => {
@@ -502,91 +499,75 @@ const prepareChartDataForGate = (rawData: any[], targetStaCode: string) => {
   };
 
   const latestDataMap =
-  Array.isArray(latestGateData) && latestGateData.length > 0
-    ? new Map(latestGateData.map((d) => [d.sta_code, d]))
-    : new Map();
+            Array.isArray(latestRainData) && latestRainData.length > 0
+              ? new Map(latestRainData.map((d) => [d.sta_code, d]))
+              : new Map();
 
-
-  const addMarkersFromGateData = () => {
+  const addMarkersFromRainData = () => {
     if (!map) return;
 
     let newMarkers: any[] = [];
 
-    gateData.forEach((data) => {
-      const { lat, long, sta_name,  district, province, sta_code } = data;
+    rainData.forEach((data) => {
+      const { lat, long, name, district, province, sta_code } = data;
       const position = { lat: parseFloat(lat), lon: parseFloat(long) };
       const latest = latestDataMap.get(sta_code);
-  
+
       const latestDateStr = latest?.date ? new Date(latest.date).toISOString().slice(0, 10) : null;
       const isToday = latestDateStr === todayStr;
-  
-      const discharge = isToday && latest?.discharge != null && parseFloat(latest.discharge) !== 0
-        ? parseFloat(latest.discharge).toFixed(2)
-        : "-";
-  
-      const wl_upper = isToday && latest?.wl_upper != null && parseFloat(latest.wl_upper) !== 0
-        ? parseFloat(latest.wl_upper).toFixed(2)
-        : "-";
 
-      const wl_lower = isToday && latest?.wl_lower != null && parseFloat(latest.wl_lower) !== 0
-        ? parseFloat(latest.wl_lower).toFixed(2)
-        : "-";
-
+      // const rain_mm = latest?.rain_mm != null ? parseFloat(latest.rain_mm).toFixed(2) : "-";
+      const rain_mm = isToday && latest?.rain_mm != null && parseFloat(latest.rain_mm) !== 0
+      ? parseFloat(latest.rain_mm).toFixed(2)
+      : "-";
       if (position.lat && position.lon) {
         const marker = new longdo.Marker(position, {
-          title: `<img src="${Path_URL}images/icons/gate_icon.png" style="width:25px; height:25px; vertical-align:middle; margin-right:5px" /> 
-            <span style="font-size:1.1rem; font-weight:bold; vertical-align:middle;">${sta_name} อ.${district} จ.${province}</span>`,
+          title: `<img src="${Path_URL}images/icons/rain_station_icon.png" style="width:25px; height:25px; vertical-align:middle; margin-right:5px" /> 
+            <span style="font-size:1.1rem; font-weight:bold; vertical-align:middle;">${name} อ.${district} จ.${province}</span>`,
           detail: `
             <div style="font-size: 1rem;">
-                <b>ข้อมูลประจำวันที่ ${formatThaiDay(todayStr)}</b>
+                <b>
+                ข้อมูลประจำวันที่
+                  ${formatThaiDay(todayStr)}
+                <b>
             </div>
-            <div style="font-size: 0.9rem; line-height: 1.4rem;">
+                <div style="font-size: 0.9rem; line-height: 1.4rem;">
               <div><b>รหัสสถานี:</b> <span style="color: #4caf50; font-weight: bold;"> ${sta_code || "-"}</span></div>
-            </div>
+           </div>
               <div style="font-size: 0.9rem; line-height: 1.4rem;">
-              <div><b>📉 อัตราการไหล:</b> <span style="color: #1e88e5; font-weight: bold;">${discharge || "-"} ลบ.ม./วินาที</span></div>
-            </div>
-            <div style="font-size: 0.9rem; line-height: 1.4rem;">
-                <div><b>📈 ระดับน้ำเหนือ:</b> <span style="color: #e53935; font-weight: bold;">${wl_upper || "-"} ม.รทก. </span></div>
-            </div>
-              <div style="font-size: 0.9rem; line-height: 1.4rem;">
-                <div><b>📈 ระดับน้ำท้าย:</b> <span style="color: #e53935; font-weight: bold;">${wl_lower || "-"} ม.รทก. </span></div>
-            </div>
-
+              <div><b>📉 ปริมาณน้ำฝน:</b> <span style="color: #1e88e5; font-weight: bold;">${rain_mm || "-"} มม.</span></div>
+           </div>
               <button 
-                onclick="window.renderChartPart('${sta_code}', 'discharge')" 
+                onclick="window.renderChartPart('${sta_code}', 'rain_mm')" 
                 style="background-color: #1e88e5; color: white; padding: 4px 10px; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s;">
-                📉 อัตราการไหล
+                📈 ปริมาณน้ำฝน
               </button>
 
               <button 
-                onclick="window.renderChartPart('${sta_code}', 'wl_upper')" 
+                onclick="window.renderChartPart('${sta_code}', 'rain_series')" 
                 style="background-color: #e53935; color: white; padding: 4px 10px; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s;">
-                📈 ระดับน้ำเหนือ
+                📉 ปริมาณน้ำฝนสะสม
               </button>
 
-              <button 
-                onclick="window.renderChartPart('${sta_code}', 'wl_lower')" 
-                style="background-color: #e53935; color: white; padding: 4px 10px; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s;">
-                📈 ระดับน้ำท้าย
-              </button>
-
-              <a href="/gate?tab=0&station=${sta_code}" 
+              <a href="/rain?tab=0&station=${sta_code}" 
                 style="padding: 4px 10px;  background-color: #1976d2; color: white; border-radius: 6px; text-decoration: none; font-size: 0.9rem; display: inline-block; margin-top: 8px; cursor: pointer; transition: background-color 0.2s;">
                  ข้อมูลเพิ่มเติม
               </a>
-         
+            </div>
+            <!-- Container ของกราฟ -->
             <br>
-            <div id="chart-discharge-${sta_code.replace(/\./g, '_')}" style="display:none;"></div>
-            <div id="chart-wl_upper_${sta_code.replace(/\./g, '_')}" style="display:none;"></div>
-            <div id="chart-wl_lower_${sta_code.replace(/\./g, '_')}" style="display:none;"></div>
+            <div id="chart-rain_mm-${sta_code}" style="display:none;"></div>
+            <div id="chart-rain_series-${sta_code}" style="display:none;"></div>
           `,
-          icon: { html: `<div style="text-align:center;">
-                <img src="${Path_URL}images/icons/gate_icon.png" style="width:24px; height:24px;" />
-                <div style="background-color: rgba(255, 255, 255, 0.4); padding:2px; border-radius:5px; font-size: 12px; margin-top: 2px;width:30px;">
-                ${sta_code}</div></div>`
-                },
-          size: { width: 550, height: 'auto' },
+          icon: {
+            html: `<div style="text-align:center;">
+              <img src="${Path_URL}images/icons/${parseFloat(data.rain_mm) > 0 ? 'rain_station_icon.png' : 'sun_station_icon.png'}" style="width:24px; height:24px;" />
+              <div style="background-color: rgba(255, 255, 255, 0.4); padding:2px; border-radius:5px; font-size: 12px; margin-top: 2px;width:80px;">
+                ${data.sta_code}
+              </div>
+            </div>`
+          },
+          size: { width: 450, height: 'auto' },
         });
         
         map.Overlays.add(marker);
@@ -595,10 +576,10 @@ const prepareChartDataForGate = (rawData: any[], targetStaCode: string) => {
     });
 
     setMarkers(newMarkers);
-    console.log("✅ เพิ่ม markers จาก Gate data");
+    console.log("✅ เพิ่ม markers จาก Rain data");
   };
 
-  const handleListItemClick = (item: any, type: "gate") => {
+  const handleListItemClick = (item: any,type: "rain" ) => {
     console.log("Markers: ", item); // ตรวจสอบข้อมูลที่ส่งเข้ามา
   
     const { lat, long } = item;
@@ -609,55 +590,43 @@ const prepareChartDataForGate = (rawData: any[], targetStaCode: string) => {
     let detail = "";
     let icon = "";
   
-      title = `<img src="${Path_URL}images/icons/gate_icon.png" style="width:25px; height:25px; vertical-align:middle; margin-right:5px" />
-        <span style="font-size:1.1rem; font-weight:bold; vertical-align:middle;">${item.sta_name} อ.${item.district} จ.${item.province}</span>`;
+      title = `<img src="${Path_URL}images/icons/rain_station_icon.png" style="width:25px; height:25px; vertical-align:middle; margin-right:5px" />
+        <span style="font-size:1.1rem; font-weight:bold; vertical-align:middle;">${item.name} อ.${item.district} จ.${item.province}</span>`;
+  
       detail = `
-           <div style="font-size: 1rem;">
-                         <b>ข้อมูลประจำวันที่ ${formatThaiDay(todayStr)}</b>
-          </div>
-            <div style="font-size: 0.9rem; line-height: 1.4rem;">
+            <div style="font-size: 1rem;">
+                <b>ข้อมูลประจำวันที่ ${formatThaiDay(todayStr)}</b>
+            </div>
+                <div style="font-size: 0.9rem; line-height: 1.4rem;">
               <div><b>รหัสสถานี:</b> <span style="color: #4caf50; font-weight: bold;"> ${item.sta_code || "-"}</span></div>
-            </div>
+           </div>
               <div style="font-size: 0.9rem; line-height: 1.4rem;">
-              <div><b>📉 อัตราการไหล:</b> <span style="color: #1e88e5; font-weight: bold;">${item.discharge || "-"} ลบ.ม./วินาที </span></div>
-            </div>
-              <div style="font-size: 0.9rem; line-height: 1.4rem;">
-                <div><b>📈 ระดับน้ำเหนือ:</b> <span style="color: #e53935; font-weight: bold;">${item.wl_upper || "-"} ม.รทก.</span></div>
-            </div>
-              <div style="font-size: 0.9rem; line-height: 1.4rem;">
-                <div><b>📈 ระดับน้ำท้าย:</b> <span style="color: #e53935; font-weight: bold;">${item.wl_lower || "-"} ม.รทก.</span></div>
-            </div>
-            
+              <div><b>📉 ปริมาณน้ำฝน:</b> <span style="color: #1e88e5; font-weight: bold;">${item.rain_mm || "-"} มม.</span></div>
+           </div>
+            <div style="margin-top: 10px; gap: 5px;">
               <button 
-                onclick="window.renderChartPart('${item.sta_code}', 'discharge')" 
+                onclick="window.renderChartPart('${item.sta_code}', 'rain_mm')" 
                 style="background-color: #1e88e5; color: white; padding: 4px 10px; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s;">
-                📉 อัตราการไหล
+                📉 ปริมาณน้ำฝน
               </button>
 
               <button 
-                onclick="window.renderChartPart('${item.sta_code}', 'wl_upper')" 
+                onclick="window.renderChartPart('${item.sta_code}', 'rain_series')" 
                 style="background-color: #e53935; color: white; padding: 4px 10px; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s;">
-                📈 ระดับน้ำเหนือ
+                📈 ปริมาณน้ำฝนสะสม
               </button>
 
-              <button 
-                onclick="window.renderChartPart('${item.sta_code}', 'wl_lower')" 
-                style="background-color: #e53935; color: white; padding: 4px 10px; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s;">
-                📈 ระดับน้ำท้าย
-              </button>
-
-              <a href="/gate?tab=0&station=${item.sta_code}" 
+              <a href="/rain?tab=0&station=${item.sta_code}" 
                 style="padding: 4px 10px;  background-color: #1976d2; color: white; border-radius: 6px; text-decoration: none; font-size: 0.9rem; display: inline-block; margin-top: 8px; cursor: pointer; transition: background-color 0.2s;">
                  ข้อมูลเพิ่มเติม
               </a>
-            
+            </div>
             <!-- Container ของกราฟ -->
             <br>
-            <div id="chart-discharge-${item.sta_code.replace(/\./g, '_')}" style="display:none;"></div>
-            <div id="chart-wl_upper-${item.sta_code.replace(/\./g, '_')}" style="display:none;"></div>
-            <div id="chart-wl_lower-${item.sta_code.replace(/\./g, '_')}" style="display:none;"></div>
+            <div id="chart-rain_mm-${item.sta_code}" style="display:none;"></div>
+            <div id="chart-rain_series-${item.sta_code}" style="display:none;"></div>
       `;
-      icon = `${Path_URL}images/icons/gate_icon.png`;
+      icon = `${Path_URL}images/icons/${parseFloat(item.rain_mm) > 0 ? 'rain_station_icon.png' : 'sun_station_icon.png'}`;
       
     const marker = new longdo.Popup(position, {
       title,
@@ -665,10 +634,10 @@ const prepareChartDataForGate = (rawData: any[], targetStaCode: string) => {
       icon: {
         html: `<div style="text-align:center;">
           <img src="${icon}" style="width:24px; height:24px;" />
-          <div style="background-color: rgba(255, 255, 255, 0.4); padding:2px; border-radius:5px; font-size: 12px; margin-top: 2px;width:30px;">
-          ${type === "gate" ? `${item.sta_code}` : item.sta_name}</div></div>`
+          <div style="background-color: rgba(255, 255, 255, 0.4); padding:2px; border-radius:5px; font-size: 12px; margin-top: 2px;width:80px;">
+          ${type === "rain" ? `${item.sta_code}` : item.name}</div></div>`
       },
-      size: { width: 550, height: 'auto' },
+      size: { width: 450, height: 'auto' },
       
     });
 
@@ -685,13 +654,13 @@ const prepareChartDataForGate = (rawData: any[], targetStaCode: string) => {
 
   return (
     <Grid container spacing={2}>
-      <Grid size={{ xs: 12, sm: 12, md: 8 }}>
+      <Grid size={{xs:12, sm:12, md:8}}>
         <Box 
           ref={mapContainerRef}
           style={{ width: "100%", height: height || "600px" }}>
         </Box>
       </Grid>
-      <Grid size={{ xs: 12, sm: 12, md: 4 }}>
+      <Grid size={{xs:12, sm:12, md:4}}>
       <Typography variant="h6" sx={{...FontStyle,marginBottom: "1rem", 
         textAlign:"center",
         fontWeight: 600,
@@ -702,24 +671,15 @@ const prepareChartDataForGate = (rawData: any[], targetStaCode: string) => {
       {formattedDate}
       </Typography>
       <List sx={{ maxHeight: "70vh", overflowY: "auto" }}>
-        {stationType === "gate" && gateData.length > 0 ? (
+        {stationType === "rain" && rainData.length > 0 ? (
           (() => {
-         
-            return gateData.map((item, index) => {
+      
+            return rainData.map((item, index) => {
               const latest = latestDataMap.get(item.sta_code);
-              const discharge = latest?.discharge != null && parseFloat(latest.discharge) !== 0
-              ? parseFloat(latest.discharge).toFixed(2)
-              : "-";
-              const wl_upper = latest?.wl_upper != null && parseFloat(latest.wl_upper) !== 0
-              ? parseFloat(latest.wl_upper).toFixed(2)
-              : "-";
-              const wl_lower = latest?.wl_lower != null && parseFloat(latest.wl_lower) !== 0
-              ? parseFloat(latest.wl_lower).toFixed(2)
-              : "-";
-
+              const rain_mm = latest?.rain_mm != null ? parseFloat(latest.rain_mm).toFixed(2) : "-";
     
               return (
-                <ListItem
+                 <ListItem
                   key={item.sta_code}
                   sx={{
                     padding: "2px",
@@ -728,17 +688,19 @@ const prepareChartDataForGate = (rawData: any[], targetStaCode: string) => {
                     backgroundColor: index % 2 === 0 ? "rgb(250, 250, 250)" : "rgb(240, 240, 240)",
                     "&:hover": { backgroundColor: "#e0e0e0", cursor: "pointer" },
                   }}
-                  onClick={() => handleListItemClick({...item,discharge,wl_upper,wl_lower}, "gate")}
-                >
+                  onClick={() => handleListItemClick({...item,rain_mm}, "rain")}
+                > 
                   <ListItemAvatar sx={{ marginInline: "10px" }}>
-                    <Avatar src={`${Path_URL}images/icons/gate_icon.png`} />
+                    <Avatar src={`${Path_URL}images/icons/${parseFloat(rain_mm) > 0 ? 'rain_station_icon.png' : 'sun_station_icon.png'}`} />
                   </ListItemAvatar>
                   <ListItemText
                     secondary={
                       <>
                         <Typography sx={{ ...FontStyle, fontWeight: "bold", color: "#333" }}>
-                          {`สถานีวัดน้ำท่า${item.sta_name}`}
+                          {`สถานี${item.name}`}
                         </Typography>
+                  
+
                         <Typography variant="body2" sx={{ ...FontStyle, color: "text.primary" }}>
                           <span style={{ color: "rgb(46, 58, 108)", fontWeight: "bold", fontSize: "0.9rem" }}>
                           ตำบล{item.tambon} อำเภอ{item.district} จังหวัด{item.province}
@@ -749,28 +711,22 @@ const prepareChartDataForGate = (rawData: any[], targetStaCode: string) => {
                           <span style={{ color: "#4caf50", fontWeight: "bold", fontSize: "0.9rem" }}>
                           {item.sta_code}
                           </span>{" "} 
-                        </Typography>                     
+                        </Typography>
+
+                        <Typography variant="body2" sx={{ ...FontStyle, color: "text.primary" }}>
+                          <b>หน่วยงาน:</b>{" "}
+                          <span style={{ color: "#e53935", fontWeight: "bold", fontSize: "0.9rem" }}>
+                          {item.owner}
+                          </span>{" "}
+                        </Typography>
+       
        
                         <Typography variant="body2" sx={{ ...FontStyle, color: "text.primary" }}>
-                          <b>อัตราการไหล:</b>{" "}
+                          <b>ปริมาณน้ำฝน:</b>{" "}
                           <span style={{ color: "#64b5f6", fontWeight: "bold", fontSize: "0.9rem" }}>
-                            {discharge}
+                            {rain_mm}
                           </span>{" "}
-                          ลบ.ม./วินาที
-                        </Typography>
-                        <Typography variant="body2" sx={{ ...FontStyle, color: "text.primary" }}>
-                        <b>ระดับน้ำเหนือ:</b>{" "}
-                          <span style={{ color: "#e53935", fontWeight: "bold", fontSize: "0.9rem" }}>
-                            {wl_upper}
-                          </span>{" "}
-                          ม.รทก.
-                        </Typography>
-                         <Typography variant="body2" sx={{ ...FontStyle, color: "text.primary" }}>
-                        <b>ระดับน้ำท้าย:</b>{" "}
-                          <span style={{ color: "#e53935", fontWeight: "bold", fontSize: "0.9rem" }}>
-                            {wl_lower}
-                          </span>{" "}
-                          ม.รทก.
+                          มม.
                         </Typography>
                       </>
                     }
@@ -790,5 +746,5 @@ const prepareChartDataForGate = (rawData: any[], targetStaCode: string) => {
   );
 };
 
-export default GateMap;
+export default RainMap;
 

@@ -7,6 +7,7 @@ import { ArrowDropDownIcon } from '@mui/x-date-pickers';
 import DownloadIcon from '@mui/icons-material/Download';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import TextSnippetIcon from '@mui/icons-material/TextSnippet';
+import { menuStyle } from '../../theme/style';
 
 interface DataChartProps {
   data: any;
@@ -15,12 +16,6 @@ interface DataChartProps {
   resCode?: string;
 }
 
-const menuStyle = {
-    fontFamily: "Prompt",
-    fontSize: "1rem",
-    backgroundColor: '#fff',
-
-  };
 const BASE_YEAR = 2000;
 
 const reservoirAnnotations: Record<string, ApexAnnotations> = {

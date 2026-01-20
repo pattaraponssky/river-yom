@@ -111,9 +111,10 @@ const Header: React.FC<HeaderProps> = ({ title, open, setOpen }) => {
                     color: textColor,
                     fontFamily: 'Prompt, sans-serif',
                     fontSize: { md: '1.4rem', sm: '1.25rem' },
+                    whiteSpace: {md:'nowrap', xs:'normal'},
                   }}
                 >
-                  {title || 'ระบบเฝ้าระวังน้ำ'}
+                  {title || "ระบบติดตามสถานการณ์น้ำระยะไกลอัตโนมัติ พื้นที่ฝั่งขวาแม่น้ำยม" }
                 </Typography>
               )}
             </Box>
@@ -146,6 +147,7 @@ const Header: React.FC<HeaderProps> = ({ title, open, setOpen }) => {
                     sx={{
                       width: 40,
                       height: 40,
+                      p: 0.7,
                       bgcolor: isDark ? theme.palette.primary.main : '#ffffff',
                       color: isDark ? '#ffffff' : theme.palette.primary.main,
                     }}

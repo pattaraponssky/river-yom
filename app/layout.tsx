@@ -33,7 +33,7 @@ export default function RootLayout({
             <CssBaseline />
             {/* Header + Drawer ห่อทุกหน้า */}
             <AppHeader 
-              title="ระบบเฝ้าระวังน้ำ" // หรือส่ง title ตาม route ได้
+              title="ระบบติดตามสถานการณ์น้ำระยะไกลอัตโนมัติ พื้นที่ฝั่งขวาแม่น้ำยม" // หรือส่ง title ตาม route ได้
               open={drawerOpen}
               setOpen={setDrawerOpen}
               />
