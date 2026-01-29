@@ -326,7 +326,7 @@ const FlowExportTable: React.FC<Props> = ({
                   }}
                 >
                   <TableCell sx={{ 
-                    ...getCellStyle(idx), 
+                    ...getCellStyle(idx, theme), 
                     color: theme.palette.text.primary,
                     borderColor: theme.palette.divider,
                   }}>
@@ -334,7 +334,7 @@ const FlowExportTable: React.FC<Props> = ({
                   </TableCell>
                   {hasDischarge && (
                     <TableCell sx={{ 
-                      ...getCellStyle(idx), 
+                      ...getCellStyle(idx, theme), 
                       color: theme.palette.text.primary,
                       borderColor: theme.palette.divider,
                     }}>
@@ -343,7 +343,7 @@ const FlowExportTable: React.FC<Props> = ({
                   )}
                   {hasWL && (
                     <TableCell sx={{ 
-                      ...getCellStyle(idx), 
+                      ...getCellStyle(idx, theme), 
                       color: theme.palette.text.primary,
                       borderColor: theme.palette.divider,
                     }}>

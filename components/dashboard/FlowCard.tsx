@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { API_URL, Path_URL } from '../../lib/utility';
-import { textStyle } from '../../theme/style';
+import { textStyle, titleStyle } from '../../theme/style';
 import { useTheme } from '@mui/material';
 import {
   Avatar,
@@ -69,10 +69,6 @@ const FlowCard: React.FC = () => {
     });
   };
 
-  const titleStyle = {
-    fontFamily: "Prompt",
-    fontSize: { md: "1.2rem", xs: "1rem" },
-  };
 
   return (
     <Box sx={{ mx: "auto", mb: 2 }}>

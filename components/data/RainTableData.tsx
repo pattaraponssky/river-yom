@@ -12,6 +12,7 @@ import {
   TableCell,
   TableHead,
   TableRow,
+  useTheme,
 } from '@mui/material';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import DownloadIcon from '@mui/icons-material/Download';
@@ -36,7 +37,7 @@ const RainExportTable: React.FC<Props> = ({
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedYear, setSelectedYear] = useState("ทั้งหมด");
-
+  const theme = useTheme();
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
@@ -178,26 +179,26 @@ const RainExportTable: React.FC<Props> = ({
         <Table size="small" stickyHeader>
           <TableHead>
             <TableRow>
-              <TableCell sx={HeaderCellStyle}>วันที่</TableCell>
-              <TableCell sx={HeaderCellStyle}>ปริมาณน้ำฝน (มม.)</TableCell>
-              <TableCell sx={HeaderCellStyle}>ปริมาณน้ำฝนสะสม (มม.)</TableCell>
+              <TableCell sx={HeaderCellStyle(theme)}>วันที่</TableCell>
+              <TableCell sx={HeaderCellStyle(theme)}>ปริมาณน้ำฝน (มม.)</TableCell>
+              <TableCell sx={HeaderCellStyle(theme)}>ปริมาณน้ำฝนสะสม (มม.)</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {allDataRows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={3} sx={{ py: 4, ...getCellStyle(0) }}>
+                <TableCell colSpan={3} sx={{ py: 4, ...getCellStyle(0, theme) }}>
                   ไม่มีข้อมูลสำหรับปีที่เลือก
                 </TableCell>
               </TableRow>
             ) : (
               allDataRows.map((row, idx) => (
                 <TableRow key={row.timestamp}>
-                  <TableCell sx={getCellStyle(idx)}>{formatThaiDate(row.timestamp)}</TableCell>
-                  <TableCell sx={getCellStyle(idx)}>
+                  <TableCell sx={getCellStyle(idx, theme)}>{formatThaiDate(row.timestamp)}</TableCell>
+                  <TableCell sx={getCellStyle(idx, theme)}>
                     {row.rain_mm !== null ? row.rain_mm.toFixed(2) : '-'}
                   </TableCell>
-                  <TableCell sx={getCellStyle(idx)}>
+                  <TableCell sx={getCellStyle(idx, theme)}>
                     {row.rain_cumulative !== null ? row.rain_cumulative.toFixed(2) : '-'}
                   </TableCell>
                 </TableRow>

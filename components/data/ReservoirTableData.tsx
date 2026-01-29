@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Box, Button, FormControl, InputLabel, Menu, MenuItem, Select, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
+import { Box, Button, FormControl, InputLabel, Menu, MenuItem, Select, Table, TableBody, TableCell, TableHead, TableRow, useTheme } from '@mui/material';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import DownloadIcon from '@mui/icons-material/Download';
 import TextSnippetIcon from '@mui/icons-material/TextSnippet';
@@ -31,6 +31,7 @@ const ReservoirExportTable: React.FC<Props> = ({
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedYear, setSelectedYear] = useState("ทั้งหมด");
+  const theme = useTheme();
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -181,10 +182,10 @@ const ReservoirExportTable: React.FC<Props> = ({
         <Table size="small" stickyHeader>
           <TableHead>
             <TableRow>
-              <TableCell sx={HeaderCellStyle}>วันที่</TableCell>
-              <TableCell sx={HeaderCellStyle}>ปริมาณน้ำ (ล้าน ลบ.ม.)</TableCell>
-              <TableCell sx={HeaderCellStyle}>น้ำไหลเข้า (ล้าน ลบ.ม.)</TableCell>
-              <TableCell sx={HeaderCellStyle}>น้ำระบายออก (ล้าน ลบ.ม.)</TableCell>
+              <TableCell sx={HeaderCellStyle(theme)}>วันที่</TableCell>
+              <TableCell sx={HeaderCellStyle(theme)}>ปริมาณน้ำ (ล้าน ลบ.ม.)</TableCell>
+              <TableCell sx={HeaderCellStyle(theme)}>น้ำไหลเข้า (ล้าน ลบ.ม.)</TableCell>
+              <TableCell sx={HeaderCellStyle(theme)}>น้ำระบายออก (ล้าน ลบ.ม.)</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -197,14 +198,14 @@ const ReservoirExportTable: React.FC<Props> = ({
             ) : (
               allDataRows.map((row, idx) => (
                 <TableRow key={`${row.date}-${idx}`}>
-                  <TableCell sx={getCellStyle(idx)}>{formatThaiDate(row.date)}</TableCell>
-                  <TableCell sx={getCellStyle(idx)}>
+                  <TableCell sx={getCellStyle(idx, theme)}>{formatThaiDate(row.date)}</TableCell>
+                  <TableCell sx={getCellStyle(idx, theme)}>
                     {row.volume !== null ? Number(row.volume).toFixed(2) : '-'}
                   </TableCell>
-                  <TableCell sx={getCellStyle(idx)}>
+                  <TableCell sx={getCellStyle(idx, theme)}>
                     {row.inflow !== null ? Number(row.inflow).toFixed(2) : '-'}
                   </TableCell>
-                  <TableCell sx={getCellStyle(idx)}>
+                  <TableCell sx={getCellStyle(idx, theme)}>
                     {row.outflow !== null ? Number(row.outflow).toFixed(2) : '-'}
                   </TableCell>
                 </TableRow>
@@ -215,6 +216,6 @@ const ReservoirExportTable: React.FC<Props> = ({
       </Box>
     </Box>
   );
-};22
+};
 
 export default ReservoirExportTable;

@@ -9,13 +9,17 @@ export const titleStyle = {
   textAlign:{ md:"start",xs:"center"}
 };
 
-export const BoxStyle = {
+export const BoxStyle = (theme: any) => ({
   margin: "auto",
   borderRadius: "10px",
   boxShadow: 3,
-  marginBottom: {md:"20px", xs:"10px"},
-  padding: {md:"20px", xs:"5px"},
-};
+  marginBottom: { md: "20px", xs: "10px" },
+  padding: { md: "20px", xs: "5px" },
+  backgroundColor:
+    theme.palette.mode === "dark"
+      ? theme.palette.background.paper
+      : "#fff",
+});
 
 export const fontTitle = {
   fontFamily: "Prompt",
@@ -35,24 +39,44 @@ export const fontInfo = {
   fontSize:{md: "1.1rem", xs: "0.9rem"},
 };
 
-
-export const HeaderCellStyle = {
-  position: "sticky",
-  // top: { xs: 115, md: 60 },
-  border: "1px solid #ddd",
-  fontFamily: "Prompt",
+export const HeaderCellStyle = (theme: any) => ({
+  whiteSpace: "nowrap",
+  border: `1px solid ${theme.palette.divider}`,
   fontWeight: "bold",
   textAlign: "center",
-  backgroundColor: "rgb(1, 87, 155)",
-  color: "white",
-  fontSize: { xs: "0.8rem", sm: "0.8rem", md: "1rem" },
-};
+  backgroundColor: theme.palette.mode === 'dark' ? '#1a237e' : 'rgb(1, 87, 155)',
+  color: theme.palette.mode === 'dark' ? '#e0e7ff' : 'white',
+  fontSize: { xs: "0.8rem", sm: "1rem", md: "1.1rem" },
+  fontFamily: "Prompt",
+  padding: "8px",
+});
 
-export const getCellStyle = (index: number) => ({
-  border: "1px solid #ddd",
+export const getCellStyle = (index: number) => (theme: any) => ({
+  whiteSpace: "nowrap",
+  border: `1px solid ${theme.palette.divider}`,
   padding: "5px",
-  backgroundColor: index % 2 === 0 ? "#FAFAFA" : "#FFF",
+  backgroundColor: index % 2 === 0
+    ? (theme.palette.mode === 'dark' ? '#1e293b' : '#FAFAFA')
+    : (theme.palette.mode === 'dark' ? '#111827' : '#FFF'),
   textAlign: "center",
   fontFamily: "Prompt",
-  fontSize: { xs: "0.7rem", sm: "0.8rem", md: "1rem" },
+  fontSize: { xs: "0.8rem", sm: "0.9rem", md: "1rem" },
+  color: theme.palette.text.primary,
 });
+
+export const getCellDiffStyle = (index: number,fontColor:any) => (theme: any) => ({
+
+    border: `1px solid ${theme.palette.divider}`,
+    backgroundColor: index % 2 === 0
+        ? (theme.palette.mode === 'dark' ? '#1e293b' : '#FAFAFA')
+        : (theme.palette.mode === 'dark' ? '#111827' : '#FFF'),
+    color: fontColor || "black",
+    textAlign: "center",
+    fontFamily: "Noto Sans Thai",
+    wordWrap: "break-word",
+    whiteSpace: "normal",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    fontSize: { xs: "0.8rem", sm: "0.9rem", md: "1rem" },
+    padding: "5px",
+  });

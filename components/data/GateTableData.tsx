@@ -20,6 +20,7 @@ import TableChartIcon from '@mui/icons-material/TableChart';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { getCellStyle, HeaderCellStyle, textStyle } from '../../theme/style';
+import { useTheme } from '@mui/material';
 
 interface GroupedData {
   [year: string]: [number, number | null][]; // รองรับ null
@@ -40,7 +41,7 @@ const GateExportTable: React.FC<Props> = ({
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedYear, setSelectedYear] = useState("ทั้งหมด");
-
+  const theme = useTheme();
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
@@ -179,30 +180,30 @@ const GateExportTable: React.FC<Props> = ({
         <Table size="small" stickyHeader>
           <TableHead>
             <TableRow>
-              <TableCell sx={HeaderCellStyle}>วันที่</TableCell>
-              <TableCell sx={HeaderCellStyle}>อัตราการไหล (ลบ.ม./วินาที)</TableCell>
-              <TableCell sx={HeaderCellStyle}>ระดับน้ำเหนือ ปตร. (ม.รทก.)</TableCell>
-              <TableCell sx={HeaderCellStyle}>ระดับน้ำท้าย ปตร. (ม.รทก.)</TableCell>
+              <TableCell sx={HeaderCellStyle(theme)}>วันที่</TableCell>
+              <TableCell sx={HeaderCellStyle(theme)}>อัตราการไหล (ลบ.ม./วินาที)</TableCell>
+              <TableCell sx={HeaderCellStyle(theme)}>ระดับน้ำเหนือ ปตร. (ม.รทก.)</TableCell>
+              <TableCell sx={HeaderCellStyle(theme)}>ระดับน้ำท้าย ปตร. (ม.รทก.)</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {allDataRows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} sx={{ py: 4, ...getCellStyle(0) }}>
+                <TableCell colSpan={4} sx={{ py: 4, ...getCellStyle(0, theme) }}>
                   ไม่มีข้อมูลสำหรับปีที่เลือก
                 </TableCell>
               </TableRow>
             ) : (
               allDataRows.map((row, idx) => (
                 <TableRow key={row.timestamp}>
-                  <TableCell sx={getCellStyle(idx)}>{formatThaiDate(row.timestamp)}</TableCell>
-                  <TableCell sx={getCellStyle(idx)}>
+                  <TableCell sx={getCellStyle(idx,theme)}>{formatThaiDate(row.timestamp)}</TableCell>
+                  <TableCell sx={getCellStyle(idx,theme)}>
                     {row.discharge !== null ? row.discharge.toFixed(3) : '-'}
                   </TableCell>
-                  <TableCell sx={getCellStyle(idx)}>
+                  <TableCell sx={getCellStyle(idx,theme)}>
                     {row.wlUpper !== null ? row.wlUpper.toFixed(3) : '-'}
                   </TableCell>
-                  <TableCell sx={getCellStyle(idx)}>
+                  <TableCell sx={getCellStyle(idx,theme)}>
                     {row.wlLower !== null ? row.wlLower.toFixed(3) : '-'}
                   </TableCell>
                 </TableRow>

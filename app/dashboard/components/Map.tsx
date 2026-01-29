@@ -83,16 +83,16 @@ const HydroMap: React.FC<HydroMapProps> = ({ mapKey, JsonPaths,height}) => {
     }
   };
 
-  useEffect(() => {
-    if (!map) return;
-    if (mode === 'dark' || (mode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-      map.enableFilter(longdo.Filter.Dark);
-      console.log('เปิด Dark Map');
-    } else {
-      map.enableFilter(longdo.Filter.Light); 
-      console.log('เปิด Light Map');
-    }
-  }, [mode, map]);
+ useEffect(() => {
+  if (!map) return;
+  if (mode === 'dark') {
+    map.enableFilter(longdo.Filter.Dark);
+    console.log('เปิด Dark Map');
+  } else {
+    map.enableFilter(longdo.Filter.Light);
+    console.log('เปิด Light Map');
+  }
+}, [mode, map]);
 
 
 useEffect(() => {

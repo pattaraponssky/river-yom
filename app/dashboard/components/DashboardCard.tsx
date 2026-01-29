@@ -14,7 +14,8 @@ const cardData = data ? [
       subTitle: "ปตร.โพธิ์พระยา ระบาย",
       value: "4",
       unit: "ปตร.",
-      value_data: data.discharge_gate["T.16"] || 0,
+      value_data: "33",
+      // value_data: data.discharge_gate["T.16"] || 0,
       unit_data: "ลบ.ม./วินาที",
       image: `${Path_URL}images/icons/gate_icon.png`,
       gradient: "linear-gradient(135deg, #e57373, #d32f2f)",
@@ -25,11 +26,12 @@ const cardData = data ? [
       subTitle: "ระบายรวม",
       value: "10",
       unit: "อาคาร",
-      value_data: (
-        ["BYH", "PBL", "PPM", "KTB", "MHC", "MSW", "KYG", "BBP", "SPN", "PTL"]
-          .reduce((sum, code) => sum + parseFloat(data.discharge_gate[code] || 0), 0)
-          .toFixed(2)
-      ),
+      // value_data: (
+      //   ["BYH", "PBL", "PPM", "KTB", "MHC", "MSW", "KYG", "BBP", "SPN", "PTL"]
+      //     .reduce((sum, code) => sum + parseFloat(data.discharge_gate[code] || 0), 0)
+      //     .toFixed(2)
+      // ),
+      value_data: "33",
       unit_data: "ลบ.ม./วินาที",
       image: `${Path_URL}images/icons/gate_icon2.png`,
       gradient: "linear-gradient(135deg, #f06292, #c2185b)",
