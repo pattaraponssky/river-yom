@@ -1,5 +1,5 @@
 // src/components/layout/DrawerComponent.tsx
-'use client';
+"use client";
 
 import React, { useState } from "react";
 import {
@@ -59,7 +59,7 @@ const publicMenuItems = [
     text: "ผลพยากรณ์",
     path: "/forecast",
   },
- {
+  {
     icon: <InfoIcon sx={{ marginRight: "15px" }} />,
     text: "เกี่ยวกับเรา",
     path: "/aboutus",
@@ -96,9 +96,7 @@ const DrawerComponent: React.FC<DrawerProps> = ({ open, setOpen }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [loginOpen, setLoginOpen] = useState(false);
-
   const drawerWidth = open ? 290 : 72;
-
   const iduser_level = currentUser?.iduser_level ?? 0;
 
   const handleItemClick = () => {
@@ -107,7 +105,9 @@ const DrawerComponent: React.FC<DrawerProps> = ({ open, setOpen }) => {
 
   if (authLoading) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
+      <Box
+        sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}
+      >
         <CircularProgress />
       </Box>
     );
@@ -127,46 +127,58 @@ const DrawerComponent: React.FC<DrawerProps> = ({ open, setOpen }) => {
           "& .MuiDrawer-paper": {
             width: drawerWidth,
             overflowX: "hidden",
-            backgroundColor: theme.palette.background.paper,
+            backgroundColor:
+              theme.palette.mode === "dark"
+                ? theme.palette.background.default // หรือ "#0f172a" (slate-900)
+                : "#f8fafc", // slate-50 สีเทาอ่อนสะอาดตา
             color: theme.palette.text.primary,
-            transition: "width 0.3s",
-            boxShadow: "4px 0px 15px rgba(0, 0, 0, 0.1)",
+            borderRight: `1px solid ${theme.palette.divider}`,
+            transition: theme.transitions.create("width", {
+              easing: theme.transitions.easing.sharp,
+              duration: theme.transitions.duration.enteringScreen,
+            }),
+            boxShadow:
+              theme.palette.mode === "dark"
+                ? "4px 0 20px rgba(0,0,0,0.5)"
+                : "4px 0 15px rgba(0,0,0,0.12)",
           },
         }}
       >
         {/* ส่วนหัว Logo + ปุ่มปิด/เปิด */}
         <Box
           display="flex"
-          justifyContent={open ? "flex-end" : "center"}
+          justifyContent={open ? "space-between" : "center"}
           alignItems="center"
-          padding="10px"
+          padding="12px 16px"
           sx={{
+            // พื้นหลังส่วนหัวเด่นขึ้น
+            background:
+              theme.palette.mode === "dark"
+                ? `linear-gradient(to bottom,
+                  ${theme.palette.background.paper},
+                  ${theme.palette.background.default}
+                )`
+                : `linear-gradient(to bottom,
+                  ${theme.palette.primary.light}22,
+                  ${theme.palette.background.paper}
+                )`,
             borderBottom: `1px solid ${theme.palette.divider}`,
           }}
         >
           {open && (
-            <Box
-              sx={{
-                marginLeft: "auto",
-                justifyContent: { md: "center", xs: "flex-start" },
-                alignItems: "center",
-                display: "flex",
-                width: "267px",
-              }}
-            >
-              <img
-                src={`${Path_URL}images/logo_rid.png`}
-                alt="Logo"
-                style={{ height: "40px", paddingRight: "10px" }}
-              />
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+              <img src={`${Path_URL}images/logo_rid.png`} alt="Logo" style={{ height: "48px" }} />
               <Typography
                 variant="h6"
                 sx={{
-                  fontWeight: 600,
+                  fontWeight: 700,
                   fontFamily: "Prompt",
-                  color: theme.palette.primary.main,
-                  fontSize: { md: "1.2rem", xs: "1.1rem" },
-                  marginRight: { md: "10px", xs: "0" },
+                  color:
+                    theme.palette.mode === "dark"
+                      ? theme.palette.primary.light
+                      : theme.palette.primary.main,
+
+                  letterSpacing: "-0.5px",
                 }}
               >
                 ระบบบริหารจัดการน้ำ
@@ -179,7 +191,16 @@ const DrawerComponent: React.FC<DrawerProps> = ({ open, setOpen }) => {
               backgroundColor: theme.palette.primary.main,
               color: "#fff",
               "&:hover": {
-                backgroundColor: theme.palette.primary.dark,
+                background:
+                  theme.palette.mode === "dark"
+                    ? `linear-gradient(to bottom,
+                    ${theme.palette.background.paper},
+                    ${theme.palette.background.default}
+                  )`
+                    : `linear-gradient(to bottom,
+                    ${theme.palette.primary.light}22,
+                    ${theme.palette.background.paper}
+                  )`,
               },
               borderRadius: "50%",
               boxShadow: "0px 3px 8px rgba(0, 0, 0, 0.3)",
@@ -191,8 +212,8 @@ const DrawerComponent: React.FC<DrawerProps> = ({ open, setOpen }) => {
           </IconButton>
         </Box>
 
-        <List>
-          {/* เมนูหลัก (ทุกคนเห็น) */}
+        <List sx={{ px: 1 }}>
+          {/* เมนูหลัก */}
           {publicMenuItems.map((item, index) => (
             <ListItem
               key={index}
@@ -210,7 +231,10 @@ const DrawerComponent: React.FC<DrawerProps> = ({ open, setOpen }) => {
                 sx={{
                   minWidth: 0,
                   marginLeft: open ? "0" : "15px",
-                  color: theme.palette.primary.main,
+                  color:
+                    theme.palette.mode === "dark"
+                      ? theme.palette.primary.light
+                      : theme.palette.primary.main,
                 }}
               >
                 {item.icon}
@@ -235,12 +259,17 @@ const DrawerComponent: React.FC<DrawerProps> = ({ open, setOpen }) => {
           <ListItem
             onClick={() => setStationOpen(!stationOpen)}
             sx={{
+              borderRadius: "8px",
+              marginY: "4px",
               padding: "8px 20px",
               justifyContent: open ? "initial" : "center",
+              backgroundColor: stationOpen ? theme.palette.primary.main + "11" : "transparent",
               "&:hover": { backgroundColor: theme.palette.action.hover },
             }}
           >
-            <StorageIcon sx={{ marginRight: open ? "15px" : "0", color: theme.palette.primary.main }} />
+            <StorageIcon
+              sx={{ marginRight: open ? "15px" : "0", color: theme.palette.primary.main }}
+            />
             {open && (
               <>
                 <ListItemText
@@ -250,7 +279,10 @@ const DrawerComponent: React.FC<DrawerProps> = ({ open, setOpen }) => {
                       fontSize: { md: "1.2rem", xs: "1rem" },
                       fontWeight: 600,
                       fontFamily: "Prompt",
-                      color: theme.palette.primary.main,
+                      color:
+                        theme.palette.mode === "dark"
+                          ? theme.palette.primary.light
+                          : theme.palette.primary.main,
                     },
                   }}
                 />
@@ -274,7 +306,8 @@ const DrawerComponent: React.FC<DrawerProps> = ({ open, setOpen }) => {
                   onClick={handleItemClick}
                   sx={{
                     paddingLeft: open ? "40px" : "25px",
-                    backgroundColor: pathname === item.path ? theme.palette.action.selected : "inherit",
+                    backgroundColor:
+                      pathname === item.path ? theme.palette.action.selected : "inherit",
                     "&:hover": { backgroundColor: theme.palette.action.hover },
                   }}
                 >
@@ -282,7 +315,10 @@ const DrawerComponent: React.FC<DrawerProps> = ({ open, setOpen }) => {
                     sx={{
                       minWidth: 0,
                       marginRight: open ? "15px" : "0",
-                      color: theme.palette.primary.main,
+                      color:
+                        theme.palette.mode === "dark"
+                          ? theme.palette.primary.light
+                          : theme.palette.primary.main,
                     }}
                   >
                     {item.icon}
@@ -318,7 +354,10 @@ const DrawerComponent: React.FC<DrawerProps> = ({ open, setOpen }) => {
                 sx={{
                   minWidth: 0,
                   marginLeft: open ? "5px" : "15px",
-                  color: theme.palette.primary.main,
+                  color:
+                    theme.palette.mode === "dark"
+                      ? theme.palette.primary.light
+                      : theme.palette.primary.main,
                 }}
               >
                 {item.icon}
@@ -357,7 +396,10 @@ const DrawerComponent: React.FC<DrawerProps> = ({ open, setOpen }) => {
                 sx={{
                   minWidth: 0,
                   marginLeft: open ? "5px" : "15px",
-                  color: theme.palette.primary.main,
+                  color:
+                    theme.palette.mode === "dark"
+                      ? theme.palette.primary.light
+                      : theme.palette.primary.main,
                 }}
               >
                 {item.icon}
@@ -383,11 +425,10 @@ const DrawerComponent: React.FC<DrawerProps> = ({ open, setOpen }) => {
         <Box
           sx={{
             marginTop: "auto",
-            padding: "15px",
+            padding: "16px",
             borderTop: `1px solid ${theme.palette.divider}`,
-            display: "flex",
-            alignItems: "center",
-            gap: 2,
+            background:
+              theme.palette.mode === "dark" ? "rgba(15, 23, 42, 0.6)" : "rgba(248, 250, 252, 0.8)",
           }}
         >
           {currentUser ? (
@@ -400,7 +441,8 @@ const DrawerComponent: React.FC<DrawerProps> = ({ open, setOpen }) => {
                     sx={{
                       width: 40,
                       height: 40,
-                      bgcolor: "white",
+                      bgcolor:
+                        theme.palette.mode === "dark" ? theme.palette.background.paper : "#fff",
                       p: "7px",
                       m: 1,
                       border: `2px solid ${theme.palette.primary.main}`,

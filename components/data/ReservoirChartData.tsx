@@ -7,13 +7,14 @@ import { ArrowDropDownIcon } from '@mui/x-date-pickers';
 import DownloadIcon from '@mui/icons-material/Download';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import TextSnippetIcon from '@mui/icons-material/TextSnippet';
-import { menuStyle } from '../../theme/style';
+import { fontInfo } from '../../theme/style';
 
 interface DataChartProps {
   data: any;
   type: string;
   height?: number;
   resCode?: string;
+  isDark: boolean;
 }
 
 const BASE_YEAR = 2000;
@@ -64,18 +65,30 @@ const reservoirYAxisRange: Record<string, { min: number; max: number }> = {
   hnl: { min: 0, max: 16 },
 };
 
-const chartOptionsMap = {
+const ReservoirChart: React.FC<DataChartProps> = ({ data, type = 'main', height = 350, resCode, isDark }) => {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+  const bgColor = isDark ? "#1e2533" : "#f8fafc"; 
+  const textColor = isDark ? "#e2e8f0" : "#334155";         // ตัวอักษรหลัก
+  const gridColor = isDark ? "#334155" : "#e2e8f0";          // เส้น grid
+
+  if (!data || !data.series) return null;
+
+  const chartOptionsMap = {
   main: {
     chart: {
       id: 'reservoir',
       zoom: { enabled: true, allowMouseWheelZoom: false },
+      background: bgColor,
       fontFamily: "Prompt",
+      foreColor: textColor,
+      
       // stacked: false,
     },
     title: {
       text: 'ปริมาณน้ำในอ่างเก็บน้ำ',
       align: "center",
-      style: { fontSize: '16px', color: '#333', fontFamily: 'Prompt' },
+      style: { fontSize: '16px', color: textColor, fontFamily: 'Prompt' },
     },
     stroke: {
       width: Array(13).fill(3),
@@ -86,12 +99,14 @@ const chartOptionsMap = {
       type: 'datetime',
       min: new Date(`${BASE_YEAR}-01-01`).getTime(),
       max: new Date(`${BASE_YEAR}-12-31`).getTime(),
-      labels: { datetimeUTC: false, format: 'dd MMM', style: { fontSize: '12px', color: '#333' } },
+        labels: { datetimeUTC: false, format: 'dd MMM', style: { colors: textColor }},
+      axisBorder: { show: false },
+      axisTicks: { color: gridColor },
     },
     yaxis: [{
       seriesName: 'ปริมาณน้ำ (Volume)',
-      labels: { formatter: (val: number) => (val.toFixed(2)), style: { fontSize: '12px', color: '#333' } },
-      title: { text: 'ปริมาณน้ำ (ล้าน ลบ.ม.)', style: { fontSize: '16px', color: '#333' } },
+      labels: { formatter: (val: number) => (val.toFixed(2)), style: { fontSize: '12px', colors: textColor } },
+      title: { text: 'ปริมาณน้ำ (ล้าน ลบ.ม.)', style: { fontSize: '16px', colors: textColor } },
     }],
     
     tooltip: {
@@ -109,12 +124,16 @@ const chartOptionsMap = {
       id: 'reservoir-inflow',
       zoom: { enabled: true, allowMouseWheelZoom: false },
       type: 'line',
-      fontFamily: "Prompt",
+      background: bgColor,
+        fontFamily: "Prompt",
+        foreColor: textColor,
+      
     },
     title: {
       text: 'ปริมาณน้ำไหลเข้าอ่างเก็บน้ำ',
       align: "center",
-      style: { fontSize: '16px', color: '#333', fontFamily: 'Prompt' },
+      style: { fontSize: '16px', color: textColor, fontFamily: 'Prompt' },
+      
     },
     stroke: {
       width: Array(13).fill(3),
@@ -125,12 +144,14 @@ const chartOptionsMap = {
       type: 'datetime',
       min: new Date(`${BASE_YEAR}-01-01`).getTime(),
       max: new Date(`${BASE_YEAR}-12-31`).getTime(),
-      labels: { datetimeUTC: false, format: 'dd MMM', },
+      labels: { datetimeUTC: false, format: 'dd MMM', style: { colors: textColor }},
+      axisBorder: { show: false },
+      axisTicks: { color: gridColor },
     },
     yaxis: [{
       seriesName: 'ปริมาณน้ำไหลเข้าอ่าง (ล้าน ลบ.ม.)',
-      labels: { formatter: (val: number) => (val.toFixed(2)), style: { fontSize: '12px', color: '#333' } },
-      title: { text: 'ปริมาณน้ำไหลเข้าอ่าง (ล้าน ลบ.ม.)', style: { fontSize: '14px', color: '#333' } },
+      labels: { formatter: (val: number) => (val.toFixed(2)), style: { fontSize: '12px', colors: textColor } },
+      title: { text: 'ปริมาณน้ำไหลเข้าอ่าง (ล้าน ลบ.ม.)', style: { fontSize: '14px', colors: textColor } },
     }],
     tooltip: {
       shared: true,        // แสดง tooltip หลาย series พร้อมกัน
@@ -147,12 +168,15 @@ const chartOptionsMap = {
       id: 'reservoir-outflow',
       zoom: { enabled: true, allowMouseWheelZoom: false },
       type: 'line',
-      fontFamily: "Prompt",
+      background: bgColor,
+        fontFamily: "Prompt",
+        foreColor: textColor,
+      
     },
     title: {
       text: 'ปริมาณน้ำระบายออกอ่างเก็บน้ำ',
       align: "center",
-      style: { fontSize: '16px', color: '#333', fontFamily: 'Prompt' },
+      style: { fontSize: '16px', color: textColor, fontFamily: 'Prompt' },
     },
     stroke: {
       width: Array(13).fill(3),
@@ -163,12 +187,14 @@ const chartOptionsMap = {
       type: 'datetime',
       min: new Date(`${BASE_YEAR}-01-01`).getTime(),
       max: new Date(`${BASE_YEAR}-12-31`).getTime(),
-      labels: { datetimeUTC: false, format: 'dd MMM', },
+        labels: { datetimeUTC: false, format: 'dd MMM', style: { colors: textColor }},
+      axisBorder: { show: false },
+      axisTicks: { color: gridColor },
     },
     yaxis: [{
       seriesName: 'ปริมาณน้ำระบาย (ล้าน ลบ.ม.)',
-      labels: { formatter: (val: number) => val.toFixed(2), style: { fontSize: '12px', color: '#333' } },
-      title: { text: 'ปริมาณน้ำระบาย (ล้าน ลบ.ม.)', style: { fontSize: '14px', color: '#333' } },
+      labels: { formatter: (val: number) => val.toFixed(2), style: { fontSize: '12px', colors: textColor } },
+      title: { text: 'ปริมาณน้ำระบาย (ล้าน ลบ.ม.)', style: { fontSize: '14px', colors: textColor } },
     }],
     tooltip: {
       shared: true,        // แสดง tooltip หลาย series พร้อมกัน
@@ -183,12 +209,6 @@ const chartOptionsMap = {
   },
   
 };
-
-const ReservoirChart: React.FC<DataChartProps> = ({ data, type = 'main', height = 350, resCode }) => {
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const open = Boolean(anchorEl);
-
-  if (!data || !data.series) return null;
 
   const baseOptions = chartOptionsMap[type as 'main' | 'inflow' | 'outflow'] as ApexCharts.ApexOptions;
   const annotations = resCode && type === 'main' ? reservoirAnnotations[resCode] || { yaxis: [] } : undefined;
@@ -275,19 +295,19 @@ const ReservoirChart: React.FC<DataChartProps> = ({ data, type = 'main', height 
           open={open}
           onClose={handleClose}
         >
-          <MenuItem sx={menuStyle} onClick={() => handleExport("png")}>
+          <MenuItem sx={fontInfo} onClick={() => handleExport("png")}>
             <TableChartIcon sx={{ mr: 1 }} />
             Export PNG
           </MenuItem>
-          <MenuItem sx={menuStyle} onClick={() => handleExport("jpg")}>
+          <MenuItem sx={fontInfo} onClick={() => handleExport("jpg")}>
             <DownloadIcon sx={{ mr: 1 }} />
             Export JPG
           </MenuItem>
-          <MenuItem sx={menuStyle} onClick={() => handleExport("jpeg")}>
+          <MenuItem sx={fontInfo} onClick={() => handleExport("jpeg")}>
             <DownloadIcon sx={{ mr: 1 }} />
             Export JPEG
           </MenuItem>
-          <MenuItem sx={menuStyle} onClick={() => handleExport("pdf")}>
+          <MenuItem sx={fontInfo} onClick={() => handleExport("pdf")}>
             <TextSnippetIcon sx={{ mr: 1 }} />
             Export PDF
           </MenuItem>

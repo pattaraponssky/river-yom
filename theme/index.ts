@@ -51,14 +51,18 @@ export const darkTheme = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: '#6b8cff', // สีน้ำเงินอ่อนลงสำหรับ dark mode
+      main: '#6b8cff',
     },
     secondary: {
       main: '#4caf50',
     },
+    // background: {
+    //   default: '#0f1217',
+    //   paper: '#1a1f2b',
+    // },
     background: {
-      default: '#0f1217',
-      paper: '#1a1f2b',
+      default: '#141b2d', // เทาอมฟ้า ไม่ดำสนิท
+      paper: '#1e2533',   // สว่างกว่า default นิดนึง
     },
     text: {
       primary: '#f7fafc',

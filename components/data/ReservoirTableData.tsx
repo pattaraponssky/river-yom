@@ -9,7 +9,7 @@ import TableChartIcon from '@mui/icons-material/TableChart';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-import { textStyle, menuStyle } from '../../theme/style';
+import { textStyle, fontInfo } from '../../theme/style';
 import { getCellStyle, HeaderCellStyle } from '../../theme/style';
 
 interface GroupedData {
@@ -162,16 +162,16 @@ const ReservoirExportTable: React.FC<Props> = ({
           Export File
         </Button>
         <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-          <MenuItem onClick={() => { exportToXLS(); handleClose(); }} sx={menuStyle}>
+          <MenuItem onClick={() => { exportToXLS(); handleClose(); }} sx={fontInfo}>
             <ListAltIcon sx={{ mr: 1 }} /> Export XLS
           </MenuItem>
-          <MenuItem onClick={() => { exportToXLSX(); handleClose(); }} sx={menuStyle}>
+          <MenuItem onClick={() => { exportToXLSX(); handleClose(); }} sx={fontInfo}>
             <TableChartIcon sx={{ mr: 1 }} /> Export XLSX
           </MenuItem>
-          <MenuItem onClick={() => { exportToCSV(); handleClose(); }} sx={menuStyle}>
+          <MenuItem onClick={() => { exportToCSV(); handleClose(); }} sx={fontInfo}>
             <DownloadIcon sx={{ mr: 1 }} /> Export CSV
           </MenuItem>
-          <MenuItem onClick={() => { exportToTXT(); handleClose(); }} sx={menuStyle}>
+          <MenuItem onClick={() => { exportToTXT(); handleClose(); }} sx={fontInfo}>
             <TextSnippetIcon sx={{ mr: 1 }} /> Export TXT
           </MenuItem>
         </Menu>
@@ -198,14 +198,14 @@ const ReservoirExportTable: React.FC<Props> = ({
             ) : (
               allDataRows.map((row, idx) => (
                 <TableRow key={`${row.date}-${idx}`}>
-                  <TableCell sx={getCellStyle(idx, theme)}>{formatThaiDate(row.date)}</TableCell>
-                  <TableCell sx={getCellStyle(idx, theme)}>
+                  <TableCell sx={getCellStyle(idx)}>{formatThaiDate(row.date)}</TableCell>
+                  <TableCell sx={getCellStyle(idx)}>
                     {row.volume !== null ? Number(row.volume).toFixed(2) : '-'}
                   </TableCell>
-                  <TableCell sx={getCellStyle(idx, theme)}>
+                  <TableCell sx={getCellStyle(idx)}>
                     {row.inflow !== null ? Number(row.inflow).toFixed(2) : '-'}
                   </TableCell>
-                  <TableCell sx={getCellStyle(idx, theme)}>
+                  <TableCell sx={getCellStyle(idx)}>
                     {row.outflow !== null ? Number(row.outflow).toFixed(2) : '-'}
                   </TableCell>
                 </TableRow>

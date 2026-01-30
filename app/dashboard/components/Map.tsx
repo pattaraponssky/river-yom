@@ -148,7 +148,6 @@ useEffect(() => {
 //   loadJsonFiles();
 // }, [JsonPaths]);
 
-// โหลดข้อมูล API flow, rain, reservoir (เมื่อแผนที่พร้อม)
 useEffect(() => {
   if (!isMapReady) return;
 

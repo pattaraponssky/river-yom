@@ -6,7 +6,8 @@ import { ArrowDropDownIcon } from '@mui/x-date-pickers';
 import DownloadIcon from '@mui/icons-material/Download';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import TextSnippetIcon from '@mui/icons-material/TextSnippet';
-import { Box, Button, Menu, MenuItem } from '@mui/material';
+import { Box, Button, Menu, MenuItem, useTheme } from '@mui/material';
+import { fontInfo } from '@/theme/style';
 
 interface DataChartProps {
   data: any; // หรือกำหนด type ให้ละเอียดขึ้นได้
@@ -14,13 +15,8 @@ interface DataChartProps {
   height?: number;
   sta_code?: string;
   mode?: 'daily' | 'hourly';
+  isDark?: boolean;
 }
-const menuStyle = {
-    fontFamily: "Prompt",
-    fontSize: "1rem",
-    backgroundColor: '#fff',
-
-  };
 
 const BASE_YEAR = 2000;
 
@@ -75,111 +71,122 @@ const flowYAxisRange: Record<string, { min: number; max: number }> = {
   'T.15': { min: -6, max: 3 },
 };
 
-const chartOptionsMap = {
-  discharge: {
-    chart: {
-      id: 'flow-data',
-      zoom: { enabled: true },
-      // toolbar: { show: false },
-      fontFamily: "Prompt", 
-      stacked: false,
-    },
-    title: {
-      text: 'อัตราการไหล',
-      align: "center" as const,
-      style: {
-        fontSize: '16px',
-        color: '#333',
-        fontFamily: 'Prompt',
-      },
-    },
-    stroke: {
-      width: Array(20).fill(4),
-      dashArray:  Array(20).fill(0),
-      curve: 'smooth' as const,
-    },  
-    xaxis: {
-      type: 'datetime',
-      min: new Date(`${BASE_YEAR}-01-01`).getTime(),
-      max: new Date(`${BASE_YEAR}-12-31`).getTime(),
-      labels: { datetimeUTC: false, format: 'dd MMM HH:mm', },
-    },
-    yaxis: [
-        {
-          seriesName: 'อัตราการไหล (ลบ.ม./วินาที)',
-          labels: {
-            formatter: (val: number) => val.toFixed(2),
-            style: { fontSize: '12px', color: '#3366FF' },
-          },
-          title: {
-            text: 'อัตราการไหล (ลบ.ม./วินาที)',
-            style: { fontSize: '16px', color: '#3366FF' },
-          },
-        },
-
-      ],
-
-    tooltip: {  enabled: true, intersect: true,shared: false,followCursor: false, x: { format: 'dd MMM HH:mm' } },
-    colors: ['#3366FF','#FF0033','#00FF33','#CD853F','#FF9900','#66CCFF','#9933FF','green','#000000','#FFD700'],
-  },
-  wl: {
-    chart: {
-      id: 'flow-wl',
-      zoom: { enabled: true },
-      toolbar: { show: true },
-      fontFamily: "Prompt", 
- 
-    },
-    markers: {
-      size: 0,
-      strokeWidth: 0,
-      hover: {
-        sizeOffset: 0,
-      },
-    },
-    title: {
-      text: 'ระดับน้ำ',
-      align: "center" as const,
-      style: {
-        fontSize: '18px',
-        color: '#333',
-        fontFamily: 'Prompt',
-      },
-    },
-    stroke: {
-      width: Array(20).fill(4),
-      dashArray:  Array(20).fill(0),
-      curve: 'smooth' as const,
-    },
-    xaxis: {
-      type: 'datetime',
-      min: new Date(`${BASE_YEAR}-01-01`).getTime(),
-      max: new Date(`${BASE_YEAR}-12-31`).getTime(),
-      labels: { datetimeUTC: false, format: 'dd MMM', },
-    },
-    yaxis: [
-        {
-          seriesName: 'ระดับน้ำ (ม.รทก.)',
-          labels: {
-            formatter: (val: number) => val.toFixed(2),
-            style: { fontSize: '12px', color: '#2196F3' },
-          },
-          title: {
-            text: 'ระดับน้ำ (ม.รทก.)',
-            style: { fontSize: '16px', color: '#2196F3' },
-          },
-        }
-      ],
-    tooltip: { intersect: false, x: { format: 'dd MMM HH:mm' } },
-    colors: ['#3366FF','#FF0033','#00FF33','#CD853F','#FF9900','#66CCFF','#9933FF','green','#000000','#FFD700'],
-  }
-};
-
-const FlowChart: React.FC<DataChartProps> = ({ data, type, height = 350 ,sta_code ,mode = 'daily'}) => {
+const FlowChart: React.FC<DataChartProps> = ({ data, type, height = 350 ,sta_code ,mode = 'daily', isDark }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
-  
+
+  const bgColor = isDark ? "#1e2533" : "#f8fafc"; 
+  const textColor = isDark ? "#e2e8f0" : "#334155";         // ตัวอักษรหลัก
+  const gridColor = isDark ? "#334155" : "#e2e8f0";         // เส้น grid
+
   if (!data || !data.series) return null;
+
+
+  const chartOptionsMap = {
+    discharge: {
+      chart: {
+        id: 'flow-data',
+        zoom: { enabled: true },
+        // toolbar: { show: false },
+        background: bgColor,
+        fontFamily: "Prompt",
+        foreColor: textColor,
+        stacked: false,
+      },
+      title: {
+        text: 'อัตราการไหล',
+        align: "center" as const,
+        style: {
+          fontSize: '16px',
+          color: '#333',
+          fontFamily: 'Prompt',
+        },
+      },
+      stroke: {
+        width: Array(20).fill(4),
+        dashArray:  Array(20).fill(0),
+        curve: 'smooth' as const,
+      },  
+      xaxis: {
+        type: 'datetime',
+        min: new Date(`${BASE_YEAR}-01-01`).getTime(),
+        max: new Date(`${BASE_YEAR}-12-31`).getTime(),
+        labels: { datetimeUTC: false, format: 'dd MMM HH:mm', style: { colors: textColor } },
+        axisBorder: { show: false },
+        axisTicks: { color: gridColor },
+      },
+      yaxis: [
+          {
+            seriesName: 'อัตราการไหล (ลบ.ม./วินาที)',
+            labels: {
+              formatter: (val: number) => val.toFixed(2),
+              style: { fontSize: '12px', colors: textColor },
+            },
+            title: {
+              text: 'อัตราการไหล (ลบ.ม./วินาที)',
+              style: { fontSize: '16px', colors: textColor },
+            },
+          },
+
+        ],
+
+      tooltip: {  enabled: true, intersect: true,shared: false,followCursor: false, x: { format: 'dd MMM HH:mm' } },
+      colors: ['#3366FF','#FF0033','#00FF33','#CD853F','#FF9900','#66CCFF','#9933FF','green','#000000','#FFD700'],
+    },
+    wl: {
+      chart: {
+        id: 'flow-wl',
+        zoom: { enabled: true },
+        toolbar: { show: true },
+        background: bgColor,
+        fontFamily: "Prompt",
+        foreColor: textColor,
+  
+      },
+      markers: {
+        size: 0,
+        strokeWidth: 0,
+        hover: {
+          sizeOffset: 0,
+        },
+      },
+      title: {
+        text: 'ระดับน้ำ',
+        align: "center" as const,
+        style: {
+          fontSize: '18px',
+          color: '#333',
+          fontFamily: 'Prompt',
+        },
+      },
+      stroke: {
+        width: Array(20).fill(4),
+        dashArray:  Array(20).fill(0),
+        curve: 'smooth' as const,
+      },
+      xaxis: {
+        type: 'datetime',
+        min: new Date(`${BASE_YEAR}-01-01`).getTime(),
+        max: new Date(`${BASE_YEAR}-12-31`).getTime(),
+        labels: { datetimeUTC: false, format: 'dd MMM', },
+      },
+      yaxis: [
+          {
+            seriesName: 'ระดับน้ำ (ม.รทก.)',
+            labels: {
+              formatter: (val: number) => val.toFixed(2),
+              style: { fontSize: '12px', color: '#2196F3' },
+            },
+            title: {
+              text: 'ระดับน้ำ (ม.รทก.)',
+              style: { fontSize: '16px', color: '#2196F3' },
+            },
+          }
+        ],
+      tooltip: { intersect: false, x: { format: 'dd MMM HH:mm' } },
+      colors: ['#3366FF','#FF0033','#00FF33','#CD853F','#FF9900','#66CCFF','#9933FF','green','#000000','#FFD700'],
+    }
+  };
 
   // เลือก options ตาม type
   const baseOptions = chartOptionsMap[type as 'wl' | 'discharge'] as ApexCharts.ApexOptions;
@@ -283,19 +290,19 @@ const FlowChart: React.FC<DataChartProps> = ({ data, type, height = 350 ,sta_cod
           open={open}
           onClose={handleClose}
         >
-          <MenuItem sx={menuStyle} onClick={() => handleExport("png")}>
+          <MenuItem sx={fontInfo} onClick={() => handleExport("png")}>
             <TableChartIcon sx={{ mr: 1 }} />
             Export PNG
           </MenuItem>
-          <MenuItem sx={menuStyle} onClick={() => handleExport("jpg")}>
+          <MenuItem sx={fontInfo} onClick={() => handleExport("jpg")}>
             <DownloadIcon sx={{ mr: 1 }} />
             Export JPG
           </MenuItem>
-          <MenuItem sx={menuStyle} onClick={() => handleExport("jpeg")}>
+          <MenuItem sx={fontInfo} onClick={() => handleExport("jpeg")}>
             <DownloadIcon sx={{ mr: 1 }} />
             Export JPEG
           </MenuItem>
-          <MenuItem sx={menuStyle} onClick={() => handleExport("pdf")}>
+          <MenuItem sx={fontInfo} onClick={() => handleExport("pdf")}>
             <TextSnippetIcon sx={{ mr: 1 }} />
             Export PDF
           </MenuItem>

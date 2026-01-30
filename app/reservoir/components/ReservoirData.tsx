@@ -16,6 +16,7 @@ import {
   Typography,
   SelectChangeEvent,
   Button,
+  useTheme,
 } from "@mui/material";
 import ReservoirChart from "@/components/data/ReservoirChartData";
 import ReservoirExportTable from "@/components/data/ReservoirTableData";
@@ -30,6 +31,8 @@ interface DataReservoirStationProps {
 const DataReservoirStation: React.FC<DataReservoirStationProps> = ({ propsSelectedStation }) => {
   const queryParams = new URLSearchParams(location.search);
   const stationFromURL = queryParams.get("station") || "ks";
+  const theme = useTheme();
+  const isDark = theme.palette.mode === "dark";
 
   const [stations, setStations] = useState<any[]>([]);
   const [selectedStation, setSelectedStation] = useState<string | null>(null);
@@ -379,9 +382,9 @@ const DataReservoirStation: React.FC<DataReservoirStationProps> = ({ propsSelect
             {" "}ปี พ.ศ. {parseInt(startYear) + 543} - {parseInt(endYear) + 543}
           </Typography>
 
-          <ReservoirChart data={chartData1} type="main" resCode={selectedStation ?? 'ks'}/>
-          <ReservoirChart data={chartData2} type="inflow" />
-          <ReservoirChart data={chartData3} type="outflow" />
+          <ReservoirChart data={chartData1} type="main" resCode={selectedStation ?? 'ks'} isDark={isDark}/>
+          <ReservoirChart data={chartData2} type="inflow" isDark={isDark}/>
+          <ReservoirChart data={chartData3} type="outflow" isDark={isDark}/>
 
           <ReservoirExportTable
             volumeGroupedData={volumeGroupedData}

@@ -187,18 +187,18 @@ const RainExportTable: React.FC<Props> = ({
           <TableBody>
             {allDataRows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={3} sx={{ py: 4, ...getCellStyle(0, theme) }}>
+                <TableCell colSpan={3} sx={{ py: 4, ...getCellStyle(0) }}>
                   ไม่มีข้อมูลสำหรับปีที่เลือก
                 </TableCell>
               </TableRow>
             ) : (
               allDataRows.map((row, idx) => (
                 <TableRow key={row.timestamp}>
-                  <TableCell sx={getCellStyle(idx, theme)}>{formatThaiDate(row.timestamp)}</TableCell>
-                  <TableCell sx={getCellStyle(idx, theme)}>
+                  <TableCell sx={getCellStyle(idx)}>{formatThaiDate(row.timestamp)}</TableCell>
+                  <TableCell sx={getCellStyle(idx)}>
                     {row.rain_mm !== null ? row.rain_mm.toFixed(2) : '-'}
                   </TableCell>
-                  <TableCell sx={getCellStyle(idx, theme)}>
+                  <TableCell sx={getCellStyle(idx)}>
                     {row.rain_cumulative !== null ? row.rain_cumulative.toFixed(2) : '-'}
                   </TableCell>
                 </TableRow>

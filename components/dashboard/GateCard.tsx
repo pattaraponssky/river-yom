@@ -89,7 +89,7 @@ const titleStyle = {
               }}
             />
             <Typography 
-               sx={{ fontWeight: "bold", fontSize: { md: "1.4rem", xs: "1rem" }, fontFamily:"Prompt" ,color: "#28378B"}}
+               sx={{ fontWeight: "bold", fontSize: { md: "1.4rem", xs: "1rem" }, fontFamily:"Prompt" }}
             >
               ประตูระบายน้ำ
             </Typography>

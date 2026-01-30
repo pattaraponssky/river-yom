@@ -7,169 +7,153 @@ import ApexCharts from 'react-apexcharts';
 import DownloadIcon from '@mui/icons-material/Download';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import TextSnippetIcon from '@mui/icons-material/TextSnippet';
+import { fontInfo } from '@/theme/style';
 
 interface DataChartProps {
   data: any; // หรือกำหนด type ให้ละเอียดขึ้นได้
   type: string;
   height?: number;
+  isDark: boolean;
 }
-const menuStyle = {
-    fontFamily: "Prompt",
-    fontSize: "1rem",
-    backgroundColor: '#fff',
 
-  };
 const BASE_YEAR = 2000;
 
-const chartOptionsMap = {
-  rain_sum: {
-    chart: {
-      id: 'rain-data',
-      zoom: { enabled: true },
-      // toolbar: { show: false },
-      fontFamily: "Prompt", 
-      stacked: false,
-    },
-    title: {
-      text: 'ปริมาณฝนสะสม',
-      align: "center" as const,
-      style: {
-        fontSize: '18px',
-        color: '#333',
-        fontFamily: 'Prompt',
-      },
-    },
-    stroke: {
-         width: [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4], 
-      dashArray: [0, 0, 0, 0, 0, 0,0, 0, 0, 0, 0, 0, 0, 0,0, 0, 0], 
-      curve: 'smooth' as const,
-    },  
-    xaxis: {
-      type: 'datetime',
-      min: new Date(`${BASE_YEAR}-01-01`).getTime(),
-      max: new Date(`${BASE_YEAR}-12-31`).getTime(),
-      labels: { datetimeUTC: false, format: 'dd MMM', },
-    },
-    yaxis: [
-      
-        {
-          seriesName: 'ปริมาณน้ำฝนสะสม (มม.)',
-          labels: {
-            formatter: (val: number) => val.toFixed(2),
-            style: { fontSize: '12px', color: '#3366FF' },
-          },
-          title: {
-            text: 'ปริมาณน้ำฝนสะสม (มม.)',
-            style: { fontSize: '16px', color: '#3366FF' },
-          },
-        },
-      ],
-  
-      tooltip: {
-        shared: true,        // แสดง tooltip หลาย series พร้อมกัน
-        intersect: false,    // ไม่จำเป็นต้องชี้ตรงจุดพอดี
-        x: { format: 'dd MMM' },
-        y: {
-          formatter: (val: number) => `${val.toFixed(2).toLocaleString()} มม.`,
-        },
-      },
-    colors: ['#3366FF','#FF0033','#00FF33','#CD853F','#FF9900','#66CCFF','#9933FF','#009966','#000000','#333399'],
-  },
-  rain: {
-    chart: {
-      id: 'rain-rain',
-      zoom: { enabled: true },
-      toolbar: { show: true },
-      fontFamily: "Prompt", 
- 
-    },
-    markers: {
-      size: 0,
-      strokeWidth: 0,
-      hover: {
-        sizeOffset: 0,
-      },
-    },
-    
-    title: {
-      text: 'ปริมาณฝนรายวัน',
-      align: "center" as const,
-      style: {
-        fontSize: '18px',
-        color: '#333',
-        fontFamily: 'Prompt',
-      },
-    },
-    stroke: {
-      width: Array(20).fill(2),
-      dashArray:  Array(20).fill(0),
-      curve: 'smooth' as const,
-    },
-    xaxis: {
-      type: 'datetime',
-      min: new Date(`${BASE_YEAR}-01-01`).getTime(),
-      max: new Date(`${BASE_YEAR}-12-31`).getTime(),
-      labels: { datetimeUTC: false, format: 'dd MMM', },
-    },
-    yaxis: [
-        {
-          seriesName: 'ปริมาณน้ำฝน (มม.)',
-          labels: {
-            formatter: (val: number) => val.toFixed(2),
-            style: { fontSize: '12px', color: '#2196F3' },
-          },
-          title: {
-            text: 'ปริมาณน้ำฝน (มม.)',
-            style: { fontSize: '16px', color: '#2196F3' },
-          },
-        }
-      ],
-      tooltip: {
-        shared: true,        // แสดง tooltip หลาย series พร้อมกัน
-        intersect: false,    // ไม่จำเป็นต้องชี้ตรงจุดพอดี
-        x: { format: 'dd MMM' },
-        y: {
-          formatter: (val: number) => `${val.toFixed(2).toLocaleString()} มม.`,
-        },
-      },
-    colors: ['#3366FF','#FF0033','#00FF33','#CD853F','#FF9900','#66CCFF','#9933FF','#009966','#000000','#333399'],
-  }
-};
 
-const RainChart: React.FC<DataChartProps> = ({ data, type = 'rain', height = 350 }) => {
+const RainChart: React.FC<DataChartProps> = ({ data, type = 'rain', height = 350, isDark }) => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
+    const bgColor = isDark ? "#1e2533" : "#f8fafc"; 
+    const textColor = isDark ? "#e2e8f0" : "#334155";         // ตัวอักษรหลัก
+    const gridColor = isDark ? "#334155" : "#e2e8f0";  
   if (!data || !data.series) return null;
 
+
+  const chartOptionsMap = {
+    rain_sum: {
+      chart: {
+        id: 'rain-data',
+        zoom: { enabled: true },
+        background: bgColor,
+        fontFamily: "Prompt",
+        foreColor: textColor,
+        stacked: false,
+      },
+      title: {
+        text: 'ปริมาณฝนสะสม',
+        align: "center" as const,
+        style: {
+          fontSize: '18px',
+          color: textColor,
+          fontFamily: 'Prompt',
+        },
+      },
+      stroke: {
+          width: [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4], 
+        dashArray: [0, 0, 0, 0, 0, 0,0, 0, 0, 0, 0, 0, 0, 0,0, 0, 0], 
+        curve: 'smooth' as const,
+      },  
+      xaxis: {
+        type: 'datetime',
+        min: new Date(`${BASE_YEAR}-01-01`).getTime(),
+        max: new Date(`${BASE_YEAR}-12-31`).getTime(),
+        labels: { datetimeUTC: false, format: 'dd MMM', style: { colors: textColor }},
+        axisBorder: { show: false },
+        axisTicks: { color: gridColor },
+      },
+      yaxis: [
+        
+          {
+            seriesName: 'ปริมาณน้ำฝนสะสม (มม.)',
+            labels: {
+              formatter: (val: number) => val.toFixed(2),
+              style: { fontSize: '12px', color: textColor },
+            },
+            title: {
+              text: 'ปริมาณน้ำฝนสะสม (มม.)',
+              style: { fontSize: '16px', color: textColor },
+            },
+          },
+        ],
+    
+        tooltip: {
+          shared: true,        // แสดง tooltip หลาย series พร้อมกัน
+          intersect: false,    // ไม่จำเป็นต้องชี้ตรงจุดพอดี
+          x: { format: 'dd MMM' },
+          y: {
+            formatter: (val: number) => `${val.toFixed(2).toLocaleString()} มม.`,
+          },
+        },
+      colors: ['#3366FF','#FF0033','#00FF33','#CD853F','#FF9900','#66CCFF','#9933FF','#009966','#000000','#333399'],
+    },
+    rain: {
+      chart: {
+        id: 'rain-rain',
+        zoom: { enabled: true },
+        toolbar: { show: true },
+        background: bgColor,
+      fontFamily: "Prompt",
+      foreColor: textColor,
+  
+      },
+      markers: {
+        size: 0,
+        strokeWidth: 0,
+        hover: {
+          sizeOffset: 0,
+        },
+      },
+      
+      title: {
+        text: 'ปริมาณฝนรายวัน',
+        align: "center" as const,
+        style: {
+          fontSize: '18px',
+          color: textColor,
+          fontFamily: 'Prompt',
+        },
+      },
+      stroke: {
+        width: Array(20).fill(2),
+        dashArray:  Array(20).fill(0),
+        curve: 'smooth' as const,
+      },
+      xaxis: {
+        type: 'datetime',
+        min: new Date(`${BASE_YEAR}-01-01`).getTime(),
+        max: new Date(`${BASE_YEAR}-12-31`).getTime(),
+        labels: { datetimeUTC: false, format: 'dd MMM', style: { colors: textColor }},
+        axisBorder: { show: false },
+        axisTicks: { color: gridColor },
+      },
+      yaxis: [
+          {
+            seriesName: 'ปริมาณน้ำฝน (มม.)',
+            labels: {
+              formatter: (val: number) => val.toFixed(2),
+              style: { fontSize: '12px', color: textColor },
+            },
+            title: {
+              text: 'ปริมาณน้ำฝน (มม.)',
+              style: { fontSize: '16px', color: textColor },
+            },
+          }
+        ],
+        tooltip: {
+          shared: true,        // แสดง tooltip หลาย series พร้อมกัน
+          intersect: false,    // ไม่จำเป็นต้องชี้ตรงจุดพอดี
+          x: { format: 'dd MMM' },
+          y: {
+            formatter: (val: number) => `${val.toFixed(2).toLocaleString()} มม.`,
+          },
+        },
+      colors: ['#3366FF','#FF0033','#00FF33','#CD853F','#FF9900','#66CCFF','#9933FF','#009966','#000000','#333399'],
+    }
+  };
   // เลือก options ตาม type
   const baseOptions = chartOptionsMap[type as 'rain' | 'rain_sum'] as ApexCharts.ApexOptions;
 
    const options = {
     ...baseOptions,
-    // responsive: [{
-    //         breakpoint: 768, 
-    //         options: {
-    //             chart: {
-    //                 height: 300, // ลดความสูงบนมือถือ
-    //             },
-    //             title: {
-    //                 style: { fontSize: '14px' }, // ลดขนาด Title
-    //             },
-    //             xaxis: {
-    //                 labels: { style: { fontSize: '10px' } }, // ลดขนาด Label แกน X
-    //             },
-    //             yaxis: [{
-    //                 labels: { style: { fontSize: '10px' } }, // ลดขนาด Label แกน Y
-    //                 title: { style: { fontSize: '12px' } }, // ลดขนาด Title แกน Y
-    //             }],
-    //             tooltip: {
-    //                 style: { fontSize: '10px' }, // ลดขนาด Tooltip
-    //             },
-    //             legend: {
-    //                 fontSize: '10px', // ลดขนาด Legend
-    //             },
-    //         }
-    //     }]
    };
 
 
@@ -241,24 +225,23 @@ const RainChart: React.FC<DataChartProps> = ({ data, type = 'rain', height = 350
           open={open}
           onClose={handleClose}
         >
-          <MenuItem sx={menuStyle} onClick={() => handleExport("png")}>
+          <MenuItem sx={fontInfo} onClick={() => handleExport("png")}>
             <TableChartIcon sx={{ mr: 1 }} />
             Export PNG
           </MenuItem>
-          <MenuItem sx={menuStyle} onClick={() => handleExport("jpg")}>
+          <MenuItem sx={fontInfo} onClick={() => handleExport("jpg")}>
             <DownloadIcon sx={{ mr: 1 }} />
             Export JPG
           </MenuItem>
-          <MenuItem sx={menuStyle} onClick={() => handleExport("jpeg")}>
+          <MenuItem sx={fontInfo} onClick={() => handleExport("jpeg")}>
             <DownloadIcon sx={{ mr: 1 }} />
             Export JPEG
           </MenuItem>
-          <MenuItem sx={menuStyle} onClick={() => handleExport("pdf")}>
+          <MenuItem sx={fontInfo} onClick={() => handleExport("pdf")}>
             <TextSnippetIcon sx={{ mr: 1 }} />
             Export PDF
           </MenuItem>
         </Menu>
-
       </Box>
 
       {/* กราฟ */}

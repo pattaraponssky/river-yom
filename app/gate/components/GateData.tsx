@@ -14,6 +14,7 @@ import {
   Typography,
   SelectChangeEvent,
   Button,
+  useTheme,
 } from "@mui/material";
 import GateChart from "@/components/data/GateChartData";
 import GateExportTable from "@/components/data/GateTableData";
@@ -31,6 +32,8 @@ interface DataGateStationProps {
 const DataGateStation: React.FC<DataGateStationProps> = ({propsSelectedStation}) => {
   const queryParams = new URLSearchParams(location.search);
   const stationFromURL = queryParams.get("station") || "T.16";
+  const theme = useTheme();
+  const isDark = theme.palette.mode === "dark";
   const [stations, setStations] = useState<any[]>([]); // เก็บข้อมูลสถานี
   const [selectedStation, setSelectedStation] = useState<string | null>('T.16'); // สถานีที่เลือก
   const [availableYears, setAvailableYears] = useState<string[]>([]);
@@ -376,9 +379,9 @@ const DataGateStation: React.FC<DataGateStationProps> = ({propsSelectedStation})
             {" "}ปี พ.ศ. {parseInt(startYear) + 543} - {parseInt(endYear) + 543}
           </Typography>
 
-          <GateChart data={chartData2} type="wl_upper" sta_code={selectedStation ?? ''} />
-          <GateChart data={chartData3} type="wl_lower" sta_code={selectedStation ?? ''} />
-          <GateChart data={chartData1} type="discharge" />
+          <GateChart data={chartData2} isDark={isDark} type="wl_upper" sta_code={selectedStation ?? ''} />
+          <GateChart data={chartData3} isDark={isDark} type="wl_lower" sta_code={selectedStation ?? ''} />
+          <GateChart data={chartData1} isDark={isDark} type="discharge" />
 
           <GateExportTable
             dischargeGroupedData={dischargeGroupedData}

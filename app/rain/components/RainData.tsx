@@ -14,6 +14,7 @@ import {
   Typography,
   SelectChangeEvent,
   Button,
+  useTheme,
 } from "@mui/material";
 import RainChart from "@/components/data/RainChartData";
 import RainExportTable from "@/components/data/RainTableData";
@@ -28,6 +29,8 @@ interface DataRainStationProps {
 const DataRainStation: React.FC<DataRainStationProps> = ({ propsSelectedStation }) => {
   const queryParams = new URLSearchParams(location.search);
   const stationFromURL = queryParams.get("station") || "690151";
+  const theme = useTheme();
+  const isDark = theme.palette.mode === "dark";
 
   const [stations, setStations] = useState<any[]>([]);
   const [selectedStation, setSelectedStation] = useState<string | null>(null);
@@ -378,8 +381,8 @@ const DataRainStation: React.FC<DataRainStationProps> = ({ propsSelectedStation 
               {" "}ปี พ.ศ. {parseInt(startYear) + 543} - {parseInt(endYear) + 543}
             </Typography>
 
-            <RainChart data={chartData1} type="rain" />
-            <RainChart data={chartData2} type="rain_sum" />
+            <RainChart data={chartData1} isDark={isDark} type="rain" />
+            <RainChart data={chartData2} isDark={isDark} type="rain_sum" />
 
             <RainExportTable
               rain_mmGroupedData={rainGroupedData}

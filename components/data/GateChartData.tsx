@@ -8,214 +8,220 @@ import ApexCharts from 'react-apexcharts';
 import DownloadIcon from '@mui/icons-material/Download';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import TextSnippetIcon from '@mui/icons-material/TextSnippet';
-import { menuStyle } from '../../theme/style';
+import { fontInfo } from '../../theme/style';
 
 interface DataChartProps {
   data: any; // หรือกำหนด type ให้ละเอียดขึ้นได้
   type: string;
   height?: number;
   sta_code?: string;
+  isDark: boolean;
 }
 
 const BASE_YEAR = 2000;
 
-const gateAnnotations: Record<string, ApexAnnotations> = {
-  'T.1': {
-    yaxis: [
-      { y: 1.70, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 1.70 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
-      { y: 0.56, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 0.56 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
-      { y: -0.57, borderColor: 'green', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง -0.57 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'green' } } },
-    ],
-  },
-  'T.10': {
-    yaxis: [
-      { y: 6.32, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 6.32 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
-      { y: 5.47, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 5.47 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
-      { y: 4.61, borderColor: 'green', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 4.61 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'green' } } },
-    ]
-  },
-  'T.13': {
-    yaxis: [  
-      { y: 2.69, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 2.69 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
-      { y: 2.02, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 2.02 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
-      { y: 1.36, borderColor: 'green', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 1.36 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'green' } } },
-      ]
-  },
-  'T.14': {
-    yaxis: [
-      { y: 1.81, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 1.81 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
-      { y: 0.75, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 0.75 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
-      { y: -0.31, borderColor: 'green', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง -0.31 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'green' } } },
-    ]
-  },
-  'T.15': {
-    yaxis: [
-      { y: 2.71, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 2.71 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
-      { y: 1.84, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 1.84 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
-      { y: 0.98, borderColor: 'green', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 0.98 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'green' } } },
-    ]
-  },
-  '': {
-    yaxis: [
-    ]
-  },
-};
-
-const chartOptionsMap = {
-  discharge: {
-    chart: {
-      id: 'gate-data',
-      zoom: { enabled: true },
-      toolbar: { show: true },
-      fontFamily: "Prompt", 
-    },
-    title: {
-      text: 'อัตราการไหล',
-      align: "center" as const,
-      style: {
-        fontSize: '16px',
-        color: '#333',
-        fontFamily: 'Prompt',
-      },
-    },
-    stroke: {
-      width: Array(20).fill(4),
-      dashArray:  Array(20).fill(0),
-      curve: 'smooth' as const,
-    },  
-    xaxis: {
-      type: 'datetime',
-      min: new Date(`${BASE_YEAR}-01-01`).getTime(),
-      max: new Date(`${BASE_YEAR}-12-31`).getTime(),
-      labels: { datetimeUTC: false, format: 'dd MMM', },
-    },
-    yaxis: [
-        {
-          seriesName: 'อัตราการไหล (ลบ.ม./วินาที)',
-          labels: {
-            formatter: (val: number) => val.toFixed(2),
-            style: { fontSize: '12px', color: '#3366FF' },
-          },
-          title: {
-            text: 'อัตราการไหล (ลบ.ม./วินาที)',
-            style: { fontSize: '16px', color: '#3366FF' },
-          },
-        },
-
-      ],
-
-    tooltip: { intersect: false, x: { format: 'dd MMM' } },
-    colors: ['#3366FF','#FF0033','#00FF33','#CD853F','#FF9900','#66CCFF','#9933FF','green','#000000','#FFD700'],
-  },
-  wl_lower: {
-    chart: {
-      id: 'gate-wl_lower',
-      zoom: { enabled: true },
-      toolbar: { show: true },
-      fontFamily: "Prompt", 
- 
-    },
-    markers: {
-      size: 0,
-      strokeWidth: 0,
-      hover: {
-        sizeOffset: 0,
-      },
-    },
-    title: {
-      text: 'ระดับน้ำท้าย',
-      align: "center" as const,
-      style: {
-        fontSize: '18px',
-        color: '#333',
-        fontFamily: 'Prompt',
-      },
-    },
-    stroke: {
-      width: Array(20).fill(4),
-      dashArray:  Array(20).fill(0),
-      curve: 'smooth' as const,
-    },
-    xaxis: {
-      type: 'datetime',
-      min: new Date(`${BASE_YEAR}-01-01`).getTime(),
-      max: new Date(`${BASE_YEAR}-12-31`).getTime(),
-      labels: { datetimeUTC: false, format: 'dd MMM', },
-    },
-    yaxis: [
-        {
-          seriesName: 'ระดับน้ำท้าย (ม.รทก.)',
-          labels: {
-            formatter: (val: number) => val.toFixed(2),
-            style: { fontSize: '12px', color: '#2196F3' },
-          },
-          title: {
-            text: 'ระดับน้ำท้าย (ม.รทก.)',
-            style: { fontSize: '16px', color: '#2196F3' },
-          },
-        }
-      ],
-    tooltip: { intersect: false, x: { format: 'dd MMM' } },
-    colors: ['#3366FF','#FF0033','#00FF33','#CD853F','#FF9900','#66CCFF','#9933FF','green','#000000','#FFD700'],
-  },
-  wl_upper: {
-    chart: {
-      id: 'gate-wl_upper',
-      zoom: { enabled: true },
-      toolbar: { show: true },
-      fontFamily: "Prompt", 
- 
-    },
-    markers: {
-      size: 0,
-      strokeWidth: 0,
-      hover: {
-        sizeOffset: 0,
-      },
-    },
-    title: {
-      text: 'ระดับน้ำเหนือ',
-      align: "center" as const,
-      style: {
-        fontSize: '18px',
-        color: '#333',
-        fontFamily: 'Prompt',
-      },
-    },
-    stroke: {
-      width: Array(20).fill(4),
-      dashArray:  Array(20).fill(0),
-      curve: 'smooth' as const,
-    },
-    xaxis: {
-      type: 'datetime',
-      min: new Date(`${BASE_YEAR}-01-01`).getTime(),
-      max: new Date(`${BASE_YEAR}-12-31`).getTime(),
-      labels: { datetimeUTC: false, format: 'dd MMM', },
-    },
-    yaxis: [
-        {
-          seriesName: 'ระดับน้ำเหนือ (ม.รทก.)',
-          labels: {
-            formatter: (val: number) => val.toFixed(2),
-            style: { fontSize: '12px', color: '#2196F3' },
-          },
-          title: {
-            text: 'ระดับน้ำเหนือ (ม.รทก.)',
-            style: { fontSize: '16px', color: '#2196F3' },
-          },
-        }
-      ],
-    tooltip: { intersect: false, x: { format: 'dd MMM' } },
-    colors: ['#3366FF','#FF0033','#00FF33','#CD853F','#FF9900','#66CCFF','#9933FF','green','#000000','#FFD700'],
-  }
-};
-
-const GateChart: React.FC<DataChartProps> = ({ data, type , height = 350 ,sta_code}) => {
+const GateChart: React.FC<DataChartProps> = ({ data, type , height = 350 ,sta_code, isDark}) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
+  const bgColor = isDark ? "#1e2533" : "#f8fafc"; 
+  const textColor = isDark ? "#e2e8f0" : "#334155";         // ตัวอักษรหลัก
+  const gridColor = isDark ? "#334155" : "#e2e8f0";  
   if (!data || !data.series) return null;
   
+
+  const gateAnnotations: Record<string, ApexAnnotations> = {
+    'T.1': {
+      yaxis: [
+        { y: 1.70, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 1.70 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
+        { y: 0.56, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 0.56 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
+        { y: -0.57, borderColor: 'green', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง -0.57 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'green' } } },
+      ],
+    },
+    'T.10': {
+      yaxis: [
+        { y: 6.32, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 6.32 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
+        { y: 5.47, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 5.47 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
+        { y: 4.61, borderColor: 'green', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 4.61 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'green' } } },
+      ]
+    },
+    'T.13': {
+      yaxis: [  
+        { y: 2.69, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 2.69 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
+        { y: 2.02, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 2.02 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
+        { y: 1.36, borderColor: 'green', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 1.36 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'green' } } },
+        ]
+    },
+    'T.14': {
+      yaxis: [
+        { y: 1.81, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 1.81 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
+        { y: 0.75, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 0.75 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
+        { y: -0.31, borderColor: 'green', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง -0.31 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'green' } } },
+      ]
+    },
+    'T.15': {
+      yaxis: [
+        { y: 2.71, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 2.71 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
+        { y: 1.84, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 1.84 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
+        { y: 0.98, borderColor: 'green', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 0.98 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'green' } } },
+      ]
+    },
+    '': {
+      yaxis: [
+      ]
+    },
+  };
+
+  const chartOptionsMap = {
+    discharge: {
+      chart: {
+        id: 'gate-data',
+        zoom: { enabled: true },
+        toolbar: { show: true },
+        fontFamily: "Prompt", 
+      },
+      title: {
+        text: 'อัตราการไหล',
+        align: "center" as const,
+        style: {
+          fontSize: '16px',
+          color: '#333',
+          fontFamily: 'Prompt',
+        },
+      },
+      stroke: {
+        width: Array(20).fill(4),
+        dashArray:  Array(20).fill(0),
+        curve: 'smooth' as const,
+      },  
+      xaxis: {
+        type: 'datetime',
+        min: new Date(`${BASE_YEAR}-01-01`).getTime(),
+        max: new Date(`${BASE_YEAR}-12-31`).getTime(),
+        labels: { datetimeUTC: false, format: 'dd MMM', },
+      },
+      yaxis: [
+          {
+            seriesName: 'อัตราการไหล (ลบ.ม./วินาที)',
+            labels: {
+              formatter: (val: number) => val.toFixed(2),
+              style: { fontSize: '12px', color: '#3366FF' },
+            },
+            title: {
+              text: 'อัตราการไหล (ลบ.ม./วินาที)',
+              style: { fontSize: '16px', color: '#3366FF' },
+            },
+          },
+
+        ],
+
+      tooltip: { intersect: false, x: { format: 'dd MMM' } },
+      colors: ['#3366FF','#FF0033','#00FF33','#CD853F','#FF9900','#66CCFF','#9933FF','green','#000000','#FFD700'],
+    },
+    wl_lower: {
+      chart: {
+        id: 'gate-wl_lower',
+        zoom: { enabled: true },
+        toolbar: { show: true },
+        fontFamily: "Prompt", 
+  
+      },
+      markers: {
+        size: 0,
+        strokeWidth: 0,
+        hover: {
+          sizeOffset: 0,
+        },
+      },
+      title: {
+        text: 'ระดับน้ำท้าย',
+        align: "center" as const,
+        style: {
+          fontSize: '18px',
+          color: '#333',
+          fontFamily: 'Prompt',
+        },
+      },
+      stroke: {
+        width: Array(20).fill(4),
+        dashArray:  Array(20).fill(0),
+        curve: 'smooth' as const,
+      },
+      xaxis: {
+        type: 'datetime',
+        min: new Date(`${BASE_YEAR}-01-01`).getTime(),
+        max: new Date(`${BASE_YEAR}-12-31`).getTime(),
+        labels: { datetimeUTC: false, format: 'dd MMM', },
+      },
+      yaxis: [
+          {
+            seriesName: 'ระดับน้ำท้าย (ม.รทก.)',
+            labels: {
+              formatter: (val: number) => val.toFixed(2),
+              style: { fontSize: '12px', color: '#2196F3' },
+            },
+            title: {
+              text: 'ระดับน้ำท้าย (ม.รทก.)',
+              style: { fontSize: '16px', color: '#2196F3' },
+            },
+          }
+        ],
+      tooltip: { intersect: false, x: { format: 'dd MMM' } },
+      colors: ['#3366FF','#FF0033','#00FF33','#CD853F','#FF9900','#66CCFF','#9933FF','green','#000000','#FFD700'],
+    },
+    wl_upper: {
+      chart: {
+        id: 'gate-wl_upper',
+        zoom: { enabled: true },
+        toolbar: { show: true },
+        fontFamily: "Prompt", 
+  
+      },
+      markers: {
+        size: 0,
+        strokeWidth: 0,
+        hover: {
+          sizeOffset: 0,
+        },
+      },
+      title: {
+        text: 'ระดับน้ำเหนือ',
+        align: "center" as const,
+        style: {
+          fontSize: '18px',
+          color: '#333',
+          fontFamily: 'Prompt',
+        },
+      },
+      stroke: {
+        width: Array(20).fill(4),
+        dashArray:  Array(20).fill(0),
+        curve: 'smooth' as const,
+      },
+      xaxis: {
+        type: 'datetime',
+        min: new Date(`${BASE_YEAR}-01-01`).getTime(),
+        max: new Date(`${BASE_YEAR}-12-31`).getTime(),
+        labels: { datetimeUTC: false, format: 'dd MMM', },
+      },
+      yaxis: [
+          {
+            seriesName: 'ระดับน้ำเหนือ (ม.รทก.)',
+            labels: {
+              formatter: (val: number) => val.toFixed(2),
+              style: { fontSize: '12px', color: '#2196F3' },
+            },
+            title: {
+              text: 'ระดับน้ำเหนือ (ม.รทก.)',
+              style: { fontSize: '16px', color: '#2196F3' },
+            },
+          }
+        ],
+      tooltip: { intersect: false, x: { format: 'dd MMM' } },
+      colors: ['#3366FF','#FF0033','#00FF33','#CD853F','#FF9900','#66CCFF','#9933FF','green','#000000','#FFD700'],
+    }
+  };
+
+
   // เลือก options ตาม type
   const baseOptions = chartOptionsMap[type as 'wl_upper'| 'wl_lower' | 'discharge'] as ApexCharts.ApexOptions;
   const annotations = sta_code && (type === 'wl_upper' || type === 'wl_lower') ? gateAnnotations[sta_code] || { yaxis: [] } : undefined;
@@ -320,19 +326,19 @@ const GateChart: React.FC<DataChartProps> = ({ data, type , height = 350 ,sta_co
           open={open}
           onClose={handleClose}
         >
-          <MenuItem sx={menuStyle} onClick={() => handleExport("png")}>
+          <MenuItem sx={fontInfo} onClick={() => handleExport("png")}>
             <TableChartIcon sx={{ mr: 1 }} />
             Export PNG
           </MenuItem>
-          <MenuItem sx={menuStyle} onClick={() => handleExport("jpg")}>
+          <MenuItem sx={fontInfo} onClick={() => handleExport("jpg")}>
             <DownloadIcon sx={{ mr: 1 }} />
             Export JPG
           </MenuItem>
-          <MenuItem sx={menuStyle} onClick={() => handleExport("jpeg")}>
+          <MenuItem sx={fontInfo} onClick={() => handleExport("jpeg")}>
             <DownloadIcon sx={{ mr: 1 }} />
             Export JPEG
           </MenuItem>
-          <MenuItem sx={menuStyle} onClick={() => handleExport("pdf")}>
+          <MenuItem sx={fontInfo} onClick={() => handleExport("pdf")}>
             <TextSnippetIcon sx={{ mr: 1 }} />
             Export PDF
           </MenuItem>

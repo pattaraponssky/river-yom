@@ -90,7 +90,6 @@ const FlowCard: React.FC = () => {
                 fontWeight: "bold",
                 fontSize: { md: "1.4rem", xs: "1rem" },
                 fontFamily: "Prompt",
-                color: "#28378B",
               }}
             >
               น้ำท่า

@@ -189,21 +189,21 @@ const GateExportTable: React.FC<Props> = ({
           <TableBody>
             {allDataRows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} sx={{ py: 4, ...getCellStyle(0, theme) }}>
+                <TableCell colSpan={4} sx={{ py: 4, ...getCellStyle(0) }}>
                   ไม่มีข้อมูลสำหรับปีที่เลือก
                 </TableCell>
               </TableRow>
             ) : (
               allDataRows.map((row, idx) => (
                 <TableRow key={row.timestamp}>
-                  <TableCell sx={getCellStyle(idx,theme)}>{formatThaiDate(row.timestamp)}</TableCell>
-                  <TableCell sx={getCellStyle(idx,theme)}>
+                  <TableCell sx={getCellStyle(idx)}>{formatThaiDate(row.timestamp)}</TableCell>
+                  <TableCell sx={getCellStyle(idx)}>
                     {row.discharge !== null ? row.discharge.toFixed(3) : '-'}
                   </TableCell>
-                  <TableCell sx={getCellStyle(idx,theme)}>
+                  <TableCell sx={getCellStyle(idx)}>
                     {row.wlUpper !== null ? row.wlUpper.toFixed(3) : '-'}
                   </TableCell>
-                  <TableCell sx={getCellStyle(idx,theme)}>
+                  <TableCell sx={getCellStyle(idx)}>
                     {row.wlLower !== null ? row.wlLower.toFixed(3) : '-'}
                   </TableCell>
                 </TableRow>

@@ -1,5 +1,5 @@
-import React from 'react';
-import { Box, CircularProgress, Typography } from '@mui/material';
+import React from "react";
+import { Box, CircularProgress, Typography } from "@mui/material";
 
 const CenteredLoading: React.FC<{ message?: string }> = ({ message = "กำลังโหลด..." }) => {
   return (
@@ -11,7 +11,7 @@ const CenteredLoading: React.FC<{ message?: string }> = ({ message = "กำล�
       height="100vh"
     >
       <CircularProgress size={48} />
-      <Typography variant="body1" mt={2} sx={{fontFamily: "Prompt",fontWeight:"bold"}}>
+      <Typography variant="body1" mt={2} sx={{ fontFamily: "Prompt", fontWeight: "bold" }}>
         {message}
       </Typography>
     </Box>

@@ -16,25 +16,22 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   Button,
+  useTheme,
 } from "@mui/material";
 import FlowChart from "@/components/data/FlowChartData";
 import FlowExportTable from "@/components/data/FlowTableData";
 import CenteredLoading from "@/components/layout/CenteredLoading";
 import { API_URL, Path_URL } from "@/lib/utility";
-import { titleStyle, textStyle } from "@/theme/style";
+import { titleStyle, textStyle, fontInfo } from "@/theme/style";
 import { HeaderCellStyle } from '../../../theme/style';
 
 type DataMode = "daily" | "hourly";
 
-const fontInfo = {
-  fontFamily: "Prompt",
-  fontSize: { md: "1.1rem", xs: "0.9rem" },
-};
-
 const DataFlowCombined: React.FC<{ propsSelectedStation?: string }> = ({ propsSelectedStation }) => {
   const queryParams = new URLSearchParams(location.search);
   const stationFromURL = queryParams.get("station") || "T.10";
-
+  const theme = useTheme();
+  const isDark = theme.palette.mode === "dark";
   const [mode, setMode] = useState<DataMode>("daily");
   const [stations, setStations] = useState<any[]>([]);
   const [selectedStation, setSelectedStation] = useState<string | null>(null);
@@ -390,7 +387,7 @@ const DataFlowCombined: React.FC<{ propsSelectedStation?: string }> = ({ propsSe
             {" "}ปี พ.ศ. {parseInt(startYear) + 543} - {parseInt(endYear) + 543}
           </Typography>
 
-          <FlowChart data={chartDataWL} type="wl" sta_code={selectedStation ?? ""} mode={mode} />
+          <FlowChart data={chartDataWL} type="wl" sta_code={selectedStation ?? ""} mode={mode} isDark={isDark} />
           {chartDataDischarge && (
             <FlowChart data={chartDataDischarge} type="discharge" sta_code={selectedStation ?? ""} mode={mode} />
           )}

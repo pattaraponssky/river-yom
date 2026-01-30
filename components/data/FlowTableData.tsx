@@ -267,31 +267,16 @@ const FlowExportTable: React.FC<Props> = ({
         <Table size="small" stickyHeader>
           <TableHead>
             <TableRow>
-              <TableCell sx={{
-                ...HeaderCellStyle,
-                backgroundColor: isDark ? '#1a237e' : 'rgb(1, 87, 155)',
-                color: isDark ? '#e0e7ff' : 'white',
-                borderColor: theme.palette.divider,
-              }}>
+              <TableCell sx={HeaderCellStyle}>
                 {mode === "hourly" ? "วันที่/เวลา" : "วันที่"}
               </TableCell>
               {hasDischarge && (
-                <TableCell sx={{
-                  ...HeaderCellStyle,
-                  backgroundColor: isDark ? '#1a237e' : 'rgb(1, 87, 155)',
-                  color: isDark ? '#e0e7ff' : 'white',
-                  borderColor: theme.palette.divider,
-                }}>
+                <TableCell sx={HeaderCellStyle}>
                   อัตราการไหล (ลบ.ม./วินาที)
                 </TableCell>
               )}
               {hasWL && (
-                <TableCell sx={{
-                  ...HeaderCellStyle,
-                  backgroundColor: isDark ? '#1a237e' : 'rgb(1, 87, 155)',
-                  color: isDark ? '#e0e7ff' : 'white',
-                  borderColor: theme.palette.divider,
-                }}>
+                <TableCell sx={HeaderCellStyle}>
                   ระดับน้ำ (ม.รทก.)
                 </TableCell>
               )}
@@ -325,28 +310,16 @@ const FlowExportTable: React.FC<Props> = ({
                     },
                   }}
                 >
-                  <TableCell sx={{ 
-                    ...getCellStyle(idx, theme), 
-                    color: theme.palette.text.primary,
-                    borderColor: theme.palette.divider,
-                  }}>
+                  <TableCell sx={getCellStyle(idx)}>
                     {row.datetime}
                   </TableCell>
                   {hasDischarge && (
-                    <TableCell sx={{ 
-                      ...getCellStyle(idx, theme), 
-                      color: theme.palette.text.primary,
-                      borderColor: theme.palette.divider,
-                    }}>
+                    <TableCell sx={getCellStyle(idx)}>
                       {row.discharge !== null ? row.discharge.toFixed(3) : '-'}
                     </TableCell>
                   )}
                   {hasWL && (
-                    <TableCell sx={{ 
-                      ...getCellStyle(idx, theme), 
-                      color: theme.palette.text.primary,
-                      borderColor: theme.palette.divider,
-                    }}>
+                    <TableCell sx={getCellStyle(idx)}>
                       {row.wl !== null ? row.wl.toFixed(3) : '-'}
                     </TableCell>
                   )}

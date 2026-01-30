@@ -27,13 +27,6 @@ export const fontTitle = {
   fontWeight: 600,
 };
 
-export const menuStyle = {
-    fontFamily: "Prompt",
-    fontSize: "1rem",
-    backgroundColor: '#fff',
-
-  };
-
 export const fontInfo = {
   fontFamily: "Prompt",
   fontSize:{md: "1.1rem", xs: "0.9rem"},
@@ -44,7 +37,7 @@ export const HeaderCellStyle = (theme: any) => ({
   border: `1px solid ${theme.palette.divider}`,
   fontWeight: "bold",
   textAlign: "center",
-  backgroundColor: theme.palette.mode === 'dark' ? '#1a237e' : 'rgb(1, 87, 155)',
+  backgroundColor: theme.palette.mode === 'dark' ? '#01579B' : 'rgb(1, 87, 155)',
   color: theme.palette.mode === 'dark' ? '#e0e7ff' : 'white',
   fontSize: { xs: "0.8rem", sm: "1rem", md: "1.1rem" },
   fontFamily: "Prompt",

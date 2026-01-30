@@ -5,7 +5,7 @@ import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import RemoveIcon from '@mui/icons-material/Remove';
 import { API_URL } from "@/lib/utility";
-import { getCellDiffStyle, getCellStyle, HeaderCellStyle, titleStyle } from "@/theme/style";
+import { getCellDiffStyle, getCellStyle, HeaderCellStyle, fontTitle } from "@/theme/style";
 import { useThemeMode } from '@/contexts/ThemeContext';
 
 const warningData = [
@@ -276,40 +276,59 @@ const FloodWarningTable: React.FC<FloodWarningTableProps> = ({ maxLevels, waterT
     >
        <Box sx={{ display: "flex", flexDirection: {md:"row",xs:"column"}, justifyContent: "space-between", alignItems: "center", mb: 2 }}>
         <Typography
-          variant="h6"
-          sx={{fontWeight: "bold", ...titleStyle, color: "#28378B" }}
+          sx={fontTitle}
         >
           เกณฑ์การเฝ้าระวังและเตือนภัยในพื้นที่ศึกษาโครงการ
         </Typography>
 
         <Button
-          variant="contained"
-          color="primary"
-          onClick={exportToCsv}
-          startIcon={<CloudDownloadIcon />}
-          sx={{
-            fontFamily: "Prompt",
-            backgroundColor: "#28aa15",
-            '&:hover': { backgroundColor: "#159311" },
-            whiteSpace: 'nowrap',
-            
-            minWidth: 'auto',
-            display:{md:"block",sm:"none",xs:"none"},
-            padding: {
-              xs: "6px 6px", // ลด padding สำหรับมือถือ
-              sm: "6px 16px" // ขนาดปกติสำหรับหน้าจอที่ใหญ่ขึ้น
-            },
-            '& .MuiButton-startIcon': {
-              marginX: { xs: 0.5, sm: 0.8 } // ลดระยะห่างไอคอนสำหรับมือถือ
-              
-            }
-          }}
-        >
-          {/* ซ่อนข้อความ "Export ข้อมูลเป็น CSV" บนหน้าจอขนาดเล็ก */}
-          <Box component="span" >
-            Export ข้อมูลเป็น CSV
-          </Box>
-        </Button>
+            variant="contained"
+            onClick={exportToCsv}
+            startIcon={<CloudDownloadIcon />}
+            sx={(theme) => ({
+                fontFamily: 'Prompt, sans-serif',
+                fontWeight: 600,
+                textTransform: 'none',
+                borderRadius: '10px',
+                whiteSpace: 'nowrap',
+                minWidth: 'auto',
+
+                /* สีหลัก */
+                backgroundColor: '#2e7d32', // เขียวสุภาพ
+                color: '#fff',
+
+                /* Hover / Active */
+                '&:hover': {
+                backgroundColor: '#1b5e20',
+                boxShadow: theme.shadows[4],
+                },
+                '&:active': {
+                backgroundColor: '#144d1a',
+                boxShadow: theme.shadows[2],
+                },
+
+                /* Responsive */
+                display: { md: 'inline-flex', sm: 'none', xs: 'none' },
+                px: { xs: 1, sm: 2 },
+                py: { xs: 0.75, sm: 1 },
+
+                /* Icon spacing */
+                '& .MuiButton-startIcon': {
+                marginRight: { xs: 0.5, sm: 1 },
+                marginLeft: { xs: 0, sm: 0 },
+                },
+
+                ...(theme.palette.mode === 'dark' && {
+                backgroundColor: '#388e3c',
+                '&:hover': {
+                    backgroundColor: '#2e7d32',
+                },
+                }),
+            })}
+            >
+            ส่งออก CSV
+            </Button>
+
       </Box>
       <Table sx={{ minWidth: isSmallScreen ? 333 : 1000, tableLayout: "auto" }}>
 

@@ -1,20 +1,22 @@
 'use client';
 
 import '@/app/globals.css';
-import { Container, Typography, Grid, Box } from '@mui/material';
-import AppHeader from '@/components/layout/AppHeader';  
+import { Container, Typography, Grid, Box, useTheme } from '@mui/material';
 import DashboardCards from './components/DashboardCard';
-import React, { useState, useEffect } from "react";
+import  { useState, useEffect } from "react";
 import { Path_URL, API_URL, formatThaiDay } from '../../lib/utility';
 import HydroMap from './components/Map';
 import FlowCard from '../../components/dashboard/FlowCard';
 import RainCard from '../../components/dashboard/RainCard';
-import ReservoirChart from '@/components/data/ReservoirChartData';
 import ReservoirCard from '@/components/dashboard/ReservoirCard';
 import GateCard from '@/components/dashboard/GateCard';
 import { BoxStyle } from '@/theme/style';
 import Papa from "papaparse";
 import FloodWarningTable from './components/WarningTable';
+import WaterLevelChart from './components/WaterLevel';
+import FloatingMenu from '@/components/dashboard/FloatingMenu';
+import LongProfileChart from './components/LongProfile';
+import { log } from 'console';
 
 interface WaterLevelData {
   time: string;
@@ -22,6 +24,7 @@ interface WaterLevelData {
   elevation: number;
   crossSection: number;
 }
+
 interface waterData {
   CrossSection: number;
   Date: string | null;
@@ -42,11 +45,12 @@ const stationMapping: Record<string, number> = {
 
 export default function Dashboard() {
   const mapKey = process.env.NEXT_PUBLIC_LONGDO_MAP_KEY!;
+  const theme = useTheme();
+  const isDark = theme.palette.mode === "dark";
 
-  // State สำหรับข้อมูลจาก API dailySummary
   const [dailySummary, setDailySummary] = useState<any>(null);
 
-  // State สำหรับข้อมูลจาก RAS CSV
+  const [forecastLongProfile, setForecastLongProfile] = useState<waterData[]>([]);
   const [rawData, setRawData] = useState<WaterLevelData[]>([]);
   const [forecastData, setForecastData] = useState<WaterLevelData[]>([]);
   const [historicalData, setHistoricalData] = useState<WaterLevelData[]>([]);
@@ -67,172 +71,202 @@ export default function Dashboard() {
 
   // โหลดและประมวลผล RAS CSV
   useEffect(() => {
-      let isMounted = true;
+    let isMounted = true;
 
-      const loadRasData = async () => {
-        try {
-          // 1. ดึงไฟล์ CSV
-          const response = await fetch(`${Path_URL}ras-output/output_ras.csv`);
-          if (!response.ok) {
-            throw new Error(`Failed to fetch CSV: ${response.status}`);
-          }
-          const csvText = await response.text();
+    const loadRasData = async () => {
+      try {
+        // 1. ดึงไฟล์ CSV
+        const response = await fetch(`${Path_URL}ras-output/output_ras.csv`);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch CSV: ${response.status} - ${response.statusText}`);
+        }
+        const csvText = await response.text();
 
-          // 2. Parse CSV
-          const parseResult = await new Promise<Papa.ParseResult<Record<string, string>>>((resolve, reject) => {
-            Papa.parse<Record<string, string>>(csvText, {
-              header: true,
-              skipEmptyLines: true,
-              transformHeader: (header) => header.trim(),
-              complete: (results) => resolve(results)
-            });
+        // 2. Parse CSV อย่างปลอดภัย + trim header
+        const parseResult = await new Promise<Papa.ParseResult<Record<string, string>>>((resolve, reject) => {
+          Papa.parse<Record<string, string>>(csvText, {
+            header: true,
+            skipEmptyLines: true,
+            transformHeader: (header) => header.trim(), // สำคัญมาก! ลบช่องว่างท้าย header
+            dynamicTyping: false, // ป้องกันการแปลงอัตโนมัติผิด
+            complete: (results) => resolve(results)
           });
+        });
 
-          if (!parseResult.data?.length) {
-            console.warn("CSV has no data rows");
-            return;
-          }
+        if (!parseResult.data?.length) {
+          console.warn("CSV has no data rows after parsing");
+          return;
+        }
 
-          const rawRows = parseResult.data;
+        const rawRows = parseResult.data;
+        console.log("จำนวนแถวที่ parse ได้:", rawRows.length);
 
-          // 3. กำหนดช่วงเวลา
-          const now = new Date();
-          const today9am = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 9, 0, 0, 0);
+        // 3. กำหนดช่วงเวลา (เหมือนเดิม)
+        const now = new Date();
+        const today9am = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 9, 0, 0, 0);
 
-          const startPast = new Date(today9am);
-          startPast.setDate(today9am.getDate() - 6);
+        const startPast = new Date(today9am);
+        startPast.setDate(today9am.getDate() - 6);
 
-          const startForecast = new Date(today9am);
-          const endForecast = new Date(today9am);
-          endForecast.setDate(today9am.getDate() + 7);
+        const startForecast = new Date(today9am);
+        const endForecast = new Date(today9am);
+        endForecast.setDate(today9am.getDate() + 7);
 
-          const tomorrow9am = new Date(today9am);
-          tomorrow9am.setDate(today9am.getDate() + 1);
+        const tomorrow9am = new Date(today9am);
+        tomorrow9am.setDate(today9am.getDate() + 1);
 
-          // 4. ฟังก์ชันช่วยแปลงวันที่
-          const parseDateString = (dateStr: string | undefined): string | null => {
-            if (!dateStr) return null;
-            const trimmed = dateStr.trim();
-            const [datePart, timePart] = trimmed.split(" ");
-            if (!datePart || !timePart) return null;
+        // 4. ฟังก์ชันแปลงวันที่ที่รองรับรูปแบบจริง (dd/mm/yyyy HH:mm)
+        const parseDateString = (dateStr: string | undefined): string | null => {
+          if (!dateStr) return null;
+          const trimmed = dateStr.trim();
+          const [datePart, timePart] = trimmed.split(/\s+/); // แยกด้วยช่องว่าง 1+ ตัว
+          if (!datePart || !timePart) return null;
 
-            const [day, month, year] = datePart.split("/").map(Number);
-            if ([day, month, year].some(isNaN)) return null;
+          const [day, month, year] = datePart.split("/").map(Number);
+          if ([day, month, year].some(isNaN)) return null;
 
-            const paddedMonth = month.toString().padStart(2, "0");
-            const paddedDay = day.toString().padStart(2, "0");
-            const paddedTime = timePart.padStart(8, "0"); // เผื่อกรณีไม่มีวินาที
+          // แปลงปี พ.ศ. → ค.ศ. (ถ้า > 2500 ถือว่าเป็น พ.ศ.)
+          const fullYear = year > 2500 ? year - 543 : year;
 
-            return `${year}-${paddedMonth}-${paddedDay}T${paddedTime}`;
-          };
+          const [hour, minute] = timePart.split(":").map(Number);
+          if ([hour, minute].some(isNaN)) return null;
 
-          // 5. แปลงข้อมูลทั้งหมดเป็น WaterLevelData[]
-          const allPoints: WaterLevelData[] = rawRows
-            .map((row) => {
-              const dateStr = row["Date"]?.trim();
-              const crossSectionStr = row["Cross Section"]?.trim();
-              const elevationStr = row["Water_Elevation"]?.trim();
+          // สร้าง ISO string
+          return `${fullYear}-${month.toString().padStart(2, "0")}-${day
+            .toString()
+            .padStart(2, "0")}T${hour.toString().padStart(2, "0")}:${minute
+            .toString()
+            .padStart(2, "0")}:00`;
+        };
 
-              const crossSection = Number(crossSectionStr);
-              if (isNaN(crossSection)) return null;
+        // 5. แปลงข้อมูลเป็น WaterLevelData[]
+        const allPoints: WaterLevelData[] = rawRows
+          .map((row) => {
+            const dateStr = row["Date"]?.trim();
+            let crossSectionStr = row["Cross Section"]?.trim();
+            const elevationStr = row["Water_Elevation"]?.trim();
 
-              const elevation = parseFloat(elevationStr);
-              if (isNaN(elevation)) return null;
+            // ลบช่องว่างท้าย cross section (กรณี CSV มี trailing space)
+            crossSectionStr = crossSectionStr?.replace(/\s+$/, "");
 
-              const time = parseDateString(dateStr);
-              if (!time) return null;
+            const crossSection = Number(crossSectionStr);
+            if (isNaN(crossSection)) return null;
 
-              const station = Object.entries(stationMapping).find(
-                ([, value]) => value === crossSection
-              )?.[0];
+            const elevation = parseFloat(elevationStr);
+            if (isNaN(elevation)) return null;
 
-              if (!station) return null;
+            const time = parseDateString(dateStr);
+            if (!time) {
+              console.warn("ไม่สามารถ parse วันที่:", dateStr);
+              return null;
+            }
 
-              return { time, station, elevation, crossSection };
-            })
-            .filter((item): item is WaterLevelData => item !== null);
-
-          if (!allPoints.length) return;
-
-          // 6. กรองตามช่วงเวลา
-          const historical = allPoints.filter((p) => {
-            const d = new Date(p.time);
-            return d >= startPast && d < today9am;
-          });
-
-          const forecast = allPoints.filter((p) => {
-            const d = new Date(p.time);
-            return d >= startForecast && d <= endForecast;
-          });
-
-          const todayAndFuture = allPoints.filter((p) => {
-            const d = new Date(p.time);
-            return d >= today9am;
-          });
-
-          // 7. คำนวณ max elevation + peak time (วันนี้และอนาคต)
-          const stationMaxMap: Record<string, number> = {};
-          const peakMap: Record<string, { elevation: number; time: string }> = {};
-
-          Object.keys(stationMapping).forEach((station) => {
-            const points = todayAndFuture.filter((p) => p.station === station);
-            if (!points.length) return;
-
-            const maxPoint = points.reduce((prev, curr) =>
-              curr.elevation > prev.elevation ? curr : prev
+            const stationEntry = Object.entries(stationMapping).find(
+              ([, value]) => value === crossSection
             );
 
-            stationMaxMap[station] = maxPoint.elevation;
-            peakMap[station] = { elevation: maxPoint.elevation, time: maxPoint.time };
-          });
-
-          // 8. คำนวณ trend
-          const trendResults: Record<string, string> = {};
-
-          Object.keys(stationMapping).forEach((station) => {
-            const points = forecast.filter((p) => p.station === station);
-            if (points.length < 2) {
-              trendResults[station] = "ไม่มีข้อมูลเพียงพอ";
-              return;
+            if (!stationEntry) {
+              // console.debug("ไม่พบ station สำหรับ Cross Section:", crossSection);
+              return null;
             }
 
-            const before = points.filter((p) => new Date(p.time) < tomorrow9am);
-            const after = points.filter((p) => new Date(p.time) >= tomorrow9am);
+            const station = stationEntry[0];
 
-            if (!before.length || !after.length) {
-              trendResults[station] = "ไม่มีข้อมูลเพียงพอ";
-              return;
-            }
+            return { time, station, elevation, crossSection };
+          })
+          .filter((item): item is WaterLevelData => item !== null);
 
-            const avgBefore = before.reduce((sum, p) => sum + p.elevation, 0) / before.length;
-            const avgAfter = after.reduce((sum, p) => sum + p.elevation, 0) / after.length;
-
-            const diff = avgAfter - avgBefore;
-            if (diff > 0.01) trendResults[station] = "เพิ่มขึ้น";
-            else if (diff < -0.01) trendResults[station] = "ลดลง";
-            else trendResults[station] = "คงที่";
-          });
-
-          // 9. อัปเดต state
-          if (isMounted) {
-            setRawData(allPoints);
-            setHistoricalData(historical);
-            setForecastData(forecast);
-            setMaxElevations(stationMaxMap);
-            setWaterPeaks(peakMap);
-            setWaterTrends(trendResults);
-          }
-        } catch (err) {
-          console.error("RAS data loading failed:", err);
+        console.log("จำนวนจุดข้อมูลที่ parse สำเร็จ:", allPoints.length);
+        if (allPoints.length === 0) {
+          console.warn("ไม่พบข้อมูลที่ match กับ stationMapping เลย");
+          return;
         }
-      };
 
-      loadRasData();
+        // 6. กรองตามช่วงเวลา (เหมือนเดิม)
+        const historical = allPoints.filter((p) => {
+          const d = new Date(p.time);
+          return d >= startPast && d < today9am;
+        });
 
-      return () => {
-        isMounted = false;
-      };
-    }, []);
+        const forecast = allPoints.filter((p) => {
+          const d = new Date(p.time);
+          return d >= startForecast && d <= endForecast;
+        });
+
+        const todayAndFuture = allPoints.filter((p) => {
+          const d = new Date(p.time);
+          return d >= today9am;
+        });
+
+        // 7. คำนวณ max elevation + peak time (วันนี้และอนาคต)
+            const stationMaxMap: Record<string, number> = {};
+            const peakMap: Record<string, { elevation: number; time: string }> = {};
+
+            Object.keys(stationMapping).forEach((station) => {
+              const points = todayAndFuture.filter((p) => p.station === station);
+              if (!points.length) return;
+
+              const maxPoint = points.reduce((prev, curr) =>
+                curr.elevation > prev.elevation ? curr : prev
+              );
+
+              stationMaxMap[station] = maxPoint.elevation;
+              peakMap[station] = { elevation: maxPoint.elevation, time: maxPoint.time };
+            });
+
+            // 8. คำนวณ trend
+            const trendResults: Record<string, string> = {};
+
+            Object.keys(stationMapping).forEach((station) => {
+              const points = forecast.filter((p) => p.station === station);
+              if (points.length < 2) {
+                trendResults[station] = "ไม่มีข้อมูลเพียงพอ";
+                return;
+              }
+
+              const before = points.filter((p) => new Date(p.time) < tomorrow9am);
+              const after = points.filter((p) => new Date(p.time) >= tomorrow9am);
+
+              if (!before.length || !after.length) {
+                trendResults[station] = "ไม่มีข้อมูลเพียงพอ";
+                return;
+              }
+
+              const avgBefore = before.reduce((sum, p) => sum + p.elevation, 0) / before.length;
+              const avgAfter = after.reduce((sum, p) => sum + p.elevation, 0) / after.length;
+
+              const diff = avgAfter - avgBefore;
+              if (diff > 0.01) trendResults[station] = "เพิ่มขึ้น";
+              else if (diff < -0.01) trendResults[station] = "ลดลง";
+              else trendResults[station] = "คงที่";
+            });
+
+        if (isMounted) {
+          setRawData(allPoints);
+          setHistoricalData(historical);
+          setForecastData(forecast);
+          setMaxElevations(stationMaxMap);
+          setWaterPeaks(peakMap);
+          setWaterTrends(trendResults);
+          const longProfileData: waterData[] = forecast.map((p) => ({
+            CrossSection: p.crossSection,
+            Date: p.time.replace("T", " "), // แปลง ISO → "YYYY-MM-DD HH:mm:ss"
+            WaterLevel: p.elevation,
+          }));
+
+          setForecastLongProfile(longProfileData);
+        }
+      } catch (err) {
+        console.error("RAS data loading failed:", err);
+      }
+    };
+
+    loadRasData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
     
 
   const JsonPaths = [
@@ -247,7 +281,7 @@ export default function Dashboard() {
         ภาพรวมสถานการณ์น้ำ วันที่ {formatThaiDay(Date())}
       </Typography>
       
-      <DashboardCards data={setDailySummary}/>
+      <DashboardCards data={dailySummary}/>
 
       <Box sx={{
             display:"flex",
@@ -282,9 +316,16 @@ export default function Dashboard() {
           </Grid>
         </Grid>
       </Grid>
-      <Box sx={BoxStyle}>
+      <Box sx={BoxStyle} id="flood-warning">
         <FloodWarningTable maxLevels={maxElevations} waterTrends={waterTrends} waterPeaks={waterPeaks}   />
       </Box>
+      <Box sx={BoxStyle} >
+        <WaterLevelChart data={forecastData}/>
+      </Box>
+       <Box>
+        <LongProfileChart waterData={forecastLongProfile} isDark={isDark}/>
+      </Box>
+      <FloatingMenu/>
     </Container>
   </>
   );
