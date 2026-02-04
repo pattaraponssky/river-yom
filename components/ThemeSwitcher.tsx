@@ -57,7 +57,7 @@ export default function ThemeSwitcher() {
       }}
     >
       {/* ข้อความ */}
-      <Typography
+      {/* <Typography
         variant="body2"
         sx={{
           fontFamily: 'Prompt, sans-serif',
@@ -69,7 +69,7 @@ export default function ThemeSwitcher() {
         }}
       >
         {isDark ? 'Dark Mode' : 'Light Mode'}
-      </Typography>
+      </Typography> */}
 
       {/* Switch */}
       <Tooltip

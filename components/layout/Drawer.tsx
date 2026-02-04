@@ -305,7 +305,7 @@ const DrawerComponent: React.FC<DrawerProps> = ({ open, setOpen }) => {
                   href={item.path}
                   onClick={handleItemClick}
                   sx={{
-                    paddingLeft: open ? "40px" : "25px",
+                    paddingLeft: open ? "30px" : "15px",
                     backgroundColor:
                       pathname === item.path ? theme.palette.action.selected : "inherit",
                     "&:hover": { backgroundColor: theme.palette.action.hover },
