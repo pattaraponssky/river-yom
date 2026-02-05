@@ -7,7 +7,7 @@ import { API_URL } from '@/lib/utility';
 
 interface User {
   username: string;
-  iduser_level: number;      // ต้องเป็น number เสมอ
+  iduser_level: number;
   uid?: string;
   email?: string;
   exp?: number;
@@ -32,38 +32,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const res = await fetch(`${API_URL}/user/checkAuth`, {
         method: 'GET',
-        credentials: 'include', // ส่ง cookie ไปด้วย (สำคัญ!)
-        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        headers: { Accept: 'application/json' },
       });
 
       if (res.ok) {
         const data = await res.json();
-
-        // ป้องกันกรณี data.user เป็น undefined หรือไม่มี field
-        const userData = data.user || data; // ถ้า backend ส่ง user ตรง ๆ หรือห่อใน { user: ... }
+        const userData = data.user || data;
 
         if (userData?.username) {
-          // แปลง iduser_level เป็น number เสมอ
-          const parsedUser: User = {
+          setCurrentUser({
             username: userData.username,
-            iduser_level: Number(userData.iduser_level) || 0, // ถ้าเป็น string ให้แปลง
+            iduser_level: Number(userData.iduser_level) || 0,
             uid: userData.uid,
             email: userData.email,
             exp: userData.exp,
-          };
-
-          setCurrentUser(parsedUser);
-          } else if (res.status === 401) {
-            setCurrentUser(null);
+          });
+          // ถ้ามี localStorage เก็บ user ไว้ด้วย (optional)
+          localStorage.setItem('user', JSON.stringify(userData));
         } else {
           setCurrentUser(null);
         }
       } else {
         setCurrentUser(null);
+        localStorage.removeItem('user');
       }
     } catch (err) {
-    //   console.error('Check auth failed:', err);
+      console.warn('Auth check failed:', err);
       setCurrentUser(null);
+      localStorage.removeItem('user');
     } finally {
       setLoading(false);
     }
@@ -76,10 +73,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         credentials: 'include',
       });
       setCurrentUser(null);
-      router.push('/');
+      localStorage.removeItem('user');
+      router.push('/login');           // เปลี่ยนเป็น /login ดีกว่า /
       router.refresh();
     } catch (err) {
       console.error('Logout failed:', err);
+      router.push('/login');
     }
   };
 
@@ -94,10 +93,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export const useAuth = () => {
+export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth ต้องใช้ภายใน AuthProvider');
+    throw new Error('useAuth must be used within AuthProvider');
   }
   return context;
-};
+}

@@ -5,6 +5,6 @@ import GateStation from './components/GateStation';
 
 export default function GatePage() {
   return <Box sx={{p:1}}>
-    <GateStation/>;
+    <GateStation/>
   </Box>
 }

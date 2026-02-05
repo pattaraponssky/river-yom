@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Box, Tabs, Tab, Typography, Grid } from '@mui/material';
+import { Box, Tabs, Tab, Typography, Grid, CircularProgress } from '@mui/material';
 import {
   Storage,
   BarChart,
@@ -18,11 +18,31 @@ import InfoGateStation from "@/components/Setting/Info/GateStation";
 import InfoRainStation from "@/components/Setting/Info/RainStation";
 import InfoDamStation from "@/components/Setting/Info/ReservoirStation";
 import InfoSeaStation from "@/components/Setting/Info/SeaStaion";
-import { BoxStyle, titleStyle } from "@/theme/style";
+import { BoxStyle, fontTitle, titleStyle } from "@/theme/style";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Setting: React.FC = () => {
   const [mainTab, setMainTab] = useState(0);
   const [subTab, setSubTab] = useState(0);
+  const {currentUser, loading: authLoading } = useAuth();
+
+    if (authLoading) {
+        return (
+        <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
+            <CircularProgress />
+        </Box>
+        );
+    }
+
+    if (!currentUser) {
+        return (
+        <Box sx={{ p: 4, textAlign: "center" }}>
+            <Typography variant="h6" color="error">
+            กรุณาเข้าสู่ระบบก่อน
+            </Typography>
+        </Box>
+        );
+    }
 
   const handleMainTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setMainTab(newValue);
@@ -46,37 +66,37 @@ const Setting: React.FC = () => {
           sx={{ marginBottom: "10px" ,width:{ xs:"85vw", sm:"85vw", md:"auto"}}}
         >
           {/* <Tab
-            sx={{ ...titleStyle}}
+            sx={{ ...fontTitle}}
             icon={<Settings />} // ไอคอนการตั้งค่าระบบ
             iconPosition="start"
             label="การตั้งค่าระบบ"
           /> */}
           <Tab
-            sx={{ ...titleStyle}}
+            sx={{ ...fontTitle}}
             icon={<Storage />} // ไอคอนข้อมูลสถานี
             iconPosition="start"
             label="ข้อมูลสถานี"
           />
           <Tab
-            sx={{ ...titleStyle}}
+            sx={{ ...fontTitle}}
             icon={<BarChart />} // ไอคอนการตั้งค่าแบบจำลอง
             iconPosition="start"
             label="อัปเดตข้อมูลย้อนหลัง"
           />
           {/* <Tab
-            sx={{ ...titleStyle}}
+            sx={{ ...fontTitle}}
             icon={<BarChart />} // ไอคอนการตั้งค่าแบบจำลอง
             iconPosition="start"
             label="การตั้งค่าแบบจำลอง"
           />
           <Tab
-            sx={{ ...titleStyle}}
+            sx={{ ...fontTitle}}
             icon={<Link />} // ไอคอนลิงค์เพิ่มเติม
             iconPosition="start"
             label="ลิงค์เพิ่มเติม"
           /> */}
           <Tab
-            sx={{ ...titleStyle}}
+            sx={{ ...fontTitle}}
             icon={<Info />} // ไอคอนเกี่ยวกับเรา
             iconPosition="start"
             label="ข้อมูลเว็บไซต์"

@@ -92,12 +92,13 @@ const adminMenuItems = [
 const DrawerComponent: React.FC<DrawerProps> = ({ open, setOpen }) => {
   const [stationOpen, setStationOpen] = useState(false);
   const pathname = usePathname();
-  const { currentUser, loading: authLoading } = useAuth(); // ดึงจาก AuthContext
+  const { currentUser, loading: authLoading, logout } = useAuth();
+  const iduser_level = currentUser?.iduser_level ?? 0;
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [loginOpen, setLoginOpen] = useState(false);
   const drawerWidth = open ? 290 : 72;
-  const iduser_level = currentUser?.iduser_level ?? 0;
+  
 
   const handleItemClick = () => {
     if (isMobile || (open && !isMobile)) setOpen(false);
@@ -336,50 +337,50 @@ const DrawerComponent: React.FC<DrawerProps> = ({ open, setOpen }) => {
             </List>
           </Collapse>
 
-          {/* เมนูขั้นสูง (ระดับ 1-2) */}
-          {advancedMenuItems.map((item, index) => (
-            <ListItem
-              key={index}
-              component={Link}
-              href={item.path}
-              onClick={handleItemClick}
-              sx={{
-                justifyContent: open ? "initial" : "center",
-                backgroundColor: pathname === item.path ? theme.palette.action.selected : "inherit",
-                "&:hover": { backgroundColor: theme.palette.action.hover },
-                display: [1, 2].includes(iduser_level) ? "flex" : "none",
-              }}
-            >
-              <ListItemIcon
+          {iduser_level === 1 || iduser_level === 2 ? (
+            advancedMenuItems.map((item, index) => (
+              <ListItem
+                key={index}
+                component={Link}
+                href={item.path}
+                onClick={handleItemClick}
                 sx={{
-                  minWidth: 0,
-                  marginLeft: open ? "5px" : "15px",
-                  color:
-                    theme.palette.mode === "dark"
-                      ? theme.palette.primary.light
-                      : theme.palette.primary.main,
+                  justifyContent: open ? "initial" : "center",
+                  backgroundColor: pathname === item.path ? theme.palette.action.selected : "inherit",
+                  "&:hover": { backgroundColor: theme.palette.action.hover },
+                  display: [1, 2].includes(iduser_level) ? "flex" : "none",
                 }}
               >
-                {item.icon}
-              </ListItemIcon>
-
-              {open && (
-                <ListItemText
-                  primary={item.text}
-                  primaryTypographyProps={{
-                    sx: {
-                      fontSize: { md: "1.2rem", xs: "1rem" },
-                      fontWeight: 600,
-                      fontFamily: "Prompt",
-                    },
+                <ListItemIcon
+                  sx={{
+                    minWidth: 0,
+                    marginLeft: open ? "5px" : "15px",
+                    color:
+                      theme.palette.mode === "dark"
+                        ? theme.palette.primary.light
+                        : theme.palette.primary.main,
                   }}
-                />
-              )}
-            </ListItem>
-          ))}
+                >
+                  {item.icon}
+                </ListItemIcon>
 
-          {/* เมนู admin เท่านั้น */}
-          {adminMenuItems.map((item, index) => (
+                {open && (
+                  <ListItemText
+                    primary={item.text}
+                    primaryTypographyProps={{
+                      sx: {
+                        fontSize: { md: "1.2rem", xs: "1rem" },
+                        fontWeight: 600,
+                        fontFamily: "Prompt",
+                      },
+                    }}
+                  />
+                )}
+              </ListItem>
+            ))) : null}
+
+          {iduser_level === 2 ? (
+          adminMenuItems.map((item, index) => (
             <ListItem
               key={index}
               component={Link}
@@ -418,7 +419,7 @@ const DrawerComponent: React.FC<DrawerProps> = ({ open, setOpen }) => {
                 />
               )}
             </ListItem>
-          ))}
+          ))) : null}
         </List>
 
         {/* ส่วนผู้ใช้ อยู่ด้านล่าง */}
@@ -466,7 +467,7 @@ const DrawerComponent: React.FC<DrawerProps> = ({ open, setOpen }) => {
               )}
 
               <IconButton
-                // onClick={handleLogout}
+                onClick={logout}
                 aria-label="logout"
                 sx={{ color: "error.main", "&:hover": { color: "error.dark" } }}
               >

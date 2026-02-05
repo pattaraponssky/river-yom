@@ -20,6 +20,8 @@ import {
 import { API_URL } from '../../lib/utility';
 import Users from "@mui/icons-material/People";
 import Badge from "@mui/material/Badge";
+import { fontTitle, getCellStyle, HeaderCellStyle, titleStyle } from "@/theme/style";
+import { title } from "process";
 interface User {
   User_ID: number;
   Username: string;
@@ -30,29 +32,6 @@ interface User {
   CreateDate : Date;
 }
 
-const HeaderCellStyle = {
-    border: "0px solid #ddd",
-    fontFamily: "Prompt",
-    fontWeight: "bold",
-    textAlign: "center" as const,
-    backgroundColor: "rgb(1, 87, 155)",
-    color: "white",
-    fontSize: { xs: "0.7rem", sm: "0.8rem", md: "1rem" },
-  };
-  
-  const getCellStyle = (index: number) => ({
-    border: "0px solid #ddd",
-    padding: "10px",
-    backgroundColor: index % 2 === 0 ? "#FAFAFA" : "#FFF",
-    textAlign: "center" as const,
-    fontFamily: "Prompt",
-    fontSize: { xs: "0.8rem", sm: "0.9rem" , md: "1rem"},
-  });
-
-const HeaderFont = {
-    fontFamily: "Prompt",
-    fontWeight: "bold",
-}
 
 const mapUserLevel = (level: number | string | undefined) => {
     switch (Number(level)) {
@@ -206,14 +185,14 @@ const UserManagement: React.FC = () => {
   return (
     <Box p={2}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-            <Typography sx={HeaderFont}>
+            <Typography sx={fontTitle}>
                 การจัดการผู้ใช้งาน
             </Typography>
         <Button
             variant="contained"
             color="info"
             onClick={() => setOpenTempDialog(true)}
-            sx={HeaderFont}
+            sx={titleStyle}
             >
             <Badge badgeContent={tempCount} color="error">
                 <Users style={{ marginRight: 8 }} /> คำขอลงทะเบียน
@@ -241,7 +220,7 @@ const UserManagement: React.FC = () => {
                 <TableCell sx={getCellStyle(index)}>{mapUserLevel(user.iduser_level)}</TableCell>
                 <TableCell sx={getCellStyle(index)}>{new Date(user.CreateDate).toLocaleDateString()}</TableCell>
                 <TableCell sx={getCellStyle(index)} align="right">
-                  <Button variant="contained" color="warning" onClick={() => handleEditClick(user)} sx={HeaderFont}>
+                  <Button variant="contained" color="warning" onClick={() => handleEditClick(user)} sx={titleStyle}>
                     แก้ไข
                   </Button>
                 </TableCell>
@@ -284,8 +263,8 @@ const UserManagement: React.FC = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog} sx={HeaderFont}>ยกเลิก</Button>
-          <Button onClick={handleSave} variant="contained" sx={HeaderFont}>
+          <Button onClick={handleCloseDialog} sx={titleStyle}>ยกเลิก</Button>
+          <Button onClick={handleSave} variant="contained" sx={titleStyle}>
             บันทึก 
           </Button>
         </DialogActions>
@@ -320,7 +299,7 @@ const UserManagement: React.FC = () => {
                             variant="contained"
                             color="success"
                             onClick={() => handleApprove(user.User_ID)}
-                            sx={HeaderFont}
+                            sx={titleStyle}
                             >
                             ยืนยัน
                             </Button>
@@ -330,7 +309,7 @@ const UserManagement: React.FC = () => {
                                 variant="contained"
                                 color="error"
                                 onClick={() => handleReject(user.User_ID)}
-                                sx={HeaderFont}
+                                sx={titleStyle}
                                 >
                                 ลบ
                         </Button>
@@ -343,7 +322,7 @@ const UserManagement: React.FC = () => {
         </DialogContent>
 
         <DialogActions>
-            <Button onClick={() => setOpenTempDialog(false)} variant="outlined" color="error" sx={HeaderFont}>ปิด</Button>
+            <Button onClick={() => setOpenTempDialog(false)} variant="outlined" color="error" sx={titleStyle}>ปิด</Button>
         </DialogActions>
         </Dialog>
 
@@ -374,7 +353,7 @@ const UserManagement: React.FC = () => {
                     setOpenTempDialog(true);       // เปิดรายการคำขอ
                     setShowAlertDialog(false);     // ปิดแจ้งเตือน
                 }}
-                sx={HeaderFont}
+                sx={titleStyle}
                 >
                 <Users style={{ marginRight: 8 }} /> ตรวจสอบคำขอ
                 </Button>
@@ -398,7 +377,7 @@ const UserManagement: React.FC = () => {
                 />
             </DialogContent>
             <DialogActions>
-                <Button onClick={() => setOpenAddDialog(false)} sx={HeaderFont}>ยกเลิก</Button>
+                <Button onClick={() => setOpenAddDialog(false)} sx={titleStyle}>ยกเลิก</Button>
                 <Button onClick={async () => {
                 try {
                     const res = await fetch(`${API_URL}/user/register`, {
@@ -421,7 +400,7 @@ const UserManagement: React.FC = () => {
                 } catch (err: any) {
                     setSnackbar({ open: true, message: "เกิดข้อผิดพลาด: " + err.message, severity: "error" });
                 }
-                }} variant="contained" color="primary" sx={HeaderFont}>
+                }} variant="contained" color="primary" sx={titleStyle}>
                 บันทึก
                 </Button>
             </DialogActions>
@@ -433,7 +412,7 @@ const UserManagement: React.FC = () => {
             variant="contained"
             color="success"
             onClick={() => setOpenAddDialog(true)}
-            sx={{ ...HeaderFont, my: 2 ,px:2 }}
+            sx={{ ...titleStyle, my: 2 ,px:2 }}
             >
             เพิ่มผู้ใช้งาน
         </Button>
