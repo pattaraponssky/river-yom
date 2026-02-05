@@ -84,7 +84,7 @@ const ManualUpdateReservoir: React.FC = () => {
       <Typography variant="h5" sx={{ marginBottom: "1rem", fontWeight: 600, ...titleStyle, color: "#28378B" }}>
         อัปเดตข้อมูลอ่างเก็บน้ำย้อนหลัง (กำหนดวันที่)
       </Typography>
-      <Paper sx={{ p: { xs: 2, sm: 4 }, borderRadius: 2, backgroundColor: "#f0f0f0" }}>
+      <Paper sx={{ p: { xs: 2, sm: 4 }, borderRadius: 2, }}>
         <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={th}> {/* Use Thai locale */}
           <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 2, mb: 3 }}>
             <DatePicker

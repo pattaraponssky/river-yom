@@ -22,25 +22,7 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import { API_URL } from "@/lib/utility";
-
-const HeaderCellStyle = {
-  border: "0px solid #ddd",
-  fontFamily: "Prompt",
-  fontWeight: "bold",
-  textAlign: "center",
-  backgroundColor: "rgb(1, 87, 155)",
-  color: "white",
-  fontSize: { xs: "0.7rem", sm: "0.8rem", md: "1rem" },
-};
-
-const getCellStyle = (index: number) => ({
-  border: "0px solid #ddd",
-  padding: "10px",
-  backgroundColor: index % 2 === 0 ? "#FAFAFA" : "#FFF",
-  textAlign: "center",
-  fontFamily: "Prompt",
-  fontSize: { xs: "0.8rem", sm: "0.9rem" , md: "1rem"},
-});
+import { HeaderCellStyle, getCellStyle } from "@/theme/style";
 
 const InfoSeaStation: React.FC = () => {
   const [stations, setStations] = useState<any[]>([]);

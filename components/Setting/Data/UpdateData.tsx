@@ -211,7 +211,7 @@ const UploadData: React.FC = () => {
          <Typography sx={{ marginBottom: "1rem", fontWeight: 600, ...titleStyle, color: "#28378B" }}>
           อัปโหลดข้อมูลย้อนหลัง
         </Typography>
-      <Paper sx={{ p: { xs: 2, sm: 4 }, borderRadius: 2, backgroundColor: "#f0f0f0" }}>
+      <Paper sx={{ p: { xs: 2, sm: 4 }, borderRadius: 2, }}>
         <Box
           sx={{
             display: "flex",
