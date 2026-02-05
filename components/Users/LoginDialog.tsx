@@ -11,7 +11,7 @@ import {
   Alert,
 } from "@mui/material";
 import RegisterDialog from "./RegisterDialog";
-import ForgotPasswordDialog from "./ForgotPasswordDialog"; // ✅ เรียกใช้ component ที่คุณมีอยู่แล้ว
+import ForgotPasswordDialog from "./ForgotPasswordDialog";
 import { API_URL } from '../../lib/utility';
 import { textStyle } from '../../theme/style';
 
@@ -29,13 +29,25 @@ interface LoginDialogProps {
 
 const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose, onLoginSuccess }) => {
   const [registerOpen, setRegisterOpen] = useState(false);
-  const [forgotOpen, setForgotOpen] = useState(false); // ✅ state สำหรับ dialog ลืมรหัสผ่าน
+  const [forgotOpen, setForgotOpen] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
+  const [snackbar, setSnackbar] = useState({ 
+    open: false, 
+    message: "", 
+    severity: "success" as "success" | "error" | "info" | "warning" 
+  });
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  
+  // ตรวจสอบ dark mode
+  const isDarkMode = theme.palette.mode === "dark";
+
+  // เลือก background ตาม theme (หรือ fallback ถ้าไม่มีรูป dark)
+  const leftBg = isDarkMode 
+    ? "url('/images/bg_dialog.png') /* หรือสีทึบ theme.palette.background.default */" 
+    : "url('/images/bg_dialog.png')";
 
   const handleLogin = async () => {
     try {
@@ -73,36 +85,59 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose, onLoginSuccess
         maxWidth="md"
         fullWidth
         PaperProps={{
-          sx: { borderRadius: "1.5rem", overflow: "hidden" },
+          sx: { 
+            borderRadius: "1.5rem", 
+            overflow: "hidden",
+            // ไม่ต้อง set background ตรงนี้ เพราะ Paper จะใช้ theme.palette.background.paper อัตโนมัติ
+          },
         }}
       >
         <Box
           display="flex"
           flexDirection={isMobile ? "column" : "row"}
           height={isMobile ? "auto" : 600}
+          // ให้ Dialog container เคารพ theme มากขึ้น
+          sx={{ bgcolor: "background.default" }} // เพิ่มเผื่อกรณีมี gap
         >
+          {/* ส่วนซ้าย - รูปภาพ / พื้นหลัง */}
           <Box
             flex={1}
             p={4}
             sx={{
-              backgroundImage: `url('/images/bg_dialog.png')`,
+              backgroundImage: leftBg,
               backgroundSize: "cover",
               backgroundPosition: "center",
-              minHeight:"30vh"
+              minHeight: "30vh",
+              // เพิ่ม overlay เบา ๆ ใน dark mode ถ้าต้องการให้ข้อความชัดขึ้น
+              ...(isDarkMode && {
+                position: "relative",
+                "&:after": {
+                  content: '""',
+                  position: "absolute",
+                  inset: 0,
+                  background: "rgba(0,0,0,0.45)", // overlay มืดช่วยให้ readable
+                  pointerEvents: "none",
+                },
+              }),
             }}
           />
 
+          {/* ส่วนขวา - ฟอร์ม */}
           <Box
             flex={1}
             p={4}
             display="flex"
             flexDirection="column"
             justifyContent="center"
-            sx={{ backgroundColor: "#fff" }}
+            // ใช้สีพื้นหลังจาก theme อัตโนมัติ (paper)
+            sx={{ 
+              bgcolor: "background.paper",
+              color: "text.primary", // ให้ข้อความหลักตาม theme
+            }}
           >
             <Typography
               variant="h6"
-              mb={2}
+              mb={3}
               fontWeight="bold"
               textAlign="center"
               sx={{ fontFamily: "Prompt" }}
@@ -116,9 +151,11 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose, onLoginSuccess
               fullWidth
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              sx={{ mb: 2 }}
-              InputProps={{ sx: { borderRadius: "12px" } }}
+              sx={{ mb: 2.5 }}
+              // MUI v5+ TextField ปรับตาม theme อัตโนมัติดีมากแล้ว
+              // แต่ถ้าอยาก control หนักกว่านี้ก็ใช้ InputProps ได้
             />
+
             <TextField
               label="password"
               variant="outlined"
@@ -126,8 +163,7 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose, onLoginSuccess
               fullWidth
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              sx={{ mb: 2 }}
-              InputProps={{ sx: { borderRadius: "12px" } }}
+              sx={{ mb: 3 }}
             />
 
             <Button
@@ -135,42 +171,56 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose, onLoginSuccess
               fullWidth
               onClick={handleLogin}
               sx={{
-                background: "linear-gradient(to right, #1976D2, #42A5F5)",
+                // ใช้ gradient จาก primary ถ้าต้องการ หรือปล่อย default ตาม theme
+                // ถ้าอยากคง gradient เดิม แต่ปรับ opacity ใน dark mode
+                background: isDarkMode
+                  ? "linear-gradient(to right, #1976D2cc, #42A5F5cc)" // เพิ่มความโปร่งแสงนิดหน่อย
+                  : "linear-gradient(to right, #1976D2, #42A5F5)",
                 fontWeight: "bold",
                 borderRadius: 999,
-                py: 1,
+                py: 1.2,
                 letterSpacing: 1,
-                mb: 2,
+                mb: 2.5,
+                boxShadow: isDarkMode ? 4 : 2, // shadow เบา ๆ ใน dark mode
               }}
             >
               LOGIN
             </Button>
 
-            <Typography sx={{ ...textStyle }} align="center">
+            <Typography 
+              variant="body2" 
+              align="center" 
+              color="text.secondary"
+              sx={{ ...textStyle }}
+            >
               ยังไม่มีบัญชี?{" "}
               <Button
-                sx={{ ...textStyle }}
                 variant="text"
                 color="primary"
                 onClick={() => {
                   onClose();
                   setRegisterOpen(true);
                 }}
+                sx={{ textTransform: "none", fontWeight: 500 }}
               >
                 สมัครสมาชิก
               </Button>
             </Typography>
 
-            {/* ✅ เพิ่มปุ่ม “ลืมรหัสผ่าน?” */}
-            <Typography sx={{ ...textStyle, mt: 1 }} align="center">
+            <Typography 
+              variant="body2" 
+              align="center" 
+              color="text.secondary"
+              sx={{ mt: 1, ...textStyle }}
+            >
               <Button
-                sx={{ ...textStyle }}
                 variant="text"
-                color="secondary"
+                color="primary" // เปลี่ยนจาก secondary เป็น primary ให้ดูกลมกลืนกว่า
                 onClick={() => {
                   onClose();
                   setForgotOpen(true);
                 }}
+                sx={{ textTransform: "none", fontWeight: 500 }}
               >
                 ลืมรหัสผ่าน?
               </Button>
@@ -179,11 +229,9 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose, onLoginSuccess
         </Box>
       </Dialog>
 
-      {/* ✅ เรียกใช้ component ที่คุณมีอยู่แล้ว */}
       <RegisterDialog open={registerOpen} onClose={() => setRegisterOpen(false)} />
       <ForgotPasswordDialog open={forgotOpen} onClose={() => setForgotOpen(false)} />
 
-      {/* Snackbar แจ้งเตือน */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={4000}
@@ -191,8 +239,9 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose, onLoginSuccess
       >
         <Alert
           onClose={() => setSnackbar({ ...snackbar, open: false })}
-          severity={snackbar.severity as any}
+          severity={snackbar.severity}
           variant="filled"
+          sx={{ width: "100%" }}
         >
           {snackbar.message}
         </Alert>

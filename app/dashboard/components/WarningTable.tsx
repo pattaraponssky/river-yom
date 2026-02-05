@@ -417,7 +417,7 @@ const FloodWarningTable: React.FC<FloodWarningTableProps> = ({ maxLevels, waterT
                 <TableCell sx={getCellStyle(index)}>
                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                        {getTrendIcon(currentTrend)}
-                       <Typography sx={{ ml: 1, fontSize: 'inherit',fontFamily: "Noto Sans Thai", }}>
+                       <Typography sx={{ ml: 1, fontSize: 'inherit',fontFamily: "Prompt", }}>
                          {currentTrend === 'ไม่มีข้อมูลเพียงพอ' ? '-' : currentTrend}
                        </Typography>
                    </Box>

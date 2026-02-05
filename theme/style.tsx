@@ -65,7 +65,7 @@ export const getCellDiffStyle = (index: number,fontColor:any) => (theme: any) =>
         : (theme.palette.mode === 'dark' ? '#111827' : '#FFF'),
     color: fontColor || "black",
     textAlign: "center",
-    fontFamily: "Noto Sans Thai",
+    fontFamily: "Prompt",
     wordWrap: "break-word",
     whiteSpace: "normal",
     overflow: "hidden",
