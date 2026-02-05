@@ -17,6 +17,7 @@ import WaterLevelChart from './components/WaterLevel';
 import FloatingMenu from '@/components/dashboard/FloatingMenu';
 import LongProfileChart from './components/LongProfile';
 import { log } from 'console';
+import ImageComponent from '../../components/Image';
 
 interface WaterLevelData {
   time: string;
@@ -277,31 +278,27 @@ export default function Dashboard() {
   return (
   <>
     <Container maxWidth="xl" sx={{ py: 2 }}>
-      <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+      <Typography variant="h5" id="card-daily" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
         ภาพรวมสถานการณ์น้ำ วันที่ {formatThaiDay(Date())}
       </Typography>
       
       <DashboardCards data={dailySummary}/>
 
-      <Box sx={{
-            display:"flex",
-            flexDirection:{xs:"column",md:"row"},
-            py:2,
-            ...BoxStyle
-        }}>
-          <Box sx={{
-              width:"100%",
-              p:0, 
-              }}>
-              <HydroMap
-                id="longdo-map"
-                mapKey={mapKey}
-                JsonPaths={JsonPaths}// ส่งข้อมูล GeoJSON เข้าไป}
-                />
-          </Box>
-      </Box>
-          <Grid size={{xs:12, md:6}} id="water-daily">  
-        <Grid container spacing={1}>
+      <Grid size={{xs:12, md:6}}>
+        <Box sx={{
+              display:"flex",
+              flexDirection:{xs:"column",md:"row"},
+              py:2,
+              ...BoxStyle
+          }}>
+          <HydroMap
+              id="longdo-map"
+              mapKey={mapKey}
+              JsonPaths={JsonPaths}// ส่งข้อมูล GeoJSON เข้าไป}
+            />
+        </Box>
+      </Grid>
+        <Grid container spacing={1} id="water-daily">
           <Grid size={{xs:12, md:7}}>
             <ReservoirCard />
           </Grid>
@@ -315,15 +312,24 @@ export default function Dashboard() {
             <GateCard />
           </Grid>
         </Grid>
-      </Grid>
       <Box sx={BoxStyle} id="flood-warning">
         <FloodWarningTable maxLevels={maxElevations} waterTrends={waterTrends} waterPeaks={waterPeaks}   />
       </Box>
       <Box sx={BoxStyle} >
         <WaterLevelChart data={forecastData}/>
       </Box>
-       <Box>
+       <Box sx={BoxStyle}>
         <LongProfileChart waterData={forecastLongProfile} isDark={isDark}/>
+      </Box>
+      <Box sx={BoxStyle} id="">
+       <Grid container spacing={1}>
+          <Grid size={{xs:12, md:6}}>
+            <ImageComponent src="http://irrigation.rid.go.th/rid3/water/images/3dams.jpg" alt="สภาพน้ำเขื่อนภูมิพล เขื่อนสิริกิต์ และเขื่อแควน้อยฯ" title={'สภาพน้ำในเขื่อนประจำวัน'} />
+          </Grid>
+            <Grid size={{xs:12, md:6}}>
+            <ImageComponent src="http://irrigation.rid.go.th/rid3/water/images/onepages.jpg" alt="สถานการณืน้ำ สำนักงานชลประทานที่ 3" title={'สถานการณืน้ำ สำนักงานชลประทานที่ 3'} />
+          </Grid>
+        </Grid>
       </Box>
       <FloatingMenu/>
     </Container>

@@ -435,7 +435,7 @@ const DrawerComponent: React.FC<DrawerProps> = ({ open, setOpen }) => {
           {currentUser ? (
             <>
               {open && (
-                <>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}>
                   <Avatar
                     alt={currentUser.username}
                     src={`${Path_URL}images/icons/user_icon.png`}
@@ -463,16 +463,17 @@ const DrawerComponent: React.FC<DrawerProps> = ({ open, setOpen }) => {
                       {currentUser.username}
                     </Typography>
                   </Box>
-                </>
-              )}
 
-              <IconButton
-                onClick={logout}
-                aria-label="logout"
-                sx={{ color: "error.main", "&:hover": { color: "error.dark" } }}
-              >
-                <LogoutIcon />
-              </IconButton>
+                  <IconButton
+                    onClick={logout}
+                    aria-label="logout"
+                    sx={{ color: "error.main", "&:hover": { color: "error.dark" } }}
+                  >
+                    <LogoutIcon />
+                  </IconButton>
+                </Box>
+                )
+              }
             </>
           ) : (
             <>

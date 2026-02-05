@@ -22,6 +22,8 @@ import LoginDialog from '../Users/LoginDialog';
 import { useAuth } from '@/contexts/AuthContext'; // ← เปลี่ยน import ให้ตรง (จาก contexts ไม่ใช่ hooks)
 import ThemeSwitcher from '../ThemeSwitcher';
 import { useRouter } from 'next/navigation';
+import SettingsIcon from '@mui/icons-material/Settings';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 
 interface HeaderProps {
   title: string;
@@ -57,6 +59,16 @@ const Header: React.FC<HeaderProps> = ({ title, open, setOpen }) => {
     handleMenuClose();
     await logout(); // เรียก logout จาก context
     router.push('/'); // redirect ไปหน้าแรก
+  };
+
+  const goToProfile = () => {
+    handleMenuClose();
+    router.push('/users'); 
+  };
+
+  const goToSettings = () => {
+    handleMenuClose();
+    router.push('/setting');
   };
 
   return (
@@ -168,8 +180,12 @@ const Header: React.FC<HeaderProps> = ({ title, open, setOpen }) => {
                     },
                   }}
                 >
-                  <MenuItem onClick={handleMenuClose}>โปรไฟล์</MenuItem>
-                  <MenuItem onClick={handleMenuClose}>ตั้งค่า</MenuItem>
+                  <MenuItem onClick={goToProfile} >
+                    <AccountCircleIcon sx={{ mr: 1 }} /> โปรไฟล์
+                  </MenuItem>
+                  <MenuItem onClick={goToSettings}>
+                    <SettingsIcon sx={{ mr: 1 }} /> ตั้งค่า
+                  </MenuItem>
                   <MenuItem
                     onClick={onLogout}
                     sx={{ color: 'error.main', fontWeight: 'bold' }}

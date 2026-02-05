@@ -601,7 +601,7 @@ const LongProfileChart: React.FC<Props> = ({ waterData, chartHeight = 500, isDar
   if (loading) return <CenteredLoading />;
 
   return (
-    <Box sx={{ p: { xs: 1.5, md: 3 }, bgcolor: "background.paper", borderRadius: 2, boxShadow: 3 }}>
+    <Box>
         <Typography gutterBottom sx={{ ...titleStyle, fontWeight: "bold" }}>
               รูปตัดตามยาวแม่น้ำท่าจีน (ปตร.พลเทพ - ทะเลอ่าวไทย)
         </Typography>

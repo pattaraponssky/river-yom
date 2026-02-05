@@ -78,6 +78,10 @@ html, body {
   align-items: center;                   /* จัดแนวตั้งกลาง */        
 }
 
+.ldmap_placeholder .ldmap_topleft {
+  left: 0px !important;
+  margin-left: 56px !important;   /* เว้นระยะซ้ายเท่ากับขนาด fullscreen */
+}
 
 /* ถ้าต้องการให้ fullscreen อยู่ท้ายสุดแต่ยังในบรรทัดเดียว */
 .ldmap_topright {
@@ -90,12 +94,9 @@ html, body {
   left: 78px !important;
 }
 
-
-
 .ldmap-menubar {
     top: 16px !important;
   }
-
 
 .ldmap_dropdown_head span,
 .ldmap_option,
