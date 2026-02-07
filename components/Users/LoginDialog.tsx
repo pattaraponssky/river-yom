@@ -24,7 +24,7 @@ interface User {
 interface LoginDialogProps {
   open: boolean;
   onClose: () => void;
-  onLoginSuccess?: (user: User) => void;
+  onLoginSuccess?: () => void;
 }
 
 const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose, onLoginSuccess }) => {
@@ -65,17 +65,24 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose, onLoginSuccess
 
       const result = await response.json();
       if (!response.ok) throw new Error(result.message || "เกิดข้อผิดพลาด");
+      onLoginSuccess?.();
 
-      localStorage.setItem("user", JSON.stringify(result.user));
-      if (onLoginSuccess) onLoginSuccess(result.user);
-      setSnackbar({ open: true, message: "เข้าสู่ระบบสำเร็จ", severity: "success" });
+      setSnackbar({
+        open: true,
+        message: "เข้าสู่ระบบสำเร็จ",
+        severity: "success",
+      });
 
       onClose();
-      setTimeout(() => window.location.reload(), 300);
     } catch (err: any) {
-      setSnackbar({ open: true, message: err.message, severity: "error" });
+      setSnackbar({
+        open: true,
+        message: err.message,
+        severity: "error",
+      });
     }
   };
+
 
   return (
     <>

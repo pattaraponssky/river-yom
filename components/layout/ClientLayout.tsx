@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { Box } from '@mui/material';
 import AppHeader from './AppHeader';
 import DrawerComponent from './Drawer';
+import Footer from './Footer';
 
 interface ClientLayoutProps {
   children: React.ReactNode;
@@ -33,6 +34,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
         }}
       >
         {children}
+        <Footer/>
       </Box>
     </>
   );

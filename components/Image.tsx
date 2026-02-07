@@ -38,7 +38,7 @@ const ImageComponent: React.FC<ImageProps> = ({ src, alt, title, width, height }
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "10px", fontFamily: "Prompt", maxWidth: "100%" }}>
-      <Typography sx={{ marginBottom: {md:"1rem", xs:"0.6"}, fontWeight: 600, ...titleStyle, color: "#28378B" }}>
+      <Typography sx={{ marginBottom: {md:"1rem", xs:"0.6"}, fontWeight: 600, ...titleStyle}}>
         {title}
       </Typography>
      <img
@@ -58,14 +58,22 @@ const ImageComponent: React.FC<ImageProps> = ({ src, alt, title, width, height }
       />
 
       {/* Dialog แสดงภาพขยาย */}
-      <dialog ref={dialogRef} onClick={closeDialog} style={{ border: "none", background: "rgba(0, 0, 0, 0.1)" }}>
+      <dialog ref={dialogRef} onClick={closeDialog} 
+      style={{ 
+          border: "none", background: "rgba(0, 0, 0, 0.1)",
+          maxWidth: "95vw",
+          maxHeight: "95vh",
+          margin: "auto", // สำคัญมาก! ทำให้ dialog อยู่กึ่งกลางอัตโนมัติ
+          alignItems: "center",
+          justifyContent: "center",
+       }}>
         <img
           src={src}
           alt={alt}
              style={{
-            maxWidth: "87vw",
+            maxWidth: "95vw",
             height: "auto",
-            maxHeight: "90vh",
+            maxHeight: "95vh",
             objectFit: "contain",
             borderRadius: "8px",
           }}

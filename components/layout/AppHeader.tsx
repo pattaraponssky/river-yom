@@ -34,9 +34,8 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ title, open, setOpen }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const { currentUser, logout, checkAuth } = useAuth(); // ← ดึง logout และ checkAuth จาก context
+  const { currentUser, logout, refreshAuth } = useAuth(); // ← ดึง logout และ refreshAuth จาก context
   const router = useRouter();
-
   const [loginOpen, setLoginOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
@@ -225,7 +224,8 @@ const Header: React.FC<HeaderProps> = ({ title, open, setOpen }) => {
         open={loginOpen}
         onClose={() => setLoginOpen(false)}
         onLoginSuccess={async () => {
-          await checkAuth(); 
+          await refreshAuth(); 
+          router.refresh();
         }}
       />
     </>

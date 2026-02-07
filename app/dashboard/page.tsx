@@ -10,14 +10,14 @@ import FlowCard from '../../components/dashboard/FlowCard';
 import RainCard from '../../components/dashboard/RainCard';
 import ReservoirCard from '@/components/dashboard/ReservoirCard';
 import GateCard from '@/components/dashboard/GateCard';
-import { BoxStyle } from '@/theme/style';
+import { BoxStyle, fontTitle, titleStyle } from '@/theme/style';
 import Papa from "papaparse";
 import FloodWarningTable from './components/WarningTable';
 import WaterLevelChart from './components/WaterLevel';
 import FloatingMenu from '@/components/dashboard/FloatingMenu';
 import LongProfileChart from './components/LongProfile';
-import { log } from 'console';
 import ImageComponent from '../../components/Image';
+import PdfViewer from '../../components/PdfViewer';
 
 interface WaterLevelData {
   time: string;
@@ -281,9 +281,7 @@ export default function Dashboard() {
       <Typography variant="h5" id="card-daily" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
         ภาพรวมสถานการณ์น้ำ วันที่ {formatThaiDay(Date())}
       </Typography>
-      
-      <DashboardCards data={dailySummary}/>
-
+        <DashboardCards data={dailySummary}/>
       <Grid size={{xs:12, md:6}}>
         <Box sx={{
               display:"flex",
@@ -326,13 +324,27 @@ export default function Dashboard() {
           <Grid size={{xs:12, md:6}}>
             <ImageComponent src="http://irrigation.rid.go.th/rid3/water/images/3dams.jpg" alt="สภาพน้ำเขื่อนภูมิพล เขื่อนสิริกิต์ และเขื่อแควน้อยฯ" title={'สภาพน้ำในเขื่อนประจำวัน'} />
           </Grid>
-            <Grid size={{xs:12, md:6}}>
-            <ImageComponent src="http://irrigation.rid.go.th/rid3/water/images/onepages.jpg" alt="สถานการณืน้ำ สำนักงานชลประทานที่ 3" title={'สถานการณืน้ำ สำนักงานชลประทานที่ 3'} />
+          <Grid size={{xs:12, md:6}}>
+            <ImageComponent src="http://irrigation.rid.go.th/rid3/water/images/onepages.jpg" alt="สถานการณ์น้ำ สำนักงานชลประทานที่ 3" title={'สถานการณ์น้ำ สำนักงานชลประทานที่ 3'} />
+          </Grid>
+        </Grid>
+         <Grid container spacing={1}>
+          <Grid size={{xs:12, md:6}}>
+            <ImageComponent src="http://irrigation.rid.go.th/rid3/water/images/dailyreport.jpg" alt="สรุปสถานการณ์น้ำและการเฝ้าระวัง" title={'สรุปสถานการณ์น้ำและการเฝ้าระวัง'} />
+          </Grid>
+          <Grid size={{xs:12, md:6}}>
+            <ImageComponent src="http://irrigation.rid.go.th/rid3/water/images/onepages.jpg" alt="สถานการณ์น้ำ สำนักงานชลประทานที่ 3" title={'สถานการณ์น้ำ สำนักงานชลประทานที่ 3'} />
           </Grid>
         </Grid>
       </Box>
+        <Box sx={BoxStyle}>
+            <PdfViewer src="http://irrigation.rid.go.th/rid3/water/report.pdf" title="รายงานสถานการณ์น้ำประจำวัน สำนักงานชลประทานที่ 3" />
+        </Box>
+        <Box sx={BoxStyle}>
+            <PdfViewer src="http://irrigation.rid.go.th/rid3/water/rpt050269.pdf" title="รายงานสถานการณ์น้ำประจำวัน สำนักงานชลประทานที่ 3" />
+        </Box>
       <FloatingMenu/>
     </Container>
   </>
   );
-}1
+}

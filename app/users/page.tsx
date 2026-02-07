@@ -1,8 +1,14 @@
-import { Box } from "@mui/material";
-import User from "./components/Users";
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
+import UserPage from './components/Users';
 
-export default function UsersPage() {
-    return <Box sx={{p:1}}>
-        <User/>
-    </Box>
+export default async function UsersPage() {
+  const cookieStore = await cookies();
+  const session = cookieStore.get('session');
+
+  if (!session) {
+    redirect('/dashboard');
+  }
+
+  return <div><UserPage/></div>;
 }

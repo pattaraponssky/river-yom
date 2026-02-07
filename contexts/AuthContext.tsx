@@ -1,4 +1,3 @@
-// src/contexts/AuthContext.tsx
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
@@ -17,7 +16,7 @@ interface AuthContextType {
   currentUser: User | null;
   loading: boolean;
   logout: () => Promise<void>;
-  checkAuth: () => Promise<void>;
+  refreshAuth: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -27,76 +26,73 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  const checkAuth = async () => {
-    setLoading(true);
+  const refreshAuth = async () => {
     try {
+      setLoading(true);
+
       const res = await fetch(`${API_URL}/user/checkAuth`, {
-        method: 'GET',
         credentials: 'include',
-        headers: { Accept: 'application/json' },
+        cache: 'no-store',
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        const userData = data.user || data;
+      if (!res.ok) {
+        setCurrentUser(null);
+        return;
+      }
 
-        if (userData?.username) {
-          setCurrentUser({
-            username: userData.username,
-            iduser_level: Number(userData.iduser_level) || 0,
-            uid: userData.uid,
-            email: userData.email,
-            exp: userData.exp,
-          });
-          // ถ้ามี localStorage เก็บ user ไว้ด้วย (optional)
-          localStorage.setItem('user', JSON.stringify(userData));
-        } else {
-          setCurrentUser(null);
-        }
+      const data = await res.json();
+      console.log('checkAuth response:', data); // 🔍 debug
+
+      if (data?.username && data?.iduser_level) {
+        setCurrentUser({
+          username: data.username,
+          iduser_level: Number(data.iduser_level),
+          uid: data.uid,
+          exp: data.exp,
+        });
       } else {
         setCurrentUser(null);
-        localStorage.removeItem('user');
       }
     } catch (err) {
-      console.warn('Auth check failed:', err);
+      console.warn('Auth refresh failed', err);
       setCurrentUser(null);
-      localStorage.removeItem('user');
     } finally {
       setLoading(false);
     }
   };
 
+
   const logout = async () => {
-    try {
-      await fetch(`${API_URL}/user/logout`, {
-        method: 'POST',
-        credentials: 'include',
-      });
-      setCurrentUser(null);
-      localStorage.removeItem('user');
-      router.push('/login');           // เปลี่ยนเป็น /login ดีกว่า /
-      router.refresh();
-    } catch (err) {
-      console.error('Logout failed:', err);
-      router.push('/login');
-    }
+    await fetch(`${API_URL}/user/logout`, {
+      method: 'POST',
+      credentials: 'include',
+    });
+
+    setCurrentUser(null);
+    router.replace('/dashboard');
+    router.refresh();
   };
 
   useEffect(() => {
-    checkAuth();
+    refreshAuth();
   }, []);
 
   return (
-    <AuthContext.Provider value={{ currentUser, loading, logout, checkAuth }}>
+    <AuthContext.Provider
+      value={{
+        currentUser,
+        loading,
+        logout,
+        refreshAuth,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within AuthProvider');
-  }
-  return context;
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
+  return ctx;
 }
