@@ -13,6 +13,7 @@ const UserPage: React.FC = () => {
   const [mainTab, setMainTab] = useState(0);
   const {currentUser, loading: authLoading } = useAuth();
   const iduser_level = currentUser?.iduser_level ?? 0;
+  console.log("Current User Level:", currentUser);
 
   const handleMainTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setMainTab(newValue);
@@ -71,7 +72,7 @@ const UserPage: React.FC = () => {
 
       {mainTab === 0 && (
         <Box>
-          <EditUser token={localStorage.getItem("token") || ""} />
+          <EditUser/>
         </Box>
       )}
 

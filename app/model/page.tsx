@@ -6,10 +6,10 @@ import { redirect } from 'next/navigation';
 
 export default async function ModelPage() {
     const cookieStore = await cookies();
-    const session = cookieStore.get('session');
+    const session = cookieStore.get('access_token');
 
     if (!session) {
-    redirect('/dashboard');
+        redirect('/dashboard');
     }
     return <Box sx={{p:1}}>
         <HecRun />

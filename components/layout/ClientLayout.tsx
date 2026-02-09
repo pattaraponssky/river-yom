@@ -29,13 +29,13 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
           mt: { xs: '64px', md: '72px' },
           ml: { md: drawerOpen ? '290px' : '72px' },
           transition: 'margin-left 0.3s',
-          minHeight: 'calc(100vh - 64px)',
+          minHeight: 'calc(100vh - 200px)',
           backgroundColor: 'background.default',
         }}
       >
         {children}
-        <Footer/>
       </Box>
+        <Footer/>
     </>
   );
 }

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { API_URL } from '@/lib/utility';
 
 interface User {
+  name: string;
   username: string;
   iduser_level: number;
   uid?: string;
@@ -41,7 +42,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       const data = await res.json();
-      console.log('checkAuth response:', data); // 🔍 debug
 
       if (data?.username && data?.iduser_level) {
         setCurrentUser({
@@ -49,6 +49,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           iduser_level: Number(data.iduser_level),
           uid: data.uid,
           exp: data.exp,
+          email: data.email,
+          name: data.name,
         });
       } else {
         setCurrentUser(null);

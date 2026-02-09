@@ -15,12 +15,6 @@ import ForgotPasswordDialog from "./ForgotPasswordDialog";
 import { API_URL } from '../../lib/utility';
 import { textStyle } from '../../theme/style';
 
-interface User {
-  iduser_level: number;
-  username: string;
-  email: string;
-}
-
 interface LoginDialogProps {
   open: boolean;
   onClose: () => void;

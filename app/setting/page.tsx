@@ -5,11 +5,12 @@ import { redirect } from 'next/navigation';
 
 export default async function SettingPage() {
     const cookieStore = await cookies();
-    const session = cookieStore.get('session');
+    const session = cookieStore.get('access_token');
 
     if (!session) {
-    redirect('/dashboard');
+        redirect('/dashboard');
     }
+
     return <Box sx={{p:1}}>
         <Setting/>
     </Box>
