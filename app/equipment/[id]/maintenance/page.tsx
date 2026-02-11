@@ -25,6 +25,7 @@ import { API_URL } from '@/lib/utility';
 import { titleStyle } from '@/theme/style';
 import { useParams, useRouter } from 'next/navigation';
 import SearchIcon from '@mui/icons-material/Search';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface MaintenanceRecord {
   id: number;
@@ -41,11 +42,19 @@ interface MaintenanceRecord {
 export default function EquipmentMaintenancePage() {
   const { id } = useParams(); // ดึง ID จาก URL
   const router = useRouter(); // เพิ่ม router เพื่อย้อนกลับ
-  const theme = useTheme();
   const [records, setRecords] = useState<MaintenanceRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const { currentUser, requirePermission } = useAuth();
+
+  if (loading) {
+    return <div>กำลังตรวจสอบสิทธิ์...</div>;
+  }
+  
+  if (!currentUser || currentUser.iduser_level < 2) {
+    return <div>ไม่มีสิทธิ์เข้าถึงหน้านี้</div>;
+  }
 
   useEffect(() => {
     const fetchMaintenance = async () => {

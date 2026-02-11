@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Box, Tabs, Tab, Typography, Grid, CircularProgress } from '@mui/material';
 import {
   Storage,
@@ -28,24 +28,20 @@ import EquipmentPage from "@/app/equipment/page";
 const Setting: React.FC = () => {
   const [mainTab, setMainTab] = useState(0);
   const [subTab, setSubTab] = useState(0);
-  const {currentUser, loading: authLoading } = useAuth();
+  const { currentUser, loading, requirePermission } = useAuth();
 
-    if (authLoading) {
-        return (
-        <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
-            <CircularProgress />
-        </Box>
-        );
+  useEffect(() => {
+    if (!loading) {
+          requirePermission(2, '/dashboard');
+        }
+      }, [loading, requirePermission]);
+    
+    if (loading) {
+      return <div>กำลังตรวจสอบสิทธิ์...</div>;
     }
-
-    if (!currentUser) {
-        return (
-        <Box sx={{ p: 4, textAlign: "center" }}>
-            <Typography variant="h6" color="error">
-            กรุณาเข้าสู่ระบบก่อน
-            </Typography>
-        </Box>
-        );
+    
+    if (!currentUser || currentUser.iduser_level < 2) {
+      return <div>ไม่มีสิทธิ์เข้าถึงหน้านี้</div>;
     }
 
   const handleMainTabChange = (_event: React.SyntheticEvent, newValue: number) => {

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Box, Tab, Tabs, CircularProgress, Typography } from "@mui/material";
 import PersonIcon from "@mui/icons-material/Person";
 import PeopleIcon from "@mui/icons-material/People"; // เปลี่ยนชื่อให้ถูกต้อง (จาก Users → People)
@@ -11,31 +11,25 @@ import { useAuth } from "@/contexts/AuthContext"; // ใช้จาก context 
 
 const UserPage: React.FC = () => {
   const [mainTab, setMainTab] = useState(0);
-  const {currentUser, loading: authLoading } = useAuth();
+  const { currentUser, loading, requirePermission } = useAuth();
   const iduser_level = currentUser?.iduser_level ?? 0;
-  console.log("Current User Level:", currentUser);
 
   const handleMainTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setMainTab(newValue);
   };
 
-  // ถ้ายังโหลด auth อยู่ → แสดง loading
-    if (authLoading) {
-        return (
-        <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
-            <CircularProgress />
-        </Box>
-        );
+  useEffect(() => {
+    if (!loading) {
+          requirePermission(1, '/dashboard');
+        }
+      }, [loading, requirePermission]);
+    
+    if (loading) {
+      return <div>กำลังตรวจสอบสิทธิ์...</div>;
     }
-
-    if (!currentUser) {
-        return (
-        <Box sx={{ p: 4, textAlign: "center" }}>
-            <Typography variant="h6" color="error">
-            กรุณาเข้าสู่ระบบก่อน
-            </Typography>
-        </Box>
-        );
+    
+    if (!currentUser || currentUser.iduser_level < 2) {
+      return <div>ไม่มีสิทธิ์เข้าถึงหน้านี้</div>;
     }
 
   const canManageUsers = iduser_level === 2 || iduser_level === 3;

@@ -4,7 +4,7 @@ import { Box, CircularProgress, Divider, Tab, Tabs, Typography,  } from "@mui/ma
 import FolderIcon from '@mui/icons-material/Folder';
 import { BoxStyle, fontTitle } from "@/theme/style";
 import ModelTrainingIcon from '@mui/icons-material/ModelTraining';
-import React,{ useState } from "react";
+import React,{ useEffect, useState } from "react";
 import RainInputTable from "@/components/Model/InputTable";
 import RunAll from "@/components/Model/RunAll";
 import RunHecHms from "@/components/Model/RunHecHms";
@@ -13,30 +13,26 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const HecRun: React.FC = () => {
   const [mainTab, setMainTab] = useState(0);
-   const {currentUser, loading: authLoading } = useAuth();
-   const iduser_level = currentUser?.iduser_level ?? 0;
+    const { currentUser, loading, requirePermission } = useAuth();
+   
+    useEffect(() => {
+      if (!loading) {
+            requirePermission(2, '/dashboard');
+          }
+        }, [loading, requirePermission]);
+      
+      if (loading) {
+        return <div>กำลังตรวจสอบสิทธิ์...</div>;
+      }
+      
+      if (!currentUser || currentUser.iduser_level < 2) {
+        return <div>ไม่มีสิทธิ์เข้าถึงหน้านี้</div>;
+      }
+      
    const handleMainTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setMainTab(newValue);
     };
     
-      // ถ้ายังโหลด auth อยู่ → แสดง loading
-      if (authLoading) {
-        return (
-          <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
-            <CircularProgress />
-          </Box>
-        );
-      }
-    
-      if (!currentUser) {
-        return (
-          <Box sx={{ p: 4, textAlign: "center" }}>
-            <Typography variant="h6" color="error">
-              กรุณาเข้าสู่ระบบก่อน
-            </Typography>
-          </Box>
-        );
-      }
   return (
      <Box sx={{ ...BoxStyle }}>
         {/* Main Tabs */}

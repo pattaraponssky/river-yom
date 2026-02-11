@@ -30,6 +30,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import { API_URL } from '@/lib/utility';
 import { titleStyle } from '@/theme/style';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Equipment {
   id: string;
@@ -53,6 +54,21 @@ export default function EquipmentPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
   const rowsPerPage = 10;
+  const { currentUser, requirePermission } = useAuth();
+
+  useEffect(() => {
+    if (!loading) {
+          requirePermission(1, '/dashboard');
+        }
+      }, [loading, requirePermission]);
+    
+    if (loading) {
+      return <div>กำลังตรวจสอบสิทธิ์...</div>;
+    }
+    
+    if (!currentUser || currentUser.iduser_level < 2) {
+      return <div>ไม่มีสิทธิ์เข้าถึงหน้านี้</div>;
+    }
 
   useEffect(() => {
     const fetchEquipments = async () => {

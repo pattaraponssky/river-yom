@@ -18,6 +18,8 @@ interface AuthContextType {
   loading: boolean;
   logout: () => Promise<void>;
   refreshAuth: () => Promise<void>;
+  hasPermission: (requiredLevel: number) => boolean;
+  requirePermission: (requiredLevel: number, redirectTo?: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -43,7 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const data = await res.json();
 
-      if (data?.username && data?.iduser_level) {
+      if (data?.username && data?.iduser_level != null) {
         setCurrentUser({
           username: data.username,
           iduser_level: Number(data.iduser_level),
@@ -63,16 +65,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-
   const logout = async () => {
-    await fetch(`${API_URL}/user/logout`, {
-      method: 'POST',
-      credentials: 'include',
-    });
+    try {
+      await fetch(`${API_URL}/user/logout`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch (err) {
+      console.error('Logout failed', err);
+    }
 
     setCurrentUser(null);
     router.replace('/dashboard');
     router.refresh();
+  };
+
+  // ฟังก์ชันเช็คสิทธิ์แบบ boolean (ใช้ใน component ได้เลย)
+  const hasPermission = (requiredLevel: number): boolean => {
+    if (!currentUser) return false;
+    return currentUser.iduser_level >= requiredLevel;
+  };
+
+  // ฟังก์ชันเช็คสิทธิ์ + redirect ถ้าไม่มีสิทธิ์ (ใช้ใน useEffect หรือ event)
+  const requirePermission = (requiredLevel: number, redirectTo: string = '/dashboard') => {
+    if (!loading && !hasPermission(requiredLevel)) {
+      router.replace(redirectTo);
+    }
   };
 
   useEffect(() => {
@@ -86,6 +104,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loading,
         logout,
         refreshAuth,
+        hasPermission,
+        requirePermission,
       }}
     >
       {children}
