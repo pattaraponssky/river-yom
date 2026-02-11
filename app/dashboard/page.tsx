@@ -1,23 +1,25 @@
-'use client';
+"use client";
 
 import '@/app/globals.css';
 import { Container, Typography, Grid, Box, useTheme } from '@mui/material';
 import DashboardCards from './components/DashboardCard';
-import  { useState, useEffect } from "react";
+import  { useState, useEffect, use } from "react";
 import { Path_URL, API_URL, formatThaiDay } from '../../lib/utility';
 import HydroMap from './components/Map';
 import FlowCard from '../../components/dashboard/FlowCard';
 import RainCard from '../../components/dashboard/RainCard';
 import ReservoirCard from '@/components/dashboard/ReservoirCard';
 import GateCard from '@/components/dashboard/GateCard';
-import { BoxStyle, fontTitle, titleStyle } from '@/theme/style';
+import { BoxStyle} from '@/theme/style';
 import Papa from "papaparse";
 import FloodWarningTable from './components/WarningTable';
-import WaterLevelChart from './components/WaterLevel';
 import FloatingMenu from '@/components/dashboard/FloatingMenu';
-import LongProfileChart from './components/LongProfile';
 import ImageComponent from '../../components/Image';
 import PdfViewer from '../../components/PdfViewer';
+import LongProfileChart from './components/LongProfile';
+import WaterLevelChart from './components/WaterLevelChart';
+import WaterForecastChart from './components/WaterForecastChart';
+
 
 interface WaterLevelData {
   time: string;
@@ -52,6 +54,7 @@ export default function Dashboard() {
   const [dailySummary, setDailySummary] = useState<any>(null);
 
   const [forecastLongProfile, setForecastLongProfile] = useState<waterData[]>([]);
+  const [forecastChart, setForecastChart] = useState<waterData[]>([]);
   const [rawData, setRawData] = useState<WaterLevelData[]>([]);
   const [forecastData, setForecastData] = useState<WaterLevelData[]>([]);
   const [historicalData, setHistoricalData] = useState<WaterLevelData[]>([]);
@@ -254,7 +257,13 @@ export default function Dashboard() {
             Date: p.time.replace("T", " "), // แปลง ISO → "YYYY-MM-DD HH:mm:ss"
             WaterLevel: p.elevation,
           }));
+           const ChartData: waterData[] = allPoints.map((p) => ({
+            CrossSection: p.crossSection,
+            Date: p.time.replace("T", " "), // แปลง ISO → "YYYY-MM-DD HH:mm:ss"
+            WaterLevel: p.elevation,
+          }));
 
+          setForecastChart(ChartData)
           setForecastLongProfile(longProfileData);
         }
       } catch (err) {
@@ -283,11 +292,10 @@ export default function Dashboard() {
       </Typography>
         <DashboardCards data={dailySummary}/>
       <Grid size={{xs:12, md:6}}>
-        <Box sx={{
+        <Box id="map" sx={{
               display:"flex",
               flexDirection:{xs:"column",md:"row"},
               py:2,
-              ...BoxStyle
           }}>
           <HydroMap
               id="longdo-map"
@@ -313,13 +321,17 @@ export default function Dashboard() {
       <Box sx={BoxStyle} id="flood-warning">
         <FloodWarningTable maxLevels={maxElevations} waterTrends={waterTrends} waterPeaks={waterPeaks}   />
       </Box>
-      <Box sx={BoxStyle} >
+      <Box sx={BoxStyle} id="forecast-chart" >
+        <WaterForecastChart data={forecastChart} />
+      </Box>
+       <Box sx={BoxStyle} id="profile-chart">
+        <LongProfileChart waterData={forecastLongProfile} />
+        {/* <LongProfileChart waterData={forecastLongProfile} isDark={isDark}/> */}
+      </Box>
+      <Box sx={BoxStyle} id="water-level" >
         <WaterLevelChart data={forecastData}/>
       </Box>
-       <Box sx={BoxStyle}>
-        <LongProfileChart waterData={forecastLongProfile} isDark={isDark}/>
-      </Box>
-      <Box sx={BoxStyle} id="">
+      <Box sx={BoxStyle} id="diagrams-report">
        <Grid container spacing={1}>
           <Grid size={{xs:12, md:6}}>
             <ImageComponent src="http://irrigation.rid.go.th/rid3/water/images/3dams.jpg" alt="สภาพน้ำเขื่อนภูมิพล เขื่อนสิริกิต์ และเขื่อแควน้อยฯ" title={'สภาพน้ำในเขื่อนประจำวัน'} />

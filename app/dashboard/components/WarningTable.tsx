@@ -403,7 +403,7 @@ const FloodWarningTable: React.FC<FloodWarningTableProps> = ({ maxLevels, waterT
                   {wl != null ? wl.toFixed(2) : "-"}
                 </TableCell>
                 <TableCell sx={getCellDiffStyle(index, diffColor)}>{diff}</TableCell>
-                <TableCell sx={{...getCellDiffStyle(index, maxLevelColor)}}>
+                <TableCell sx={getCellDiffStyle(index, maxLevelColor)}>
                   {currentMaxLevel != null ? currentMaxLevel.toFixed(2) : "-"}
                 </TableCell>
                 <TableCell sx={getCellStyle(index)}>

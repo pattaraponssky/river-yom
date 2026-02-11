@@ -107,6 +107,7 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
                     fontWeight: 700,
                     color: textColor,
                     lineHeight: 1.2,
+                    fontSize: { xs: '1rem', sm: '1.2rem'}
                   }}
                 >
                   {title}
@@ -116,6 +117,8 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
                   sx={{
                     color: theme.palette.text.secondary,
                     fontFamily: 'Prompt, sans-serif',
+                    fontWeight: 500,
+                    fontSize: { xs: '0.75rem', sm: '0.95rem'}
                   }}
                 >
                   {subTitle}

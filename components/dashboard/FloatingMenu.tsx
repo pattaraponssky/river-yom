@@ -39,8 +39,7 @@ const FloatingMenu: React.FC = () => {
         <MenuItem sx={{fontFamily: "Prompt"}} onClick={() => handleScrollTo("forecast-chart")}>ผลการพยากรณ์ปริมาณน้ำท่า</MenuItem>
         <MenuItem sx={{fontFamily: "Prompt"}} onClick={() => handleScrollTo("profile-chart")}>รูปตัดตามยาวแม่น้ำ</MenuItem>
         <MenuItem sx={{fontFamily: "Prompt"}} onClick={() => handleScrollTo("water-level")}>ระดับน้ำแต่ละสถานี</MenuItem>
-        <MenuItem sx={{fontFamily: "Prompt"}} onClick={() => handleScrollTo("flood-map")}>แผนที่น้ำท่วม</MenuItem>
-        <MenuItem sx={{fontFamily: "Prompt"}} onClick={() => handleScrollTo("diagrams-map")}>แผนผังลุ่มแม่น้ำ</MenuItem>
+        <MenuItem sx={{fontFamily: "Prompt"}} onClick={() => handleScrollTo("diagrams-report")}>รายงานสถานการณ์น้ำประจำวัน</MenuItem>
       </Menu>
     </>
   );

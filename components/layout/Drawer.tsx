@@ -28,7 +28,6 @@ import GroupIcon from "@mui/icons-material/Group";
 import InfoIcon from "@mui/icons-material/Info";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import TsunamiIcon from "@mui/icons-material/Tsunami";
 import PlaceIcon from "@mui/icons-material/Place";
 import WaterDamageIcon from "@mui/icons-material/WaterDamage";
 import WaterDropIcon from "@mui/icons-material/WaterDrop";
@@ -41,6 +40,7 @@ import StorageIcon from "@mui/icons-material/Storage";
 import OpacityIcon from "@mui/icons-material/Opacity";
 import { Path_URL } from "../../lib/utility";
 import { useAuth } from "@/contexts/AuthContext"; // ← ใช้จาก AuthContext (ไม่ใช่ hooks/useAuth)
+import { Handyman } from "@mui/icons-material";
 
 interface DrawerProps {
   open: boolean;
@@ -72,6 +72,11 @@ const advancedMenuItems = [
     icon: <DataUsageIcon sx={{ marginRight: "15px" }} />,
     text: "แบบจำลอง",
     path: "/model",
+  },
+  {
+    icon: <Handyman sx={{ marginRight: "15px" }} />,
+    text: "รายการอุปกรณ์",
+    path: "/equipment",
   },
 ];
 

@@ -6,6 +6,7 @@ import {
   Storage,
   BarChart,
   Info,
+  HomeRepairService,
 } from "@mui/icons-material"; // Import ไอคอน
 import EditAboutUs from "@/components/Setting/AboutUs/EditAboutUs";
 import ManualUpdateFlow from "@/components/Setting/Data/ManualUpdateFlow";
@@ -20,6 +21,9 @@ import InfoDamStation from "@/components/Setting/Info/ReservoirStation";
 import InfoSeaStation from "@/components/Setting/Info/SeaStaion";
 import { BoxStyle, fontTitle, titleStyle } from "@/theme/style";
 import { useAuth } from "@/contexts/AuthContext";
+import EquipmentPage from "@/app/equipment/page";
+
+
 
 const Setting: React.FC = () => {
   const [mainTab, setMainTab] = useState(0);
@@ -83,18 +87,12 @@ const Setting: React.FC = () => {
             iconPosition="start"
             label="อัปเดตข้อมูลย้อนหลัง"
           />
-          {/* <Tab
-            sx={{ ...fontTitle}}
-            icon={<BarChart />} // ไอคอนการตั้งค่าแบบจำลอง
-            iconPosition="start"
-            label="การตั้งค่าแบบจำลอง"
-          />
           <Tab
             sx={{ ...fontTitle}}
-            icon={<Link />} // ไอคอนลิงค์เพิ่มเติม
+            icon={<HomeRepairService />} // ไอคอนลิงค์เพิ่มเติม
             iconPosition="start"
-            label="ลิงค์เพิ่มเติม"
-          /> */}
+            label="ประวัติการทำงาน"
+          />
           <Tab
             sx={{ ...fontTitle}}
             icon={<Info />} // ไอคอนเกี่ยวกับเรา
@@ -158,6 +156,11 @@ const Setting: React.FC = () => {
           )}
 
           {mainTab === 2 && (
+            <Typography sx={{ marginBottom: "1rem", fontWeight: 600, ...titleStyle, color: "#28378B" }}>
+            </Typography>
+          )}
+
+          {mainTab === 3 && (
             <Typography sx={{ marginBottom: "1rem", fontWeight: 600, ...titleStyle, color: "#28378B" }}>
               <EditAboutUs/>
             </Typography>

@@ -39,10 +39,11 @@ export const HeaderCellStyle = (theme: any) => ({
   textAlign: "center",
   backgroundColor: theme.palette.mode === 'dark' ? '#01579B' : 'rgb(1, 87, 155)',
   color: theme.palette.mode === 'dark' ? '#e0e7ff' : 'white',
-  fontSize: { xs: "0.8rem", sm: "1rem", md: "1.1rem" },
+  fontSize: { xs: "0.8rem", sm: "0.9rem", md: "0.95rem" },
   fontFamily: "Prompt",
-  padding: "8px",
+
 });
+
 
 export const getCellStyle = (index: number) => (theme: any) => ({
   whiteSpace: "nowrap",
@@ -53,7 +54,7 @@ export const getCellStyle = (index: number) => (theme: any) => ({
     : (theme.palette.mode === 'dark' ? '#111827' : '#FFF'),
   textAlign: "center",
   fontFamily: "Prompt",
-  fontSize: { xs: "0.8rem", sm: "0.9rem", md: "1rem" },
+  fontSize: { xs: "0.8rem", sm: "0.9rem", md: "0.9rem" },
   color: theme.palette.text.primary,
 });
 

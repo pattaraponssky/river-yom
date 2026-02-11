@@ -1,6 +1,9 @@
+"use cilent";
+
 import React, { useEffect, useRef, useState } from "react";
 import { API_URL, formatThaiDay, Path_URL } from '@/lib/utility';
 import { useThemeMode } from '@/contexts/ThemeContext';
+import ApexCharts from 'apexcharts';
 
 declare global {
   interface Window {
@@ -42,6 +45,7 @@ interface FlowDataItem {
   wl_lower: string | null;
   discharge: string | null;
   }
+  
   
 
 const HydroMap: React.FC<HydroMapProps> = ({ mapKey, JsonPaths,height}) => {
@@ -103,9 +107,7 @@ useEffect(() => {
       script.id = "longdoMapScript";
       script.async = true;
       script.defer = true;
-      document.body.appendChild(script);
-
-      script.onload = () => {
+      document.body.appendChild(script);      script.onload = () => {
         console.log("โหลด Longdo map script สำเร็จ");
         if (window.longdo && window.longdo.Map) {
           longdo = window.longdo;
@@ -133,20 +135,20 @@ useEffect(() => {
 }, [mapKey]);
 
 // โหลด GeoJSON ไฟล์ (เมื่อ JsonPaths เปลี่ยน)
-// useEffect(() => {
-//   const loadJsonFiles = async () => {
-//     try {
-//       const data = await Promise.all(JsonPaths.map(path => fetch(path).then(res => {
-//         if (!res.ok) throw new Error(`โหลดไฟล์ไม่สำเร็จ: ${path}`);
-//         return res.json();
-//       })));
-//       setJsonDataList(data);
-//     } catch (error) {
-//       console.error(error);
-//     }
-//   };
-//   loadJsonFiles();
-// }, [JsonPaths]);
+useEffect(() => {
+  const loadJsonFiles = async () => {
+    try {
+      const data = await Promise.all(JsonPaths.map(path => fetch(path).then(res => {
+        if (!res.ok) throw new Error(`โหลดไฟล์ไม่สำเร็จ: ${path}`);
+        return res.json();
+      })));
+      setJsonDataList(data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  loadJsonFiles();
+}, [JsonPaths]);
 
 useEffect(() => {
   if (!isMapReady) return;
@@ -193,7 +195,6 @@ useEffect(() => {
         setLatestRainData(Array.from(rainMap.values()));
       }
   
-  
       if (flowRes.status === "success") {
         const flowData = flowRes.data;
         setFlowData(flowData);
@@ -222,7 +223,6 @@ useEffect(() => {
         });
         setLatestGateData(Array.from(gateMap.values()));
         console.log(latestGateData);
-        
       }
     };
     loadData();
@@ -233,7 +233,7 @@ useEffect(() => {
      }, [flowData, rainData,  gateData]);
   
     const chartsInstances: Record<string, Record<string, ApexCharts>> = {};
-
+    
     // เตรียมข้อมูลสำหรับ Rain
     const prepareChartDataForRain = (rawData: any[], targetStaCode: string) => {
       const filtered = rawData
@@ -472,7 +472,7 @@ useEffect(() => {
 // ตั้งค่าแผนที่ตำแหน่ง zoom (แค่ครั้งแรกที่ map พร้อม)
 useEffect(() => {
   if (!isMapReady) return;
-  map.location({ lat: 16.804, lon: 100 }, true);
+  map.location({ lat: 16.750, lon: 100 }, true);
   map.zoom(11, true);
   map.Ui.Mouse.enableWheel(false);
   map.zoomRange({ min:8, max:17 });
@@ -555,9 +555,9 @@ useEffect(() => {
 
               // เพิ่มแต่ละ Polygon แยกกัน
               const multiPolygon = new longdo.Polygon(polygonCoordinates, {
-                title: `ขอบเขตพื้นที่ลุ่มน้ำ`,
-                detail: `<b>ขนาดพื้นที่:</b> ${AREA_SQKM} ตร.กม.<br>
-                          <b>แม่น้ำ:</b> ${MBASIN_T}`,
+                // title: `ขอบเขตพื้นที่ลุ่มน้ำ`,
+                // detail: `<b>ขนาดพื้นที่:</b> ${AREA_SQKM} ตร.กม.<br>
+                //           <b>แม่น้ำ:</b> ${MBASIN_T}`,
                 lineWidth: 3,
                 lineColor: 'rgba(0, 0, 0, 0.5)',
                 fillColor: "rgba(0, 255, 255,0.01)",
@@ -712,9 +712,9 @@ useEffect(() => {
                 `,
                 icon: {
                   html: `<div style="text-align:center;">
-                      <img src="${Path_URL}images/icons/flow_station_icon.png" style="width:24px; height:24px;" />
+                      <img src="${Path_URL}images/icons/flow_station_icon.png" style="width:24px; height:24px; display:block; margin:0 auto;" />
                       <div style="background-color: rgba(255, 255, 255, 0.4); padding:2px; border-radius:5px; font-size: 12px; margin-top: 2px;width:80px;">
-                            ${sta_code}
+                            ${sta_name}
 
                       </div></div>`
                 },
@@ -805,7 +805,7 @@ useEffect(() => {
                 `,
                 icon: {
                   html: `<div style="text-align:center;">
-                      <img src="${Path_URL}images/icons/gate_icon.png" style="width:24px; height:24px;" />
+                      <img src="${Path_URL}images/icons/gate_icon.png" style="width:24px; height:24px; display:block; margin:0 auto;" />
                       <div style="background-color: rgba(255, 255, 255, 0.4); padding:2px; border-radius:5px; font-size: 12px; margin-top: 2px;width:80px;">
                             ${sta_code}
 
@@ -882,7 +882,7 @@ useEffect(() => {
             `,
             icon: {
               html: `<div style="text-align:center;">
-                <img src="${Path_URL}images/icons/${parseFloat(data.rain_mm) > 0 ? 'rain_station_icon.png' : 'sun_station_icon.png'}" style="width:24px; height:24px;" />
+                <img src="${Path_URL}images/icons/${parseFloat(data.rain_mm) > 0 ? 'rain_station_icon.png' : 'sun_station_icon.png'}" style="width:24px; height:24px; display:block; margin:0 auto;" />
                 <div style="background-color: rgba(255, 255, 255, 0.4); padding:2px; border-radius:5px; font-size: 12px; margin-top: 2px;width:80px;">
                   ${data.sta_code}
                 </div>

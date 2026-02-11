@@ -68,7 +68,13 @@ html, body {
   background: var(--ldmap-popup-bg) !important;
   color: var(--ldmap-popup-text) !important;
   border-bottom: 1px solid var(--ldmap-popup-border) !important;
+  display: flex !important;    
+  flex-direction: row !important;
 } 
+
+.ldmap_placeholder .ldmap_frame .ldmap_popup_detail{
+  color: #000;
+}
 
 .ldmap_placeholder .ldmap_topright {
   line-height: 30px !important;

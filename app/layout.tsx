@@ -1,5 +1,4 @@
 // src/app/layout.tsx
-import type { Metadata } from 'next';
 import { Prompt } from 'next/font/google';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeContextProvider } from '@/contexts/ThemeContext';

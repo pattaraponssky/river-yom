@@ -18,6 +18,8 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
+  Box,
+  Typography,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -193,60 +195,85 @@ const InfoFlowStation: React.FC = () => {
 
       {/* Add Dialog */}
       <Dialog open={openAddDialog} onClose={() => setOpenAddDialog(false)} fullWidth maxWidth="md">
-        <DialogTitle>เพิ่มข้อมูล</DialogTitle>
+        <DialogTitle sx={{ fontFamily: "Prompt", fontWeight: "bold" }}>เพิ่มสถานีวัดน้ำท่า</DialogTitle>
         <DialogContent>
-          {Object.keys(stations[0] || {}).map((key) => (
-            <TextField
-              key={key}
-              label={key}
-              fullWidth
-              sx={{ mb: 2 }}
-              onChange={(e) => handleInputChange(e, key)}
-            />
-          ))}
+          <Box sx={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: 2, mt: 2 }}>
+            {stations[0] &&
+              Object.keys(stations[0]).map((key) => (
+                <TextField
+                  key={key}
+                  label={key}
+                  fullWidth
+                  size="small"
+                  onChange={(e) => handleInputChange(e, key)}
+                  sx={{ fontFamily: "Prompt" }}
+                />
+              ))}
+          </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenAddDialog(false)}>ยกเลิก</Button>
-          <Button onClick={handleAddFeature}>เพิ่ม</Button>
+          <Button onClick={handleAddFeature} variant="contained" color="success">
+            เพิ่ม
+          </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Edit Dialog */}
+      {/* Dialog แก้ไข */}
       <Dialog open={openEditDialog} onClose={() => setOpenEditDialog(false)} fullWidth maxWidth="md">
-        <DialogTitle>แก้ไขข้อมูล</DialogTitle>
+        <DialogTitle sx={{ fontFamily: "Prompt", fontWeight: "bold" }}>แก้ไขสถานี {editFeature.sta_code}</DialogTitle>
         <DialogContent>
-          {Object.keys(editFeature).map((key) => (
-            <TextField
-              key={key}
-              label={key}
-              fullWidth
-              sx={{ mb: 2 }}
-              value={editFeature[key]}
-              
-              onChange={(e) => handleEditInputChange(e, key)}
-            />
-          ))}
+          <Box sx={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: 2, mt: 2 }}>
+            {Object.keys(editFeature).map((key) => (
+              <TextField
+                key={key}
+                label={key}
+                fullWidth
+                size="small"
+                value={editFeature[key] ?? ""}
+                onChange={(e) => handleEditInputChange(e, key)}
+                sx={{ fontFamily: "Prompt" }}
+              />
+            ))}
+          </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenEditDialog(false)}>ยกเลิก</Button>
-          <Button onClick={handleEditSave}>บันทึก</Button>
+          <Button onClick={handleEditSave} variant="contained" color="primary">
+            บันทึก
+          </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Delete Confirm Dialog */}
+      {/* Dialog ยืนยันลบ */}
       <Dialog open={openDeleteDialog} onClose={() => setOpenDeleteDialog(false)}>
-        <DialogTitle>ยืนยันการลบ</DialogTitle>
+        <DialogTitle sx={{ fontFamily: "Prompt", fontWeight: "bold" }}>ยืนยันการลบ</DialogTitle>
         <DialogContent>
-          คุณต้องการลบข้อมูลสถานีรหัส "{deleteStaCode}" ใช่หรือไม่?
+          <Typography>
+            คุณต้องการลบข้อมูลสถานีรหัส <strong>"{deleteStaCode}"</strong> ใช่หรือไม่?
+          </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenDeleteDialog(false)}>ยกเลิก</Button>
-          <Button onClick={handleDeleteConfirm} color="error">ลบ</Button>
+          <Button onClick={handleDeleteConfirm} color="error" variant="contained">
+            ลบ
+          </Button>
         </DialogActions>
       </Dialog>
 
-      <Snackbar open={openSnackbar} autoHideDuration={5000} onClose={() => setOpenSnackbar(false)}>
-        <Alert severity={snackbarSeverity} onClose={() => setOpenSnackbar(false)}>
+      {/* Snackbar แจ้งผล */}
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={5000}
+        onClose={() => setOpenSnackbar(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setOpenSnackbar(false)}
+          severity={snackbarSeverity}
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
           {snackbarMessage}
         </Alert>
       </Snackbar>
