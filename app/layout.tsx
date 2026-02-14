@@ -3,7 +3,7 @@ import { Prompt } from 'next/font/google';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeContextProvider } from '@/contexts/ThemeContext';
 import { AuthProvider } from '@/contexts/AuthContext';
-import ClientLayout from '@/components/layout/ClientLayout';
+import ClientLayout from '@/components/Layout/ClientLayout';
 
 
 const prompt = Prompt({

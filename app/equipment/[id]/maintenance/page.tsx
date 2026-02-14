@@ -8,14 +8,12 @@ import {
   Box,
   CircularProgress,
   Alert,
-  Paper,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  useTheme,
   Button,
   InputAdornment,
   TextField,
@@ -43,10 +41,9 @@ export default function EquipmentMaintenancePage() {
   const { id } = useParams(); // ดึง ID จาก URL
   const router = useRouter(); // เพิ่ม router เพื่อย้อนกลับ
   const [records, setRecords] = useState<MaintenanceRecord[]>([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const { currentUser, requirePermission } = useAuth();
+  const { currentUser, loading } = useAuth();
 
   if (loading) {
     return <div>กำลังตรวจสอบสิทธิ์...</div>;
@@ -59,7 +56,6 @@ export default function EquipmentMaintenancePage() {
   useEffect(() => {
     const fetchMaintenance = async () => {
       try {
-        setLoading(true);
         setError(null);
 
         const res = await fetch(`${API_URL}/api/equipments/${id}/maintenance`, {
@@ -81,7 +77,6 @@ export default function EquipmentMaintenancePage() {
         setError(err.message || 'เกิดข้อผิดพลาดในการดึงข้อมูลการบำรุงรักษา');
         console.error('Fetch error:', err);
       } finally {
-        setLoading(false);
       }
     };
 

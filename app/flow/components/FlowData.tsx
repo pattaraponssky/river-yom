@@ -18,9 +18,9 @@ import {
   Button,
   useTheme,
 } from "@mui/material";
-import FlowChart from "@/components/data/FlowChartData";
-import FlowExportTable from "@/components/data/FlowTableData";
-import CenteredLoading from "@/components/layout/CenteredLoading";
+import FlowChart from "@/components/Data/FlowChartData";
+import FlowExportTable from "@/components/Data/FlowTableData";
+import CenteredLoading from "@/components/Layout/CenteredLoading";
 import { API_URL, Path_URL } from "@/lib/utility";
 import { titleStyle, textStyle, fontInfo } from "@/theme/style";
 import { HeaderCellStyle } from '../../../theme/style';

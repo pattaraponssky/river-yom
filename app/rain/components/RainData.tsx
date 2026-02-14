@@ -16,9 +16,9 @@ import {
   Button,
   useTheme,
 } from "@mui/material";
-import RainChart from "@/components/data/RainChartData";
-import RainExportTable from "@/components/data/RainTableData";
-import CenteredLoading from "@/components/layout/CenteredLoading";
+import RainChart from "@/components/Data/RainChartData";
+import RainExportTable from "@/components/Data/RainTableData";
+import CenteredLoading from "@/components/Layout/CenteredLoading";
 import { API_URL, Path_URL } from "@/lib/utility";
 import { fontInfo, titleStyle, textStyle, HeaderCellStyle } from "@/theme/style";
 

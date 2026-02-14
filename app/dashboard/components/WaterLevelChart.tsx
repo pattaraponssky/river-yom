@@ -10,7 +10,7 @@ import {
   Button,
 } from "@mui/material";
 import { ArrowBack, ArrowForward } from "@mui/icons-material";
-import CenteredLoading from "@/components/layout/CenteredLoading";
+import CenteredLoading from "@/components/Layout/CenteredLoading";
 import { Path_URL, formatThaiDay } from "@/lib/utility";
 import { titleStyle } from "@/theme/style";
 import dynamic from "next/dynamic";

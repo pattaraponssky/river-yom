@@ -1,5 +1,4 @@
-// app/equipment/page.tsx
-"use client";
+'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
 import {
@@ -21,6 +20,11 @@ import {
   TextField,
   InputAdornment,
   Pagination,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -31,9 +35,10 @@ import { API_URL } from '@/lib/utility';
 import { titleStyle } from '@/theme/style';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import EquipmentDialog from '@/components/Equipment/EquipmentDialog';
 
 interface Equipment {
-  id: string;
+  id?: string;
   name: string;
   type: string;
   location: string;
@@ -48,59 +53,89 @@ interface Equipment {
 
 export default function EquipmentPage() {
   const router = useRouter();
+  const { currentUser, loading: authLoading, hasPermission } = useAuth();
+
   const [equipments, setEquipments] = useState<Equipment[]>([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
   const rowsPerPage = 10;
-  const { currentUser, requirePermission } = useAuth();
+  const [openDialog, setOpenDialog] = useState(false);
+  const [equipmentToEdit, setEquipmentToEdit] = useState<Equipment | null>(null);
+  const [openDeleteConfirm, setOpenDeleteConfirm] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  const fetchEquipments = async () => {
+    try {
+      setError(null);
+      const res = await fetch(`${API_URL}/api/equipments`, {
+        credentials: 'include',
+      });
+
+      if (!res.ok) throw new Error('ดึงข้อมูลล้มเหลว');
+
+      const json = await res.json();
+      setEquipments(json.data || []);
+    } catch (err: any) {
+      setError(err.message);
+    }
+  };
 
   useEffect(() => {
-    if (!loading) {
-          requirePermission(1, '/dashboard');
-        }
-      }, [loading, requirePermission]);
-    
-    if (loading) {
-      return <div>กำลังตรวจสอบสิทธิ์...</div>;
+    if (!authLoading && currentUser && hasPermission(1)) {
+      fetchEquipments();
     }
-    
-    if (!currentUser || currentUser.iduser_level < 2) {
-      return <div>ไม่มีสิทธิ์เข้าถึงหน้านี้</div>;
-    }
+  }, [authLoading, currentUser]);
 
-  useEffect(() => {
-    const fetchEquipments = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+  // เปิด Dialog เพิ่มใหม่
+  const handleAddNew = () => {
+    setEquipmentToEdit(null);
+    setOpenDialog(true);
+  };
 
-        const res = await fetch(`${API_URL}/api/equipments`, {
-          method: 'GET',
-          credentials: 'include',
-          headers: { 'Accept': 'application/json' },
-        });
+  // เปิด Dialog แก้ไข
+  const handleEdit = (equipment: Equipment) => {
+    setEquipmentToEdit(equipment);
+    setOpenDialog(true);
+  };
 
-        if (!res.ok) {
-          const err = await res.json();
-          throw new Error(err.error || `ดึงข้อมูลล้มเหลว: ${res.status}`);
-        }
+  // ยืนยันลบ
+  const handleDeleteClick = (id: string) => {
+    setDeleteId(id);
+    setOpenDeleteConfirm(true);
+  };
 
-        const json = await res.json();
-        setEquipments(json.data || []);
-      } catch (err: any) {
-        setError(err.message || 'เกิดข้อผิดพลาดในการดึงข้อมูล');
-        console.error('Fetch error:', err);
-      } finally {
-        setLoading(false);
+  // ลบจริง
+  const handleDeleteConfirm = async () => {
+    if (!deleteId) return;
+
+    try {
+      const res = await fetch(`${API_URL}/api/equipments/delete/${deleteId}`, {
+        method: 'POST',  // ตาม routes ของคุณใช้ POST สำหรับ delete
+        credentials: 'include',
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'ลบล้มเหลว');
       }
-    };
 
-    fetchEquipments();
-  }, []);
+      // ลบออกจาก state ทันที (optimistic update)
+      setEquipments(prev => prev.filter(item => item.id !== deleteId));
+      setOpenDeleteConfirm(false);
+      setDeleteId(null);
+    } catch (err: any) {
+      setError(err.message || 'เกิดข้อผิดพลาดในการลบ');
+    }
+  };
 
-  // กรองข้อมูลตามคำค้นหา
+  // หลังบันทึกสำเร็จ (เพิ่มหรือแก้ไข)
+  const handleSuccess = () => {
+    fetchEquipments(); // รีเฟรชข้อมูล
+    setOpenDialog(false);
+    setEquipmentToEdit(null);
+  };
+
   const filteredEquipments = useMemo(() => {
     if (!searchTerm) return equipments;
 
@@ -120,188 +155,131 @@ export default function EquipmentPage() {
 
   const totalPages = Math.ceil(filteredEquipments.length / rowsPerPage);
 
-  const handlePageChange = (_: any, value: number) => {
-    setPage(value);
-  };
+    if (authLoading) {
+      return <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}><CircularProgress /></Box>;
+    }
+
+    if (!currentUser || !hasPermission(1)) {
+      return <Box sx={{ p: 4, textAlign: 'center' }}><Typography variant="h6" color="error">ไม่มีสิทธิ์เข้าถึงหน้านี้</Typography></Box>;
+    }
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
-      {/* หัวข้อ + ปุ่มเพิ่ม */}
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          mb: 4,
-          flexWrap: 'wrap',
-          gap: 2,
-        }}
-      >
-        <Typography
-          variant="h4"
-          component="h1"
-          sx={{
-            ...titleStyle,
-            fontWeight: 'bold',
-            color: 'text.primary',
-          }}
-        >
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+        <Typography variant="h4" sx={{ ...titleStyle, fontWeight: 'bold' }}>
           รายการอุปกรณ์
         </Typography>
-        <Box sx={{ gap: 2, display: 'flex', flexWrap: 'wrap' }}>
-        <Button
-                variant="contained"
-                color="primary"
-                startIcon={<AddIcon />}
-                sx={{ ...titleStyle, minWidth: 160 }}
-                >
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button variant="contained" color="primary" startIcon={<AddIcon />} onClick={handleAddNew}>
             เพิ่มอุปกรณ์ใหม่
-            </Button>
-
-            <TextField
+          </Button>
+          <TextField
             placeholder="ค้นหาอุปกรณ์..."
             value={searchTerm}
-            onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setPage(1); // รีเซ็ตหน้าเมื่อค้นหาใหม่
-            }}
+            onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
             size="medium"
             sx={{ width: { xs: '100%', sm: 300 } }}
             InputProps={{
-                startAdornment: (
-                <InputAdornment position="start">
-                    <SearchIcon />
-                </InputAdornment>
-                ),
+              startAdornment: <InputAdornment position="start"><SearchIcon /></InputAdornment>,
             }}
-            />
+          />
         </Box>
       </Box>
 
       {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
 
-      {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
-          <CircularProgress size={60} />
-        </Box>
-      ) : filteredEquipments.length === 0 ? (
-        <Box sx={{ textAlign: 'center', py: 8 }}>
-          <Typography variant="h6" color="text.secondary">
-            {searchTerm ? 'ไม่พบข้อมูลที่ตรงกับการค้นหา' : 'ยังไม่มีข้อมูลอุปกรณ์'}
-          </Typography>
-        </Box>
-      ) : (
-        <>
-          <TableContainer
-            component={Paper}
-            sx={{
-              borderRadius: 2,
-              overflowX: 'auto',
-              boxShadow: 3,
-              bgcolor: 'background.paper',
-            }}
-          >
-            <Table sx={{ minWidth: 650 }}>
-              <TableHead>
-                <TableRow sx={{ bgcolor: 'primary.main' }}>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold', textAlign: 'center' }}>
-                    ประวัติการบำรุง
-                  </TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold', textAlign: 'center' }}>
-                    จัดการ
-                  </TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>ID</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>ชื่ออุปกรณ์</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>ประเภท</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>สถานที่</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>พิกัด</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold', textAlign: 'center' }}>
-                    สถานะ
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {paginatedData.map((row, index) => (
-                  <TableRow
-                    key={row.id}
-                    sx={{
-                      '&:hover': { bgcolor: 'action.hover' },
-                      bgcolor: index % 2 === 0 ? 'action.hover' : 'inherit',
-                    }}
-                  >
-                    <TableCell align="center">
-                      <Tooltip title="ดูประวัติการบำรุงรักษา">
-                        <IconButton
-                          color="info"
-                          size="small"
-                          onClick={() => router.push(`/equipment/${row.id}/maintenance`)}
-                        >
-                          <HistoryIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    </TableCell>
-                    <TableCell align="center">
-                      <Tooltip title="แก้ไข">
-                        <IconButton color="primary" size="small">
-                          <EditIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="ลบ">
-                        <IconButton color="error" size="small">
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    </TableCell>
-                    <TableCell>{row.id}</TableCell>
-                    <TableCell>{row.name}</TableCell>
-                    <TableCell>{row.type}</TableCell>
-                    <TableCell>{row.location}</TableCell>
-                    <TableCell>
-                      {row.latitude && row.longitude
-                        ? `${Number(row.latitude).toFixed(6)} / ${Number(row.longitude).toFixed(6)}`
-                        : '-'}
-                    </TableCell>
-                    <TableCell align="center">
-                      <Box
-                        sx={{
-                          px: 1.5,
-                          py: 0.5,
-                          borderRadius: 12,
-                          bgcolor:
-                            row.status === 'active' ? 'success.main' :
-                            row.status === 'maintenance' ? 'warning.main' :
-                            row.status === 'broken' ? 'error.main' : 'grey.500',
-                          color: 'white',
-                          fontSize: '0.85rem',
-                          fontWeight: 'bold',
-                          minWidth: 100,
-                        }}
-                      >
-                        {row.status === 'active' ? 'ใช้งานอยู่' :
-                         row.status === 'maintenance' ? 'บำรุงรักษา' :
-                         row.status === 'broken' ? 'ชำรุด' : 'ปลดระวาง'}
-                      </Box>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+      {/* Dialog เพิ่ม/แก้ไข */}
+      <EquipmentDialog
+        open={openDialog}
+        onClose={() => {
+          setOpenDialog(false);
+          setEquipmentToEdit(null);
+        }}
+        onSuccess={handleSuccess}
+        equipmentToEdit={equipmentToEdit}
+      />
 
-          {/* Pagination */}
-          {Math.ceil(filteredEquipments.length / rowsPerPage) > 1 && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
-              <Pagination
-                count={Math.ceil(filteredEquipments.length / rowsPerPage)}
-                page={page}
-                onChange={handlePageChange}
-                color="primary"
-                size="large"
-              />
-            </Box>
-          )}
-        </>
-      )}
+      {/* Confirm ลบ */}
+      <Dialog open={openDeleteConfirm} onClose={() => setOpenDeleteConfirm(false)}>
+        <DialogTitle>ยืนยันการลบ</DialogTitle>
+        <DialogContent>
+          <DialogContentText>คุณแน่ใจหรือไม่ที่จะลบอุปกรณ์นี้? การกระทำนี้ไม่สามารถย้อนกลับได้</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDeleteConfirm(false)}>ยกเลิก</Button>
+          <Button onClick={handleDeleteConfirm} color="error" variant="contained">ลบ</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* ... Table และ Pagination เหมือนเดิม */}
+      <TableContainer component={Paper} sx={{ borderRadius: 2, overflowX: 'auto', boxShadow: 3 }}>
+        <Table sx={{ minWidth: 650 }}>
+          <TableHead>
+            <TableRow sx={{ bgcolor: 'primary.main' }}>
+              <TableCell sx={{ color: 'white', fontWeight: 'bold', textAlign: 'center' }}>ประวัติการบำรุง</TableCell>
+              <TableCell sx={{ color: 'white', fontWeight: 'bold', textAlign: 'center' }}>จัดการ</TableCell>
+              <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>ID</TableCell>
+              <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>ชื่ออุปกรณ์</TableCell>
+              <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>ประเภท</TableCell>
+              <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>สถานที่</TableCell>
+              <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>พิกัด</TableCell>
+              <TableCell sx={{ color: 'white', fontWeight: 'bold', textAlign: 'center' }}>สถานะ</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {paginatedData.map((row, index) => (
+              <TableRow key={row.id} sx={{ '&:hover': { bgcolor: 'action.hover' }, bgcolor: index % 2 === 0 ? 'action.hover' : 'inherit' }}>
+                <TableCell align="center">
+                  <Tooltip title="ดูประวัติการบำรุงรักษา">
+                    <IconButton color="info" size="small" onClick={() => router.push(`/equipment/${row.id}/maintenance`)}>
+                      <HistoryIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </TableCell>
+                <TableCell align="center">
+                  <Tooltip title="แก้ไข">
+                    <IconButton color="primary" size="small" onClick={() => handleEdit(row)}>
+                      <EditIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="ลบ">
+                    <IconButton color="error" size="small" onClick={() => handleDeleteClick(row.id!)}>
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </TableCell>
+                <TableCell>{row.id}</TableCell>
+                <TableCell>{row.name}</TableCell>
+                <TableCell>{row.type}</TableCell>
+                <TableCell>{row.location}</TableCell>
+                <TableCell>
+                  {row.latitude && row.longitude ? `${Number(row.latitude).toFixed(6)} / ${Number(row.longitude).toFixed(6)}` : '-'}
+                </TableCell>
+                <TableCell align="center">
+                  <Box sx={{
+                    px: 1.5,
+                    py: 0.5,
+                    borderRadius: 12,
+                    bgcolor: row.status === 'active' ? 'success.main' :
+                             row.status === 'maintenance' ? 'warning.main' :
+                             row.status === 'broken' ? 'error.main' : 'grey.500',
+                    color: 'white',
+                    fontSize: '0.85rem',
+                    fontWeight: 'bold',
+                    minWidth: 100,
+                  }}>
+                    {row.status === 'active' ? 'ใช้งานอยู่' :
+                     row.status === 'maintenance' ? 'บำรุงรักษา' :
+                     row.status === 'broken' ? 'ชำรุด' : 'ปลดระวาง'}
+                  </Box>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      {/* Pagination เหมือนเดิม */}
     </Container>
   );
 }

@@ -23,6 +23,7 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeContextProvider({ children }: { children: ReactNode }) {
   const [mode, setMode] = useState<ThemeMode>('light');
+  const [mounted, setMounted] = useState(false);
 
   // โหลดค่าจาก localStorage ตอนเริ่ม
   useEffect(() => {
@@ -30,13 +31,15 @@ export function ThemeContextProvider({ children }: { children: ReactNode }) {
     if (saved === 'light' || saved === 'dark') {
       setMode(saved);
     }
+    setMounted(true);
   }, []);
 
   // sync theme + html class
-  useEffect(() => {
+   useEffect(() => {
+    if (!mounted) return;
     localStorage.setItem('themeMode', mode);
     document.documentElement.classList.toggle('dark', mode === 'dark');
-  }, [mode]);
+  }, [mode, mounted]);
 
   const toggleTheme = () => {
     setMode((prev) => (prev === 'light' ? 'dark' : 'light'));

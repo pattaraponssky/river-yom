@@ -3,7 +3,7 @@
 import React from 'react';
 import { Grid, Skeleton, Box, Typography } from '@mui/material';
 import { Path_URL } from '../../../lib/utility';
-import DashboardCard from '../../../components/dashboard/DashboardCard';
+import DashboardCard from '../../../components/Dashboard/DashboardCard';
 
 interface DashboardCardsProps {
   data: any;

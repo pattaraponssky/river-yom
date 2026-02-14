@@ -16,9 +16,9 @@ import {
   Button,
   useTheme,
 } from "@mui/material";
-import GateChart from "@/components/data/GateChartData";
-import GateExportTable from "@/components/data/GateTableData";
-import CenteredLoading from "@/components/layout/CenteredLoading";
+import GateChart from "@/components/Data/GateChartData";
+import GateExportTable from "@/components/Data/GateTableData";
+import CenteredLoading from "@/components/Layout/CenteredLoading";
 import { API_URL, Path_URL } from "@/lib/utility";
 import { titleStyle, textStyle, HeaderCellStyle } from "@/theme/style";
 import { fontInfo } from "@/theme/style";

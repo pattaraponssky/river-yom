@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Box, Typography, Grid } from '@mui/material';
 import { ApexOptions, } from 'apexcharts'; // เพิ่ม ApexAnnotations
-import CenteredLoading from '@/components/layout/CenteredLoading';
+import CenteredLoading from '@/components/Layout/CenteredLoading';
 import { titleStyle } from '@/theme/style';
 import dynamic from "next/dynamic";
 

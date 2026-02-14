@@ -6,14 +6,14 @@ import DashboardCards from './components/DashboardCard';
 import  { useState, useEffect, use } from "react";
 import { Path_URL, API_URL, formatThaiDay } from '../../lib/utility';
 import HydroMap from './components/Map';
-import FlowCard from '../../components/dashboard/FlowCard';
-import RainCard from '../../components/dashboard/RainCard';
-import ReservoirCard from '@/components/dashboard/ReservoirCard';
-import GateCard from '@/components/dashboard/GateCard';
+import FlowCard from '../../components/Dashboard/FlowCard';
+import RainCard from '../../components/Dashboard/RainCard';
+import ReservoirCard from '@/components/Dashboard/ReservoirCard';
+import GateCard from '@/components/Dashboard/GateCard';
 import { BoxStyle} from '@/theme/style';
 import Papa from "papaparse";
 import FloodWarningTable from './components/WarningTable';
-import FloatingMenu from '@/components/dashboard/FloatingMenu';
+import FloatingMenu from '@/components/Dashboard/FloatingMenu';
 import ImageComponent from '../../components/Image';
 import PdfViewer from '../../components/PdfViewer';
 import LongProfileChart from './components/LongProfile';
@@ -278,7 +278,6 @@ export default function Dashboard() {
     };
   }, []);
     
-
   const JsonPaths = [
     `${Path_URL}data/River.geojson`,
     `${Path_URL}data/ProjectArea.geojson`,
@@ -298,7 +297,6 @@ export default function Dashboard() {
               py:2,
           }}>
           <HydroMap
-              id="longdo-map"
               mapKey={mapKey}
               JsonPaths={JsonPaths}// ส่งข้อมูล GeoJSON เข้าไป}
             />

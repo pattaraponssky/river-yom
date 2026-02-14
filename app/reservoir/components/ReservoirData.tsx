@@ -18,9 +18,9 @@ import {
   Button,
   useTheme,
 } from "@mui/material";
-import ReservoirChart from "@/components/data/ReservoirChartData";
-import ReservoirExportTable from "@/components/data/ReservoirTableData";
-import CenteredLoading from "@/components/layout/CenteredLoading";
+import ReservoirChart from "@/components/Data/ReservoirChartData";
+import ReservoirExportTable from "@/components/Data/ReservoirTableData";
+import CenteredLoading from "@/components/Layout/CenteredLoading";
 import { API_URL, Path_URL } from "@/lib/utility";
 import { fontInfo, titleStyle, textStyle, HeaderCellStyle } from "@/theme/style";
 
