@@ -3,7 +3,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Box, Typography, Paper, useTheme, CircularProgress } from '@mui/material';
 import * as d3 from 'd3';
-import { API_URL } from '@/lib/utility';
+import { API_URL, Path_URL } from '@/lib/utility';
 import { useRouter } from 'next/navigation';
 
 interface ReservoirNode {
@@ -45,24 +45,24 @@ const WaterSchematicSimple: React.FC = () => {
 
             switch (item.res_code.toLowerCase()) {
                 case 'ks': // กระเสียว
-                x = 420; y = 650;
-                imageUrl = 'https://mediaim.expedia.com/localexpert/359909/some-krasiao-dam-image.jpg'; // ตัวอย่างจาก Tripadvisor Krasiao Dam (แทนด้วย URL จริง)
+                x = 420; y = 350;
+                imageUrl = `${Path_URL}images/icons/reservoir_icon.png`; // ตัวอย่างจาก Tripadvisor Krasiao Dam (แทนด้วย URL จริง)
                 break;
                 case 'hkk': // ห้วยขุนแก้ว
-                x = 380; y = 250;
-                imageUrl = 'https://example.com/huay-khun-kaew-reservoir.jpg'; // หา URL จริงจาก Facebook หรือ Google
+                x = 400; y = 140;
+                imageUrl = `${Path_URL}images/icons/reservoir_icon.png`; // หา URL จริงจาก Facebook หรือ Google
                 break;
                 case 'ht': // ห้วยเทียน
                 x = 440; y = 700;
-                imageUrl = 'https://example.com/huay-thian-reservoir.jpg'; // จาก Facebook เขื่อนห้วยเทียน
+                imageUrl = `${Path_URL}images/icons/reservoir_icon.png`; // จาก Facebook เขื่อนห้วยเทียน
                 break;
                 case 'hnl': // ห้วยหนองโรง
                 x = 460; y = 350;
-                imageUrl = 'https://example.com/huay-nong-rong-reservoir.jpg'; // จาก TrueID หรือ Facebook
+                imageUrl = `${Path_URL}images/icons/reservoir_icon.png`; // จาก TrueID หรือ Facebook
                 break;
                 case 'htd': // ห้วยท่าเดื่อ
                 x = 360; y = 550;
-                imageUrl = 'https://example.com/huay-tha-due-reservoir.jpg'; // จาก Facebook Suphanburi
+                imageUrl = `${Path_URL}images/icons/reservoir_icon.png`; // จาก Facebook Suphanburi
                 break;
                 default: break;
             }
@@ -115,7 +115,6 @@ const WaterSchematicSimple: React.FC = () => {
       .attr('height', height)
       .attr('fill', 'white');
 
-    // วาด rect ทั้งหมดจาก SVG ที่คุณส่งมา (สีฟ้าเข้ม/อ่อน)
     const rectData = [
       { x: 181, y: 290, w: 210, h: 12, fill: '#B7F1FF' },
       { x: 210, y: 536, w: 181, h: 12, fill: '#B7F1FF' },
@@ -150,48 +149,6 @@ const WaterSchematicSimple: React.FC = () => {
       }
     });
 
-    // // ลูกศร marker
-    // svg.append("defs")
-    // .append("marker")
-    // .attr("id", "arrow")
-    // .attr("viewBox", "0 0 10 10")
-    // .attr("refX", 8)
-    // .attr("refY", 5)
-    // .attr("markerWidth", 8)
-    // .attr("markerHeight", 8)
-    // .attr("orient", "auto-start-reverse")
-    // .append("path")
-    // .attr("d", "M 0 0 L 10 5 L 0 10 z")
-    // .attr("fill", "#000");
-
-    //  // Define a sample flow path for the arrow to follow
-    //  const flowLine = svg.append("path")
-    //   .attr("d", "M 200 200 Q 300 100 400 200") // Example quadratic curve
-    //   .attr("fill", "none")
-    //   .attr("stroke", "#000")
-    //   .attr("stroke-width", 2);
-
-    //  const arrow = svg.append("circle")
-    //   .attr("r", 5)
-    //   .attr("fill", "black");
-
-    //   function animateArrow() {
-    //     arrow
-    //       .transition()
-    //       .duration(3000)
-    //       .ease(d3.easeLinear)
-    //       .attrTween("transform", function () {
-    //         const path = flowLine.node() as SVGPathElement;
-    //         const length = path.getTotalLength();
-    //         return function (t) {
-    //           const point = path.getPointAtLength(t * length);
-    //           return `translate(${point.x},${point.y})`;
-    //         };
-    //       })
-    //       .on("end", animateArrow);
-    //   }
-
-    //   animateArrow();
     const nodeGroup = svg.selectAll<SVGGElement, ReservoirNode>('.reservoir-node')
         .data(reservoirs)
         .enter()
@@ -210,18 +167,18 @@ const WaterSchematicSimple: React.FC = () => {
         .attr('xlink:href', d => {
             // ถ้ามีรูปเฉพาะอ่างใช้ d.imageUrl ถ้ามี
             // fallback ใช้ไอคอนฟรีเดียวกัน
-            return d.imageUrl || 'https://cdn-icons-png.flaticon.com/512/3079/3079322.png'; // dam icon
+            return d.imageUrl || `${Path_URL}images/icons/reservoir_icon.png`; // dam icon
         })
-        .attr('x', -40)          // กึ่งกลางไอคอน (ปรับขนาด)
-        .attr('y', -80)          // วางด้านบน
-        .attr('width', 80)
-        .attr('height', 80)
+        .attr('x', -25)          // กึ่งกลางไอคอน (ปรับขนาด)
+        .attr('y', -60)          // วางด้านบน
+        .attr('width', 50)
+        .attr('height', 50)
         .style('pointer-events', 'none'); // ไม่ให้คลิกทับ group
 
         // ชื่ออ่าง (ด้านบนไอคอน)
         nodeGroup.append('text')
         .attr('text-anchor', 'middle')
-        .attr('y', -90)          // เหนือไอคอน
+        .attr('y', 0)          // เหนือไอคอน
         .attr('font-size', 14)
         .attr('font-weight', 'bold')
         .attr('fill', theme.palette.text.primary)
@@ -229,65 +186,110 @@ const WaterSchematicSimple: React.FC = () => {
 
         // ข้อมูลตัวเลขด้านล่างไอคอน (หลายบรรทัด)
         nodeGroup.append('text')
-        .attr('text-anchor', 'middle')
-        .attr('y', 20)           // ใต้ไอคอน
-        .attr('font-size', 13)
+        .attr('y', -45)           // ใต้ไอคอน
+        .attr('x', 35) 
+        .attr('font-size', 12)
         .attr('fill', theme.palette.text.primary)
-        .text(d => `${d.percent.toFixed(2)}% - ${d.volume.toFixed(2)} MCM`);
+        .text(d => `ปริมาณน้ำ ${d.volume.toFixed(2)} MCM (${d.percent.toFixed(2)}%)`);
 
         nodeGroup.append('text')
-        .attr('text-anchor', 'middle')
-        .attr('y', 38)
-        .attr('font-size', 11)
-        .attr('fill', theme.palette.text.secondary)
-        .text(d => `In: ${d.inflow.toFixed(3)} / Out: ${d.outflow.toFixed(3)}`);
+        .attr('y', -30)
+        .attr('x', 35) 
+        .attr('font-size', 12)
+        .attr('fill', theme.palette.text.primary)
+        .text(d => `ไหลลงอ่างฯ ${d.inflow.toFixed(3)} MCM`);
 
-    // สี่เหลี่ยมโหนด สีตาม %
-    // nodeGroup.append('rect')
-    //   .attr('width', 180)
-    //   .attr('height', 90)
-    //   .attr('x', -90)
-    //   .attr('y', -45)
-    //   .attr('rx', 12)
-    //   .attr('fill', d => {
-    //     if (d.percent < 40) return '#ef5350';     // วิกฤต
-    //     if (d.percent < 70) return '#ffb74d';     // เฝ้าระวัง
-    //     return '#66bb6a';                         // ปกติ
-    //   })
-    //   .attr('stroke', theme.palette.divider)
-    //   .attr('stroke-width', 2);
+        nodeGroup.append('text')
+        .attr('y', -15)
+        .attr('x', 35) 
+        .attr('font-size', 12)
+        .attr('fill', theme.palette.text.primary)
+        .text(d => `ระบาย: ${d.outflow.toFixed(3)} MCM`);
 
-    // // ชื่อ + จังหวัด
-    // nodeGroup.append('text')
-    //   .attr('text-anchor', 'middle')
-    //   .attr('y', -20)
-    //   .attr('font-size', 14)
-    //   .attr('font-weight', 'bold')
-    //   .attr('fill', 'white')
-    //   .text(d => d.name);
+        // 1. กำหนด marker ลูกศรชี้ไปทางขวา (และคงทิศทางนี้ไว้ ไม่หมุนตาม path)
+        svg.append("defs")
+        .append("marker")
+        .attr("id", "flow-arrow-right")
+        .attr("viewBox", "0 0 24 24")
+        .attr("refX", 20)               // จุดอ้างอิงใกล้หัวลูกศร
+        .attr("refY", 12)
+        .attr("markerWidth", 16)        // ขนาดลูกศร (ปรับได้)
+        .attr("markerHeight", 16)
+        .attr("orient", "90")            // สำคัญ: คงทิศทางเดิม ไม่หมุนตาม path
+        .append("path")
+        .attr("d", `
+            M2,10 
+            L14,10 
+            L14,6 
+            L22,12 
+            L14,18 
+            L14,14 
+            L2,14 
+            Z
+        `)
+        .attr("fill", "#000")           // สีดำ
+        .attr("stroke", "#000")
+        .attr("stroke-width", 1)
+        .attr("stroke-linejoin", "round");
 
-    // % ความจุ + volume
-    // nodeGroup.append('text')
-    //   .attr('text-anchor', 'middle')
-    //   .attr('y', 0)
-    //   .attr('font-size', 13)
-    //   .attr('fill', 'white')
-    //   .text(d => `${d.percent.toFixed(2)}%`);
+        // 2. ตัวอย่างกลุ่มลูกศร (ปรับ startX, startY, pathD ตามต้องการ)
+        const arrowGroups = [
+        {
+            id: "arrow-flow-1",
+            startX: 398,
+            startY: 180,
+            pathD: "M 0 0 L 0 20",       // ลงตรง 180 หน่วย
+        },
+        // ตัวอย่างเพิ่มเติม (คัดลอกแล้วปรับตำแหน่ง/ทิศทางได้เลย)
+        // {
+        //   id: "arrow-flow-2",
+        //   startX: 280,
+        //   startY: 220,
+        //   pathD: "M 0 0 L 0 240",
+        // },
+        ];
 
-    // nodeGroup.append('text')
-    //   .attr('text-anchor', 'middle')
-    //   .attr('y', 20)
-    //   .attr('font-size', 12)
-    //   .attr('fill', 'white')
-    //   .text(d => `${d.volume.toFixed(2)} MCM`);
+        arrowGroups.forEach(group => {
+        const g = svg.append("g")
+            .attr("id", group.id)
+            .attr("transform", `translate(${group.startX}, ${group.startY})`);
 
-    // // inflow / outflow (เล็ก ๆ)
-    // nodeGroup.append('text')
-    //   .attr('text-anchor', 'middle')
-    //   .attr('y', 38)
-    //   .attr('font-size', 11)
-    //   .attr('fill', '#e0e0e0')
-    //   .text(d => `In: ${d.inflow.toFixed(3)} / Out: ${d.outflow.toFixed(3)}`);
+        // สร้าง path สำหรับกำหนดเส้นทางเคลื่อนที่ (ซ่อนไว้)
+        const path = g.append("path")
+            .attr("d", group.pathD)
+            .attr("fill", "none")
+            .attr("id", `${group.id}-path`)
+            .attr("opacity", 0);
+
+        // สร้างเส้นสั้น ๆ เพื่อติด marker (ลูกศรตัวเดียว)
+        const movingLine = g.append("path")
+            .attr("d", "M 0 0 L 0.1 0")     // เส้นสั้นมากเพื่อให้ marker แสดง
+            .attr("fill", "none")
+            .attr("stroke", "none");
+
+        // ติดหัวลูกศรชี้ขวา
+        movingLine.attr("marker-end", "url(#flow-arrow-right)");
+
+        // Animation เคลื่อนที่ลงตาม path แล้ววนซ้ำ
+        function animate() {
+            movingLine
+            .transition()
+            .duration(2000)                    // (ปรับความเร็วที่นี่)
+            .ease(d3.easeLinear)
+            .attrTween("transform", function () {
+                const node = path.node() as SVGPathElement;
+                const length = node.getTotalLength();
+                return function (t) {
+                // t % 1 ทำให้วนลูปไม่สะดุด
+                const point = node.getPointAtLength((t % 1) * length);
+                return `translate(${point.x}, ${point.y})`;
+                };
+            })
+            .on("end", animate);               // วนซ้ำไม่หยุด
+        }
+
+        animate();  // เริ่ม animation
+        });
 
   }, [reservoirs, theme.palette.mode]);
 

@@ -24,9 +24,9 @@ const HydroMap: React.FC<HydroMapProps> = ({ mapKey, JsonPaths, height }) => {
   // ส่ง jsonDataList (ข้อมูล GeoJSON ที่โหลดแล้ว) เข้า renderer
   useGeoJsonRenderer(map, jsonDataList); // ← แก้จาก JsonPaths เป็น jsonDataList
 
-  const [showFlow, setShowFlow] = useState(true);
-  const [showGate, setShowGate] = useState(true);
-  const [showRain, setShowRain] = useState(true);
+  const [showFlow, setShowFlow] = useState(false);
+  const [showGate, setShowGate] = useState(false);
+  const [showRain, setShowRain] = useState(false);
 
   // ตั้งค่า window.renderChart
   useEffect(() => {

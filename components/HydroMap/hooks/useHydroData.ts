@@ -35,10 +35,6 @@ export const useHydroData = () => {
       setRainInfo(info[1].status === 'fulfilled' ? info[1].value.data : []);
       setGateInfo(info[2].status === 'fulfilled' ? info[2].value.data : []);
 
-        (window as any).rainDataLast14d = rainData14d;
-        (window as any).flowDataLast14d = flowData14d;
-        (window as any).gateDataLast14d = gateData14d;
-
       // 14 days + latest
       if (data14d[0].status === 'fulfilled' && data14d[0].value.status === 'success') {
         const data = data14d[0].value.data;
@@ -59,6 +55,27 @@ export const useHydroData = () => {
 
     fetchAll();
   }, []);
+
+    useEffect(() => {
+    if (rainData14d.length > 0) {
+        (window as any).rainDataLast14d = rainData14d;
+        console.log(`window.rainDataLast14d อัปเดตแล้ว (${rainData14d.length} รายการ)`);
+    }
+    }, [rainData14d]);
+
+    useEffect(() => {
+    if (flowData14d.length > 0) {
+        (window as any).flowDataLast14d = flowData14d;
+        console.log(`window.flowDataLast14d อัปเดตแล้ว (${flowData14d.length} รายการ)`);
+    }
+    }, [flowData14d]);
+
+    useEffect(() => {
+    if (gateData14d.length > 0) {
+        (window as any).gateDataLast14d = gateData14d;
+        console.log(`window.gateDataLast14d อัปเดตแล้ว (${gateData14d.length} รายการ)`);
+    }
+    }, [gateData14d]);
 
   const getLatest = <T extends { sta_code: string; date: string }>(arr: T[]) => {
     const map = new Map<string, T>();

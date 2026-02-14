@@ -57,7 +57,10 @@ const addRainMarkers = (
                 style="background:#e53935;color:white;padding:4px 10px;border:none;border-radius:6px;font-size:0.9rem;cursor:pointer;margin:4px 2px;">
           📉 ปริมาณน้ำฝนสะสม
         </button>
-
+        <a href="/rain?tab=0&station=${sta_code}" 
+            style="padding: 4px 10px; background-color: #1976d2; color: white; border-radius: 6px; text-decoration: none; font-size: 0.9rem; display: inline-block; margin-top: 8px; cursor: pointer; transition: background-color 0.2s;">
+                ข้อมูลเพิ่มเติม
+        </a>
         <br/>
         <div id="chart-rain_mm-${safeStaCode}" style="display:none; width:100%; height:220px;"></div>
         <div id="chart-rain_series-${safeStaCode}" style="display:none; width:100%; height:220px;"></div>

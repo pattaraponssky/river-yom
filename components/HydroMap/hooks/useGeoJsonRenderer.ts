@@ -32,7 +32,7 @@ const addGeoJsonOverlays = () => {
         return;
       }
 
-      console.log(`Processing feature ${featIndex} type: ${geom.type}`);
+    //   console.log(`Processing feature ${featIndex} type: ${geom.type}`);
 
       // ─── POLYGON / MULTIPOLYGON ────────────────────────────────
       if (geom.type === 'Polygon' || geom.type === 'MultiPolygon') {
@@ -74,7 +74,7 @@ const addGeoJsonOverlays = () => {
             title: props.MBASIN_T || props.name || props.NAME_T || 'พื้นที่',
             detail: props.AREA_SQKM ? `พื้นที่: ${props.AREA_SQKM} ตร.กม.` : undefined,
             lineWidth: 2,
-            lineColor: 'rgba(0, 100, 200, 0.8)',
+            lineColor: 'rgba(0, 100, 10, 0.8)',
             fillColor: 'rgba(100, 200, 255, 0.08)',
           });
 
