@@ -1,14 +1,17 @@
+'use client';
 
 import { Box, Button, Menu, MenuItem } from '@mui/material';
 import { ArrowDropDownIcon } from '@mui/x-date-pickers';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import React, { useState } from 'react';
-import ApexCharts from 'react-apexcharts';
 import DownloadIcon from '@mui/icons-material/Download';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import TextSnippetIcon from '@mui/icons-material/TextSnippet';
 import { fontInfo } from '../../theme/style';
+import dynamic from 'next/dynamic';
+
+const ApexCharts = dynamic(() => import('react-apexcharts'), { ssr: false });
 
 interface DataChartProps {
   data: any; // หรือกำหนด type ให้ละเอียดขึ้นได้

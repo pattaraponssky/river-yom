@@ -41,6 +41,7 @@ import OpacityIcon from "@mui/icons-material/Opacity";
 import { Path_URL } from "../../lib/utility";
 import { useAuth } from "@/contexts/AuthContext"; // ← ใช้จาก AuthContext (ไม่ใช่ hooks/useAuth)
 import { Handyman } from "@mui/icons-material";
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
 
 interface DrawerProps {
   open: boolean;
@@ -53,6 +54,11 @@ const publicMenuItems = [
     icon: <DashboardIcon sx={{ marginRight: "15px" }} />,
     text: "สรุปสถานการณ์น้ำ",
     path: "/dashboard",
+  },
+   {
+    icon: <AccountTreeIcon sx={{ marginRight: "15px" }} />,
+    text: "แผนผังลุ่มน้ำ",
+    path: "/schematic",
   },
   {
     icon: <ModelTrainingIcon sx={{ marginRight: "15px" }} />,

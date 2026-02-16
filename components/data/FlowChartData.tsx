@@ -1,5 +1,6 @@
+'use client';
+
 import React, { useState } from 'react';
-import ApexCharts from 'react-apexcharts';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { ArrowDropDownIcon } from '@mui/x-date-pickers';
@@ -8,6 +9,9 @@ import TableChartIcon from '@mui/icons-material/TableChart';
 import TextSnippetIcon from '@mui/icons-material/TextSnippet';
 import { Box, Button, Menu, MenuItem, useTheme } from '@mui/material';
 import { fontInfo } from '@/theme/style';
+import dynamic from 'next/dynamic';
+
+const ApexCharts = dynamic(() => import('react-apexcharts'), { ssr: false });
 
 interface DataChartProps {
   data: any; // หรือกำหนด type ให้ละเอียดขึ้นได้

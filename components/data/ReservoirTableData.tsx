@@ -1,5 +1,3 @@
-'use client';
-
 import React, { useState, useMemo } from 'react';
 import { Box, Button, FormControl, InputLabel, Menu, MenuItem, Select, Table, TableBody, TableCell, TableHead, TableRow, useTheme } from '@mui/material';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';

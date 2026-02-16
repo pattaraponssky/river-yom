@@ -1,10 +1,24 @@
 'use client';
 
 import React, { useRef, useEffect, useState } from 'react';
-import { Box, Typography, Paper, useTheme, CircularProgress } from '@mui/material';
+import {
+  Box,
+  Typography,
+  Paper,
+  useTheme,
+  CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  IconButton,
+} from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import * as d3 from 'd3';
-import { API_URL, Path_URL } from '@/lib/utility';
-import { useRouter } from 'next/navigation';
+import { API_URL, formatThaiDay, Path_URL } from '@/lib/utility';
+import PdfViewer from '@/components/PdfViewer';
+import { BoxStyle } from '@/theme/style';
+import DataReservoirStation from '../reservoir/components/ReservoirData';
+
 
 interface ReservoirNode {
   imageUrl: string;
@@ -12,23 +26,27 @@ interface ReservoirNode {
   name: string;
   res_code: string;
   province: string;
-  x: number;  // คำนวณหรือ hardcode
+  x: number;
   y: number;
   volume: number;
   inflow: number;
   outflow: number;
-  percent: number;  // p จาก API
+  percent: number;
   date: string;
-  detailUrl?: string;
 }
 
 const WaterSchematicSimple: React.FC = () => {
-  const router = useRouter();
   const svgRef = useRef<SVGSVGElement>(null);
   const theme = useTheme();
+
   const [reservoirs, setReservoirs] = useState<ReservoirNode[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // State สำหรับ Dialog
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedStation, setSelectedStation] = useState<string | undefined>(undefined);
+  const [selectedName, setSelectedName] = useState<string>('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -38,50 +56,58 @@ const WaterSchematicSimple: React.FC = () => {
         const json = await res.json();
         const data = json.data || [];
 
-        // Map ข้อมูล API → Node พร้อมตำแหน่ง (hardcode ตาม lat/long ประมาณ)
-        const mapped: ReservoirNode[] = data.map((item: any) => {
-            let x = 400, y = 600;
-            let imageUrl = ''; // default
+        const mapped = data
+          .map((item: any) => {
+            let x: number | undefined;
+            let y: number | undefined;
+            let imageUrl = '';
 
             switch (item.res_code.toLowerCase()) {
-                case 'ks': // กระเสียว
+              case 'ks': // กระเสียว
                 x = 420; y = 350;
-                imageUrl = `${Path_URL}images/icons/reservoir_icon.png`; // ตัวอย่างจาก Tripadvisor Krasiao Dam (แทนด้วย URL จริง)
+                imageUrl = `${Path_URL}images/icons/dam.png`;
                 break;
-                case 'hkk': // ห้วยขุนแก้ว
+              case 'hkk': // ห้วยขุนแก้ว
                 x = 400; y = 140;
-                imageUrl = `${Path_URL}images/icons/reservoir_icon.png`; // หา URL จริงจาก Facebook หรือ Google
+                imageUrl = `${Path_URL}images/icons/dam.png`;
                 break;
-                case 'ht': // ห้วยเทียน
+              case 'ht': // ห้วยเทียน
                 x = 440; y = 700;
-                imageUrl = `${Path_URL}images/icons/reservoir_icon.png`; // จาก Facebook เขื่อนห้วยเทียน
+                imageUrl = `${Path_URL}images/icons/dam.png`;
                 break;
-                case 'hnl': // ห้วยหนองโรง
+              case 'hnl': // ห้วยหนองโรง
                 x = 460; y = 350;
-                imageUrl = `${Path_URL}images/icons/reservoir_icon.png`; // จาก TrueID หรือ Facebook
+                imageUrl = `${Path_URL}images/icons/dam.png`;
                 break;
-                case 'htd': // ห้วยท่าเดื่อ
+              case 'htd': // ห้วยท่าเดื่อ
                 x = 360; y = 550;
-                imageUrl = `${Path_URL}images/icons/reservoir_icon.png`; // จาก Facebook Suphanburi
+                imageUrl = `${Path_URL}images/icons/dam.png`;
                 break;
-                default: break;
+              // เพิ่ม case อื่น ๆ ตาม res_code ที่เหลือที่นี่
             }
 
-          return {
-            id: item.no.toString(),
-            name: item.res_name,
-            res_code: item.res_code,
-            province: item.province,
-            x,
-            y,
-            volume: parseFloat(item.volume),
-            inflow: parseFloat(item.inflow),
-            outflow: parseFloat(item.outflow),
-            percent: parseFloat(item.p),
-            date: item.date,
-            detailUrl: `http://localhost:3000//reservoir?tab=0&station=${item.res_code.toLowerCase()}`,
-          };
-        });
+            if (x === undefined || y === undefined) {
+              console.warn(
+                `ไม่มีตำแหน่งกำหนดสำหรับอ่าง: ${item.res_name} (${item.res_code}) - ข้ามการแสดง`
+              );
+              return null;
+            }
+
+            return {
+              id: item.no.toString(),
+              name: item.res_name,
+              res_code: item.res_code,
+              province: item.province,
+              x,
+              y,
+              volume: parseFloat(item.volume),
+              inflow: parseFloat(item.inflow),
+              outflow: parseFloat(item.outflow),
+              percent: parseFloat(item.p),
+              date: item.date,
+            };
+          })
+          .filter((item: ReservoirNode | null): item is ReservoirNode => item !== null);
 
         setReservoirs(mapped);
       } catch (err) {
@@ -100,7 +126,7 @@ const WaterSchematicSimple: React.FC = () => {
     const width = 600;
     const height = 1200;
 
-     const svg = d3.select(svgRef.current)
+    const svg = d3.select(svgRef.current)
       .attr('width', '100%')
       .attr('height', '100%')
       .attr('viewBox', `0 0 ${width} ${height}`)
@@ -109,7 +135,6 @@ const WaterSchematicSimple: React.FC = () => {
 
     svg.selectAll('*').remove();
 
-    // พื้นหลังขาว (เหมือนใน SVG เดิม)
     svg.append('rect')
       .attr('width', width)
       .attr('height', height)
@@ -150,156 +175,137 @@ const WaterSchematicSimple: React.FC = () => {
     });
 
     const nodeGroup = svg.selectAll<SVGGElement, ReservoirNode>('.reservoir-node')
-        .data(reservoirs)
-        .enter()
-        .append('g')
-        .attr('class', 'reservoir-node')
-        .attr('transform', d => `translate(${d.x}, ${d.y})`)
-        .style('cursor', 'pointer')
-        .on('click', (event, d) => {
-            if (d.detailUrl) {
-            router.push(d.detailUrl);
-            }
-        });
+      .data(reservoirs)
+      .enter()
+      .append('g')
+      .attr('class', 'reservoir-node')
+      .attr('transform', d => `translate(${d.x}, ${d.y})`)
+      .style('cursor', 'pointer')
+      .on('click', (event, d) => {
+        setSelectedStation(d.res_code.toLowerCase());
+        setSelectedName(d.name);
+        setOpenDialog(true);
+      });
 
-        // ไอคอน (ใช้ <image> SVG tag)
-        nodeGroup.append('image')
-        .attr('xlink:href', d => {
-            // ถ้ามีรูปเฉพาะอ่างใช้ d.imageUrl ถ้ามี
-            // fallback ใช้ไอคอนฟรีเดียวกัน
-            return d.imageUrl || `${Path_URL}images/icons/reservoir_icon.png`; // dam icon
-        })
-        .attr('x', -25)          // กึ่งกลางไอคอน (ปรับขนาด)
-        .attr('y', -60)          // วางด้านบน
-        .attr('width', 50)
-        .attr('height', 50)
-        .style('pointer-events', 'none'); // ไม่ให้คลิกทับ group
+    nodeGroup.append('title')
+      .text(d => `คลิกเพื่อดูรายละเอียด ${d.name}`);
 
-        // ชื่ออ่าง (ด้านบนไอคอน)
-        nodeGroup.append('text')
-        .attr('text-anchor', 'middle')
-        .attr('y', 0)          // เหนือไอคอน
-        .attr('font-size', 14)
-        .attr('font-weight', 'bold')
-        .attr('fill', theme.palette.text.primary)
-        .text(d => d.name);
+    nodeGroup.append('image')
+      .attr('xlink:href', d => d.imageUrl || `${Path_URL}images/icons/dam.png`)
+      .attr('x', -25)
+      .attr('y', -60)
+      .attr('width', 50)
+      .attr('height', 50)
+      .style('pointer-events', 'none');
 
-        // ข้อมูลตัวเลขด้านล่างไอคอน (หลายบรรทัด)
-        nodeGroup.append('text')
-        .attr('y', -45)           // ใต้ไอคอน
-        .attr('x', 35) 
-        .attr('font-size', 12)
-        .attr('fill', theme.palette.text.primary)
-        .text(d => `ปริมาณน้ำ ${d.volume.toFixed(2)} MCM (${d.percent.toFixed(2)}%)`);
+    nodeGroup.append('text')
+      .attr('text-anchor', 'middle')
+      .attr('y', 0)
+      .attr('font-size', 14)
+      .attr('font-weight', 'bold')
+      .attr('fill', theme.palette.text.primary)
+      .text(d => d.name);
 
-        nodeGroup.append('text')
-        .attr('y', -30)
-        .attr('x', 35) 
-        .attr('font-size', 12)
-        .attr('fill', theme.palette.text.primary)
-        .text(d => `ไหลลงอ่างฯ ${d.inflow.toFixed(3)} MCM`);
+    nodeGroup.append('text')
+      .attr('y', -45)
+      .attr('x', 35)
+      .attr('font-size', 12)
+      .attr('fill', theme.palette.text.primary)
+      .text(d => `ปริมาณน้ำ ${d.volume.toFixed(2)} MCM (${d.percent.toFixed(2)}%)`);
 
-        nodeGroup.append('text')
-        .attr('y', -15)
-        .attr('x', 35) 
-        .attr('font-size', 12)
-        .attr('fill', theme.palette.text.primary)
-        .text(d => `ระบาย: ${d.outflow.toFixed(3)} MCM`);
+    nodeGroup.append('text')
+      .attr('y', -30)
+      .attr('x', 35)
+      .attr('font-size', 12)
+      .attr('fill', theme.palette.text.primary)
+      .text(d => `ไหลลงอ่างฯ ${d.inflow.toFixed(3)} MCM`);
 
-        // 1. กำหนด marker ลูกศรชี้ไปทางขวา (และคงทิศทางนี้ไว้ ไม่หมุนตาม path)
-        svg.append("defs")
-        .append("marker")
-        .attr("id", "flow-arrow-right")
-        .attr("viewBox", "0 0 24 24")
-        .attr("refX", 20)               // จุดอ้างอิงใกล้หัวลูกศร
-        .attr("refY", 12)
-        .attr("markerWidth", 16)        // ขนาดลูกศร (ปรับได้)
-        .attr("markerHeight", 16)
-        .attr("orient", "90")            // สำคัญ: คงทิศทางเดิม ไม่หมุนตาม path
-        .append("path")
-        .attr("d", `
-            M2,10 
-            L14,10 
-            L14,6 
-            L22,12 
-            L14,18 
-            L14,14 
-            L2,14 
-            Z
-        `)
-        .attr("fill", "#000")           // สีดำ
-        .attr("stroke", "#000")
-        .attr("stroke-width", 1)
-        .attr("stroke-linejoin", "round");
+    nodeGroup.append('text')
+      .attr('y', -15)
+      .attr('x', 35)
+      .attr('font-size', 12)
+      .attr('fill', theme.palette.text.primary)
+      .text(d => `ระบาย: ${d.outflow.toFixed(3)} MCM`);
 
-        // 2. ตัวอย่างกลุ่มลูกศร (ปรับ startX, startY, pathD ตามต้องการ)
-        const arrowGroups = [
-        {
-            id: "arrow-flow-1",
-            startX: 398,
-            startY: 180,
-            pathD: "M 0 0 L 0 20",       // ลงตรง 180 หน่วย
-        },
-        // ตัวอย่างเพิ่มเติม (คัดลอกแล้วปรับตำแหน่ง/ทิศทางได้เลย)
-        // {
-        //   id: "arrow-flow-2",
-        //   startX: 280,
-        //   startY: 220,
-        //   pathD: "M 0 0 L 0 240",
-        // },
-        ];
+    // ลูกศร (ส่วนเดิม)
+    svg.append("defs")
+      .append("marker")
+      .attr("id", "flow-arrow-down")
+      .attr("viewBox", "0 0 24 24")
+      .attr("refX", 12)
+      .attr("refY", 20)
+      .attr("markerWidth", 14)
+      .attr("markerHeight", 14)
+      .attr("orient", "90")
+      .append("path")
+      .attr("d", "M2,10 L14,10 L14,6 L22,12 L14,18 L14,14 L2,14 Z")
+      .attr("fill", "#000000")
+      .attr("stroke", "#000000")
+      .attr("stroke-width", 1)
+      .attr("stroke-linejoin", "round");
 
-        arrowGroups.forEach(group => {
-        const g = svg.append("g")
-            .attr("id", group.id)
-            .attr("transform", `translate(${group.startX}, ${group.startY})`);
+    const arrowGroups = [
+      {
+        id: "arrow-flow-1",
+        startX: 398,
+        startY: 180,
+        pathD: "M 0 0 L 0 20",
+      },
+      // เพิ่มจุดอื่น ๆ ได้ตามต้องการ
+    ];
 
-        // สร้าง path สำหรับกำหนดเส้นทางเคลื่อนที่ (ซ่อนไว้)
-        const path = g.append("path")
-            .attr("d", group.pathD)
-            .attr("fill", "none")
-            .attr("id", `${group.id}-path`)
-            .attr("opacity", 0);
+    arrowGroups.forEach(group => {
+      const g = svg.append("g")
+        .attr("id", group.id)
+        .attr("transform", `translate(${group.startX}, ${group.startY})`);
 
-        // สร้างเส้นสั้น ๆ เพื่อติด marker (ลูกศรตัวเดียว)
-        const movingLine = g.append("path")
-            .attr("d", "M 0 0 L 0.1 0")     // เส้นสั้นมากเพื่อให้ marker แสดง
-            .attr("fill", "none")
-            .attr("stroke", "none");
+      const path = g.append("path")
+        .attr("d", group.pathD)
+        .attr("fill", "none")
+        .attr("id", `${group.id}-path`)
+        .attr("opacity", 0);
 
-        // ติดหัวลูกศรชี้ขวา
-        movingLine.attr("marker-end", "url(#flow-arrow-right)");
+      const movingLine = g.append("path")
+        .attr("d", "M 0 0 L 0.1 0")
+        .attr("fill", "none")
+        .attr("stroke", "none");
 
-        // Animation เคลื่อนที่ลงตาม path แล้ววนซ้ำ
-        function animate() {
-            movingLine
-            .transition()
-            .duration(2000)                    // (ปรับความเร็วที่นี่)
-            .ease(d3.easeLinear)
-            .attrTween("transform", function () {
-                const node = path.node() as SVGPathElement;
-                const length = node.getTotalLength();
-                return function (t) {
-                // t % 1 ทำให้วนลูปไม่สะดุด
-                const point = node.getPointAtLength((t % 1) * length);
-                return `translate(${point.x}, ${point.y})`;
-                };
-            })
-            .on("end", animate);               // วนซ้ำไม่หยุด
-        }
+      movingLine.attr("marker-end", "url(#flow-arrow-down)");
 
-        animate();  // เริ่ม animation
-        });
+      function animate() {
+        movingLine
+          .transition()
+          .duration(2000)
+          .ease(d3.easeLinear)
+          .attrTween("transform", function () {
+            const node = path.node() as SVGPathElement;
+            const length = node.getTotalLength();
+            return function (t) {
+              const point = node.getPointAtLength((t % 1) * length);
+              return `translate(${point.x}, ${point.y})`;
+            };
+          })
+          .on("end", animate);
+      }
+
+      animate();
+    });
 
   }, [reservoirs, theme.palette.mode]);
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setSelectedStation(undefined);
+    setSelectedName('');
+  };
 
   if (loading) return <CircularProgress />;
   if (error) return <Typography color="error">Error: {error}</Typography>;
 
   return (
     <Box sx={{ p: 3, bgcolor: 'background.default', minHeight: '100vh' }}>
-      <Typography variant="h5" gutterBottom>
-        แผนผังอ่างเก็บน้ำ (ข้อมูลจริงจาก API - {reservoirs[0]?.date || 'ล่าสุด'})
+      <Typography variant="h5" id="card-daily" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+        แผนผังสถานการณ์น้ำประจำวันที่ {formatThaiDay(reservoirs[0]?.date) || 'ล่าสุด'}
       </Typography>
 
       <Paper elevation={4} sx={{ p: 2, overflowX: 'auto', borderRadius: 2 }}>
@@ -313,6 +319,45 @@ const WaterSchematicSimple: React.FC = () => {
           ข้อมูลจาก API: https://app.rid.go.th/reservoir/api/reservoir/public
         </Typography>
       </Box>
+
+      <Box sx={BoxStyle}>
+        <PdfViewer
+          src="http://irrigation.rid.go.th/rid3/water/report.pdf"
+          title="รายงานสถานการณ์น้ำประจำวัน สำนักงานชลประทานที่ 3"
+        />
+      </Box>
+
+      {/* Dialog แสดง DataReservoirStation */}
+      <Dialog
+        open={openDialog}
+        onClose={handleCloseDialog}
+        maxWidth="xl"
+        fullWidth
+        sx={{
+          '& .MuiDialog-paper': {
+            height: '90vh',
+            borderRadius: 2,
+            overflow: 'hidden',
+          },
+        }}
+      >
+        <DialogTitle sx={{ m: 0, p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h5">{'รายละเอียดสถานี'}</Typography>
+          <IconButton aria-label="close" onClick={handleCloseDialog}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+
+        <DialogContent dividers sx={{ p: 2 }}>
+          {selectedStation ? (
+            <DataReservoirStation propsSelectedStation={selectedStation} />
+          ) : (
+            <Box sx={{ p: 4, textAlign: 'center' }}>
+              <Typography>กำลังโหลดข้อมูล...</Typography>
+            </Box>
+          )}
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 };
