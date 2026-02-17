@@ -28,7 +28,7 @@ interface DataRainStationProps {
 
 const DataRainStation: React.FC<DataRainStationProps> = ({ propsSelectedStation }) => {
   const queryParams = new URLSearchParams(location.search);
-  const stationFromURL = queryParams.get("station") || "690151";
+  const stationFromURL = queryParams.get("station") || "120161";
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
 
@@ -263,7 +263,7 @@ const DataRainStation: React.FC<DataRainStationProps> = ({ propsSelectedStation 
               src={
                 station
                   ? `${Path_URL}images/rain_station/${station.sta_code}.png`
-                  : `${Path_URL}images/rain_station/${station.sta_code}.jpg`
+                  : `${Path_URL}images/default_img.png`
               }
               alt="Station"
               style={{

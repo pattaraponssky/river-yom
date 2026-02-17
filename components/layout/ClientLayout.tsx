@@ -16,7 +16,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (
-    <>
+    <Box sx={{ flexGrow: 1 }}>
       <AppHeader
         title="ระบบติดตามสถานการณ์น้ำระยะไกลอัตโนมัติ พื้นที่ฝั่งขวาแม่น้ำยม"
         open={drawerOpen}
@@ -37,6 +37,6 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
         {children}
       </Box>
         <Footer/>
-    </>
+    </Box>
   );
 }

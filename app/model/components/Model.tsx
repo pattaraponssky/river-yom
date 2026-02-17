@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { Box, CircularProgress, Divider, Tab, Tabs, Typography,  } from "@mui/material";
 import FolderIcon from '@mui/icons-material/Folder';

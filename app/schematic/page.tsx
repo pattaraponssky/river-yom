@@ -64,25 +64,21 @@ const WaterSchematicSimple: React.FC = () => {
 
             switch (item.res_code.toLowerCase()) {
               case 'ks': // กระเสียว
-                x = 420; y = 350;
-                imageUrl = `${Path_URL}images/icons/dam.png`;
+                x = 130; y = 120;
                 break;
               case 'hkk': // ห้วยขุนแก้ว
-                x = 400; y = 140;
-                imageUrl = `${Path_URL}images/icons/dam.png`;
+                x = 430; y = 140;
                 break;
               case 'ht': // ห้วยเทียน
-                x = 440; y = 700;
-                imageUrl = `${Path_URL}images/icons/dam.png`;
+                x = 5; y = 300;
                 break;
               case 'hnl': // ห้วยหนองโรง
-                x = 460; y = 350;
-                imageUrl = `${Path_URL}images/icons/dam.png`;
+                x = 340; y = 870;
                 break;
-              case 'htd': // ห้วยท่าเดื่อ
-                x = 360; y = 550;
-                imageUrl = `${Path_URL}images/icons/dam.png`;
-                break;
+            //   case 'htd': // ห้วยท่าเดื่อ
+            //     x = 360; y = 550;
+            //     imageUrl = `${Path_URL}images/icons/dam.png`;
+            //     break;
               // เพิ่ม case อื่น ๆ ตาม res_code ที่เหลือที่นี่
             }
 
@@ -188,44 +184,61 @@ const WaterSchematicSimple: React.FC = () => {
       });
 
     nodeGroup.append('title')
-      .text(d => `คลิกเพื่อดูรายละเอียด ${d.name}`);
-
-    nodeGroup.append('image')
-      .attr('xlink:href', d => d.imageUrl || `${Path_URL}images/icons/dam.png`)
-      .attr('x', -25)
-      .attr('y', -60)
-      .attr('width', 50)
-      .attr('height', 50)
-      .style('pointer-events', 'none');
+      .text(d => `คลิกเพื่อดูรายละเอียด อ่างเก็บน้ำ${d.name}`);
 
     nodeGroup.append('text')
-      .attr('text-anchor', 'middle')
-      .attr('y', 0)
-      .attr('font-size', 14)
+      .attr('y', -60)
+      .attr('x', 45)
+      .attr('font-size', 12)
       .attr('font-weight', 'bold')
       .attr('fill', theme.palette.text.primary)
       .text(d => d.name);
 
+
+    // ปริมาณน้ำ (label + ค่า)
     nodeGroup.append('text')
-      .attr('y', -45)
-      .attr('x', 35)
-      .attr('font-size', 12)
-      .attr('fill', theme.palette.text.primary)
-      .text(d => `ปริมาณน้ำ ${d.volume.toFixed(2)} MCM (${d.percent.toFixed(2)}%)`);
+    .attr('y', -45)
+    .attr('font-size', 10)
+    .attr('fill', theme.palette.text.primary)
+    .text('ปริมาณน้ำ ');
 
     nodeGroup.append('text')
-      .attr('y', -30)
-      .attr('x', 35)
-      .attr('font-size', 12)
-      .attr('fill', theme.palette.text.primary)
-      .text(d => `ไหลลงอ่างฯ ${d.inflow.toFixed(3)} MCM`);
+    .attr('x', 60)  // offset ไปทางขวาให้ต่อจากคำว่า "ปริมาณน้ำ "
+    .attr('y', -45)
+    .attr('font-size', 10)
+    .attr('font-weight', 'bold')          // ตัวหนา
+    .attr('fill', 'red')                  // สีแดง (หรือ theme.palette.error.main ถ้าอยากตามธีม)
+    .text(d => `${d.volume.toFixed(2)} MCM (${d.percent.toFixed(2)}%)`);
+
+    // ไหลลงอ่างฯ
+    nodeGroup.append('text')
+    .attr('y', -30)
+    .attr('font-size', 10)
+    .attr('fill', theme.palette.text.primary)
+    .text('ไหลลงอ่างฯ ');
 
     nodeGroup.append('text')
-      .attr('y', -15)
-      .attr('x', 35)
-      .attr('font-size', 12)
-      .attr('fill', theme.palette.text.primary)
-      .text(d => `ระบาย: ${d.outflow.toFixed(3)} MCM`);
+    .attr('x', 60)   // ปรับ offset ตามความยาวข้อความ "ไหลลงอ่างฯ "
+    .attr('y', -30)
+    .attr('font-size', 10)
+    .attr('font-weight', 'bold')
+    .attr('fill', 'red')
+    .text(d => `${d.inflow.toFixed(3)} MCM`);
+
+    // ระบาย
+    nodeGroup.append('text')
+    .attr('y', -15)
+    .attr('font-size', 10)
+    .attr('fill', theme.palette.text.primary)
+    .text('ระบาย ');
+
+    nodeGroup.append('text')
+    .attr('x', 60)   // ปรับ offset ตาม "ระบาย "
+    .attr('y', -15)
+    .attr('font-size', 10)
+    .attr('font-weight', 'bold')
+    .attr('fill', 'red')
+    .text(d => `${d.outflow.toFixed(3)} MCM`);
 
     // ลูกศร (ส่วนเดิม)
     svg.append("defs")
@@ -239,15 +252,15 @@ const WaterSchematicSimple: React.FC = () => {
       .attr("orient", "90")
       .append("path")
       .attr("d", "M2,10 L14,10 L14,6 L22,12 L14,18 L14,14 L2,14 Z")
-      .attr("fill", "#000000")
-      .attr("stroke", "#000000")
+      .attr("fill", "#fff")
+      .attr("stroke", "#fff")
       .attr("stroke-width", 1)
       .attr("stroke-linejoin", "round");
 
     const arrowGroups = [
       {
         id: "arrow-flow-1",
-        startX: 398,
+        startX: 394,
         startY: 180,
         pathD: "M 0 0 L 0 20",
       },
@@ -289,6 +302,35 @@ const WaterSchematicSimple: React.FC = () => {
       }
 
       animate();
+
+      const ReservoirIcon = [
+        {
+            id: "reservoir-icon-1",
+            x: 390,
+            y: 170,
+            imageUrl: `${Path_URL}images/icons/dam.png`,
+        },
+        { id: "reservoir-icon-2", x: 390, y: 790, imageUrl: `${Path_URL}images/icons/dam.png` },
+        { id: "reservoir-icon-3", x: 65, y: 350, imageUrl: `${Path_URL}images/icons/dam.png` },
+        ];
+
+        const iconGroup = svg.selectAll('.reservoir-icon')
+        .data(ReservoirIcon)
+        .enter()
+        .append('g')
+        .attr('class', 'reservoir-icon')
+        .attr('id', d => d.id)
+        .attr('transform', d => `translate(${d.x}, ${d.y})`);
+
+        // วางรูปภาพ
+        iconGroup.append('image')
+        .attr('xlink:href', d => d.imageUrl)
+        .attr('x', -25)          // offset เพื่อให้อยู่กึ่งกลางจุด
+        .attr('y', -60)
+        .attr('width', 75)
+        .attr('height', 75)
+        .style('pointer-events', 'none');
+      
     });
 
   }, [reservoirs, theme.palette.mode]);

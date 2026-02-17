@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import '@/app/globals.css';
 import { Container, Typography, Grid, Box, useTheme } from '@mui/material';

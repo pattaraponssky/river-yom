@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useState, useEffect, useMemo, useRef, use } from "react";
 import Papa from "papaparse";

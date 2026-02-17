@@ -37,7 +37,7 @@ const addRainMarkers = (
 
     const marker = new window.longdo.Marker(position, {
       title: `<img src="${Path_URL}images/icons/rain_station_icon.png" style="width:25px;height:25px;vertical-align:middle;margin-right:5px" /> 
-              <span style="font-size:1.1rem;font-weight:bold;vertical-align:middle;">${name} อ.${district} จ.${province}</span>`,
+              <span style="font-size:1.1rem;font-weight:bold;vertical-align:middle;">${name} (${sta_code || '-'}) อ.${district} จ.${province}</span>`,
 
       detail: `
         <div style="font-size:1rem;">

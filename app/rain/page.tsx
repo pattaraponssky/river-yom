@@ -1,5 +1,13 @@
-import { Box } from "@mui/material";
-import RainStation from "./components/RainStation";
+// src/app/rain/page.tsx
+'use client';
+
+import { Box } from '@mui/material';
+import dynamic from 'next/dynamic';
+
+const RainStation = dynamic(
+  () => import('./components/RainStation'),
+  { ssr: false }   // ปิด SSR สำหรับ component นี้
+);
 
 export default function RainPage() {
     return <Box sx={{p:1}}>

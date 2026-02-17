@@ -170,6 +170,20 @@ const FlowCard: React.FC = () => {
                       (ม.รทก.)
                     </Typography>
                   </TableCell>
+                           <TableCell align="center" sx={{ color: "white", ...textStyle, fontWeight: "bold",whiteSpace: "nowrap", }}>
+                    อัตราการไหล
+                    <br />
+                    <Typography
+                      sx={{
+                        color: "white",
+                        fontSize: "0.8rem",
+                        fontWeight: "bold",
+                        fontFamily: "Prompt",
+                      }}
+                    >
+                      (ลบ.ม./วินาที)
+                    </Typography>
+                  </TableCell>
                 </TableRow>
               </TableHead>
 
@@ -181,6 +195,9 @@ const FlowCard: React.FC = () => {
                     <TableCell sx={{ textAlign: "center", ...textStyle, lineHeight:{md:"2.16rem",xs:"1.2rem"} ,whiteSpace: "nowrap",}}>{flow.province}</TableCell>
                     <TableCell sx={{ textAlign: "center", ...textStyle, lineHeight:{md:"2.16rem",xs:"1.2rem"} ,}}>
                       {numberFormat(flow.wl, 2)}
+                    </TableCell>
+                       <TableCell sx={{ textAlign: "center", ...textStyle, lineHeight:{md:"2.16rem",xs:"1.2rem"} ,}}>
+                      {numberFormat(flow.discharge, 2)}
                     </TableCell>
                   </TableRow>
                 ))}

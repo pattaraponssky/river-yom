@@ -1,5 +1,4 @@
 // src/app/flow/page.tsx
-"use client"; 
 
 import React, { useEffect, useState } from "react";
 import { Box, Tabs, Tab, Typography } from "@mui/material";

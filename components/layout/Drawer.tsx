@@ -1,5 +1,5 @@
 // src/components/layout/DrawerComponent.tsx
-"use client";
+'use client';
 
 import React, { useState } from "react";
 import {
