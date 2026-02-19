@@ -12,7 +12,9 @@ const addRainMarkers = (
 ) => {
   if (!map || !rainInfo?.length) return;
 
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1); // ลบ 1 วัน
+  const yesterdayStr = yesterday.toISOString().slice(0, 10);
   const latestMap = new Map<string, RainDataItem>(
     latestRainData.map((item) => [item.sta_code, item])
   );
@@ -24,7 +26,7 @@ const addRainMarkers = (
     if (isNaN(position.lat) || isNaN(position.lon)) return;
 
     const latest = latestMap.get(sta_code);
-    const isToday = latest && new Date(latest.date).toISOString().slice(0, 10) === todayStr;
+    const isToday = latest && new Date(latest.date).toISOString().slice(0, 10) === yesterdayStr;
 
     const rain_mm = isToday && latest?.rain_mm != null && parseFloat(latest.rain_mm) !== 0
       ? parseFloat(latest.rain_mm).toFixed(2)
@@ -41,7 +43,7 @@ const addRainMarkers = (
 
       detail: `
         <div style="font-size:1rem;">
-          <b>ข้อมูลประจำวันที่ ${formatThaiDay(todayStr)}</b>
+          <b>ข้อมูลประจำวันที่ ${formatThaiDay(yesterdayStr)}</b>
         </div>
         <div style="font-size:0.9rem;line-height:1.4rem;">
           <div><b>รหัสสถานี:</b> <span style="color:#4caf50;font-weight:bold;">${sta_code || '-'}</span></div>

@@ -157,7 +157,7 @@ const WaterForecastChart: React.FC<Props> = ({ data }) => {
         </Box>
 
         {/* {lastRunTime && (
-          <Typography sx={{ paddingBottom: 2, fontStyle: 'italic', color: '#555',fontFamily: "Noto Sans Thai", marginLeft: 'auto',fontSize:"1rem" }}>
+          <Typography sx={{ paddingBottom: 2, fontStyle: 'italic', color: '#555',fontFamily: "Prompt", marginLeft: 'auto',fontSize:"1rem" }}>
             แบบจำลองทำงานล่าสุดเวลา: {lastRunTime}
           </Typography>
         )} */}

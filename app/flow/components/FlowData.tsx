@@ -29,7 +29,7 @@ type DataMode = "daily" | "hourly";
 
 const DataFlowCombined: React.FC<{ propsSelectedStation?: string }> = ({ propsSelectedStation }) => {
   const queryParams = new URLSearchParams(location.search);
-  const stationFromURL = queryParams.get("station") || "T.10";
+  const stationFromURL = queryParams.get("station") || "Y.15";
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
   const [mode, setMode] = useState<DataMode>("daily");
@@ -51,10 +51,13 @@ const DataFlowCombined: React.FC<{ propsSelectedStation?: string }> = ({ propsSe
 
   const [initialLoad, setInitialLoad] = useState(false);
 
-  // ตั้งค่าสถานีเริ่มต้น
   useEffect(() => {
-    setSelectedStation(propsSelectedStation || stationFromURL);
-  }, [propsSelectedStation, stationFromURL]);
+      if (propsSelectedStation) {
+        setSelectedStation(propsSelectedStation);
+      } else {
+        setSelectedStation(stationFromURL);
+      }
+    }, [propsSelectedStation, stationFromURL]);
 
   useEffect(() => {
     if (!initialLoad && selectedStation && startYear && endYear) {
