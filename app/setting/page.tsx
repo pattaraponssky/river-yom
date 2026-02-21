@@ -11,7 +11,6 @@ export default async function SettingPage() {
         redirect('/dashboard');
     }
 
-
     return <Box sx={{p:1}}>
         <Setting/>
     </Box>

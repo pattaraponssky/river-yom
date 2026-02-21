@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import * as d3 from 'd3';
-import { API_URL, formatThaiDay, Path_URL } from '@/lib/utility';
+import { API_URL, formatThaiDay, nowThaiDate, Path_URL } from '@/lib/utility';
 import DataReservoirStation from '../reservoir/components/ReservoirData';
 import DataFlowCombined from '../flow/components/FlowData';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
@@ -86,14 +86,6 @@ const WaterSchematicSimple: React.FC = () => {
       .call(zoomRef.current.scaleBy, 1 / 1.4);
   };
 
-  const resetZoom = () => {
-    if (!zoomRef.current || !svgRef.current) return;
-    d3.select(svgRef.current)
-      .transition()
-      .duration(750)
-      .call(zoomRef.current.transform, d3.zoomIdentity);
-  };
-
   const fitToView = () => {
     if (!svgRef.current || !containerRef.current || !zoomRef.current) return;
 
@@ -134,16 +126,14 @@ const WaterSchematicSimple: React.FC = () => {
             let y: number | undefined;
 
             switch (item.res_code) {
-              case 'ks': x = 130; y = 120; break;
-              case 'hkk': x = 435; y = 140; break;
-              case 'ht': x = 5; y = 295; break;
-              case 'hnl': x = 340; y = 840; break;
+              case 'srk': x = 435; y = 140; break;
+              case 'pmp': x = 40; y = 295; break;
             }
 
             if (x === undefined || y === undefined) return null;
 
             return {
-              id: item.no.toString(),
+              id: item,
               name: item.res_name,
               res_code: item.res_code,
               province: item.province,
@@ -180,10 +170,10 @@ const WaterSchematicSimple: React.FC = () => {
 
             switch (item.sta_code) {
               case 'Y.15': x = 174; y = 410; cardOffsetX = -85; cardOffsetY = -20; break;
-              case 'Y.16': x = 202; y = 490; cardOffsetX = -85; cardOffsetY = -20; break;
+              case 'Y.16': x = 202.5; y = 490; cardOffsetX = -85; cardOffsetY = -8; break;
               case 'Y.4': x = 174; y = 370; cardOffsetX = -85; cardOffsetY = -30; break;
-              case 'Y.50': x = 435; y = 380; cardOffsetX = 15; cardOffsetY = 10; break;
-              case 'Y.64': x = 202; y = 520; cardOffsetX = -85; cardOffsetY = -5; break;
+              case 'Y.50': x = 202.5; y = 470; cardOffsetX = -85; cardOffsetY = -28; break;
+              case 'Y.64': x = 202.5; y = 520; cardOffsetX = 13; cardOffsetY = -20; break;
             }
 
             if (x === undefined || y === undefined) return null;
@@ -252,6 +242,48 @@ const WaterSchematicSimple: React.FC = () => {
     zoomRef.current = zoom;
 
     svg.call(zoom);
+
+   // ────────────────────────────────────────────────
+// กำหนดพื้นที่โครงการ (เพิ่มได้หลายพื้นที่)
+const projectAreas = [
+  {
+    x: 160,
+    y: 205,
+    width: 210,
+    height: 330,
+    color: '#FFCDD2',          // แดงอ่อน (light red) สบายตา
+    opacity: 0.35,             // โปร่งใสพอให้เห็นแผนที่ด้านล่าง
+    label: 'ขอบเขตพื้นที่โครงการ',  // คำอธิบายที่ต้องการแสดง
+    labelXOffset: 10,          // ปรับตำแหน่งข้อความ (ขยับจากมุมซ้ายบน)
+    labelYOffset: -15,         // ขยับขึ้นด้านบนเล็กน้อย
+  },
+];
+
+projectAreas.forEach((zone, index) => {
+  const rect = container.append('rect')
+    .attr('x', zone.x)
+    .attr('y', zone.y)
+    .attr('width', zone.width)
+    .attr('height', zone.height)
+    .attr('fill', zone.color)
+    .attr('opacity', zone.opacity)
+    .attr('stroke', '#D32F2F')          // ขอบสีแดงเข้ม (optional)
+    .attr('stroke-width', 1.5)          // ความหนาขอบ (optional)
+    .attr('stroke-dasharray', '5,5')    // เส้นประ (optional)
+    .attr('pointer-events', 'none')     // ไม่ให้รับการคลิกทับ
+    .lower();                           // ส่งไปด้านหลังสุดใน container
+
+    // 2. เพิ่มคำอธิบาย (label) ด้านบนซ้ายของสี่เหลี่ยม
+    container.append('text')
+        .attr('x', zone.x + zone.labelXOffset + 30)
+        .attr('y', zone.y + zone.labelYOffset + 30)
+        .attr('font-size', 12)
+        .attr('font-weight', 'bold')
+        .attr('fill', '#B71C1C')            // สีแดงเข้มเพื่อให้เด่น
+        .attr('pointer-events', 'none')     // ไม่ให้คลิกทับ
+        .text(zone.label)
+        .lower();                           // ให้ข้อความอยู่ด้านหลัง (แต่ยังเห็นชัด)
+    });
 
     // rectData → ใช้ container
     const rectData = [
@@ -325,8 +357,8 @@ const WaterSchematicSimple: React.FC = () => {
       .attr('y', -20)
       .attr('font-size', 7)
       .attr('font-weight', 'bold')
-      .attr('fill', 'red')
-      .text(d => `${d.volume.toFixed(2)} MCM (${d.percent.toFixed(2)}%)`);
+      .attr('fill', '#0066cc')
+      .text(d => `${d.volume} MCM (${d.percent.toFixed(2)}%)`);
 
     nodeGroup.append('text')
       .attr('y', -10)
@@ -339,7 +371,7 @@ const WaterSchematicSimple: React.FC = () => {
       .attr('y', -10)
       .attr('font-size', 7)
       .attr('font-weight', 'bold')
-      .attr('fill', 'red')
+      .attr('fill', '#0066cc')
       .text(d => `${d.inflow.toFixed(3)} MCM`);
 
     nodeGroup.append('text')
@@ -353,23 +385,23 @@ const WaterSchematicSimple: React.FC = () => {
       .attr('y', 0)
       .attr('font-size', 7)
       .attr('font-weight', 'bold')
-      .attr('fill', 'red')
+      .attr('fill', '#0066cc')
       .text(d => `${d.outflow.toFixed(3)} MCM`);
 
     // Flow nodes → ใช้ container
-    const thresholds: Record<string, { green: number; yellow: number }> = {
-      'Y.15': { green: 40, yellow: 35 },
-      'Y.16': { green: 40, yellow: 35 },
-      'Y.4': { green: 45, yellow: 40 },
-      'Y.50': { green: 40, yellow: 35 },
-      'Y.64': { green: 40, yellow: 35 },
+    const thresholds: Record<string, { red: number; yellow: number }> = {
+      'Y.15': { red: 46.05, yellow: 44.97 },
+      'Y.16': { red: 39.33, yellow: 38.56 },
+      'Y.4': { red: 51.48, yellow: 50.68 },
+      'Y.50': { red: 40.78, yellow: 40.17 },
+      'Y.64': { red: 40.35, yellow: 39.57 },
     };
 
     const getColor = (sta_code: string, wl: number) => {
-      const th = thresholds[sta_code] || { green: 40, yellow: 35 };
-      if (wl > th.green) return 'green';
+      const th = thresholds[sta_code] || { red: 40, yellow: 38 };
+      if (wl > th.red) return 'red';
       if (wl > th.yellow) return 'yellow';
-      return 'red';
+      return '#69fc00ff';
     };
 
     const flowGroup = container.selectAll<SVGGElement, FlowStationNode>('.flow-node')
@@ -433,7 +465,7 @@ const WaterSchematicSimple: React.FC = () => {
       .attr('y', d => cardY(d) + 20)
       .attr('font-size', 5)
       .attr('font-weight', 'bold')
-      .attr('fill', 'red')
+      .attr('fill', '#0066cc')
       .text(d => `${d.wl.toFixed(2)} ม.รทก.`);
 
     flowGroup.append('text')
@@ -448,7 +480,7 @@ const WaterSchematicSimple: React.FC = () => {
       .attr('y', d => cardY(d) + 30)
       .attr('font-size', 5)
       .attr('font-weight', 'bold')
-      .attr('fill', 'red')
+      .attr('fill', '#0066cc')
       .text(d => `${d.discharge.toFixed(2)} ลบ.ม./วินาที`);
 
     // defs (marker) ยังอยู่ที่ svg
@@ -635,20 +667,33 @@ const WaterSchematicSimple: React.FC = () => {
     setTimeout(fitToView, 300);
 
     const customTexts = [
-    { text: "แม่น้ำยม", x: 160, y: 200, orientation: "vertical", fontSize: 10, fill: "#004080", fontWeight: "bold" },
-    { text: "แม่น้ำยม", x: 275, y: 610, orientation: "horizontal", fontSize: 8, fill: "#004080", fontWeight: "bold" },
-    { text: "แม่น้ำน่าน", x: 385, y: 230, orientation: "vertical", fontSize: 10, fill: "#004080", fontWeight: "bold" },
-    { text: "แม่น้ำปิง", x: 65, y: 530, orientation: "vertical", fontSize: 8, fill: "#004080", fontWeight: "bold" },
-    { text: "แม่น้ำปิง", x: 185, y: 675, orientation: "horizontal", fontSize: 8, fill: "#004080", fontWeight: "bold" },
-    { text: "แม่น้ำสะแกกรัง", x: 185, y: 730, orientation: "horizontal", fontSize: 7, fill: "#004080", fontWeight: "bold" },
+      { text: `สำนักงานชลประทานที่ 3`, x: 180, y: 25, orientation: "horizontal", fontSize: 25, fill: "#004080", fontWeight: "bold" },
+      { text: `ส่วนบริหารจัดการน้ำและบำรุงรักษา`, x: 160, y: 55, orientation: "horizontal", fontSize: 20, fill: "#004080", fontWeight: "bold" },
 
-    { text: "คลองหกบาท", x: 195, y: 297, orientation: "horizontal", fontSize: 7, fill: "#333" },
-    { text: "คลองผันน้ำยม-น่าน", x: 280, y: 297, orientation: "horizontal", fontSize: 7, fill: "#333" },
-    { text: "แม่น้ำยมสายเก่า", x: 247, y: 340, orientation: "vertical", fontSize: 7, fill: "#333", fontWeight: "bold" },
-    { text: "คลอง DR2.8", x: 275, y: 543, orientation: "horizontal", fontSize: 7, fill: "#333" },
-    { text: "คลอง DR15.8", x: 330, y: 480, orientation: "horizontal", fontSize: 7, fill: "#333" },
-    { text: "คลองเมม", x: 235, y: 480, orientation: "horizontal", fontSize: 7, fill: "#333" },
+      { text: `หมายเหตุ`, x: 55, y: 145, orientation: "horizontal", fontSize: 14, fill: "#fe0000", fontWeight: "bold" },
 
+      { text: "จ.น่าน", x: 385, y: 100, orientation: "horizontal", fontSize: 11, fill: "#333", fontWeight: "bold" },
+      { text: "จ.อตรดิตถ์", x: 275, y: 200, orientation: "horizontal", fontSize: 11, fill: "#333", fontWeight: "bold" },
+      { text: "จ.สุโขทัย", x: 190, y: 360, orientation: "horizontal", fontSize: 11, fill: "#333", fontWeight: "bold" },
+      { text: "จ.พิจิตร", x: 345, y: 580, orientation: "horizontal", fontSize: 11, fill: "#333", fontWeight: "bold" },
+      { text: "จ.ตาก", x: 30, y: 375, orientation: "horizontal", fontSize: 11, fill: "#333", fontWeight: "bold" },
+      { text: "จ.นครสวรรค์", x: 230, y: 715, orientation: "horizontal", fontSize: 11, fill: "#333", fontWeight: "bold" },
+      { text: "จ.กำแพงเพชร", x: 100, y: 620, orientation: "horizontal", fontSize: 11, fill: "#333", fontWeight: "bold" },
+      { text: "จ.พิษณุโลก", x: 450, y: 480, orientation: "horizontal", fontSize: 11, fill: "#333", fontWeight: "bold" },
+
+      { text: "แม่น้ำยม", x: 160, y: 200, orientation: "vertical", fontSize: 10, fill: "#004080", fontWeight: "bold" },
+      { text: "แม่น้ำยม", x: 275, y: 610, orientation: "horizontal", fontSize: 8, fill: "#004080", fontWeight: "bold" },
+      { text: "แม่น้ำน่าน", x: 385, y: 230, orientation: "vertical", fontSize: 10, fill: "#004080", fontWeight: "bold" },
+      { text: "แม่น้ำปิง", x: 65, y: 530, orientation: "vertical", fontSize: 8, fill: "#004080", fontWeight: "bold" },
+      { text: "แม่น้ำปิง", x: 185, y: 675, orientation: "horizontal", fontSize: 8, fill: "#004080", fontWeight: "bold" },
+      { text: "แม่น้ำสะแกกรัง", x: 185, y: 730, orientation: "horizontal", fontSize: 7, fill: "#004080", fontWeight: "bold" },
+
+      { text: "คลองหกบาท", x: 195, y: 297, orientation: "horizontal", fontSize: 7, fill: "#333" },
+      { text: "คลองผันน้ำยม-น่าน", x: 280, y: 297, orientation: "horizontal", fontSize: 7, fill: "#333" },
+      { text: "แม่น้ำยมสายเก่า", x: 247, y: 340, orientation: "vertical", fontSize: 7, fill: "#333", fontWeight: "bold" },
+      { text: "คลอง DR2.8", x: 275, y: 543, orientation: "horizontal", fontSize: 7, fill: "#333" },
+      { text: "คลอง DR15.8", x: 330, y: 480, orientation: "horizontal", fontSize: 7, fill: "#333" },
+      { text: "คลองเมม", x: 235, y: 480, orientation: "horizontal", fontSize: 7, fill: "#333" },
     ];
 
     // สร้างข้อความ
@@ -672,7 +717,7 @@ const WaterSchematicSimple: React.FC = () => {
     }
     });
 
-    const verticalScaleData = [
+    const verticalScaleDataRight = [
         { value: 0,  unit: "ก.ม.", hours: 0, y: 100 }, 
         { value: 74.3,  unit: "ก.ม.", hours: 15, y: 160 },   // จุดบนสุด
         { value: 104.9, unit: "ก.ม.", hours: 23, y: 200 },
@@ -694,20 +739,20 @@ const WaterSchematicSimple: React.FC = () => {
     // เส้นแนวตั้งหลัก (แนวเชื่อมจุด)
     scaleGroup.append("line")
         .attr("x1", 0)
-        .attr("y1", verticalScaleData[0].y)
+        .attr("y1", verticalScaleDataRight[0].y)
         .attr("x2", 0)
-        .attr("y2", verticalScaleData[verticalScaleData.length - 1].y)
+        .attr("y2", verticalScaleDataRight[verticalScaleDataRight.length - 1].y)
         .attr("stroke", "#555")
         .attr("stroke-width", 2);
 
     // จุดวงกลม + ข้อความแต่ละจุด
-    verticalScaleData.forEach((d, i) => {
+    verticalScaleDataRight.forEach((d, i) => {
         // วงกลม
         scaleGroup.append("circle")
         .attr("cx", 0)
         .attr("cy", d.y)
         .attr("r", 5)
-        .attr("fill", i === 0 || i === verticalScaleData.length - 1 ? "#0066cc" : "#444")
+        .attr("fill", i === 0 || i === verticalScaleDataRight.length - 1 ? "#0066cc" : "#444")
         .attr("stroke", "#fff")
         .attr("stroke-width", 2);
 
@@ -718,7 +763,7 @@ const WaterSchematicSimple: React.FC = () => {
         .attr("x", 18)                    // ขยับไปทางขวาเล็กน้อย
         .attr("y", d.y)
         .attr("dy", "0.35em")             // จัดกึ่งกลางแนวตั้ง
-        .attr("font-size", "9px")
+        .attr("font-size", "8px")
         .attr("fill", "#333")
         .attr("font-family", "Prompt, sans-serif");
 
@@ -729,32 +774,94 @@ const WaterSchematicSimple: React.FC = () => {
 
         label.append("tspan")
         .attr("x", 18)
-        .attr("dy", "1em")
+        .attr("dy", "0.9em")
         .attr("fill", "#0066cc")
         .attr("font-weight", "bold")
         .text(`(${d.hours} ชม.)`);
     });
 
-    // 1. ข้อมูลป้าย (ปรับขนาดและตำแหน่งได้ตามต้องการ)
-    // ================================================
-    // กลุ่ม ปตร. รองรับแนวนอน + แนวตั้ง
-    // ================================================
+    const verticalScaleDataYom = [
+        { value: 0,  unit: "ก.ม.", hours: 0, y: 100 }, 
+        { value: 193,  unit: "ก.ม.", hours: 51, y: 160 },   // จุดบนสุด
+        { value: 226.9, unit: "ก.ม.", hours: 56, y: 230 },
+        { value: 233.8, unit: "ก.ม.", hours: 57, y: 255 },
+        { value: 290.6, unit: "ก.ม.", hours: 68, y: 290 },
+        { value: 380.2, unit: "ก.ม.", hours: 91,  y: 400 },
+        { value: 381.2, unit: "ก.ม.", hours: 91, y: 450 },
+        { value: 430.2, unit: "ก.ม.", hours: 102,  y: 500 },
+        { value: 501.1, unit: "ก.ม.", hours: 122, y: 540 },
+    ];
 
-    // 1. ข้อมูลป้าย (เพิ่ม property orientation: "horizontal" หรือ "vertical")
+    // สร้าง group สำหรับเส้นทั้งหมด (เพื่อให้ซูม/แพนไปพร้อมกัน)
+    const scaleGroupYom = container.append("g")
+        .attr("class", "vertical-scale-group")
+        .attr("transform", "translate(20, 80)");  // ปรับตำแหน่ง x,y ตรงนี้ให้เหมาะกับแผนผัง
+
+    // เส้นแนวตั้งหลัก (แนวเชื่อมจุด)
+    scaleGroupYom.append("line")
+        .attr("x1", 0)
+        .attr("y1", verticalScaleDataYom[0].y)
+        .attr("x2", 0)
+        .attr("y2", verticalScaleDataYom[verticalScaleDataYom.length - 1].y)
+        .attr("stroke", "#555")
+        .attr("stroke-width", 2);
+
+    // จุดวงกลม + ข้อความแต่ละจุด
+    verticalScaleDataYom.forEach((d, i) => {
+        // วงกลม
+        scaleGroupYom.append("circle")
+        .attr("cx", 0)
+        .attr("cy", d.y)
+        .attr("r", 5)
+        .attr("fill", i === 0 || i === verticalScaleDataYom.length - 1 ? "#0066cc" : "#444")
+        .attr("stroke", "#fff")
+        .attr("stroke-width", 2);
+
+        if (i === 0) return;
+
+        // ข้อความระยะทาง + วัน
+        const label = scaleGroupYom.append("text")
+        .attr("x", -48)                    // ขยับไปทางขวาเล็กน้อย
+        .attr("y", d.y)
+        .attr("dy", "0.35em")             // จัดกึ่งกลางแนวตั้ง
+        .attr("font-size", "8px")
+        .attr("fill", "#333")
+        .attr("font-family", "Prompt, sans-serif");
+
+        label.append("tspan")
+        .attr("x", -48)
+        .attr("dy", 0)
+        .text(`${d.value} ก.ม.`);
+
+        label.append("tspan")
+        .attr("x", -48)
+        .attr("dy", "0.9em")
+        .attr("fill", "#0066cc")
+        .attr("font-weight", "bold")
+        .text(`(${d.hours} ชม.)`);
+    });
+
+    // ===============================================================================================================
+    // ข้อมูลป้าย (ปรับขนาดและตำแหน่งได้ตามต้องการ)
+    // ===============================================================================================================
     const patrolSigns = [
-    { label: "อยู่ระหว่างก่อสร้าง", color: "#ff9800", x: 480, y: 260, width: 20, height: 6, orientation: "horizontal", },
-    { label: "ก่อสร้างแล้วเสร็จ", color: "#9e9e9e", x: 480, y: 280, width: 20, height: 6, orientation: "horizontal", },
-    { label: "ฝายจมน้ำ", color: "#ffeb3b", x: 480, y: 300, width: 20, height: 6, orientation: "horizontal", },
-    // { label: "ฝ่ายจอมน้ำ", color: "#9e9e9e", x: 520, y: 160, width: 6, height: 20, orientation: "vertical", },
+      { label: ["อยู่ระหว่างก่อสร้าง"], color: "#ff9800", x: 55, y: 165, width: 20, height: 6, orientation: "horizontal" },
+      { label: ["ก่อสร้างแล้วเสร็จ"], color: "#9e9e9e", x: 55, y: 185, width: 20, height: 6, orientation: "horizontal" },
+      { label: ["ฝายจมน้ำ"], color: "#ffeb3b", x: 55, y: 205, width: 20, height: 6, orientation: "horizontal" },
 
-    { label: "ฝายแม่ยม", color: "#9e9e9e", x: 161, y: 150, width: 20, height: 6, orientation: "horizontal", },
-    { label: "ปตร.บ้านหาดสะพานจันทร์", color: "#9e9e9e", x: 163, y: 305, width: 20, height: 5, orientation: "horizontal", },
-    { label: "ปตร.ยางซ้าย", color: "#9e9e9e", x: 163, y: 390, width: 20, height: 5, orientation: "horizontal", },
-    { label: "ปตร.วังสะตือ", color: "#9e9e9e", x: 193, y: 443, width: 20, height: 5, orientation: "horizontal", },
-    { label: "ฝายยางบางบ้า", color: "#ffeb3b", x: 193, y: 455, width: 20, height: 5, orientation: "horizontal", },
-    { label: "ปตร.ท่านางงาม", color: "#9e9e9e", x: 193, y: 467, width: 20, height: 5, orientation: "horizontal", },
-    { label: "ปตร.ท่าแห", color: "#9e9e9e", x: 193, y: 555, width: 20, height: 5, orientation: "horizontal", },
-    { label: "ปตร.สามง่าม", color: "#9e9e9e", x: 193, y: 595, width: 20, height: 5, orientation: "horizontal", },
+      { label: ["ปตร.คลองหกบาท"], color: "#9e9e9e", x: 187, y: 285, width: 5, height: 20, orientation: "vertical" },
+      { label: ["ปตร.คลองตะคร้อ"], color: "#9e9e9e", x: 255, y: 285, width: 5, height: 20, orientation: "vertical" },
+      { label: ["ปตร.ใหม่", "(กม.23+436)"], color: "#9e9e9e", x: 275, y: 285, width: 5, height: 20, orientation: "vertical" },
+      { label: ["ปตร.คลองกล้วย"], color: "#9e9e9e", x: 340, y: 285, width: 5, height: 20, orientation: "vertical" },
+
+      { label: ["ฝายแม่ยม"], color: "#9e9e9e", x: 163, y: 150, width: 20, height: 6, orientation: "horizontal" },
+      { label: ["ปตร.บ้านหาดสะพานจันทร์"], color: "#9e9e9e", x: 163, y: 308, width: 20, height: 5, orientation: "horizontal" },
+      { label: ["ปตร.ยางซ้าย"], color: "#9e9e9e", x: 163, y: 390, width: 20, height: 5, orientation: "horizontal" },
+      { label: ["ปตร.วังสะตือ"], color: "#9e9e9e", x: 193, y: 443, width: 20, height: 5, orientation: "horizontal" },
+      { label: ["ฝายยางบางบ้า"], color: "#ffeb3b", x: 193, y: 455, width: 20, height: 5, orientation: "horizontal" },
+      { label: ["ปตร.ท่านางงาม"], color: "#9e9e9e", x: 193, y: 469, width: 20, height: 5, orientation: "horizontal" },
+      { label: ["ปตร.ท่าแห"], color: "#9e9e9e", x: 193, y: 555, width: 20, height: 5, orientation: "horizontal" },
+      { label: ["ปตร.สามง่าม"], color: "#9e9e9e", x: 193, y: 595, width: 20, height: 5, orientation: "horizontal" },
     ];
 
     // 2. กำหนดเงา (ใส่ครั้งเดียว)
@@ -820,22 +927,36 @@ const WaterSchematicSimple: React.FC = () => {
         .attr("font-weight", "500")
         .attr("fill", "#222")
         .attr("font-family", "Prompt, sans-serif")
-        .text(sign.label);
 
     if (isVertical) {
-        // แนวตั้ง → ข้อความอยู่ด้านล่าง
-        text
+      // แนวตั้ง → ข้อความเรียงจากบนลงล่าง
+      text
         .attr("x", sign.x + sign.width / 2)
-        .attr("y", sign.y + sign.height + 12)  // ด้านล่าง 12 px
-        .attr("text-anchor", "middle")
+        .attr("y", sign.y + sign.height - 28)  // เริ่มจากล่างขึ้นบน
+        .attr("transform", `rotate(-90, ${sign.x + sign.width / 2}, ${sign.y + sign.height - 23})`)
+        .attr("text-anchor", "start")
         .attr("dominant-baseline", "hanging");
+
+      // วาดแต่ละบรรทัดด้วย <tspan>
+      sign.label.forEach((line, i) => {
+        text.append("tspan")
+          .attr("x", sign.x + sign.width / 2)
+          .attr("dy", i === 0 ? "0em" : "1.2em")
+          .text(line);
+      });
     } else {
-        // แนวนอน → ข้อความอยู่ด้านขวา
         text
-        .attr("x", sign.x + sign.width + 8)     // ด้านขวา 8 px
+        .attr("x", sign.x + sign.width + 5)  
         .attr("y", sign.y + sign.height / 2)
         .attr("dy", "0.35em")
         .attr("text-anchor", "start");
+
+        sign.label.forEach((line, i) => {
+          text.append("tspan")
+            .attr("x", sign.x + sign.width + 5)
+            .attr("dy", i === 0 ? "0em" : "1.2em")
+            .text(line);
+        });
     }
     });
 
@@ -857,8 +978,8 @@ const WaterSchematicSimple: React.FC = () => {
         แผนผังสถานการณ์น้ำประจำวันที่ {formatThaiDay(reservoirs[0]?.date) || 'ล่าสุด'}
       </Typography>
 
-      <Paper elevation={4} sx={{ p: 2, overflowX: 'auto', borderRadius: 2, position: 'relative' }}>
-        <svg ref={svgRef} style={{ width: '100%', height: 'auto', minHeight: '1000px' }} />
+      <Paper elevation={1} sx={{ p: 2, overflowX: 'auto', borderRadius: 2, position: 'relative' }}>
+        <svg ref={svgRef} style={{ width: '100%', height: 'auto', minHeight: '900px' }} />
       </Paper>
 
       {/* ปุ่มควบคุมซูม */}
@@ -868,9 +989,6 @@ const WaterSchematicSimple: React.FC = () => {
         </IconButton>
         <IconButton color="primary" onClick={zoomOut} title="ซูมออก">
           <ZoomOutIcon />
-        </IconButton>
-        <IconButton color="primary" onClick={resetZoom} title="รีเซ็ต / กลับมุมมองเต็ม">
-          <RefreshIcon />
         </IconButton>
         <IconButton color="primary" onClick={fitToView} title="ปรับให้พอดีหน้าจอ">
           <AspectRatioIcon />

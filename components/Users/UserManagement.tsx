@@ -21,6 +21,7 @@ import {
   Paper,
   CircularProgress,
   IconButton,
+  Tooltip,
 } from "@mui/material";
 import { API_URL } from "../../lib/utility";
 import PeopleIcon from "@mui/icons-material/People";
@@ -52,7 +53,7 @@ const mapUserLevel = (level: number | string | undefined): string => {
 };
 
 const UserManagement: React.FC = () => {
-  const { currentUser } = useAuth(); // ใช้เพื่อเช็คสิทธิ์ถ้าต้องการ (optional)
+  const { currentUser } = useAuth(); 
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -77,6 +78,7 @@ const UserManagement: React.FC = () => {
     iduser_level: 1,
   });
   const [addFormErrors, setAddFormErrors] = useState<{ [key: string]: string }>({});
+  const [originalLevel, setOriginalLevel] = useState<number | null>(null);
 
   // โหลดผู้ใช้ทั้งหมด
   const fetchUsers = async () => {
@@ -128,7 +130,10 @@ const UserManagement: React.FC = () => {
     }
   }, [openTempDialog]);
 
-  const handleEditClick = (user: User) => setSelectedUser(user);
+    const handleEditClick = (user: User) => {
+      setSelectedUser(user);
+      setOriginalLevel(user.iduser_level); 
+    };
   const handleCloseEdit = () => setSelectedUser(null);
 
   const handleSaveEdit = async () => {
@@ -224,6 +229,31 @@ const UserManagement: React.FC = () => {
     }
   };
 
+
+    const canEditUser = (targetUser: User) => {
+      if (!currentUser) {
+        console.log("currentUser ยังโหลดไม่เสร็จ");
+        return false;
+      }
+
+      const myLevel = Number(currentUser.iduser_level);
+      const targetLevel = Number(targetUser.iduser_level);
+      const isMe = targetUser.Username === currentUser.username;
+
+      // กฎชัดเจน
+      if (isMe) return true; // แก้ไขตัวเองได้เสมอ
+
+      if (myLevel === 2 && targetLevel === 1) return true; // Admin แก้ Operator ได้
+
+      return false; // ทุกกรณีอื่น ห้าม
+    };
+
+    useEffect(() => {
+      if (selectedUser && originalLevel === null) {
+        setOriginalLevel(selectedUser.iduser_level);
+      }
+    }, [selectedUser]);
+
   return (
     <Box p={2}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
@@ -284,10 +314,28 @@ const UserManagement: React.FC = () => {
                   {new Date(user.CreateDate).toLocaleDateString("th-TH")}
                 </TableCell>
                 <TableCell sx={getCellStyle(index)} align="right">
-                  <IconButton color="warning" onClick={() => handleEditClick(user)}>
-                    <EditIcon />
-                  </IconButton>
-                </TableCell>
+                {canEditUser(user) ? (
+                  <Tooltip title="แก้ไขข้อมูล">
+                    <IconButton color="primary" onClick={() => handleEditClick(user)}>
+                      <EditIcon />
+                    </IconButton>
+                  </Tooltip>
+                ) : (
+                  <Tooltip 
+                    title={
+                      currentUser?.iduser_level === 1
+                        ? "คุณเป็น Operator ไม่มีสิทธิ์แก้ไขข้อมูลผู้อื่น"
+                        : "คุณไม่มีสิทธิ์แก้ไขผู้ใช้นี้ (เฉพาะ Admin แก้ Operator ได้)"
+                    }
+                  >
+                    <span>
+                      <IconButton disabled>
+                        <EditIcon color="disabled" />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                )}
+              </TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -296,47 +344,64 @@ const UserManagement: React.FC = () => {
 
       {/* Dialog แก้ไขผู้ใช้ */}
       <Dialog open={!!selectedUser} onClose={handleCloseEdit} fullWidth maxWidth="sm">
-        <DialogTitle>แก้ไขผู้ใช้งาน</DialogTitle>
-        <DialogContent>
-          <TextField
-            margin="dense"
-            label="Username"
-            value={selectedUser?.Username || ""}
-            onChange={(e) => setSelectedUser(prev => prev ? { ...prev, Username: e.target.value } : null)}
-            fullWidth
-          />
-          <TextField
-            margin="dense"
-            label="ชื่อ"
-            value={selectedUser?.Name || ""}
-            onChange={(e) => setSelectedUser(prev => prev ? { ...prev, Name: e.target.value } : null)}
-            fullWidth
-          />
-          <TextField
-            margin="dense"
-            label="Email"
-            type="email"
-            value={selectedUser?.email || ""}
-            onChange={(e) => setSelectedUser(prev => prev ? { ...prev, email: e.target.value } : null)}
-            fullWidth
-          />
-          <TextField
-            margin="dense"
-            label="ระดับผู้ใช้ (1 = Operator, 2 = Admin)"
-            type="number"
-            value={selectedUser?.iduser_level ?? 1}
-            onChange={(e) => setSelectedUser(prev => prev ? { ...prev, iduser_level: Number(e.target.value) } : null)}
-            fullWidth
-            inputProps={{ min: 1, max: 2 }}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseEdit}>ยกเลิก</Button>
-          <Button onClick={handleSaveEdit} variant="contained" color="primary">
-            บันทึก
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <DialogTitle>แก้ไขผู้ใช้งาน</DialogTitle>
+      <DialogContent>
+        <TextField
+          margin="dense"
+          label="Username"
+          value={selectedUser?.Username || ""}
+          onChange={(e) => setSelectedUser(prev => prev ? { ...prev, Username: e.target.value } : null)}
+          fullWidth
+          disabled // Username มักแก้ไม่ได้
+        />
+        <TextField
+          margin="dense"
+          label="ชื่อ"
+          value={selectedUser?.Name || ""}
+          onChange={(e) => setSelectedUser(prev => prev ? { ...prev, Name: e.target.value } : null)}
+          fullWidth
+        />
+        <TextField
+          margin="dense"
+          label="Email"
+          type="email"
+          value={selectedUser?.email || ""}
+          onChange={(e) => setSelectedUser(prev => prev ? { ...prev, email: e.target.value } : null)}
+          fullWidth
+        />
+
+        {/* แสดงระดับผู้ใช้ – เปิดแก้ได้เฉพาะ Admin และเป้าหมายเป็น Operator */}
+        <TextField
+          margin="dense"
+          label="ระดับผู้ใช้ (1=Operator, 2=Admin)"
+          type="number"
+          value={selectedUser?.iduser_level ?? ""}
+          onChange={(e) => {
+            const val = e.target.value;
+            // อนุญาตให้พิมพ์เฉพาะ 1 หรือ 2 เท่านั้น
+            if (val === "" || (Number(val) >= 1 && Number(val) <= 2)) {
+              setSelectedUser(prev => prev ? { ...prev, iduser_level: Number(val) || 1 } : null);
+            }
+          }}
+          fullWidth
+          inputProps={{ min: 1, max: 2 }}
+
+          helperText={
+            currentUser?.iduser_level !== 2 
+              ? "เฉพาะ Admin เท่านั้นที่แก้ระดับได้" 
+              : originalLevel === 2 
+              ? "ไม่สามารถแก้ระดับของ Admin คนอื่นได้" 
+              : "1 = Operator, 2 = Admin (สามารถเปลี่ยนได้)"
+          }
+        />
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleCloseEdit}>ยกเลิก</Button>
+        <Button onClick={handleSaveEdit} variant="contained" color="primary">
+          บันทึก
+        </Button>
+      </DialogActions>
+    </Dialog>
 
       {/* Dialog คำขอลงทะเบียน */}
       <Dialog open={openTempDialog} onClose={() => setOpenTempDialog(false)} fullWidth maxWidth="md">

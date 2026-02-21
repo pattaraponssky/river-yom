@@ -14,6 +14,7 @@ export const nowThaiDate = () => {
   const dayOfMonth = today.getDate();
   const month = monthsOfYear[today.getMonth()];
   const year = today.getFullYear() + 543; // เพิ่ม 543 สำหรับปีพุทธศักราช
+  
 
   return `${dayOfWeek}ที่ ${dayOfMonth} ${month} ${year}`;
 };

@@ -177,7 +177,7 @@ export default function EquipmentPage() {
             placeholder="ค้นหาอุปกรณ์..."
             value={searchTerm}
             onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
-            size="medium"
+            size="small"
             sx={{ width: { xs: '100%', sm: 300 } }}
             InputProps={{
               startAdornment: <InputAdornment position="start"><SearchIcon /></InputAdornment>,

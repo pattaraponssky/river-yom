@@ -121,7 +121,7 @@ const Header: React.FC<HeaderProps> = ({ title, open, setOpen }) => {
                     fontWeight: 700,
                     color: textColor,
                     fontFamily: 'Prompt, sans-serif',
-                    fontSize: { md: '1.4rem', sm: '1.25rem' },
+                    fontSize: { md: '1.3rem', sm: '1.15rem' , xs:'1.0' },
                     whiteSpace: {md:'nowrap', xs:'normal'},
                   }}
                 >

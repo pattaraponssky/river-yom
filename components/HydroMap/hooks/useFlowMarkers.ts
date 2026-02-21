@@ -39,7 +39,7 @@ const addFlowMarkers = (
 
     const marker = new window.longdo.Marker(position, {
       title: `<img src="${Path_URL}images/icons/flow_station_icon.png" style="width:25px;height:25px;vertical-align:middle;margin-right:5px" /> 
-              <span style="font-size:1.1rem;font-weight:bold;vertical-align:middle;">${sta_name} อ.${district} จ.${province}</span>`,
+              <span style="font-size:1.1rem;font-weight:bold;vertical-align:middle;">${sta_code} - ${sta_name}  อ.${district} จ.${province}</span>`,
 
       detail: `
         <div style="font-size:1rem;">
@@ -74,7 +74,7 @@ const addFlowMarkers = (
           <div style="text-align:center;">
             <img src="${Path_URL}images/icons/flow_station_icon.png" style="width:24px;height:24px;display:block;margin:0 auto;" />
             <div style="background:rgba(255,255,255,0.4);padding:2px;border-radius:5px;font-size:12px;margin-top:2px;width:80px;">
-              ${sta_name}
+              ${sta_code}
             </div>
           </div>
         `,
