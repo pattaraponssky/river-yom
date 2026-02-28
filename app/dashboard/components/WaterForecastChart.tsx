@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Box, Typography, Grid } from '@mui/material';
+import { Card, Box, Typography, Grid ,useTheme} from '@mui/material';
 import { ApexOptions, } from 'apexcharts'; // เพิ่ม ApexAnnotations
 import CenteredLoading from '@/components/Layout/CenteredLoading';
 import { titleStyle } from '@/theme/style';
@@ -84,6 +84,11 @@ const thresholdMap = new Map<string, ThresholdData>(
 
 
 const WaterForecastChart: React.FC<Props> = ({ data }) => {
+  const theme = useTheme();
+  const isDark = theme.palette.mode === "dark";
+  const bgColor = isDark ? "#1e2533" : "#f8fafc"; 
+  const textColor = isDark ? "#e2e8f0" : "#334155";    
+     
   const [seriesData, setSeriesData] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   // const [lastRunTime, setLastRunTime] = useState<string>(''); 
@@ -129,6 +134,7 @@ const WaterForecastChart: React.FC<Props> = ({ data }) => {
   }, [data]);
 
   if (loading) return <CenteredLoading />;
+
 
   return (
     <Box>
@@ -267,7 +273,9 @@ const WaterForecastChart: React.FC<Props> = ({ data }) => {
           const options: ApexOptions = {
             chart: {
               id: `chart-${index}`,
-              fontFamily: 'Prompt',
+              background: bgColor,
+              fontFamily: "Prompt",
+              foreColor: textColor,
               type: 'line',
               height: 350,
               zoom: { enabled: false },
