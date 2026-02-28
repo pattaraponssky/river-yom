@@ -85,15 +85,16 @@ const Header: React.FC<HeaderProps> = ({ title, open, setOpen }) => {
       >
         <Toolbar
           sx={{
-            minHeight: { xs: 56, sm: 64 },
-            px: { xs: 1.5, sm: 3 },
+            minHeight: { xs: 64, sm: 64 },
+            px: { xs: 1.5, sm: 4 },
             display: 'flex',
-            justifyContent: 'space-between',
+            justifyContent: 'space-between', // ยังคงใช้ space-between
             alignItems: 'center',
+            position: 'relative', // สำคัญสำหรับ absolute positioning
           }}
         >
-          {/* ซ้าย: Hamburger + Logo + ชื่อ */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          {/* ซ้าย: Hamburger + Logo */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexShrink: 0 }}>
             <IconButton
               edge="start"
               color="inherit"
@@ -104,35 +105,37 @@ const Header: React.FC<HeaderProps> = ({ title, open, setOpen }) => {
               <MenuIcon />
             </IconButton>
 
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <img
-                src={`${Path_URL}images/logo_rid.png`}
-                alt="RID Logo"
-                style={{
-                  height: isMobile ? '40px' : '48px',
-                  objectFit: 'contain',
-                }}
-              />
-              {!isMobile && (
-                <Typography
-                  variant="h6"
-                  noWrap
-                  sx={{
-                    fontWeight: 700,
-                    color: textColor,
-                    fontFamily: 'Prompt, sans-serif',
-                    fontSize: { md: '1.3rem', sm: '1.15rem' , xs:'1.0' },
-                    whiteSpace: {md:'nowrap', xs:'normal'},
-                  }}
-                >
-                  {title || "ระบบติดตามสถานการณ์น้ำระยะไกลอัตโนมัติ พื้นที่ฝั่งขวาแม่น้ำยม" }
-                </Typography>
-              )}
-            </Box>
+            <img
+              src={`${Path_URL}images/logo_rid.png`}
+              alt="RID Logo"
+              style={{
+                height: isMobile ? '40px' : '48px',
+                objectFit: 'contain',
+              }}
+            />
           </Box>
 
+          {/* กลาง: ชื่อระบบ (absolute positioning ให้อยู่กึ่งกลางจริง ๆ) */}
+          <Typography
+            sx={{
+              position: 'absolute',
+              left: '50%',
+              transform: 'translateX(-50%)', // ทำให้อยู่กึ่งกลางแน่นอน
+              fontWeight: 600,
+              color: textColor,
+              fontFamily: 'Prompt, sans-serif',
+              fontSize: { md: '1.3rem', sm: '1.1rem', xs: '1rem' },
+              whiteSpace: { md : 'nowrap', sm:'normal'},
+              textAlign: 'center',
+              maxWidth: {md:'60%' , sm:'40%'}, 
+              display: { xs: 'none', sm: 'block' }, // ซ่อนในมือถือเล็ก ๆ ถ้าต้องการ
+            }}
+          >
+            {title || "ระบบติดตามสถานการณ์น้ำระยะไกลอัตโนมัติ พื้นที่ฝั่งขวาแม่น้ำยม"}
+          </Typography>
+
           {/* ขวา: Theme + User / Login */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0 }}>
             <ThemeSwitcher />
 
             {currentUser ? (
@@ -180,7 +183,7 @@ const Header: React.FC<HeaderProps> = ({ title, open, setOpen }) => {
                     },
                   }}
                 >
-                  <MenuItem onClick={goToProfile} >
+                  <MenuItem onClick={goToProfile}>
                     <AccountCircleIcon sx={{ mr: 1 }} /> โปรไฟล์
                   </MenuItem>
                   <MenuItem onClick={goToSettings}>
@@ -225,7 +228,7 @@ const Header: React.FC<HeaderProps> = ({ title, open, setOpen }) => {
         open={loginOpen}
         onClose={() => setLoginOpen(false)}
         onLoginSuccess={async () => {
-          await refreshAuth(); 
+          await refreshAuth();
           router.refresh();
         }}
       />

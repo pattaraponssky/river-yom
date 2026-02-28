@@ -75,7 +75,7 @@ const ReservoirDashboard: React.FC = () => {
           0
         );
         const avgPercent =
-          totalVolume / 470.7 * 100; // ความจุเก็บกักรวม 470.7 ล้าน ลบ.ม.
+          totalVolume / 23970 * 100;
 
         setSummary({
           sumVolume: totalVolume,
@@ -150,7 +150,7 @@ const titleStyle = {
                     <Typography sx={titleStyle}>ความจุเก็บกักรวม</Typography>
                   </Grid>
                   <Grid size={{ xs: 12, sm: 5 }}>
-                    <Typography sx={titleStyle}><span style={{color:"#ef6c00",fontWeight:"bold"}}> 470.7 </span><span style={{ color: "gray" }}>ล้าน ลบ.ม.</span></Typography>
+                    <Typography sx={titleStyle}><span style={{color:"#ef6c00",fontWeight:"bold"}}> 23970 </span><span style={{ color: "gray" }}>ล้าน ลบ.ม.</span></Typography>
                   </Grid>
 
                   <Grid size={{ xs: 12, sm: 5 }}>

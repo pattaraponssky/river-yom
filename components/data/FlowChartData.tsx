@@ -25,35 +25,35 @@ interface DataChartProps {
 const BASE_YEAR = 2000;
 
 const flowAnnotations: Record<string, ApexAnnotations> = {
-  'T.1': {
+  'Y.50': {
     yaxis: [
       { y: 1.50, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 1.50 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
       { y: 1.38, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 1.38 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
       { y: 1.25, borderColor: 'green', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 1.25 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'green' } } },
     ],
   },
-  'T.10': {
+  'Y.15': {
     yaxis: [
       { y: 3.50, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 3.50 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
       { y: 3.20, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 3.20 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
       { y: 2.90, borderColor: 'green', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 2.90 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'green' } } },
     ]
   },
-  'T.13': {
+  'Y.16': {
     yaxis: [  
       { y: 2.40, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 2.40 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
       { y: 2.28, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 2.28 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
       { y: 2.16, borderColor: 'green', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 2.16 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'green' } } },
       ]
   },
-  'T.14': {
+  'Y.64': {
     yaxis: [
       { y: 1.50, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 1.50 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
       { y: 1.35, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 1.35 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
       { y: 1.20, borderColor: 'green', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 1.20 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'green' } } },
     ]
   },
-  'T.15': {
+  'Y.4': {
     yaxis: [
       { y: 1.80, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 1.80 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
       { y: 1.70, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 1.70 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
@@ -68,11 +68,11 @@ const flowAnnotations: Record<string, ApexAnnotations> = {
 
 
 const flowYAxisRange: Record<string, { min: number; max: number }> = {
-  'T.1': { min: -10, max: 2 },
-  'T.10': { min: -2.5, max: 7 },
-  'T.13': { min: -4, max: 3 },
-  'T.14': { min: -9, max: 2 },
-  'T.15': { min: -6, max: 3 },
+  'Y.50': { min: -10, max: 2 },
+  'Y.15': { min: -2.5, max: 7 },
+  'Y.16': { min: -4, max: 3 },
+  'Y.64': { min: -9, max: 2 },
+  'Y.4': { min: -6, max: 3 },
 };
 
 const FlowChart: React.FC<DataChartProps> = ({ data, type, height = 350 ,sta_code ,mode = 'daily', isDark }) => {

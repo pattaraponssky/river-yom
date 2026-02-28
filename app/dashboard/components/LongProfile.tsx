@@ -408,7 +408,7 @@ const LongProfileChart: React.FC<Props> = ({ waterData, chartHeight = 500, isDar
                     color: '#fff',
                     background: '#FF0033',
                 },
-                text: 'T.10' // ข้อความสำหรับจุด annotation
+                text: 'Y.15' // ข้อความสำหรับจุด annotation
             }
           },
           {
@@ -425,7 +425,7 @@ const LongProfileChart: React.FC<Props> = ({ waterData, chartHeight = 500, isDar
                     color: '#fff',
                     background: '#FF0033',
                 },
-                text: 'T.13' // ข้อความสำหรับจุด annotation
+                text: 'Y.16' // ข้อความสำหรับจุด annotation
             }
         },
         {
@@ -442,7 +442,7 @@ const LongProfileChart: React.FC<Props> = ({ waterData, chartHeight = 500, isDar
                   color: '#fff',
                   background: '#FF0033',
               },
-              text: 'T.15' // ข้อความสำหรับจุด annotation
+              text: 'Y.4' // ข้อความสำหรับจุด annotation
           }
         },
         {
@@ -459,7 +459,7 @@ const LongProfileChart: React.FC<Props> = ({ waterData, chartHeight = 500, isDar
                   color: '#fff',
                   background: '#FF0033',
               },
-              text: 'T.1' // ข้อความสำหรับจุด annotation
+              text: 'Y.50' // ข้อความสำหรับจุด annotation
           }
         },
         {
@@ -476,7 +476,7 @@ const LongProfileChart: React.FC<Props> = ({ waterData, chartHeight = 500, isDar
                     color: '#fff',
                     background: '#FF0033',
                 },
-                text: 'T.14' // ข้อความสำหรับจุด annotation
+                text: 'Y.64' // ข้อความสำหรับจุด annotation
             }
         },
       ],
@@ -1048,23 +1048,23 @@ export default LongProfileChart;
 //                   },
 //                 },
 //               },
-//               {
-//                   x: 2, // ตำแหน่ง x
-//                   borderColor: '#000',
-//                   borderWidth: 0,
-//                   label: {            
-//                       offsetY: -60,      
-//                       offsetX: 15,                      
-//                       borderColor: '#66B2FF',
-//                       position: "center", // ✅ ทำให้ข้อความชิดด้านล่าง                      
-//                       style: {
-//                           fontSize: '17px',
-//                           color: '#fff',
-//                           background: '#66B2FF',
-//                       },
-//                       text: 'ปตร.พลเทพ',
-//                   }
-//               },
+//               // {
+//               //     x: 2, // ตำแหน่ง x
+//               //     borderColor: '#000',
+//               //     borderWidth: 0,
+//               //     label: {            
+//               //         offsetY: -60,      
+//               //         offsetX: 15,                      
+//               //         borderColor: '#66B2FF',
+//               //         position: "center", // ✅ ทำให้ข้อความชิดด้านล่าง                      
+//               //         style: {
+//               //             fontSize: '17px',
+//               //             color: '#fff',
+//               //             background: '#66B2FF',
+//               //         },
+//               //         text: 'ปตร.พลเทพ',
+//               //     }
+//               // },
 //               {
 //                   x: 29.45,
 //                   borderColor: '#000',
@@ -1127,7 +1127,7 @@ export default LongProfileChart;
 //                     color: '#fff',
 //                     background: '#FF0033',
 //                 },
-//                 text: 'T.10' // ข้อความสำหรับจุด annotation
+//                 text: 'Y.15' // ข้อความสำหรับจุด annotation
 //             }
 //           },
 //           {
@@ -1144,7 +1144,7 @@ export default LongProfileChart;
 //                     color: '#fff',
 //                     background: '#FF0033',
 //                 },
-//                 text: 'T.13' // ข้อความสำหรับจุด annotation
+//                 text: 'Y.16' // ข้อความสำหรับจุด annotation
 //             }
 //         },
 //         {
@@ -1161,7 +1161,7 @@ export default LongProfileChart;
 //                   color: '#fff',
 //                   background: '#FF0033',
 //               },
-//               text: 'T.15' // ข้อความสำหรับจุด annotation
+//               text: 'Y.4' // ข้อความสำหรับจุด annotation
 //           }
 //         },
 //         {
@@ -1178,7 +1178,7 @@ export default LongProfileChart;
 //                   color: '#fff',
 //                   background: '#FF0033',
 //               },
-//               text: 'T.1' // ข้อความสำหรับจุด annotation
+//               text: 'Y.50' // ข้อความสำหรับจุด annotation
 //           }
 //         },
 //         {
@@ -1195,7 +1195,7 @@ export default LongProfileChart;
 //                     color: '#fff',
 //                     background: '#FF0033',
 //                 },
-//                 text: 'T.14' // ข้อความสำหรับจุด annotation
+//                 text: 'Y.64' // ข้อความสำหรับจุด annotation
 //             }
 //         },
 //       ],
@@ -1344,7 +1344,7 @@ export default LongProfileChart;
 //     <Box >
 //       {/* ชื่อหัวข้อกราฟ */}
 //       <Typography gutterBottom sx={{ ...titleStyle, fontWeight: "bold" }}>
-//          รูปตัดตามยาวแม่น้ำ...
+//          รูปตัดตามยาวแม่น้ำยมฝังขวา
 //       </Typography>
 //       <Box sx={{ display: "flex", justifyContent: "center", gap: 1, mb: {md:2,xs:1}, flexWrap: "wrap", alignItems: "center" }}>
           

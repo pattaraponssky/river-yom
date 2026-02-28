@@ -67,7 +67,7 @@ const WaterSchematicSimple: React.FC = () => {
   const [selectedType, setSelectedType] = useState<'reservoir' | 'flow' | undefined>(undefined);
 
   const width = 650;
-  const height = 900;
+  const height = 800;
 
   // ฟังก์ชันควบคุมซูม (อยู่นอก useEffect เพื่อให้เรียกจาก JSX ได้)
   const zoomIn = () => {
@@ -220,7 +220,7 @@ const WaterSchematicSimple: React.FC = () => {
     svg.append('rect')
       .attr('width', width)
       .attr('height', height)
-      .attr('fill', 'white');
+      .attr('fill', theme.palette.background.paper);
 
     // Container สำหรับซูม
     const container = svg.append('g')
@@ -667,33 +667,33 @@ projectAreas.forEach((zone, index) => {
     setTimeout(fitToView, 300);
 
     const customTexts = [
-      { text: `สำนักงานชลประทานที่ 3`, x: 180, y: 25, orientation: "horizontal", fontSize: 25, fill: "#004080", fontWeight: "bold" },
-      { text: `ส่วนบริหารจัดการน้ำและบำรุงรักษา`, x: 160, y: 55, orientation: "horizontal", fontSize: 20, fill: "#004080", fontWeight: "bold" },
+      { text: `สำนักงานชลประทานที่ 3`, x: 180, y: 25, orientation: "horizontal", fontSize: 25, fill: theme.palette.text.secondary, fontWeight: "bold" },
+      { text: `ส่วนบริหารจัดการน้ำและบำรุงรักษา`, x: 160, y: 55, orientation: "horizontal", fontSize: 20, fill: theme.palette.text.secondary, fontWeight: "bold" },
 
       { text: `หมายเหตุ`, x: 55, y: 145, orientation: "horizontal", fontSize: 14, fill: "#fe0000", fontWeight: "bold" },
 
-      { text: "จ.น่าน", x: 385, y: 100, orientation: "horizontal", fontSize: 11, fill: "#333", fontWeight: "bold" },
-      { text: "จ.อตรดิตถ์", x: 275, y: 200, orientation: "horizontal", fontSize: 11, fill: "#333", fontWeight: "bold" },
-      { text: "จ.สุโขทัย", x: 190, y: 360, orientation: "horizontal", fontSize: 11, fill: "#333", fontWeight: "bold" },
-      { text: "จ.พิจิตร", x: 345, y: 580, orientation: "horizontal", fontSize: 11, fill: "#333", fontWeight: "bold" },
-      { text: "จ.ตาก", x: 30, y: 375, orientation: "horizontal", fontSize: 11, fill: "#333", fontWeight: "bold" },
-      { text: "จ.นครสวรรค์", x: 230, y: 715, orientation: "horizontal", fontSize: 11, fill: "#333", fontWeight: "bold" },
-      { text: "จ.กำแพงเพชร", x: 100, y: 620, orientation: "horizontal", fontSize: 11, fill: "#333", fontWeight: "bold" },
-      { text: "จ.พิษณุโลก", x: 450, y: 480, orientation: "horizontal", fontSize: 11, fill: "#333", fontWeight: "bold" },
+      { text: "จ.น่าน", x: 385, y: 100, orientation: "horizontal", fontSize: 11, fill: theme.palette.text.primary, fontWeight: "bold" },
+      { text: "จ.อตรดิตถ์", x: 275, y: 200, orientation: "horizontal", fontSize: 11, fill: theme.palette.text.primary, fontWeight: "bold" },
+      { text: "จ.สุโขทัย", x: 190, y: 360, orientation: "horizontal", fontSize: 11, fill: theme.palette.text.primary, fontWeight: "bold" },
+      { text: "จ.พิจิตร", x: 345, y: 580, orientation: "horizontal", fontSize: 11, fill: theme.palette.text.primary, fontWeight: "bold" },
+      { text: "จ.ตาก", x: 30, y: 375, orientation: "horizontal", fontSize: 11, fill: theme.palette.text.primary, fontWeight: "bold" },
+      { text: "จ.นครสวรรค์", x: 230, y: 715, orientation: "horizontal", fontSize: 11, fill: theme.palette.text.primary, fontWeight: "bold" },
+      { text: "จ.กำแพงเพชร", x: 100, y: 620, orientation: "horizontal", fontSize: 11, fill: theme.palette.text.primary, fontWeight: "bold" },
+      { text: "จ.พิษณุโลก", x: 450, y: 480, orientation: "horizontal", fontSize: 11, fill: theme.palette.text.primary, fontWeight: "bold" },
 
-      { text: "แม่น้ำยม", x: 160, y: 200, orientation: "vertical", fontSize: 10, fill: "#004080", fontWeight: "bold" },
-      { text: "แม่น้ำยม", x: 275, y: 610, orientation: "horizontal", fontSize: 8, fill: "#004080", fontWeight: "bold" },
-      { text: "แม่น้ำน่าน", x: 385, y: 230, orientation: "vertical", fontSize: 10, fill: "#004080", fontWeight: "bold" },
-      { text: "แม่น้ำปิง", x: 65, y: 530, orientation: "vertical", fontSize: 8, fill: "#004080", fontWeight: "bold" },
-      { text: "แม่น้ำปิง", x: 185, y: 675, orientation: "horizontal", fontSize: 8, fill: "#004080", fontWeight: "bold" },
-      { text: "แม่น้ำสะแกกรัง", x: 185, y: 730, orientation: "horizontal", fontSize: 7, fill: "#004080", fontWeight: "bold" },
+      { text: "แม่น้ำยม", x: 160, y: 200, orientation: "vertical", fontSize: 10, fill: theme.palette.text.secondary, fontWeight: "bold" },
+      { text: "แม่น้ำยม", x: 275, y: 610, orientation: "horizontal", fontSize: 8, fill: theme.palette.text.secondary, fontWeight: "bold" },
+      { text: "แม่น้ำน่าน", x: 385, y: 230, orientation: "vertical", fontSize: 10, fill: theme.palette.text.secondary, fontWeight: "bold" },
+      { text: "แม่น้ำปิง", x: 65, y: 530, orientation: "vertical", fontSize: 8, fill: theme.palette.text.secondary, fontWeight: "bold" },
+      { text: "แม่น้ำปิง", x: 185, y: 675, orientation: "horizontal", fontSize: 8, fill: theme.palette.text.secondary, fontWeight: "bold" },
+      { text: "แม่น้ำสะแกกรัง", x: 185, y: 730, orientation: "horizontal", fontSize: 7, fill: theme.palette.text.secondary, fontWeight: "bold" },
 
-      { text: "คลองหกบาท", x: 195, y: 297, orientation: "horizontal", fontSize: 7, fill: "#333" },
-      { text: "คลองผันน้ำยม-น่าน", x: 280, y: 297, orientation: "horizontal", fontSize: 7, fill: "#333" },
-      { text: "แม่น้ำยมสายเก่า", x: 247, y: 340, orientation: "vertical", fontSize: 7, fill: "#333", fontWeight: "bold" },
-      { text: "คลอง DR2.8", x: 275, y: 543, orientation: "horizontal", fontSize: 7, fill: "#333" },
-      { text: "คลอง DR15.8", x: 330, y: 480, orientation: "horizontal", fontSize: 7, fill: "#333" },
-      { text: "คลองเมม", x: 235, y: 480, orientation: "horizontal", fontSize: 7, fill: "#333" },
+      { text: "คลองหกบาท", x: 195, y: 297, orientation: "horizontal", fontSize: 7, fill: theme.palette.text.primary },
+      { text: "คลองผันน้ำยม-น่าน", x: 280, y: 297, orientation: "horizontal", fontSize: 7, fill: theme.palette.text.primary },
+      { text: "แม่น้ำยมสายเก่า", x: 247, y: 340, orientation: "vertical", fontSize: 7, fill: theme.palette.text.primary, fontWeight: "bold" },
+      { text: "คลอง DR2.8", x: 275, y: 543, orientation: "horizontal", fontSize: 7, fill: theme.palette.text.primary },
+      { text: "คลอง DR15.8", x: 330, y: 480, orientation: "horizontal", fontSize: 7, fill: theme.palette.text.primary },
+      { text: "คลองเมม", x: 235, y: 480, orientation: "horizontal", fontSize: 7, fill: theme.palette.text.primary },
     ];
 
     // สร้างข้อความ
@@ -764,7 +764,7 @@ projectAreas.forEach((zone, index) => {
         .attr("y", d.y)
         .attr("dy", "0.35em")             // จัดกึ่งกลางแนวตั้ง
         .attr("font-size", "8px")
-        .attr("fill", "#333")
+        .attr("fill", theme.palette.text.primary)
         .attr("font-family", "Prompt, sans-serif");
 
         label.append("tspan")
@@ -825,7 +825,7 @@ projectAreas.forEach((zone, index) => {
         .attr("y", d.y)
         .attr("dy", "0.35em")             // จัดกึ่งกลางแนวตั้ง
         .attr("font-size", "8px")
-        .attr("fill", "#333")
+        .attr("fill", theme.palette.text.primary)
         .attr("font-family", "Prompt, sans-serif");
 
         label.append("tspan")
@@ -925,7 +925,7 @@ projectAreas.forEach((zone, index) => {
     const text = patrolGroup.append("text")
         .attr("font-size", "7px")
         .attr("font-weight", "500")
-        .attr("fill", "#222")
+        .attr("fill", theme.palette.text.primary)
         .attr("font-family", "Prompt, sans-serif")
 
     if (isVertical) {

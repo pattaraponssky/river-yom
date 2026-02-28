@@ -11,7 +11,7 @@ import { useThemeMode } from '@/contexts/ThemeContext';
 const warningData = [
   {
     id: 1,
-    staCode: 'T.10',
+    staCode: 'Y.15',
     location: 'วัดพระรูป',
     subdistrict: 'ท่าระหัด',
     district: 'เมือง',
@@ -28,7 +28,7 @@ const warningData = [
   },
   {  
     id: 2,
-    staCode: 'T.13',
+    staCode: 'Y.16',
     location: 'บ้านบางการ้อง',
     subdistrict: 'บ้านบางการ้อง',
     district: 'สองพี่น้อง',
@@ -45,7 +45,7 @@ const warningData = [
   },
    {
     id: 3,
-    staCode: 'T.15',
+    staCode: 'Y.4',
     location: 'บ้านบางไทรป่า',
     subdistrict: 'บางไทรป่า',
     district: 'บางเลน',
@@ -62,7 +62,7 @@ const warningData = [
   },
   {
     id: 4,
-    staCode: 'T.1',
+    staCode: 'Y.50',
     location: 'ที่ว่าการอำเภอ',
     subdistrict: 'นครชัยศรี',
     district: 'นครชัยศรี',
@@ -79,7 +79,7 @@ const warningData = [
   },
   {
     id: 5,
-    staCode: 'T.14',
+    staCode: 'Y.64',
     location: 'ตลาดสามพราน',
     subdistrict: 'สามพราน',
     district: 'สามพราน',

@@ -7,11 +7,11 @@ import dynamic from "next/dynamic";
 
 // (ส่วน stationMapping และ Interfaces ยังคงเดิม)
 const stationMapping: Record<string, number> = {
-  "T.10": 194202,
-  "T.13": 142824,
-  "T.15": 125488,
-  "T.1": 84876,
-  "T.14": 55827,
+  "Y.15": 194202,
+  "Y.16": 142824,
+  "Y.4": 125488,
+  "Y.50": 84876,
+  "Y.64": 55827,
 };
 
 interface waterData {
@@ -37,7 +37,7 @@ interface ThresholdData {
 // === เกณฑ์ระดับน้ำ (Watch, Alert, Crisis) ===
 const thresholdData: ThresholdData[] = [
   {
-    staCode: 'T.10',
+    staCode: 'Y.15',
     location: 'วัดพระรูป',
     watch: 2.90,
     alert: 3.20,
@@ -45,7 +45,7 @@ const thresholdData: ThresholdData[] = [
     maxY: 3.5,
   },
   {  
-    staCode: 'T.13',
+    staCode: 'Y.16',
     location: 'บ้านบางการ้อง',
     watch: 2.16,
     alert: 2.28,
@@ -53,7 +53,7 @@ const thresholdData: ThresholdData[] = [
     maxY: 2.40,
   },
    {
-    staCode: 'T.15',
+    staCode: 'Y.4',
     location: 'บ้านบางไทรป่า',
     watch: 1.60,
     alert: 1.70,
@@ -61,7 +61,7 @@ const thresholdData: ThresholdData[] = [
     maxY: 1.80,
   },
   {
-    staCode: 'T.1',
+    staCode: 'Y.50',
     location: 'ที่ว่าการอำเภอ',
     watch: 1.25,
     alert: 1.38,
@@ -69,7 +69,7 @@ const thresholdData: ThresholdData[] = [
     maxY: 1.50,
   },
   {
-    staCode: 'T.14',
+    staCode: 'Y.64',
     location: 'ตลาดสามพราน',
     watch: 1.20,
     alert: 1.35,
@@ -164,7 +164,7 @@ const WaterForecastChart: React.FC<Props> = ({ data }) => {
        </Box>
       <Grid container spacing={2}>
         {seriesData.map((seriesItem: any, index: number) => {
-          const stationCode = seriesItem.name; // T.10, T.13, etc.
+          const stationCode = seriesItem.name; // Y.15, Y.16, etc.
           const thresholds = thresholdMap.get(stationCode);
 
           // แบ่งข้อมูลตามตำแหน่ง TOF ที่กำหนด (9:00 น. ของวันนี้)

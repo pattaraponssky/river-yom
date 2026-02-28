@@ -5,7 +5,7 @@ export const textStyle = {
 
 export const titleStyle = {
   fontFamily: "Prompt",
-  fontSize: { md: "1.2rem", xs: "0.95rem" },
+  fontSize: { md: "1.1rem", xs: "0.95rem" },
   textAlign:{ md:"start",xs:"center"}
 };
 
@@ -23,7 +23,7 @@ export const BoxStyle = (theme: any) => ({
 
 export const fontTitle = {
   fontFamily: "Prompt",
-  fontSize: {md:"1.2rem", xs:"1rem"},
+  fontSize: {md:"1.1em", xs:"0.9rem"},
   fontWeight: 600,
 };
 

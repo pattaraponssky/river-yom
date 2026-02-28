@@ -28,9 +28,9 @@ const defaultRows = [
   { station_id: '690151', name: "C.30 บ้านสมอทอง", type: "rain_rid", values: Array(7).fill(0) },
 
   { station_id: 'C.54', name: "ปตร.พลเทพ", type: "flow", values: Array(8).fill(0) },
-  { station_id: 'T.18', name: "ปตร.ท่าโบสถ์", type: "flow", values: Array(8).fill(0) },
-  { station_id: 'T.17', name: "ปตร.ชลมาร์คพิจารณ์", type: "flow", values: Array(8).fill(0) },
-  { station_id: 'T.16', name: "ปตร.โพธิ์พระยา", type: "flow", values: Array(8).fill(0) },
+  { station_id: 'Y.508', name: "ปตร.ท่าโบสถ์", type: "flow", values: Array(8).fill(0) },
+  { station_id: 'Y.507', name: "ปตร.ชลมาร์คพิจารณ์", type: "flow", values: Array(8).fill(0) },
+  { station_id: 'Y.506', name: "ปตร.โพธิ์พระยา", type: "flow", values: Array(8).fill(0) },
   { station_id: 'BYH', name: "ปตร.บางยี่หน", type: "flow", values: Array(8).fill(0) },
   { station_id: 'PBL', name: "ปตร.พระยาบรรลือ", type: "flow", values: Array(8).fill(0) },
   { station_id: 'PPM', name: "ปตร.พระพิพล", type: "flow", values: Array(8).fill(0) },

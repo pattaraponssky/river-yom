@@ -30,7 +30,7 @@ interface DataReservoirStationProps {
 
 const DataReservoirStation: React.FC<DataReservoirStationProps> = ({ propsSelectedStation }) => {
   const queryParams = new URLSearchParams(location.search);
-  const stationFromURL = queryParams.get("station") || "ks";
+  const stationFromURL = queryParams.get("station") || "srk";
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
 

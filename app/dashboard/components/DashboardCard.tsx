@@ -20,7 +20,7 @@ const DashboardCards: React.FC<DashboardCardsProps> = ({ data, loading = false, 
           subTitle: 'ระบายน้ำรวม',
           value: '4',
           unit: 'ปตร.',
-          value_data: data.discharge_gate?.['T.16'] ?? '283', // ใช้ optional chaining + fallback
+          value_data: data.discharge_gate?.['Y.506'] ?? '283', // ใช้ optional chaining + fallback
           unit_data: 'ลบ.ม./วินาที',
           image: `${Path_URL}images/icons/gate_icon.png`,
           gradient: 'linear-gradient(135deg, #e57373, #d32f2f)',

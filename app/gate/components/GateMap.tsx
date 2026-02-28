@@ -146,7 +146,7 @@ const GateMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,heig
   useEffect(() => {
     if (isMapReady) {
       console.log("กำลังเพิ่ม markers...");
-      map.location({ lat: 14.4, lon: 99.9 }, true);
+      map.location({ lat: 16.750, lon: 100 }, true);
       map.zoom(9, true);
       console.log("🌍 แผนที่พร้อมแล้ว กำลังเพิ่ม markers...");    
       console.log("🏞️ gateData:", gateData);

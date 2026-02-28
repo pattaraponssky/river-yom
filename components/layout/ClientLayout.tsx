@@ -5,8 +5,8 @@ import { useState } from 'react';
 import { Box } from '@mui/material';
 import DrawerComponent from './Drawer';
 import Footer from './Footer';
-import AppHeader from './AppHeader';
-
+import dynamic from 'next/dynamic';
+const AppHeader = dynamic(() => import('./AppHeader'), { ssr: false });
 
 interface ClientLayoutProps {
   children: React.ReactNode;
@@ -16,7 +16,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (
-    <Box sx={{ flexGrow: 1 }}>
+    <div >
       <AppHeader
         title="ระบบติดตามสถานการณ์น้ำระยะไกลอัตโนมัติ พื้นที่ฝั่งขวาแม่น้ำยม"
         open={drawerOpen}
@@ -37,6 +37,6 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
         {children}
       </Box>
         <Footer/>
-    </Box>
+    </div>
   );
 }

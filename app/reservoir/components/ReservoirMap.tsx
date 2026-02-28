@@ -148,7 +148,7 @@
   useEffect(() => {
     if (isMapReady) {
       console.log("กำลังเพิ่ม markers...");
-      map.location({ lat: 14.4, lon: 99.9 }, true);
+      map.location({ lat: 16.750, lon: 100 }, true);
       map.zoom(9, true);
       console.log("🌍 แผนที่พร้อมแล้ว กำลังเพิ่ม markers...");    
       console.log("🏞️ reservoirData:", reservoirData);
@@ -172,8 +172,6 @@
       });
     }
   }, [isMapReady, reservoirData]); // รอให้ข้อมูลทั้งหมดพร้อมก่อน
-
-
 
   // โหลดไฟล์ GeoJSON
   useEffect(() => {

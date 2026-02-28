@@ -24,19 +24,19 @@ interface WaterLevelData {
 }
 
 const warningLevels: Record<string, { watch: number; alert: number; crisis: number }> = {
-  "T.10": { watch: 2.90, alert: 3.20, crisis: 3.50 },
-  "T.13": { watch: 2.16, alert: 2.28, crisis: 2.40 },
-  "T.15": { watch: 1.60, alert: 1.70, crisis: 1.80 },
-  "T.1": { watch: 1.25, alert: 1.38, crisis: 1.50 },
-  "T.14": { watch: 1.20, alert: 1.35, crisis: 1.50 },
+  "Y.15": { watch: 2.90, alert: 3.20, crisis: 3.50 },
+  "Y.16": { watch: 2.16, alert: 2.28, crisis: 2.40 },
+  "Y.4": { watch: 1.60, alert: 1.70, crisis: 1.80 },
+  "Y.50": { watch: 1.25, alert: 1.38, crisis: 1.50 },
+  "Y.64": { watch: 1.20, alert: 1.35, crisis: 1.50 },
 };
 
 const stationMapping: Record<string, number> = {
-  "T.10": 194202,
-  "T.13": 143157,
-  "T.15": 125488,
-  "T.1": 84876,
-  "T.14": 55628,
+  "Y.15": 194202,
+  "Y.16": 143157,
+  "Y.4": 125488,
+  "Y.50": 84876,
+  "Y.64": 55628,
   "ปตร.พลเทพ": 321863,
   "ปตร.ท่าโบสถ์": 293361,
   "ปตร.ชลมาร์คพิจารณ์": 241706,
@@ -49,7 +49,7 @@ interface Props {
 }
 const WaterLevelChart: React.FC<Props> = ({ data, chartHeight = 450 }) => {
   const [secondData, setSecondData] = useState<WaterLevelData[]>([]);
-  const [selectedStation, setSelectedStation] = useState<string>("T.1");
+  const [selectedStation, setSelectedStation] = useState<string>("Y.50");
   const [shiftValue, setShiftValue] = useState<number>(0);
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedTime, setSelectedTime] = useState<string>("");
