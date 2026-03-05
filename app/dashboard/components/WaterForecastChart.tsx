@@ -279,12 +279,50 @@ const WaterForecastChart: React.FC<Props> = ({ data }) => {
               type: 'line',
               height: 350,
               zoom: { enabled: false },
+              toolbar: {
+                show: true,
+                tools: {
+                  download: true,
+                  selection: true,
+                  zoom: true,
+                  zoomin: true,
+                  zoomout: true,
+                  pan: true,
+                  reset: true,
+                },
+                export: {
+                  png: {
+                    filename: `สถานีน้ำท่า ${seriesItem.name}`,
+                  },
+                  svg: {
+                    filename: `สถานีน้ำท่า ${seriesItem.name}`,
+                  },
+                  csv: {
+                    filename: `สถานีน้ำท่า ${seriesItem.name}`,
+                    columnDelimiter: ',',
+                    headerCategory: 'วันที่-เวลา',
+                    headerValue: 'ระดับน้ำ (ม.รทก.)',
+                    // Formatter สำหรับ csv export (ไม่เกี่ยวกับ label บนกราฟ แต่ช่วยให้ csv มีเวลา)
+                    categoryFormatter: (x: any) => {
+                      return new Date(x).toLocaleString('th-TH', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                      });
+                    },
+                  }
+                },
+              },
             },
             title: {
               text: `สถานีน้ำท่า ${seriesItem.name}`,
               align: 'center',
               style: { fontSize: '18px' },
             },
+            
             stroke: { width: 3, curve: 'smooth', dashArray: [0, 8] },
             xaxis: {
               type: 'datetime',
