@@ -25,39 +25,53 @@ interface DataChartProps {
 const BASE_YEAR = 2000;
 
 const flowAnnotations: Record<string, ApexAnnotations> = {
-  'Y.50': {
+  'Y.4': {
     yaxis: [
-      { y: 1.50, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 1.50 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
-      { y: 1.38, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 1.38 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
-      { y: 1.25, borderColor: 'green', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 1.25 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'green' } } },
+      { y: 49.6, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 49.6 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
+      { y: 50.5, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 50.5 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
+      { y: 51.4, borderColor: 'green', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 51.4 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'green' } } },
     ],
   },
   'Y.15': {
     yaxis: [
-      { y: 3.50, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 3.50 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
-      { y: 3.20, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 3.20 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
-      { y: 2.90, borderColor: 'green', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 2.90 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'green' } } },
+      { y: 43.5, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 43.5 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
+      { y: 44.7, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 44.7 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
+      { y: 46.0, borderColor: 'green', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 46.0 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'green' } } },
     ]
   },
-  'Y.16': {
+  'Y.50': {
     yaxis: [  
-      { y: 2.40, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 2.40 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
-      { y: 2.28, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 2.28 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
-      { y: 2.16, borderColor: 'green', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 2.16 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'green' } } },
+      { y: 39.5, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 39.5 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
+      { y: 40.5, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 40.5 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
+      { y: 41.5, borderColor: 'green', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 41.5 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'green' } } },
       ]
+  },
+  'Y.16': {
+    yaxis: [
+      { y: 37.6, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 37.6 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
+      { y: 37.3, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 37.3 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
+      { y: 39.3, borderColor: 'green', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 39.3 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'green' } } },
+    ]
   },
   'Y.64': {
     yaxis: [
-      { y: 1.50, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 1.50 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
-      { y: 1.35, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 1.35 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
-      { y: 1.20, borderColor: 'green', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 1.20 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'green' } } },
+      { y: 36.7, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 36.7 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
+      { y: 37.3, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 37.3 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
+      { y: 38.0, borderColor: 'green', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 38.0 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'green' } } },
     ]
   },
-  'Y.4': {
+  'Y.51': {
     yaxis: [
-      { y: 1.80, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 1.80 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
-      { y: 1.70, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 1.70 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
-      { y: 1.60, borderColor: 'green', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 1.60 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'green' } } },
+      { y: 38.8, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 38.8 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
+      { y: 40.4, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 40.4 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
+      { y: 42.0, borderColor: 'green', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 42.0 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'green' } } },
+    ]
+  },
+  'Y.17': {
+    yaxis: [
+      { y: 39.4, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 39.4 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
+      { y: 40.6, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 40.6 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
+      { y: 41.8, borderColor: 'green', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 41.8 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'green' } } },
     ]
   },
   '': {
@@ -68,11 +82,13 @@ const flowAnnotations: Record<string, ApexAnnotations> = {
 
 
 const flowYAxisRange: Record<string, { min: number; max: number }> = {
-  'Y.50': { min: -10, max: 2 },
-  'Y.15': { min: -2.5, max: 7 },
-  'Y.16': { min: -4, max: 3 },
-  'Y.64': { min: -9, max: 2 },
-  'Y.4': { min: -6, max: 3 },
+  'Y.4': { min: 45, max: 53 },
+  'Y.15': { min: 38, max: 48 },
+  'Y.16': { min: 34, max: 45 },
+  'Y.50': { min: 33, max: 42 },
+  'Y.64': { min: 33, max: 41 },
+  'Y.51': { min: 35, max: 45 },
+  'Y.17': { min: 35, max: 45 },
 };
 
 const FlowChart: React.FC<DataChartProps> = ({ data, type, height = 350 ,sta_code ,mode = 'daily', isDark }) => {

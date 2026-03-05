@@ -35,7 +35,7 @@ const UserPage: React.FC = () => {
   const canManageUsers = iduser_level === 2 || iduser_level === 3;
 
   return (
-    <Box sx={BoxStyle}>
+    <Box>
       <Tabs
         value={mainTab}
         onChange={handleMainTabChange}

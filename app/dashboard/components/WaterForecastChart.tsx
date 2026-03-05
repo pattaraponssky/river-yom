@@ -7,11 +7,11 @@ import dynamic from "next/dynamic";
 
 // (ส่วน stationMapping และ Interfaces ยังคงเดิม)
 const stationMapping: Record<string, number> = {
-  "Y.15": 194202,
+  "Y.15": 170764,
   "Y.16": 142824,
-  "Y.4": 125488,
-  "Y.50": 84876,
-  "Y.64": 55827,
+  "Y.64": 125488,
+  "Y.17": 84876,
+  // "Y.64": 55827,
 };
 
 interface waterData {
@@ -88,7 +88,7 @@ const WaterForecastChart: React.FC<Props> = ({ data }) => {
   const isDark = theme.palette.mode === "dark";
   const bgColor = isDark ? "#1e2533" : "#f8fafc"; 
   const textColor = isDark ? "#e2e8f0" : "#334155";    
-     
+
   const [seriesData, setSeriesData] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   // const [lastRunTime, setLastRunTime] = useState<string>(''); 
@@ -291,7 +291,7 @@ const WaterForecastChart: React.FC<Props> = ({ data }) => {
               labels: {
                 datetimeUTC: false,
                 format: 'dd MMM',
-                style: { fontSize: '16px' },
+                style: { fontSize: '14px' },
               },
             },
             yaxis: {
@@ -322,7 +322,7 @@ const WaterForecastChart: React.FC<Props> = ({ data }) => {
               yaxis: yAxisAnnotations,
             },
           };
-
+          
           return (
             <Grid size={{ xs: 12, sm: 6, md: 6 }} key={index}>
               <Card sx={{ borderRadius: 2, boxShadow: {md:3,xs:0}, my: {md:2,xs:0}, paddingTop: {md:'10px', xs:"5px"} }}>

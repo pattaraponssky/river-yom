@@ -32,7 +32,7 @@ const warningLevels: Record<string, { watch: number; alert: number; crisis: numb
 };
 
 const stationMapping: Record<string, number> = {
-  "Y.15": 194202,
+  "Y.15": 170764,
   "Y.16": 143157,
   "Y.4": 125488,
   "Y.50": 84876,
@@ -254,7 +254,7 @@ const WaterLevelChart: React.FC<Props> = ({ data, chartHeight = 450 }) => {
       type: "line" as const,
       height: 450,
       fontFamily: "Prompt",
-      zoom: { enabled: true },
+      zoom: { enabled: false },
     },
     annotations: {
       yaxis: [

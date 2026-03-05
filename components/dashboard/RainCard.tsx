@@ -196,7 +196,7 @@ const RainCard: React.FC = () => {
               <TableBody>
                 {dataRain.map((row, i) => (
                   <TableRow key={i}>
-                    <TableCell sx={{...textStyle,whiteSpace: "nowrap",}}>{row.name}</TableCell>
+                    <TableCell sx={{...textStyle,whiteSpace: "nowrap",lineHeight:{md:"2.16rem",xs:"1.2rem"}}}>{row.name}</TableCell>
                     <TableCell sx={textStyle} align="center">
                       {row.province}
                     </TableCell>

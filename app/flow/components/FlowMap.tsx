@@ -461,31 +461,51 @@ const prepareChartDataForFlow = (rawData: any[], targetStaCode: string) => {
   
 
   const addTopoJsonMarkers = () => {
-    if (!map) {
-      console.error("Map ยังไม่ถูกสร้างขึ้น");
-      return;
-    }
+  if (!map) {
+    console.error("Map ยังไม่ถูกสร้างขึ้น");
+    return;
+  }
 
-    JsonDataList.forEach((geoJsonData) => {
-      geoJsonData.features.forEach((feature: any) => {
-        const { MBASIN_T, AREA_SQKM } = feature.properties;
-        const coordinates = feature.geometry.coordinates[0];
+  JsonDataList.forEach((geoJsonData) => {
+    if (!geoJsonData?.features) return;
+
+    geoJsonData.features.forEach((feature: any) => {
+      // เช็คให้ครบถ้วน
+      if (!feature?.geometry?.coordinates) {
+        console.warn("Feature ไม่มี coordinates:", feature);
+        return;
+      }
+
+      const coords = feature.geometry.coordinates;
+
+      // ถ้าเป็น Point → coordinates เป็น [lon, lat]
+      if (feature.geometry.type === "Point") {
+        if (!Array.isArray(coords) || coords.length < 2) {
+          console.warn("Point coordinates ไม่ถูกต้อง:", coords);
+          return;
+        }
 
         const marker = new longdo.Marker(
-          { lat: coordinates[1], lon: coordinates[0] },
+          { lat: coords[1], lon: coords[0] },
           {
-            title: `พื้นที่: ${MBASIN_T}`,
-            detail: `<b>ขนาดพื้นที่:</b> ${AREA_SQKM} ตร.กม.`,
+            title: `พื้นที่: ${feature.properties?.MBASIN_T || "ไม่ระบุ"}`,
+            detail: `<b>ขนาดพื้นที่:</b> ${feature.properties?.AREA_SQKM?.toFixed(2) || "ไม่ระบุ"} ตร.กม.`,
           }
         );
 
         map.Overlays.add(marker);
+
         marker.onclick = () => {
-          console.log(`แสดงข้อมูล Marker: ${MBASIN_T}`);
-          marker.popup(`<b>พื้นที่:</b> ${MBASIN_T} <br> <b>ขนาดพื้นที่:</b> ${AREA_SQKM} ตร.กม.`);
+          marker.popup(`<b>พื้นที่:</b> ${feature.properties?.MBASIN_T || "ไม่ระบุ"}<br><b>ขนาดพื้นที่:</b> ${feature.properties?.AREA_SQKM?.toFixed(2) || "ไม่ระบุ"} ตร.กม.`);
         };
-      });
+      }
+      // ถ้าเป็น Polygon หรือ MultiPolygon ให้เอา centroid มาทำ marker (ถ้าต้องการ)
+      else if (feature.geometry.type === "Polygon" || feature.geometry.type === "MultiPolygon") {
+        console.log(`ข้ามการสร้าง marker สำหรับ ${feature.geometry.type}: ${feature.properties?.MBASIN_T}`);
+        // ถ้าต้องการ marker ที่ centroid สามารถคำนวณได้ แต่ชั่วคราวข้ามไปก่อน
+      }
     });
+  });
 
     console.log("✅ เพิ่ม Marker จาก TopoJSON เรียบร้อย");
   };

@@ -9,5 +9,5 @@ export default async function UsersPage() {
   if (!session) {
     redirect('/dashboard');
   }
-  return <div><UserPage/></div>;
+  return <div ><UserPage/></div>;
 }

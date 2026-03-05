@@ -35,7 +35,7 @@ interface waterData {
 }
 
 const stationMapping: Record<string, number> = {
-  "Y.15": 194202,
+  "Y.15": 170764,
   "Y.16": 142824,
   "Y.4": 125488,
   "Y.50": 84876,
@@ -303,16 +303,13 @@ export default function Dashboard() {
         </Box>
       </Grid>
         <Grid container spacing={1} id="water-daily">
-          <Grid size={{xs:12, md:7}}>
-            <ReservoirCard />
-          </Grid>
-            <Grid size={{xs:12, md:5}}>
-            <RainCard />
-          </Grid>
           <Grid size={{xs:12, md:6}}>
             <FlowCard />
           </Grid>
-          <Grid size={{xs:12, md:6}}>
+            <Grid size={{xs:12, md:6}}>
+            <RainCard />
+          </Grid>
+          <Grid size={{xs:12, md:12}}>
             <GateCard />
           </Grid>
         </Grid>

@@ -306,7 +306,7 @@ const DrawerComponent: React.FC<DrawerProps> = ({ open, setOpen }) => {
           <Collapse in={stationOpen} timeout="auto" unmountOnExit>
             <List component="div" disablePadding>
               {[
-                { path: "/reservoir", icon: <WaterDamageIcon />, text: "อ่างเก็บน้ำ" },
+                // { path: "/reservoir", icon: <WaterDamageIcon />, text: "อ่างเก็บน้ำ" },
                 { path: "/rain", icon: <WaterDropIcon />, text: "สถานีวัดน้ำฝน" },
                 { path: "/flow", icon: <PlaceIcon />, text: "สถานีน้ำท่า" },
                 { path: "/gate", icon: <OpacityIcon />, text: "ประตูระบายน้ำ" },

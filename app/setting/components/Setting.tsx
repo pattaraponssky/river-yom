@@ -107,11 +107,11 @@ const Setting: React.FC = () => {
               "& .MuiTab-root": { color: "#28378B" }, // ตัวอักษรสีเข้มขึ้น
             }}
           >
-            <Tab sx={titleStyle} label="ข้อมูลอ่างเก็บน้ำ/เขื่อน" />
+            {/* <Tab sx={titleStyle} label="ข้อมูลอ่างเก็บน้ำ/เขื่อน" /> */}
             <Tab sx={titleStyle} label="ข้อมูลสถานีวัดน้ำฝน" />
             <Tab sx={titleStyle} label="ข้อมูลสถานีวัดน้ำท่า" />
             <Tab sx={titleStyle} label="ข้อมูลประตูระบายน้ำ" />
-            <Tab sx={titleStyle} label="ข้อมูลสถานีวัดระดับน้ำทะเล" />
+            {/* <Tab sx={titleStyle} label="ข้อมูลสถานีวัดระดับน้ำทะเล" /> */}
           </Tabs>
         )}
 
@@ -124,11 +124,11 @@ const Setting: React.FC = () => {
             </Typography>
           )}
            */}
-            {mainTab === 0 && subTab === 0 && <InfoDamStation />}
-            {mainTab === 0 && subTab === 1 && <InfoRainStation />}
-            {mainTab === 0 && subTab === 2 && <InfoFlowStation />}
-            {mainTab === 0 && subTab === 3 && <InfoGateStation />}
-            {mainTab === 0 && subTab === 4 && <InfoSeaStation />}
+            {/* {mainTab === 0 && subTab === 0 && <InfoDamStation />} */}
+            {mainTab === 0 && subTab === 0 && <InfoRainStation />}
+            {mainTab === 0 && subTab === 1 && <InfoFlowStation />}
+            {mainTab === 0 && subTab === 2 && <InfoGateStation />}
+            {/* {mainTab === 0 && subTab === 3 && <InfoSeaStation />} */}
           {mainTab === 1 && (
             <Box sx={{ p: 2 }}>
                 <UploadData />
