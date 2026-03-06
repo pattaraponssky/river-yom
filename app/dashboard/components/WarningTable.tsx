@@ -9,90 +9,117 @@ import { getCellDiffStyle, getCellStyle, HeaderCellStyle, fontTitle } from "@/th
 import { useThemeMode } from '@/contexts/ThemeContext';
 
 const warningData = [
-  {
+   {
     id: 1,
+    staCode: 'Y.4',
+    location: '',
+    subdistrict: 'ธานี',
+    district: 'เมืองสุโขทัย',
+    province: 'สุโขทัย',
+    bank: 51.59,
+    depth: 8.15,
+    // leftBank: 3.53,
+    // rightBank: 2.71,
+    // canalBottom: -5.91,
+    watch: 49.6,
+    alert: 50.5,
+    crisis: 51.4,
+  },
+  {
+    id: 2,
     staCode: 'Y.15',
-    location: 'วัดพระรูป',
-    subdistrict: 'ท่าระหัด',
-    district: 'เมือง',
-    province: 'สุพรรณบุรี',
-    bank:3.50,
-    depth: 8.56,
-    leftBank: 6.32,
-    rightBank: 6.34,
-    canalBottom: -2.24,
-    watch: 2.90,
-    alert: 3.20,
-    crisis: 3.50,
-    mock_date: '5 ต.ค. 68'
+    location: '',
+    subdistrict: 'บ้านกง',
+    district: 'กงไกรลาศ',
+    province: 'สุโขทัย',
+    bank: 45.64,
+    depth: 10.32,
+    // leftBank: 6.32,
+    // rightBank: 6.34,
+    // canalBottom: -2.24,
+    watch: 43.5,
+    alert: 44.7,
+    crisis: 46.0,
+  },
+    {
+    id: 3,
+    staCode: 'Y.50',
+    location: '',
+    subdistrict: 'บ้านท่านางงาม',
+    district: 'บางระกำ',
+    province: 'พิษณุโลก',
+    bank: 40.76,
+    depth: 6.10,
+    // leftBank: 2.00,
+    // rightBank: 2.85,
+    // canalBottom: -9.65,
+    watch: 39.5,
+    alert: 40.5,
+    crisis: 41.5,
   },
   {  
-    id: 2,
-    staCode: 'Y.16',
-    location: 'บ้านบางการ้อง',
-    subdistrict: 'บ้านบางการ้อง',
-    district: 'สองพี่น้อง',
-    province: 'สุพรรณบุรี',
-    bank:2.40,
-    depth: 6.67,
-    leftBank: 2.98,
-    rightBank: 2.69,
-    canalBottom: -3.98,
-    watch: 2.16,
-    alert: 2.28,
-    crisis: 2.40,
-    mock_date: '5 ต.ค. 68'
-  },
-   {
-    id: 3,
-    staCode: 'Y.4',
-    location: 'บ้านบางไทรป่า',
-    subdistrict: 'บางไทรป่า',
-    district: 'บางเลน',
-    province: 'นครปฐม',
-    bank:1.80,
-    depth: 8.62,
-    leftBank: 3.53,
-    rightBank: 2.71,
-    canalBottom: -5.91,
-    watch: 1.60,
-    alert: 1.70,
-    crisis: 1.80,
-    mock_date: '5 ต.ค. 68'
-  },
-  {
     id: 4,
-    staCode: 'Y.50',
-    location: 'ที่ว่าการอำเภอ',
-    subdistrict: 'นครชัยศรี',
-    district: 'นครชัยศรี',
-    province: 'นครปฐม',
-    bank:1.50,
-    depth: 11.65,
-    leftBank: 2.00,
-    rightBank: 2.85,
-    canalBottom: -9.65,
-    watch: 1.25,
-    alert: 1.38,
-    crisis: 1.50,
-    mock_date: '5 ต.ค. 68'
+    staCode: 'Y.16',
+    location: '',
+    subdistrict: 'บางระกำ',
+    district: 'บางระกำ',
+    province: 'พิษณุโลก',
+    bank: 38.93,
+    depth: 7.30,
+    // leftBank: 2.98,
+    // rightBank: 2.69,
+    // canalBottom: -3.98,
+    watch: 37.6,
+    alert: 38.4,
+    crisis: 39.3,
   },
   {
     id: 5,
     staCode: 'Y.64',
-    location: 'ตลาดสามพราน',
-    subdistrict: 'สามพราน',
-    district: 'สามพราน',
-    province: 'นครปฐม',
-    bank:1.50,
-    depth: 10.61,
-    leftBank: 2.02,
-    rightBank: 1.81,
-    canalBottom: -8.80,
-    watch: 1.20,
-    alert: 1.35,
-    crisis: 1.50,
-    mock_date: '5 ต.ค. 68'
+    location: '',
+    subdistrict: 'บางระกำ',
+    district: 'บางระกำ',
+    province: 'พิษณุโลก',
+    bank: 38.91,
+    depth: 6.40,
+    // leftBank: 2.02,
+    // rightBank: 1.81,
+    // canalBottom: -8.80,
+    watch: 36.7,
+    alert: 37.3,
+    crisis: 38.0,
+  },
+    {
+    id: 6,
+    staCode: 'Y.51',
+    location: '',
+    subdistrict: 'บ้านท่าแห',
+    district: 'บางระกำ',
+    province: 'พิษณุโลก',
+    bank: 42.72,
+    depth: 13.69,
+    // leftBank: 2.02,
+    // rightBank: 1.81,
+    // canalBottom: -8.80,
+    watch: 38.8,
+    alert: 40.4,
+    crisis: 42.0,
+  },
+    {
+    id: 7,
+    staCode: 'Y.17',
+    location: '',
+    subdistrict: 'สามง่าม',
+    district: 'สามง่าม',
+    province: 'พิจิตร',
+    bank: 38.25,
+    depth: 6.76,
+    // leftBank: 2.02,
+    // rightBank: 1.81,
+    // canalBottom: -8.80,
+    watch: 39.4,
+    alert: 40.6,
+    crisis: 41.8,
   },
 ];
 
@@ -338,9 +365,9 @@ const FloodWarningTable: React.FC<FloodWarningTableProps> = ({ maxLevels, waterT
             <TableCell sx={HeaderCellStyle} rowSpan={2}>
               ตำแหน่งเตือนภัย
             </TableCell>
-            <TableCell sx={HeaderCellStyle} rowSpan={2}>
+            {/* <TableCell sx={HeaderCellStyle} rowSpan={2}>
               บ้าน
-            </TableCell>
+            </TableCell> */}
             {!isSmallScreen && !isMediumScreen && <TableCell sx={HeaderCellStyle} rowSpan={2}>ตำบล</TableCell>}
             {!isSmallScreen && !isMediumScreen && <TableCell sx={HeaderCellStyle} rowSpan={2}>อำเภอ</TableCell>}
             {!isSmallScreen && !isMediumScreen && <TableCell sx={HeaderCellStyle} rowSpan={2}>จังหวัด</TableCell>}
@@ -392,7 +419,7 @@ const FloodWarningTable: React.FC<FloodWarningTableProps> = ({ maxLevels, waterT
             return (
               <TableRow key={item.id}>
                 <TableCell sx={getCellStyle(index)}>{item.staCode}</TableCell>
-                <TableCell sx={getCellStyle(index)}>{item.location}</TableCell>
+                {/* <TableCell sx={getCellStyle(index)}>{item.location}</TableCell> */}
                 {!isSmallScreen && !isMediumScreen && <TableCell sx={getCellStyle(index)}>{item.subdistrict}</TableCell>} 
                 {!isSmallScreen && !isMediumScreen && <TableCell sx={getCellStyle(index)}>{item.district}</TableCell>} 
                 {!isSmallScreen && !isMediumScreen && <TableCell sx={getCellStyle(index)}>{item.province}</TableCell>}

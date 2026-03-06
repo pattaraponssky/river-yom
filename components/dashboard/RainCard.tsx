@@ -16,7 +16,7 @@ import {
   Paper,
 } from "@mui/material";
 import { API_URL, Path_URL } from '../../lib/utility';
-import { textStyle } from '../../theme/style';
+import { textStyle, titleStyle } from '../../theme/style';
 import { TableContainer, useTheme } from '@mui/material';
 
 interface RainData {
@@ -79,14 +79,10 @@ const RainCard: React.FC = () => {
       maximumFractionDigits: decimals,
     });
 
-  const titleStyle = {
-    fontFamily: "Prompt",
-    fontSize: { md: "1.2rem", xs: "1rem" },
-  };
 
   return (
     <Box sx={{ mx: "auto", mb: 2 }}>
-      <Card elevation={2} sx={{ borderRadius: 3 }}>
+      <Card sx={{ borderRadius: 3, boxShadow: 2 }}>
         <CardHeader
           avatar={
             <Avatar
@@ -107,9 +103,9 @@ const RainCard: React.FC = () => {
           }
         />
         <Divider />
-      
-        <CardContent>
-          <TableContainer component={Paper}>
+
+        <CardContent>  
+          
           <Paper
             variant="outlined"
             sx={{
@@ -181,21 +177,37 @@ const RainCard: React.FC = () => {
                   >
                     ปริมาณน้ำฝน
                     <br />
-                    <span style={{ fontWeight: 100 }}>(มม.)</span>
+                    <Typography
+                      sx={{
+                        color: "white",
+                        fontSize: "0.8rem",
+                        fontWeight: "bold",
+                        fontFamily: "Prompt",
+                      }}
+                    >
+                      (มม.)
+                    </Typography>
                   </TableCell>
-                  <TableCell
-                    align="center"
-                    sx={{ color: "white", fontWeight: "bold", ...textStyle }}
-                  >
+                    <TableCell align="center" sx={{ color: "white", ...textStyle, fontWeight: "bold",whiteSpace: "nowrap", }}>
                     ฝนสะสม
                     <br />
-                    <span style={{ fontWeight: 100 }}>(มม.)</span>
+                    <Typography
+                      sx={{
+                        color: "white",
+                        fontSize: "0.8rem",
+                        fontWeight: "bold",
+                        fontFamily: "Prompt",
+                      }}
+                    >
+                      (มม.)
+                    </Typography>
                   </TableCell>
                 </TableRow>
               </TableHead>
+
               <TableBody>
                 {dataRain.map((row, i) => (
-                  <TableRow key={i}>
+                  <TableRow key={i} hover>
                     <TableCell sx={{...textStyle,whiteSpace: "nowrap",lineHeight:{md:"2.16rem",xs:"1.2rem"}}}>{row.name}</TableCell>
                     <TableCell sx={textStyle} align="center">
                       {row.province}
@@ -211,7 +223,6 @@ const RainCard: React.FC = () => {
               </TableBody>
             </Table>
           </Card>
-          </TableContainer>
         </CardContent>
       </Card>
     </Box>

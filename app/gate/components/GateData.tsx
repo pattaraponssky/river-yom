@@ -31,11 +31,11 @@ interface DataGateStationProps {
 
 const DataGateStation: React.FC<DataGateStationProps> = ({propsSelectedStation}) => {
   const queryParams = new URLSearchParams(location.search);
-  const stationFromURL = queryParams.get("station") || "Y.506";
+  const stationFromURL = queryParams.get("station") || "tag";
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
   const [stations, setStations] = useState<any[]>([]); // เก็บข้อมูลสถานี
-  const [selectedStation, setSelectedStation] = useState<string | null>('Y.506'); // สถานีที่เลือก
+  const [selectedStation, setSelectedStation] = useState<string | null>('tag'); // สถานีที่เลือก
   const [availableYears, setAvailableYears] = useState<string[]>([]);
   const [allAvailableYears, setAllAvailableYears] = useState<string[]>([]);
   const [startYear, setStartYear] = useState<string>("");

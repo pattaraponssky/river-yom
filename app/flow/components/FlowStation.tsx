@@ -92,19 +92,6 @@ export default function FlowPage() {
 
         {mainTab === 1 && (
           <Box>
-            <Typography
-              variant="h5"
-              sx={{
-                mb: 3,
-                fontWeight: 600,
-                fontFamily: "Prompt",
-                color: "primary.main",
-                textAlign: "center",
-              }}
-            >
-              แผนที่แสดงตำแหน่งสถานีวัดน้ำท่า
-            </Typography>
-
             <FlowMap
               id="longdo-map"
               stationType="flow"

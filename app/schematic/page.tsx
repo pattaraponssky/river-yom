@@ -19,7 +19,6 @@ import DataReservoirStation from '../reservoir/components/ReservoirData';
 import DataFlowCombined from '../flow/components/FlowData';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
-import RefreshIcon from '@mui/icons-material/Refresh';
 import AspectRatioIcon from '@mui/icons-material/AspectRatio';
 
 interface ReservoirNode {
@@ -174,6 +173,8 @@ const WaterSchematicSimple: React.FC = () => {
               case 'Y.4': x = 174; y = 370; cardOffsetX = -85; cardOffsetY = -30; break;
               case 'Y.50': x = 202.5; y = 470; cardOffsetX = -85; cardOffsetY = -28; break;
               case 'Y.64': x = 202.5; y = 520; cardOffsetX = 13; cardOffsetY = -20; break;
+              case 'Y.51': x = 202.5; y = 545; cardOffsetX = -85; cardOffsetY = -17; break;
+              case 'Y.17': x = 202.5; y = 580; cardOffsetX = -85; cardOffsetY = -10; break;
             }
 
             if (x === undefined || y === undefined) return null;
@@ -247,15 +248,15 @@ const WaterSchematicSimple: React.FC = () => {
 // กำหนดพื้นที่โครงการ (เพิ่มได้หลายพื้นที่)
 const projectAreas = [
   {
-    x: 160,
-    y: 205,
-    width: 210,
-    height: 330,
+    x: 130,
+    y: 380,
+    width: 180,
+    height: 200,
     color: '#FFCDD2',          // แดงอ่อน (light red) สบายตา
     opacity: 0.35,             // โปร่งใสพอให้เห็นแผนที่ด้านล่าง
     label: 'ขอบเขตพื้นที่โครงการ',  // คำอธิบายที่ต้องการแสดง
-    labelXOffset: 10,          // ปรับตำแหน่งข้อความ (ขยับจากมุมซ้ายบน)
-    labelYOffset: -15,         // ขยับขึ้นด้านบนเล็กน้อย
+    labelXOffset: 55,          // ปรับตำแหน่งข้อความ (ขยับจากมุมซ้ายบน)
+    labelYOffset: 160,         // ขยับขึ้นด้านบนเล็กน้อย
   },
 ];
 
@@ -277,7 +278,7 @@ projectAreas.forEach((zone, index) => {
     container.append('text')
         .attr('x', zone.x + zone.labelXOffset + 30)
         .attr('y', zone.y + zone.labelYOffset + 30)
-        .attr('font-size', 12)
+        .attr('font-size', 9)
         .attr('font-weight', 'bold')
         .attr('fill', '#B71C1C')            // สีแดงเข้มเพื่อให้เด่น
         .attr('pointer-events', 'none')     // ไม่ให้คลิกทับ
@@ -390,11 +391,13 @@ projectAreas.forEach((zone, index) => {
 
     // Flow nodes → ใช้ container
     const thresholds: Record<string, { red: number; yellow: number }> = {
-      'Y.15': { red: 46.05, yellow: 44.97 },
-      'Y.16': { red: 39.33, yellow: 38.56 },
-      'Y.4': { red: 51.48, yellow: 50.68 },
-      'Y.50': { red: 40.78, yellow: 40.17 },
-      'Y.64': { red: 40.35, yellow: 39.57 },
+      'Y.4': { red: 51.4, yellow: 50.5 },
+      'Y.15': { red: 46.0, yellow: 44.7 },
+      'Y.50': { red: 41.5, yellow: 40.5 },
+      'Y.16': { red: 39.3, yellow: 38.4 },
+      'Y.64': { red: 38.0, yellow: 37.3 },
+      'Y.51': { red: 42.0, yellow: 40.4 },
+      'Y.17': { red: 41.8, yellow: 40.6 },
     };
 
     const getColor = (sta_code: string, wl: number) => {

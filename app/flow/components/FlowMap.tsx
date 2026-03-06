@@ -147,7 +147,7 @@ const FlowMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,heig
     if (isMapReady) {
       console.log("กำลังเพิ่ม markers...");
       map.location({ lat: 16.750, lon: 100 }, true);
-      map.zoom(9, true);
+      map.zoom(10, true);
       console.log("🌍 แผนที่พร้อมแล้ว กำลังเพิ่ม markers...");    
       console.log("🏞️ flowData:", flowData);
       const addMarkers = async () => {
@@ -664,7 +664,6 @@ const prepareChartDataForFlow = (rawData: any[], targetStaCode: string) => {
   
   const FontStyle = {
     fontFamily: "Prompt",
-
   }
 
   return (
@@ -685,7 +684,7 @@ const prepareChartDataForFlow = (rawData: any[], targetStaCode: string) => {
         }}>
       {formattedDate}
       </Typography>
-      <List sx={{ maxHeight: "70vh", overflowY: "auto" }}>
+      <List sx={{ maxHeight: "70vh", overflowY: "auto", }}>
         {stationType === "flow" && flowData.length > 0 ? (
           (() => {
          

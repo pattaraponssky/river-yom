@@ -37,10 +37,10 @@ const stationMapping: Record<string, number> = {
   "Y.4": 125488,
   "Y.50": 84876,
   "Y.64": 55628,
-  "ปตร.พลเทพ": 321863,
-  "ปตร.ท่าโบสถ์": 293361,
-  "ปตร.ชลมาร์คพิจารณ์": 241706,
-  "ปตร.โพธิ์พระยา": 204540,
+  // "ปตร.พลเทพ": 321863,
+  // "ปตร.ท่าโบสถ์": 293361,
+  // "ปตร.ชลมาร์คพิจารณ์": 241706,
+  // "ปตร.โพธิ์พระยา": 204540,
 };
 
 interface Props {
@@ -49,7 +49,7 @@ interface Props {
 }
 const WaterLevelChart: React.FC<Props> = ({ data, chartHeight = 450 }) => {
   const [secondData, setSecondData] = useState<WaterLevelData[]>([]);
-  const [selectedStation, setSelectedStation] = useState<string>("Y.50");
+  const [selectedStation, setSelectedStation] = useState<string>("Y.15");
   const [shiftValue, setShiftValue] = useState<number>(0);
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedTime, setSelectedTime] = useState<string>("");

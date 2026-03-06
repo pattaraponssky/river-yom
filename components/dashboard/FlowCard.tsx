@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { API_URL, Path_URL } from '../../lib/utility';
 import { textStyle, titleStyle } from '../../theme/style';
-import { useTheme } from '@mui/material';
+import { CardHeader, useTheme } from '@mui/material';
 import {
   Avatar,
   Box,
@@ -73,32 +73,29 @@ const FlowCard: React.FC = () => {
   return (
     <Box sx={{ mx: "auto", mb: 2 }}>
       <Card sx={{ borderRadius: 3, boxShadow: 2 }}>
-        <CardContent>
-          {/* Header */}
-          <Box display="flex" alignItems="center" mb={2}>
-            <Avatar
-              src={`${Path_URL}/images/icons/flow_station_icon.png`}
-              alt="น้ำท่า"
-              sx={{
-                width: { xs: 35, md: 45 },
-                height: { xs: 35, md: 45 },
-                mr: 1.5,
-              }}
-            />
-            <Typography
-              sx={{
-                fontWeight: "bold",
-                fontSize: { md: "1.4rem", xs: "1rem" },
-                fontFamily: "Prompt",
-              }}
-            >
-              น้ำท่า
-            </Typography>
-          </Box>
+         <CardHeader
+            avatar={
+              <Avatar
+                src={`${Path_URL}/images/icons/flow_station_icon.png`}
+                sx={{ width: 40, height: 40 }}
+              />
+            }
+            title={
+              <Typography
+                sx={{
+                  fontWeight: "bold",
+                  fontSize: { md: "1.4rem", xs: "1rem" },
+                  fontFamily: "Prompt",
+                }}
+              >
+                น้ำท่า
+              </Typography>
+            }
+          />
+          <Divider />
 
-          <Divider sx={{ mb: 2 }} />
+          <CardContent>
 
-          {/* Summary Card */}
            <Paper
               variant="outlined"
               sx={{
@@ -119,37 +116,33 @@ const FlowCard: React.FC = () => {
                 </Typography>
               </Grid>
               <Grid size={{ xs: 3 }} textAlign="right">
-                <Typography sx={{ color: "gray", ...textStyle }}>สถานี</Typography>
+                <Typography sx={textStyle} color="gray">สถานี</Typography>
               </Grid>
 
               <Grid size={{ xs: 6 }}>
                 <Typography sx={textStyle}>ปริมาณน้ำล้นตลิ่ง</Typography>
               </Grid>
               <Grid size={{ xs: 3 }} textAlign="center">
-                <Typography sx={{ ...titleStyle, color: "#D32F2F" }} fontWeight="bold">
+                <Typography sx={{ ...titleStyle, color: "#1976D2" }} fontWeight="bold" >
                   {flowStationsOverWl}
                 </Typography>
               </Grid>
               <Grid size={{ xs: 3 }} textAlign="right">
-                <Typography sx={{ color: "gray", ...textStyle }}>สถานี</Typography>
+                <Typography sx={textStyle} color="gray">สถานี</Typography>
               </Grid>
             </Grid>
           </Paper>
 
           {/* Table */}
-          <TableContainer
-            component={Paper}
-            sx={{
-              borderRadius: 2,
-              boxShadow: 1,
-            }}
-          >
+      
+           <Card variant="outlined" sx={{ borderRadius: 2, overflow: "auto",  }}>
             <Table size="small">
               <TableHead>
                 <TableRow sx={{ backgroundColor: "#01579B" }}>
                   <TableCell align="center" sx={{ color: "white", ...textStyle, fontWeight: "bold" }}>
                     สถานี
                   </TableCell>
+                  
                   <TableCell align="center" sx={{ color: "white", ...textStyle, fontWeight: "bold" }}>
                     ตำแหน่ง
                   </TableCell>
@@ -170,7 +163,7 @@ const FlowCard: React.FC = () => {
                       (ม.รทก.)
                     </Typography>
                   </TableCell>
-                           <TableCell align="center" sx={{ color: "white", ...textStyle, fontWeight: "bold",whiteSpace: "nowrap", }}>
+                    <TableCell align="center" sx={{ color: "white", ...textStyle, fontWeight: "bold",whiteSpace: "nowrap", }}>
                     อัตราการไหล
                     <br />
                     <Typography
@@ -191,8 +184,8 @@ const FlowCard: React.FC = () => {
                 {data.map((flow, i) => (
                   <TableRow key={i} hover>
                     <TableCell sx={{ textAlign: "center", ...textStyle, lineHeight:{md:"2.16rem",xs:"1.2rem"} }}>{flow.sta_code}</TableCell>
-                    <TableCell sx={{ textAlign: "center", ...textStyle, lineHeight:{md:"2.16rem",xs:"1.2rem"} ,whiteSpace: "nowrap",}}>{flow.sta_name}</TableCell>
-                    <TableCell sx={{ textAlign: "center", ...textStyle, lineHeight:{md:"2.16rem",xs:"1.2rem"} ,whiteSpace: "nowrap",}}>{flow.province}</TableCell>
+                    <TableCell sx={{ textAlign: "center", ...textStyle, lineHeight:{md:"2.16rem",xs:"1.2rem"} ,whiteSpace: "normal",}}>{flow.sta_name}</TableCell>
+                    <TableCell sx={{ textAlign: "center", ...textStyle, lineHeight:{md:"2.16rem",xs:"1.2rem"} ,whiteSpace: "normal",}}>{flow.province}</TableCell>
                     <TableCell sx={{ textAlign: "center", ...textStyle, lineHeight:{md:"2.16rem",xs:"1.2rem"} ,}}>
                       {numberFormat(flow.wl, 2)}
                     </TableCell>
@@ -202,8 +195,8 @@ const FlowCard: React.FC = () => {
                   </TableRow>
                 ))}
               </TableBody>
-            </Table>
-          </TableContainer>
+              </Table>
+            </Card>
         </CardContent>
       </Card>
     </Box>
