@@ -55,16 +55,16 @@ const publicMenuItems = [
     text: "สรุปสถานการณ์น้ำ",
     path: "/dashboard",
   },
-   {
+  {
     icon: <AccountTreeIcon sx={{ marginRight: "15px" }} />,
     text: "แผนผังลุ่มน้ำ",
     path: "/schematic",
   },
-  {
-    icon: <ModelTrainingIcon sx={{ marginRight: "15px" }} />,
-    text: "ผลพยากรณ์",
-    path: "/forecast",
-  },
+  // {
+  //   icon: <ModelTrainingIcon sx={{ marginRight: "15px" }} />,
+  //   text: "ผลพยากรณ์",
+  //   path: "/forecast",
+  // },
   {
     icon: <InfoIcon sx={{ marginRight: "15px" }} />,
     text: "เกี่ยวกับเรา",

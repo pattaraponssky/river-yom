@@ -336,11 +336,8 @@ export default function Dashboard() {
           </Grid>
         </Grid>
          <Grid container spacing={1}>
-          <Grid size={{xs:12, md:6}}>
+          <Grid size={{xs:12, md:12}}>
             <ImageComponent src="http://irrigation.rid.go.th/rid3/water/images/dailyreport.jpg" alt="สรุปสถานการณ์น้ำและการเฝ้าระวัง" title={'สรุปสถานการณ์น้ำและการเฝ้าระวัง'} />
-          </Grid>
-          <Grid size={{xs:12, md:6}}>
-            <ImageComponent src="http://irrigation.rid.go.th/rid3/water/images/onepages.jpg" alt="สถานการณ์น้ำ สำนักงานชลประทานที่ 3" title={'สถานการณ์น้ำ สำนักงานชลประทานที่ 3'} />
           </Grid>
         </Grid>
       </Box>
