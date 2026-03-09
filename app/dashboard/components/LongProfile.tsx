@@ -162,54 +162,76 @@ const LongProfileChart: React.FC<Props> = ({ waterData, chartHeight = 500, isDar
     }
   }, [selectedDate, uniqueTimes, selectedTime]);
 
-  // เล่นอัตโนมัติ
-  const handlePlay = () => {
-    if (isPlaying) {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-      setIsPlaying(false);
-      return;
-    }
-
-    setIsPlaying(true);
-    intervalRef.current = setInterval(() => {
-      setSelectedTime((prevTime) => {
-        if (!prevTime || !selectedDate) return null;
-
-        const times = uniqueTimes;
-        const idx = times.indexOf(prevTime);
-
-        if (idx < times.length - 1) {
-          return times[idx + 1];
+  useEffect(() => {
+      if (!isPlaying) {
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
         }
+        return;
+      }
 
-        // เปลี่ยนวันถัดไป
-        const dateIdx = dates.indexOf(selectedDate);
-        if (dateIdx < dates.length - 1) {
-          const nextDate = dates[dateIdx + 1] ?? null;
-          setSelectedDate(nextDate);
-          const nextTimes = [
-            ...new Set(
-              waterData
-                .filter((d) => d.Date?.startsWith(nextDate ?? ""))
-                .map((d) => d.Date?.split(" ")[1] ?? "")
-            ),
-          ].sort();
-          return nextTimes[0] ?? null;
+      intervalRef.current = setInterval(() => {
+        setSelectedTime((prevTime) => {
+          if (!prevTime || !selectedDate) {
+            setIsPlaying(false);
+            return null;
+          }
+
+          const times = uniqueTimes;
+          const timeIdx = times.indexOf(prevTime);
+
+          if (timeIdx < times.length - 1) {
+            // ยังมีเวลาในวันนี้
+            return times[timeIdx + 1];
+          }
+
+          // หมดเวลาในวันนี้ → ขยับไปวันถัดไป
+          const dateIdx = dates.indexOf(selectedDate);
+          if (dateIdx < dates.length - 1) {
+            const nextDate = dates[dateIdx + 1];
+            if (!nextDate) {
+              setIsPlaying(false);
+              return null;
+            }
+
+            const nextTimes = [
+              ...new Set(
+                waterData
+                  .filter((d) => d.Date?.startsWith(nextDate))
+                  .map((d) => d.Date?.split(" ")[1] ?? "")
+              ),
+            ].sort();
+
+            if (nextTimes.length > 0) {
+              setSelectedDate(nextDate); // อัปเดตวันที่ที่นี่ (จะ trigger useEffect อื่น ๆ)
+              return nextTimes[0];
+            }
+          }
+
+          // ถึงข้อมูลสุดท้าย → หยุดเล่น
+          setIsPlaying(false);
+          return prevTime; // คงเวลาเดิมไว้
+        });
+      }, 400);
+
+      return () => {
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
         }
+      };
+    }, [isPlaying, selectedDate, uniqueTimes, dates, waterData]);
 
-        clearInterval(intervalRef.current!);
-        setIsPlaying(false);
-        return null;
-      });
-    }, 400);
-  };
+    const handlePlay = () => {
+      setIsPlaying((prev) => !prev);
+    };
 
   useEffect(() => {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, []);
-
 
   useEffect(() => {
     if (!selectedDate || !selectedTime || waterData.length === 0 || profileData.length === 0) return;
