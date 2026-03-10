@@ -133,18 +133,18 @@ const Setting: React.FC = () => {
             <Box sx={{ p: 2 }}>
                 <UploadData />
               <Grid container spacing={2}>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                {/* <Grid size={{ xs: 12, sm: 6 }}>
                     <ManualUpdateReservoir />
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
-                    <ManualUpdateFlow />
-                </Grid>
+                </Grid> */}
               </Grid>
                 <Grid container spacing={2}>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                  <Grid size={{ xs: 12, sm: 4 }}>
+                    <ManualUpdateFlow />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 4 }}>
                     <ManualUpdateRain />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12, sm: 4 }}>
                     <ManualUpdateGate />
                 </Grid>
               </Grid>

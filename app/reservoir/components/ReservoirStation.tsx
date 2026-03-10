@@ -10,7 +10,7 @@ import ReservoirMap from './ReservoirMap';
 import { fontTitle } from '../../../theme/style';
 
 
-const mapKey = 'e75fee377b3d393b7a32576ce2b0229d';
+const mapKey = process.env.NEXT_PUBLIC_LONGDO_MAP_KEY!;
 const JsonPaths = [
   `${Path_URL}data/River.geojson`,
   `${Path_URL}data/ProjectArea.geojson`,

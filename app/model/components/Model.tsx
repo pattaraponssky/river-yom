@@ -66,16 +66,16 @@ const HecRun: React.FC = () => {
               </Typography>
           )}
           {mainTab === 1 && (
-              <>
-               <Typography variant="h5" sx={{ marginBottom: "1rem", fontWeight: 600, fontFamily: "Prompt", color: "red" }}>
-                   ***กรุณาทำการเตรียมข้อมูลก่อนรันแบบจำลอง
-                </Typography>
-                <RunAll/>
-                <Divider sx={{ my: 3 }} />
-                <RunHecHms/>
-                <RunHecRas />
-                {/* <RunGate /> */}
-              </>
+              <Box maxWidth="lg" sx={{ mx: "auto", mb: 2 }}>
+                <Typography variant="h5" sx={{ marginBottom: "1rem", fontWeight: 600, fontFamily: "Prompt", color: "red" }}>
+                    ***กรุณาทำการเตรียมข้อมูลก่อนรันแบบจำลอง
+                  </Typography>
+                  <RunAll/>
+                  <Divider sx={{ my: 3 }} />
+                  <RunHecHms/>
+                  <RunHecRas />
+                  {/* <RunGate /> */}
+                </Box>
             )}
           </Box>
         </Box>

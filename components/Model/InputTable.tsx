@@ -18,30 +18,23 @@ const MODEL_INPUT_API = `${API_URL}/api/model_input_data`;
 const UPDATE_FROM_MAIN_API = `${API_URL}/api/model_input_data/update-from-main`; // Endpoint ใหม่
 
 const defaultRows = [
-  { station_id: '040052', name: "ทต.หันคา", type: "rain_rid", values: Array(7).fill(0) },
-  { station_id: '040062', name: "ทต.วัดสิงห์", type: "rain_rid", values: Array(7).fill(0) },
-  { station_id: '600013', name: "สุพรรณบุรี", type: "rain_rid", values: Array(7).fill(0) },
-  { station_id: '600023', name: "สกษ.อู่ทอง", type: "rain_rid", values: Array(7).fill(0) },
-  { station_id: '530012', name: "สมุทรสงคราม", type: "rain_rid", values: Array(7).fill(0) },
-  { station_id: '230052', name: "นครปฐม", type: "rain_rid", values: Array(7).fill(0) },
-  { station_id: '690171', name: "T.7 บ้านทัพคล้าย", type: "rain_rid", values: Array(7).fill(0) },
-  { station_id: '690151', name: "C.30 บ้านสมอทอง", type: "rain_rid", values: Array(7).fill(0) },
+  { station_id: '390220', name: "ศูนย์อุทกวิทยาและบริหารน้ำภาคเหนือตอนล่าง", type: "rain_rid", values: Array(7).fill(0) },
+  { station_id: '120142', name: "ที่ว่าการอำเภอลานกระบือ", type: "rain_rid", values: Array(7).fill(0) },
+  { station_id: '390022', name: "ที่ว่าการอำเภอบางระกำ", type: "rain_rid", values: Array(7).fill(0) },
+  { station_id: '590042', name: "ที่ว่าการอำเภอกงไกรลาศ", type: "rain_rid", values: Array(7).fill(0) },
+  { station_id: '590082', name: "ที่ว่าการอำเภอคีรีมาศ", type: "rain_rid", values: Array(7).fill(0) },
+  { station_id: '380012', name: "สกษ.พิจิตร", type: "rain_rid", values: Array(7).fill(0) },
+  { station_id: '120160', name: "P.7A", type: "rain_rid", values: Array(7).fill(0) },
 
-  { station_id: 'C.54', name: "ปตร.พลเทพ", type: "flow", values: Array(8).fill(0) },
-  { station_id: 'Y.508', name: "ปตร.ท่าโบสถ์", type: "flow", values: Array(8).fill(0) },
-  { station_id: 'Y.507', name: "ปตร.ชลมาร์คพิจารณ์", type: "flow", values: Array(8).fill(0) },
-  { station_id: 'Y.506', name: "ปตร.โพธิ์พระยา", type: "flow", values: Array(8).fill(0) },
-  { station_id: 'BYH', name: "ปตร.บางยี่หน", type: "flow", values: Array(8).fill(0) },
-  { station_id: 'PBL', name: "ปตร.พระยาบรรลือ", type: "flow", values: Array(8).fill(0) },
-  { station_id: 'PPM', name: "ปตร.พระพิพล", type: "flow", values: Array(8).fill(0) },
-  { station_id: 'KTB', name: "ปตร.กระทุ่มแบน", type: "flow", values: Array(8).fill(0) },
-  { station_id: 'MHC', name: "ปตร.คลองมหาชัย", type: "flow", values: Array(8).fill(0) },
-  { station_id: 'MSW', name: "ปตร.มหาสวัสดิ์", type: "flow", values: Array(8).fill(0) },
-  { station_id: 'KYG', name: "ปตร.คลองโยง", type: "flow", values: Array(8).fill(0) },
-  { station_id: 'BPL', name: "ปตร.กระเสียว-สุพรรณ", type: "flow", values: Array(8).fill(0) },
-  { station_id: 'PTL', name: "ปตร.เภาทะลาย", type: "flow", values: Array(8).fill(0) },
-  { station_id: 'SPN', name: "ปตร.สองพี่น้อง", type: "flow", values: Array(8).fill(0) },
-  { station_id: 'BBP', name: "ปตร.บางปลา", type: "flow", values: Array(8).fill(0) },
+  { station_id: 'tng', name: "ปตร.ท่านางงาม", type: "flow", values: Array(8).fill(0) },
+  { station_id: 'wst', name: "ปตร.วังสะตือ", type: "flow", values: Array(8).fill(0) },
+  { station_id: 'Y.15', name: "บ้านกง", type: "flow", values: Array(8).fill(0) },
+  { station_id: 'Y.16', name: "บางระกำ", type: "flow", values: Array(8).fill(0) },
+  { station_id: 'Y.17', name: "Y.17", type: "flow", values: Array(8).fill(0) },
+  { station_id: 'Y.4', name: "ในเมือง", type: "flow", values: Array(8).fill(0) },
+  { station_id: 'Y.50', name: "บ้านท่านางงาม", type: "flow", values: Array(8).fill(0) },
+  { station_id: 'Y.51', name: "Y.51", type: "flow", values: Array(8).fill(0) },
+  { station_id: 'Y.64', name: "บางระกำ", type: "flow", values: Array(8).fill(0) },
 ];
 
 const HeaderCellStyle = {
@@ -70,13 +63,11 @@ const getDates = (startOffset: number, endOffset: number) => {
     for (let i = startOffset; i <= endOffset; i++) {
         const d = new Date(today);
         d.setDate(d.getDate() + i);
-        // ใช้ ISOString และ split เพื่อให้ได้ YYYY-MM-DD ที่แน่นอน ไม่ขึ้นกับ Timezone ของเครื่อง
         dates.push(d.toISOString().split('T')[0]);
     }
     return dates;
 };
 
-// Helper function to generate display dates
 const generateDates = (startDayOffset: number, endDayOffset: number) => {
     const dates: string[] = [];
     const today = new Date();
@@ -94,10 +85,9 @@ const generateDates = (startDayOffset: number, endDayOffset: number) => {
     return dates;
   };
 
-
 export default function RainInputTable() {
   const [rows, setRows] = useState(defaultRows);
-  const [messages, setMessages] = useState<{ [key: string]: string }>({}); 
+  const [messages, setMessages] = useState<{ [key: string]: string }>({});
   const [buttonLoading, setButtonLoading] = useState<{ [key: string]: boolean }>({});
   const [initialDataLoading, setInitialDataLoading] = useState(true);
   const [rainDataLoaded, setRainDataLoaded] = useState(false);

@@ -149,7 +149,7 @@ const RainMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,heig
     if (isMapReady) {
       console.log("กำลังเพิ่ม markers...");
       map.location({ lat: 16.750, lon: 100 }, true);
-      map.zoom(9, true);
+      map.zoom(10, true);
       console.log("🌍 แผนที่พร้อมแล้ว กำลังเพิ่ม markers...");    
       console.log("🏞️ rainData:", rainData);
       const addMarkers = async () => {
@@ -473,30 +473,49 @@ const RainMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,heig
       console.error("Map ยังไม่ถูกสร้างขึ้น");
       return;
     }
-
+  
     JsonDataList.forEach((geoJsonData) => {
+      if (!geoJsonData?.features) return;
+  
       geoJsonData.features.forEach((feature: any) => {
-        const { MBASIN_T, AREA_SQKM } = feature.properties;
-        const coordinates = feature.geometry.coordinates[0];
-
-        const marker = new longdo.Marker(
-          { lat: coordinates[1], lon: coordinates[0] },
-          {
-            title: `พื้นที่: ${MBASIN_T}`,
-            detail: `<b>ขนาดพื้นที่:</b> ${AREA_SQKM} ตร.กม.`,
+        // เช็คให้ครบถ้วน
+        if (!feature?.geometry?.coordinates) {
+          console.warn("Feature ไม่มี coordinates:", feature);
+          return;
+        }
+  
+        const coords = feature.geometry.coordinates;
+  
+        // ถ้าเป็น Point → coordinates เป็น [lon, lat]
+        if (feature.geometry.type === "Point") {
+          if (!Array.isArray(coords) || coords.length < 2) {
+            console.warn("Point coordinates ไม่ถูกต้อง:", coords);
+            return;
           }
-        );
-
-        map.Overlays.add(marker);
-        marker.onclick = () => {
-          console.log(`แสดงข้อมูล Marker: ${MBASIN_T}`);
-          marker.popup(`<b>พื้นที่:</b> ${MBASIN_T} <br> <b>ขนาดพื้นที่:</b> ${AREA_SQKM} ตร.กม.`);
-        };
+  
+          const marker = new longdo.Marker(
+            { lat: coords[1], lon: coords[0] },
+            {
+              title: `พื้นที่: ${feature.properties?.MBASIN_T || "ไม่ระบุ"}`,
+              detail: `<b>ขนาดพื้นที่:</b> ${feature.properties?.AREA_SQKM?.toFixed(2) || "ไม่ระบุ"} ตร.กม.`,
+            }
+          );
+  
+          map.Overlays.add(marker);
+  
+          marker.onclick = () => {
+            marker.popup(`<b>พื้นที่:</b> ${feature.properties?.MBASIN_T || "ไม่ระบุ"}<br><b>ขนาดพื้นที่:</b> ${feature.properties?.AREA_SQKM?.toFixed(2) || "ไม่ระบุ"} ตร.กม.`);
+          };
+        }
+  
+        else if (feature.geometry.type === "Polygon" || feature.geometry.type === "MultiPolygon") {
+          console.log(`ข้ามการสร้าง marker สำหรับ ${feature.geometry.type}: ${feature.properties?.MBASIN_T}`);
+        }
       });
     });
-
-    console.log("✅ เพิ่ม Marker จาก TopoJSON เรียบร้อย");
-  };
+  
+      console.log("✅ เพิ่ม Marker จาก TopoJSON เรียบร้อย");
+    };
 
   const latestDataMap =
             Array.isArray(latestRainData) && latestRainData.length > 0
@@ -646,12 +665,6 @@ const RainMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,heig
   
   };
   
-  
-  const FontStyle = {
-    fontFamily: "Prompt",
-
-  }
-
   return (
     <Grid container spacing={2}>
       <Grid size={{xs:12, sm:12, md:8}}>
@@ -661,7 +674,7 @@ const RainMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,heig
         </Box>
       </Grid>
       <Grid size={{xs:12, sm:12, md:4}}>
-      <Typography variant="h6" sx={{...FontStyle,marginBottom: "1rem", 
+      <Typography variant="h6" sx={{fontFamily:"Prompt",marginBottom: "1rem", 
         textAlign:"center",
         fontWeight: 600,
         color:"#28378B",
@@ -673,7 +686,6 @@ const RainMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,heig
       <List sx={{ maxHeight: "70vh", overflowY: "auto" }}>
         {stationType === "rain" && rainData.length > 0 ? (
           (() => {
-      
             return rainData.map((item, index) => {
               const latest = latestDataMap.get(item.sta_code);
               const rain_mm = latest?.rain_mm != null ? parseFloat(latest.rain_mm).toFixed(2) : "-";
@@ -696,24 +708,24 @@ const RainMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,heig
                   <ListItemText
                     secondary={
                       <>
-                        <Typography sx={{ ...FontStyle, fontWeight: "bold", color: "#333" }}>
+                        <Typography sx={{ fontFamily:"Prompt", fontWeight: "bold", color: "#333" }}>
                           {`สถานี${item.name}`}
                         </Typography>
                   
 
-                        <Typography variant="body2" sx={{ ...FontStyle, color: "text.primary" }}>
+                        <Typography variant="body2" sx={{ fontFamily:"Prompt", color: "text.primary" }}>
                           <span style={{ color: "rgb(46, 58, 108)", fontWeight: "bold", fontSize: "0.9rem" }}>
                           ตำบล{item.tambon} อำเภอ{item.district} จังหวัด{item.province}
                           </span>
                         </Typography>
-                        <Typography variant="body2" sx={{ ...FontStyle, color: "text.primary" }}>
+                        <Typography variant="body2" sx={{ fontFamily:"Prompt", color: "text.primary" }}>
                           <b>รหัสสถานี:</b>{" "}
                           <span style={{ color: "#4caf50", fontWeight: "bold", fontSize: "0.9rem" }}>
                           {item.sta_code}
                           </span>{" "} 
                         </Typography>
 
-                        <Typography variant="body2" sx={{ ...FontStyle, color: "text.primary" }}>
+                        <Typography variant="body2" sx={{ fontFamily:"Prompt", color: "text.primary" }}>
                           <b>หน่วยงาน:</b>{" "}
                           <span style={{ color: "#e53935", fontWeight: "bold", fontSize: "0.9rem" }}>
                           {item.owner}
@@ -721,7 +733,7 @@ const RainMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,heig
                         </Typography>
        
        
-                        <Typography variant="body2" sx={{ ...FontStyle, color: "text.primary" }}>
+                        <Typography variant="body2" sx={{ fontFamily:"Prompt", color: "text.primary" }}>
                           <b>ปริมาณน้ำฝน:</b>{" "}
                           <span style={{ color: "#64b5f6", fontWeight: "bold", fontSize: "0.9rem" }}>
                             {rain_mm}

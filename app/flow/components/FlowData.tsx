@@ -29,7 +29,7 @@ type DataMode = "daily" | "hourly";
 
 const DataFlowCombined: React.FC<{ propsSelectedStation?: string }> = ({ propsSelectedStation }) => {
   const queryParams = new URLSearchParams(location.search);
-  const stationFromURL = queryParams.get("station") || "Y.15";
+  const stationFromURL = queryParams.get("station") || "Y.16";
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
   const [mode, setMode] = useState<DataMode>("daily");
@@ -251,7 +251,6 @@ const DataFlowCombined: React.FC<{ propsSelectedStation?: string }> = ({ propsSe
 
   return (
     <Container component="main" sx={{ minWidth: "100%", py: 2 }}>
-      {/* Toggle โหมด รายวัน/รายชั่วโมง */}
       <Box sx={{ display: "flex", justifyContent: "center", my: 3 }}>
         <ToggleButtonGroup
           value={mode}

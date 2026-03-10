@@ -6,22 +6,16 @@ import { useSearchParams, useRouter } from "next/navigation"; // ใช้แท
 import PlaceIcon from "@mui/icons-material/Place";
 import MapIcon from "@mui/icons-material/Map"; // เปลี่ยนจาก Map เป็น MapIcon
 import { Path_URL } from "@/lib/utility";
-import { BoxStyle } from "@/theme/style";
+import { BoxStyle, fontTitle } from "@/theme/style";
 import DataFlowCombined from "./FlowData";
 import FlowMap from "./FlowMap";
 
 
-const mapKey = 'e75fee377b3d393b7a32576ce2b0229d';
+const mapKey = process.env.NEXT_PUBLIC_LONGDO_MAP_KEY!;
 const JsonPaths = [
   `${Path_URL}data/River.geojson`,
   `${Path_URL}data/ProjectArea.geojson`,
 ];
-
-const FontStyle = {
-  fontFamily: "Prompt",
-  fontSize: { md: "1.2rem", xs: "1rem" },
-  fontWeight: 600,
-};
 
 export default function FlowPage() {
   const searchParams = useSearchParams();
@@ -68,13 +62,13 @@ export default function FlowPage() {
         allowScrollButtonsMobile
       >
         <Tab
-          sx={{ ...FontStyle }}
+          sx={{ ...fontTitle }}
           icon={<PlaceIcon />}
           iconPosition="start"
           label="สถานีวัดน้ำท่า"
         />
         <Tab
-          sx={{ ...FontStyle }}
+          sx={{ ...fontTitle }}
           icon={<MapIcon />}
           iconPosition="start"
           label="แผนที่แสดงตำแหน่งสถานี"

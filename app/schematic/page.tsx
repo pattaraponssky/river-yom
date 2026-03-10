@@ -248,15 +248,15 @@ const WaterSchematicSimple: React.FC = () => {
 // กำหนดพื้นที่โครงการ (เพิ่มได้หลายพื้นที่)
 const projectAreas = [
   {
-    x: 130,
+    x: 100,
     y: 380,
-    width: 180,
+    width: 140,
     height: 200,
     color: '#FFCDD2',          // แดงอ่อน (light red) สบายตา
     opacity: 0.35,             // โปร่งใสพอให้เห็นแผนที่ด้านล่าง
     label: 'ขอบเขตพื้นที่โครงการ',  // คำอธิบายที่ต้องการแสดง
-    labelXOffset: 55,          // ปรับตำแหน่งข้อความ (ขยับจากมุมซ้ายบน)
-    labelYOffset: 160,         // ขยับขึ้นด้านบนเล็กน้อย
+    labelXOffset: -25,          // ปรับตำแหน่งข้อความ (ขยับจากมุมซ้ายบน)
+    labelYOffset: 25,         // ขยับขึ้นด้านบนเล็กน้อย
   },
 ];
 
@@ -278,7 +278,7 @@ projectAreas.forEach((zone, index) => {
     container.append('text')
         .attr('x', zone.x + zone.labelXOffset + 30)
         .attr('y', zone.y + zone.labelYOffset + 30)
-        .attr('font-size', 9)
+        .attr('font-size', 8)
         .attr('font-weight', 'bold')
         .attr('fill', '#B71C1C')            // สีแดงเข้มเพื่อให้เด่น
         .attr('pointer-events', 'none')     // ไม่ให้คลิกทับ
@@ -390,20 +390,21 @@ projectAreas.forEach((zone, index) => {
       .text(d => `${d.outflow.toFixed(3)} MCM`);
 
     // Flow nodes → ใช้ container
-    const thresholds: Record<string, { red: number; yellow: number }> = {
-      'Y.4': { red: 51.4, yellow: 50.5 },
-      'Y.15': { red: 46.0, yellow: 44.7 },
-      'Y.50': { red: 41.5, yellow: 40.5 },
-      'Y.16': { red: 39.3, yellow: 38.4 },
-      'Y.64': { red: 38.0, yellow: 37.3 },
-      'Y.51': { red: 42.0, yellow: 40.4 },
-      'Y.17': { red: 41.8, yellow: 40.6 },
+    const thresholds: Record<string, { red: number; yellow: number; green: number   }> = {
+      'Y.4': { red: 51.4, yellow: 50.5, green: 49.6 },
+      'Y.15': { red: 46.0, yellow: 44.7, green: 43.5 },
+      'Y.50': { red: 41.5, yellow: 40.5, green: 39.5 },
+      'Y.16': { red: 39.3, yellow: 38.4, green: 37.6 },
+      'Y.64': { red: 38.0, yellow: 37.3, green: 36.7 },
+      'Y.51': { red: 42.0, yellow: 40.4, green: 38.8 },
+      'Y.17': { red: 41.8, yellow: 40.6, green: 39.4 },
     };
 
     const getColor = (sta_code: string, wl: number) => {
       const th = thresholds[sta_code] || { red: 40, yellow: 38 };
       if (wl > th.red) return 'red';
       if (wl > th.yellow) return 'yellow';
+      if (wl > th.green) return 'green';
       return '#69fc00ff';
     };
 
@@ -674,6 +675,7 @@ projectAreas.forEach((zone, index) => {
       { text: `ส่วนบริหารจัดการน้ำและบำรุงรักษา`, x: 160, y: 55, orientation: "horizontal", fontSize: 20, fill: theme.palette.text.secondary, fontWeight: "bold" },
 
       { text: `หมายเหตุ`, x: 55, y: 145, orientation: "horizontal", fontSize: 14, fill: "#fe0000", fontWeight: "bold" },
+      { text: `สัญลักษณ์เกณฑ์เตือนภัยระดับน้ำ`, x: 420, y: 245, orientation: "horizontal", fontSize: 11, fill: "#fe0000", fontWeight: "bold" },
 
       { text: "จ.น่าน", x: 385, y: 100, orientation: "horizontal", fontSize: 11, fill: theme.palette.text.primary, fontWeight: "bold" },
       { text: "จ.อตรดิตถ์", x: 275, y: 200, orientation: "horizontal", fontSize: 11, fill: theme.palette.text.primary, fontWeight: "bold" },
@@ -842,6 +844,35 @@ projectAreas.forEach((zone, index) => {
         .attr("fill", "#0066cc")
         .attr("font-weight", "bold")
         .text(`(${d.hours} ชม.)`);
+    });
+    // ===============================================================================================================
+    // หมายเหตุสถานี
+    // ===============================================================================================================
+    const stationNotes = [
+      { label: ["สีแดง ระดับน้ำอยู่ในเกณฑ์วิกฤต"], color: "red", x: 440, y: 270 },
+      { label: ["สีเหลือง ระดับน้ำเตือนภัย"], color: "yellow", x: 440, y: 290 },
+      { label: ["สีเขียว ระดับน้ำเฝ้าระวัง"], color: "green", x: 440, y: 310 },
+      { label: ["สีเขียวอ่อน ระดับน้ำปกติ"], color: "#69fc00ff", x: 440, y: 330 },
+    ];
+     stationNotes.forEach(d => {
+      // วาดวงกลมแสดงสถานี
+      container.append('circle')
+        .attr('cx', d.x)
+        .attr('cy', d.y)
+        .attr('r', 7)
+        .attr('fill', d.color)
+        .attr('stroke', theme.palette.text.primary)
+        .attr('stroke-width', 1);
+
+      // วาด label
+      container.append('text')
+        .attr('x', d.x + 15)
+        .attr('y', d.y + 3)
+        .attr('font-size', 8)
+        .attr("font-family", "Prompt, sans-serif")
+        .attr("font-weight", "500")
+        .attr('fill', theme.palette.text.primary)
+        .text(d.label.join(' '));
     });
 
     // ===============================================================================================================

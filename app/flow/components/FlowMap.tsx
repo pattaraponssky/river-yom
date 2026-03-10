@@ -499,10 +499,9 @@ const prepareChartDataForFlow = (rawData: any[], targetStaCode: string) => {
           marker.popup(`<b>พื้นที่:</b> ${feature.properties?.MBASIN_T || "ไม่ระบุ"}<br><b>ขนาดพื้นที่:</b> ${feature.properties?.AREA_SQKM?.toFixed(2) || "ไม่ระบุ"} ตร.กม.`);
         };
       }
-      // ถ้าเป็น Polygon หรือ MultiPolygon ให้เอา centroid มาทำ marker (ถ้าต้องการ)
+
       else if (feature.geometry.type === "Polygon" || feature.geometry.type === "MultiPolygon") {
         console.log(`ข้ามการสร้าง marker สำหรับ ${feature.geometry.type}: ${feature.properties?.MBASIN_T}`);
-        // ถ้าต้องการ marker ที่ centroid สามารถคำนวณได้ แต่ชั่วคราวข้ามไปก่อน
       }
     });
   });
@@ -661,11 +660,6 @@ const prepareChartDataForFlow = (rawData: any[], targetStaCode: string) => {
   
   };
   
-  
-  const FontStyle = {
-    fontFamily: "Prompt",
-  }
-
   return (
     <Grid container spacing={2}>
       <Grid size={{xs:12,sm:12,md:8}} >
@@ -675,7 +669,7 @@ const prepareChartDataForFlow = (rawData: any[], targetStaCode: string) => {
         </Box>
       </Grid>
       <Grid size={{xs:12,sm:12,md:4}}>
-      <Typography variant="h6" sx={{...FontStyle,marginBottom: "1rem", 
+      <Typography variant="h6" sx={{fontFamily:"Prompt",marginBottom: "1rem", 
         textAlign:"center",
         fontWeight: 600,
         color:"#28378B",
@@ -715,29 +709,29 @@ const prepareChartDataForFlow = (rawData: any[], targetStaCode: string) => {
                   <ListItemText
                     secondary={
                       <>
-                        <Typography sx={{ ...FontStyle, fontWeight: "bold", color: "#333" }}>
+                        <Typography sx={{ fontFamily:"Prompt", fontWeight: "bold", color: "#333" }}>
                           {`สถานีวัดน้ำท่า${item.sta_name}`}
                         </Typography>
-                        <Typography variant="body2" sx={{ ...FontStyle, color: "text.primary" }}>
+                        <Typography variant="body2" sx={{ fontFamily:"Prompt", color: "text.primary" }}>
                           <span style={{ color: "rgb(46, 58, 108)", fontWeight: "bold", fontSize: "0.9rem" }}>
                           ตำบล{item.tambon} อำเภอ{item.district} จังหวัด{item.province}
                           </span>
                         </Typography>
-                        <Typography variant="body2" sx={{ ...FontStyle, color: "text.primary" }}>
+                        <Typography variant="body2" sx={{ fontFamily:"Prompt", color: "text.primary" }}>
                           <b>รหัสสถานี:</b>{" "}
                           <span style={{ color: "#4caf50", fontWeight: "bold", fontSize: "0.9rem" }}>
                           {item.sta_code}
                           </span>{" "} 
                         </Typography>                     
        
-                        <Typography variant="body2" sx={{ ...FontStyle, color: "text.primary" }}>
+                        <Typography variant="body2" sx={{ fontFamily:"Prompt", color: "text.primary" }}>
                           <b>อัตราการไหล:</b>{" "}
                           <span style={{ color: "#64b5f6", fontWeight: "bold", fontSize: "0.9rem" }}>
                             {discharge}
                           </span>{" "}
                           ลบ.ม./วินาที
                         </Typography>
-                        <Typography variant="body2" sx={{ ...FontStyle, color: "text.primary" }}>
+                        <Typography variant="body2" sx={{ fontFamily:"Prompt", color: "text.primary" }}>
                         <b>ระดับน้ำ:</b>{" "}
                           <span style={{ color: "#e53935", fontWeight: "bold", fontSize: "0.9rem" }}>
                             {wl}

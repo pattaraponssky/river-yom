@@ -11,12 +11,11 @@ import DataRainStation from "./RainData";
 import RainMap from "./RainMap";
 import { fontTitle } from '../../../theme/style';
 
-const mapKey = 'e75fee377b3d393b7a32576ce2b0229d'; // กำหนด Map API Key ของ Longdo
-const JsonPaths = [
-  `${Path_URL}data/River.geojson`,
-  `${Path_URL}data/ProjectArea.geojson`,
-
-];
+const mapKey = process.env.NEXT_PUBLIC_LONGDO_MAP_KEY!;
+  const JsonPaths = [
+    `${Path_URL}data/River.geojson`,
+    `${Path_URL}data/ProjectArea.geojson`,
+  ];
 
 
 const RainStation: React.FC = () => {
