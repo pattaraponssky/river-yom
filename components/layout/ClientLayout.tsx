@@ -2,7 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Box } from '@mui/material';
+import { Box, CssBaseline } from '@mui/material';
 import DrawerComponent from './Drawer';
 import Footer from './Footer';
 import dynamic from 'next/dynamic';
@@ -17,6 +17,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
 
   return (
     <div >
+      <CssBaseline />
       <AppHeader
         title="ระบบติดตามสถานการณ์น้ำระยะไกลอัตโนมัติ พื้นที่ฝั่งขวาแม่น้ำยม"
         open={drawerOpen}

@@ -51,15 +51,16 @@ const RainCard: React.FC = () => {
       if (json?.data) {
         setDataRain(json.data);
 
-        // ✅ คำนวณฝนเฉลี่ยวันนี้ และฝนสะสมเฉลี่ยจาก field rain_sum
         const totalRain = json.data.reduce(
           (sum: number, r: RainData) => sum + parseFloat(r.rain_mm || "0"),
           0
         );
-        const totalRainSum = json.data.reduce(
-          (sum: number, r: RainData) => sum + parseFloat((r.rain_sum || "0").replace(/,/g, "")),
-          0
-        );
+
+        const totalRainSum = json.data.reduce((sum: number, r: RainData) => {
+        const valueStr = String(r.rain_sum ?? "0"); // แปลงเป็น string เสมอ
+        const cleaned = valueStr.replace(/,/g, "");
+        return sum + parseFloat(cleaned || "0");
+      }, 0);
 
         setSumRainToday(totalRain / json.data.length || 0);
         setAvgRainSum(totalRainSum / json.data.length || 0);
@@ -173,7 +174,7 @@ const RainCard: React.FC = () => {
                   </TableCell>
                   <TableCell
                     align="center"
-                    sx={{ color: "white", fontWeight: "bold", ...textStyle }}
+                    sx={{ color: "white", fontWeight: "bold", ...textStyle,  }}
                   >
                     ปริมาณน้ำฝน
                     <br />
@@ -208,7 +209,7 @@ const RainCard: React.FC = () => {
               <TableBody>
                 {dataRain.map((row, i) => (
                   <TableRow key={i} hover>
-                    <TableCell sx={{...textStyle,whiteSpace: "nowrap",lineHeight:{md:"2.16rem",xs:"1.2rem"}}}>{row.name}</TableCell>
+                    <TableCell sx={{...textStyle,whiteSpace: "nowrap",lineHeight:{md:"1.94rem",xs:"1.2rem"}}}>{row.name}</TableCell>
                     <TableCell sx={textStyle} align="center">
                       {row.province}
                     </TableCell>

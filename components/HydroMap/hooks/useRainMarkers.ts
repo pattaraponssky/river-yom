@@ -28,9 +28,11 @@ const addRainMarkers = (
     const latest = latestMap.get(sta_code);
     const isToday = latest && new Date(latest.date).toISOString().slice(0, 10) === yesterdayStr;
 
-    const rain_mm = isToday && latest?.rain_mm != null && parseFloat(latest.rain_mm) !== 0
-      ? parseFloat(latest.rain_mm).toFixed(2)
-      : '-';
+    const rainValue = latest?.rain_mm != null ? parseFloat(latest.rain_mm) : NaN;
+    const rain_mm = 
+      isToday && !isNaN(rainValue)
+        ? rainValue.toFixed(2)          // แสดง 0.00 ถ้าเป็น 0, หรือค่าอื่นตามจริง
+        : '-';
 
     // เปลี่ยนไอคอนตามว่ามีฝนหรือไม่ (ตัวอย่าง logic เดิม)
     const iconFile = parseFloat(rain_mm) > 0 ? 'rain_station_icon.png' : 'sun_station_icon.png';

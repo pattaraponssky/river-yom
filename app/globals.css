@@ -95,7 +95,12 @@ html, body {
   justify-content: flex-end;             /* เรียงจากซ้ายไปขวา */
 }
 
-.ldmap_placeholder_fullscreen .ldmap_ui {
+.ldmap_placeholder_fullscreen .ldmap_topright  {
+  top: 68px !important;
+  left: 78px !important;
+}
+
+.ldmap_placeholder .ldmap_navigation {
   top: 68px !important;
   left: 78px !important;
 }

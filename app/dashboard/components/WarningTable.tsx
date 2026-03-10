@@ -172,7 +172,7 @@ const FloodWarningTable: React.FC<FloodWarningTableProps> = ({ maxLevels, waterT
       if (currentLevel >= crisis) return "#ff0008ff"; // วิกฤต
       if (currentLevel >= alert) return "#a7a700ff"; // เตือนภัย
       if (currentLevel >= watch) return "#69fc00ff"; // เฝ้าระวัง
-      return "black";
+      return "#00a2ffff";
     };
 
     const getDiffColor = (
@@ -180,7 +180,7 @@ const FloodWarningTable: React.FC<FloodWarningTableProps> = ({ maxLevels, waterT
     ) => {
       if (diff >= 0) return "red"; // สูงกว่า/เท่ากับตลิ่ง
       if (diff < 0) return "green"; // ต่ำกว่าตลิ่ง
-      return "black";
+      return "#00a2ffff";
     };
 
   // ฟังก์ชันช่วยในการแสดงไอคอนตามแนวโน้ม
@@ -274,8 +274,7 @@ const FloodWarningTable: React.FC<FloodWarningTableProps> = ({ maxLevels, waterT
       });
 
       // 3. Construct and download the CSV
-      // Ensure data is wrapped in quotes if it contains commas, but given the structure, a simple join is often enough.
-      // We use the BOM (Byte Order Mark) for proper Thai character display in Excel.
+   
       const csvContent = [
         headers.join(","),
         ...rows.map(row => row.map(cell => `"${cell}"`).join(",")) // ใช้ map เพื่อใส่ quote ครอบข้อมูลแต่ละ cell

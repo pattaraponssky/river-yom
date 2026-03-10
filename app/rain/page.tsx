@@ -6,11 +6,11 @@ import dynamic from 'next/dynamic';
 
 const RainStation = dynamic(
   () => import('./components/RainStation'),
-  { ssr: false }   // ปิด SSR สำหรับ component นี้
+  { ssr: false } 
 );
 
 export default function RainPage() {
     return <Box sx={{p:1}}>
-        <RainStation />
+        <RainStation/>
     </Box>
 }

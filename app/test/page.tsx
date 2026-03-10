@@ -209,13 +209,11 @@ const WaterSchematicSimple: React.FC = () => {
     if (!svgRef.current || reservoirs.length === 0) return;
 
     const svg = d3.select(svgRef.current)
-    if (!svg.node()) return;
-    
-    svg.attr('width', '100%')
-    .attr('height', '100%')
-    .attr('viewBox', `0 0 ${width} ${height}`)
-    .style('background', theme.palette.background.paper)
-    .style('overflow', 'visible');
+      .attr('width', '100%')
+      .attr('height', '100%')
+      .attr('viewBox', `0 0 ${width} ${height}`)
+      .style('background', theme.palette.background.paper)
+      .style('overflow', 'visible');
 
     svg.selectAll('*').remove();
 
