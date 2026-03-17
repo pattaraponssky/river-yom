@@ -234,20 +234,20 @@ const WaterForecastChart: React.FC<Props> = ({ data }) => {
             });
             yAxisAnnotations.push({
               y: thresholds.alert,
-              borderColor: '#FFD700', // Yellow/Amber
+              borderColor: 'orange', // Yellow/Amber
               borderWidth: 2,
               label: { 
-                borderColor: '#FFD700',
-                style: { color: '#fff', background: '#FFD700', fontSize: '12px' ,fontWeight: 600 },
+                borderColor: 'orange',
+                style: { color: '#fff', background: 'orange', fontSize: '12px' ,fontWeight: 600 },
               },
             });
              yAxisAnnotations.push({
               y: thresholds.watch,
-              borderColor: '#69fc00ff', // Yellow/Amber
+              borderColor: '#FFD700', // Yellow/Amber
               borderWidth: 2,
               label: {
-                borderColor: '#69fc00ff',
-                style: { color: '#fff', background: '#69fc00ff', fontSize: '12px' ,fontWeight: 600 },
+                borderColor: '#FFD700',
+                style: { color: '#fff', background: '#FFD700', fontSize: '12px' ,fontWeight: 600 },
               },
             });
           }

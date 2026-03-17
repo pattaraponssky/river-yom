@@ -36,36 +36,36 @@ const GateChart: React.FC<DataChartProps> = ({ data, type , height = 350 ,sta_co
     'Y.50': {
       yaxis: [
         { y: 1.70, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 1.70 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
-        { y: 0.56, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 0.56 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
-        { y: -0.57, borderColor: 'green', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง -0.57 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'green' } } },
+        { y: 0.56, borderColor: 'orange', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 0.56 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'orange' } } },
+        { y: -0.57, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง -0.57 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
       ],
     },
     'Y.15': {
       yaxis: [
         { y: 6.32, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 6.32 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
-        { y: 5.47, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 5.47 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
-        { y: 4.61, borderColor: 'green', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 4.61 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'green' } } },
+        { y: 5.47, borderColor: 'orange', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 5.47 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'orange' } } },
+        { y: 4.61, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 4.61 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
       ]
     },
     'Y.16': {
       yaxis: [  
         { y: 2.69, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 2.69 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
-        { y: 2.02, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 2.02 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
-        { y: 1.36, borderColor: 'green', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 1.36 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'green' } } },
+        { y: 2.02, borderColor: 'orange', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 2.02 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'orange' } } },
+        { y: 1.36, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 1.36 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
         ]
     },
     'Y.64': {
       yaxis: [
         { y: 1.81, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 1.81 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
-        { y: 0.75, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 0.75 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
-        { y: -0.31, borderColor: 'green', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง -0.31 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'green' } } },
+        { y: 0.75, borderColor: 'orange', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 0.75 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'orange' } } },
+        { y: -0.31, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง -0.31 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
       ]
     },
     'Y.4': {
       yaxis: [
         { y: 2.71, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 2.71 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
-        { y: 1.84, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 1.84 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
-        { y: 0.98, borderColor: 'green', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 0.98 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'green' } } },
+        { y: 1.84, borderColor: 'orange', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 1.84 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'orange' } } },
+        { y: 0.98, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 0.98 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
       ]
     },
     '': {
@@ -118,7 +118,7 @@ const GateChart: React.FC<DataChartProps> = ({ data, type , height = 350 ,sta_co
         ],
 
       tooltip: { intersect: false, x: { format: 'dd MMM' } },
-      colors: ['#3366FF','#FF0033','#00FF33','#CD853F','#FF9900','#66CCFF','#9933FF','green','#000000','#FFD700'],
+      colors: ['#3366FF','#FF0033','#00FF33','#CD853F','#FF9900','#66CCFF','#9933FF','#FFD700','#000000','orange'],
     },
     wl_lower: {
       chart: {
@@ -169,7 +169,7 @@ const GateChart: React.FC<DataChartProps> = ({ data, type , height = 350 ,sta_co
           }
         ],
       tooltip: { intersect: false, x: { format: 'dd MMM' } },
-      colors: ['#3366FF','#FF0033','#00FF33','#CD853F','#FF9900','#66CCFF','#9933FF','green','#000000','#FFD700'],
+      colors: ['#3366FF','#FF0033','#00FF33','#CD853F','#FF9900','#66CCFF','#9933FF','#FFD700','#000000','orange'],
     },
     wl_upper: {
       chart: {
@@ -220,7 +220,7 @@ const GateChart: React.FC<DataChartProps> = ({ data, type , height = 350 ,sta_co
           }
         ],
       tooltip: { intersect: false, x: { format: 'dd MMM' } },
-      colors: ['#3366FF','#FF0033','#00FF33','#CD853F','#FF9900','#66CCFF','#9933FF','green','#000000','#FFD700'],
+      colors: ['#3366FF','#FF0033','#00FF33','#CD853F','#FF9900','#66CCFF','#9933FF','#FFD700','#000000','orange'],
     }
   };
 

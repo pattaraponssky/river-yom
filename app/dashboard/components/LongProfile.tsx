@@ -233,39 +233,15 @@ const LongProfileChart: React.FC<Props> = ({ waterData, chartHeight = 500, isDar
     };
   }, []);
 
-  useEffect(() => {
-    if (!selectedDate || !selectedTime || waterData.length === 0 || profileData.length === 0) return;
-
-    const fullTime = `${selectedDate} ${selectedTime}`;
-    const filtered = waterData.filter((d) => d.Date === fullTime);
-
-    if (filtered.length === 0) return;
-
-    const reversedFiltered = [...filtered].reverse(); // เหมือนโค้ดเก่า
-
-    const maxKM = Math.max(...profileData.map((d) => d.KM));
-    const minKM = Math.min(...profileData.map((d) => d.KM));
-
-    setProfileData((prev) =>
-      prev.map((d) => {
-        const normalized = (d.KM - minKM) / (maxKM - minKM);
-        const index = Math.round((1 - normalized) * (reversedFiltered.length - 1));
-        const level = reversedFiltered[index]?.WaterLevel ?? null;
-        return { ...d, WaterLevel: level };
-      })
-    );
-  }, [selectedDate, selectedTime, waterData, profileData.length]);
-
   // useEffect(() => {
-  //   if (!selectedDate || !selectedTime || waterData.length === 0 || profileData.length === 0)
-  //     return;
+  //   if (!selectedDate || !selectedTime || waterData.length === 0 || profileData.length === 0) return;
 
   //   const fullTime = `${selectedDate} ${selectedTime}`;
   //   const filtered = waterData.filter((d) => d.Date === fullTime);
 
   //   if (filtered.length === 0) return;
 
-  //   const reversedFiltered = [...filtered].reverse();
+  //   const reversedFiltered = [...filtered].reverse(); // เหมือนโค้ดเก่า
 
   //   const maxKM = Math.max(...profileData.map((d) => d.KM));
   //   const minKM = Math.min(...profileData.map((d) => d.KM));
@@ -274,17 +250,41 @@ const LongProfileChart: React.FC<Props> = ({ waterData, chartHeight = 500, isDar
   //     prev.map((d) => {
   //       const normalized = (d.KM - minKM) / (maxKM - minKM);
   //       const index = Math.round((1 - normalized) * (reversedFiltered.length - 1));
-
-  //       // ดึงระดับน้ำเดิม
-  //       const originalLevel = reversedFiltered[index]?.WaterLevel ?? null;
-
-  //       // เพิ่ม +50 ให้ทุกค่า (ถ้า null ก็ยังคง null)
-  //       const adjustedLevel = originalLevel !== null ? originalLevel + 35 : null;
-
-  //       return { ...d, WaterLevel: adjustedLevel };
+  //       const level = reversedFiltered[index]?.WaterLevel ?? null;
+  //       return { ...d, WaterLevel: level };
   //     })
   //   );
   // }, [selectedDate, selectedTime, waterData, profileData.length]);
+
+  useEffect(() => {
+    if (!selectedDate || !selectedTime || waterData.length === 0 || profileData.length === 0)
+      return;
+
+    const fullTime = `${selectedDate} ${selectedTime}`;
+    const filtered = waterData.filter((d) => d.Date === fullTime);
+
+    if (filtered.length === 0) return;
+
+    const reversedFiltered = [...filtered].reverse();
+
+    const maxKM = Math.max(...profileData.map((d) => d.KM));
+    const minKM = Math.min(...profileData.map((d) => d.KM));
+
+    setProfileData((prev) =>
+      prev.map((d) => {
+        const normalized = (d.KM - minKM) / (maxKM - minKM);
+        const index = Math.round((1 - normalized) * (reversedFiltered.length - 1));
+
+        // ดึงระดับน้ำเดิม
+        const originalLevel = reversedFiltered[index]?.WaterLevel ?? null;
+
+        // เพิ่ม +50 ให้ทุกค่า (ถ้า null ก็ยังคง null)
+        const adjustedLevel = originalLevel !== null ? originalLevel + 35 : null;
+
+        return { ...d, WaterLevel: adjustedLevel };
+      })
+    );
+  }, [selectedDate, selectedTime, waterData, profileData.length]);
 
   const bgColor = isDark ? "#1e2533" : "#ffffff"; // พื้นหลังกราฟ
   const textColor = isDark ? "#e2e8f0" : "#334155"; // ตัวอักษรหลัก
@@ -340,8 +340,10 @@ const LongProfileChart: React.FC<Props> = ({ waterData, chartHeight = 500, isDar
 
           if (val >= 1 && val <= 60) {
             province = "จ.สุโขทัย";
-          } else if (val > 60 && val <= 95) {
+          } else if (val > 60 && val <= 120) {
             province = "จ.พิษณุโลก";
+          } else if (val > 120 && val <= 180) {
+            province = "จ.พิจิตร";
           } else {
             province = "นอกเขตที่กำหนด";
           }

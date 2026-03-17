@@ -392,21 +392,21 @@ projectAreas.forEach((zone, index) => {
       .text(d => `${d.outflow.toFixed(3)} MCM`);
 
     // Flow nodes → ใช้ container
-    const thresholds: Record<string, { red: number; yellow: number; green: number   }> = {
-      'Y.4': { red: 51.4, yellow: 50.5, green: 49.6 },
-      'Y.15': { red: 46.0, yellow: 44.7, green: 43.5 },
-      'Y.50': { red: 41.5, yellow: 40.5, green: 39.5 },
-      'Y.16': { red: 39.3, yellow: 38.4, green: 37.6 },
-      'Y.64': { red: 38.0, yellow: 37.3, green: 36.7 },
-      'Y.51': { red: 42.0, yellow: 40.4, green: 38.8 },
-      'Y.17': { red: 41.8, yellow: 40.6, green: 39.4 },
+    const thresholds: Record<string, { red: number; orange: number; yellow: number   }> = {
+      'Y.4': { red: 51.4, orange: 50.5, yellow: 49.6 },
+      'Y.15': { red: 46.0, orange: 44.7, yellow: 43.5 },
+      'Y.50': { red: 41.5, orange: 40.5, yellow: 39.5 },
+      'Y.16': { red: 39.3, orange: 38.4, yellow: 37.6 },
+      'Y.64': { red: 38.0, orange: 37.3, yellow: 36.7 },
+      'Y.51': { red: 42.0, orange: 40.4, yellow: 38.8 },
+      'Y.17': { red: 41.8, orange: 40.6, yellow: 39.4 },
     };
 
     const getColor = (sta_code: string, wl: number) => {
-      const th = thresholds[sta_code] || { red: 40, yellow: 38 };
+      const th = thresholds[sta_code] || { red: 40, orange: 38 };
       if (wl > th.red) return 'red';
-      if (wl > th.yellow) return 'yellow';
-      if (wl > th.green) return 'green';
+      if (wl > th.orange) return 'orange';
+      if (wl > th.yellow) return '#FFD700';
       return '#69fc00ff';
     };
 
@@ -852,9 +852,9 @@ projectAreas.forEach((zone, index) => {
     // ===============================================================================================================
     const stationNotes = [
       { label: ["สีแดง ระดับน้ำอยู่ในเกณฑ์วิกฤต"], color: "red", x: 440, y: 270 },
-      { label: ["สีเหลือง ระดับน้ำเตือนภัย"], color: "yellow", x: 440, y: 290 },
-      { label: ["สีเขียว ระดับน้ำเฝ้าระวัง"], color: "green", x: 440, y: 310 },
-      { label: ["สีเขียวอ่อน ระดับน้ำปกติ"], color: "#69fc00ff", x: 440, y: 330 },
+      { label: ["สีส้ม ระดับน้ำเตือนภัย"], color: "orange", x: 440, y: 290 },
+      { label: ["สีเหลือง ระดับน้ำเฝ้าระวัง"], color: "#FFD700", x: 440, y: 310 },
+      { label: ["สีเขียว ระดับน้ำปกติ"], color: "#69fc00ff", x: 440, y: 330 },
     ];
      stationNotes.forEach(d => {
       // วาดวงกลมแสดงสถานี

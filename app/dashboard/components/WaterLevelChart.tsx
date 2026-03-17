@@ -195,39 +195,21 @@ const WaterLevelChart: React.FC<Props> = ({ data, chartHeight = 450 }) => {
         y: Levels.watch + shiftValue,
         borderWidth: 2,
         strokeDashArray: 0,
-        borderColor: "green",
-        label: {
-          position: "center",
-          offsetY: 22,
-          offsetX: -2,
-          text: `เฝ้าระวัง: ${Levels.watch.toFixed(2)} ม.รทก.`,
-          style: {
-            color: "#fff",
-            background: "green",
-            fontWeight: "bold",
-            fontSize: "0.8rem",
-          },
-        },
-      },
-      {
-        y: Levels.alert + shiftValue,
-        borderWidth: 2,
-        strokeDashArray: 0,
         borderColor: "#FFD700",
         label: {
           position: "center",
-          offsetY: -5,
-          offsetX: -2,
-          text: `เตือนภัย: ${Levels.alert.toFixed(2)} ม.รทก.`,
+          offsetY: 22,
+          offsetX: -300,
+          text: `เฝ้าระวัง: ${Levels.watch.toFixed(2)} ม.รทก.`,
           style: {
-            color: "#000",
+            color: "#333",
             background: "#FFD700",
             fontWeight: "bold",
             fontSize: "0.8rem",
           },
         },
       },
-      {
+       {
         y: Levels.crisis + shiftValue,
         borderWidth: 2,
         strokeDashArray: 0,
@@ -235,7 +217,7 @@ const WaterLevelChart: React.FC<Props> = ({ data, chartHeight = 450 }) => {
         label: {
           position: "center",
           offsetY: -7,
-          offsetX: 120,
+          offsetX: -160,
           text: `วิกฤต: ${Levels.crisis.toFixed(2)} ม.รทก.`,
           style: {
             color: "#fff",
@@ -245,6 +227,25 @@ const WaterLevelChart: React.FC<Props> = ({ data, chartHeight = 450 }) => {
           },
         },
       },
+      {
+        y: Levels.alert + shiftValue,
+        borderWidth: 2,
+        strokeDashArray: 0,
+        borderColor: "orange",
+        label: {
+          position: "center",
+          offsetY: -5,
+          offsetX: -280,
+          text: `เตือนภัย: ${Levels.alert.toFixed(2)} ม.รทก.`,
+          style: {
+            color: "#000",
+            background: "orange",
+            fontWeight: "bold",
+            fontSize: "0.8rem",
+          },
+        },
+      },
+     
     ];
   }, [Levels, shiftValue]);
 
@@ -265,7 +266,7 @@ const WaterLevelChart: React.FC<Props> = ({ data, chartHeight = 450 }) => {
           borderWidth: 0,
           label: {
             position: "center",
-            offsetY: -65,
+            offsetY: 0,
             offsetX: 10,
             text: `ระดับน้ำ: ${elevationValue.toFixed(2)} (ม.รทก.)`,
             style: { fontSize: "1rem", fontWeight: "bold" },
