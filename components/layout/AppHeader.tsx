@@ -14,6 +14,7 @@ import {
   MenuItem,
   useMediaQuery,
   useTheme,
+  alpha,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import LoginIcon from '@mui/icons-material/Login';
@@ -41,6 +42,7 @@ const Header: React.FC<HeaderProps> = ({ title, open, setOpen }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const isDark = theme.palette.mode === 'dark';
+  const primary = theme.palette.primary.main;
   const appBarBg = isDark
     ? 'linear-gradient(135deg, #1a237e 0%, #28378b 100%)'
     : 'linear-gradient(135deg, #1976d2 0%, #64b5f6 100%)';
@@ -79,10 +81,11 @@ const Header: React.FC<HeaderProps> = ({ title, open, setOpen }) => {
         sx={{
           background: appBarBg,
           backdropFilter: 'blur(10px)',
-          borderBottom: `1px solid ${theme.palette.divider}`,
+          boxShadow: `0 8px 24px ${alpha(primary, 0.15)}`,
           zIndex: theme.zIndex.drawer + 2,
         }}
       >
+      
         <Toolbar
           sx={{
             minHeight: { xs: 64, sm: 64 },

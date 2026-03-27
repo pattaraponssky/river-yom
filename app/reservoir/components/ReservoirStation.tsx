@@ -69,15 +69,6 @@ const ReservoirStation: React.FC = () => {
           )}
 
           {mainTab === 1 && (
-            <Typography
-              variant="h5"
-              sx={{
-                marginBottom: "1rem",
-                fontWeight: 600,
-                fontFamily: "Prompt",
-                color: "#28378B",
-              }}
-            >
               <ReservoirMap
                 id="longdo-map"
                 stationType="reservoir"
@@ -85,7 +76,6 @@ const ReservoirStation: React.FC = () => {
                 JsonPaths={JsonPaths}
                 height="75vh"
               />
-            </Typography>
           )}
        
         </Box>

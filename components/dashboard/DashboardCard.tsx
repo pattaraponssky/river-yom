@@ -41,7 +41,8 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
   const cardBg = isDark
     ? alpha(theme.palette.background.paper, 0.85)
     : theme.palette.background.paper;
-
+    
+  const primary = theme.palette.primary.main;
   const borderColor = isDark
     ? theme.palette.primary.dark
     : alpha(theme.palette.primary.main, 0.3);
@@ -76,14 +77,14 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
             <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
               <Box
                 sx={{
-                  width: 56,
-                  height: 56,
-                  borderRadius: '12px',
-                  background: alpha(accentColor, isDark ? 0.18 : 0.12),
+                  width: 60,
+                  height: 60,
+                  borderRadius: '16px',
+                  background: `linear-gradient(135deg, ${alpha(primary, 0.25)}, ${alpha(primary, 0.05)})`,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  flexShrink: 0,
+                  boxShadow: `0 8px 20px ${alpha(primary, 0.3)}`,
                 }}
               >
                 <Box

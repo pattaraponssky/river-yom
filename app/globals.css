@@ -89,7 +89,6 @@ html, body {
   margin-left: 56px !important;   /* เว้นระยะซ้ายเท่ากับขนาด fullscreen */
 }
 
-/* ถ้าต้องการให้ fullscreen อยู่ท้ายสุดแต่ยังในบรรทัดเดียว */
 .ldmap_topright {
   flex-direction: row;
   justify-content: flex-end;             /* เรียงจากซ้ายไปขวา */
@@ -100,9 +99,14 @@ html, body {
   left: 78px !important;
 }
 
-.ldmap_placeholder .ldmap_navigation {
+.ldmap_placeholder_fullscreen .ldmap_navigation {
   top: 68px !important;
   left: 78px !important;
+}
+
+.ldmap_placeholder_fullscreen .ldmap_topleft {
+  left: 78px !important;
+  top: 68px !important;
 }
 
 .ldmap-menubar {

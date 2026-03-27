@@ -539,35 +539,35 @@ const prepareChartDataForFlow = (rawData: any[], targetStaCode: string) => {
       if (position.lat && position.lon) {
         const marker = new longdo.Marker(position, {
           title: `<img src="${Path_URL}images/icons/flow_station_icon.png" style="width:25px; height:25px; vertical-align:middle; margin-right:5px" /> 
-            <span style="font-size:1.1rem; font-weight:bold; vertical-align:middle;">${sta_name} อ.${district} จ.${province}</span>`,
+            <span style="font-family: 'Prompt', sans-serif; font-size:1.1rem; font-weight:bold; vertical-align:middle;">${sta_name} อ.${district} จ.${province}</span>`,
           detail: `
-            <div style="font-size: 1rem;">
+            <div style="font-family: 'Prompt', sans-serif; font-size: 1rem;">
                 <b>ข้อมูลประจำวันที่ ${formatThaiDay(todayStr)}</b>
             </div>
-            <div style="font-size: 0.9rem; line-height: 1.4rem;">
+            <div style="font-family: 'Prompt', sans-serif; font-size: 0.9rem; line-height: 1.4rem;">
               <div><b>รหัสสถานี:</b> <span style="color: #4caf50; font-weight: bold;"> ${sta_code || "-"}</span></div>
             </div>
-              <div style="font-size: 0.9rem; line-height: 1.4rem;">
+              <div style="font-family: 'Prompt', sans-serif; font-size: 0.9rem; line-height: 1.4rem;">
               <div><b>📉 อัตราการไหล:</b> <span style="color: #1e88e5; font-weight: bold;">${discharge || "-"} ลบ.ม./วินาที</span></div>
             </div>
-              <div style="font-size: 0.9rem; line-height: 1.4rem;">
+              <div style="font-family: 'Prompt', sans-serif; font-size: 0.9rem; line-height: 1.4rem;">
                 <div><b>📈 ระดับน้ำ:</b> <span style="color: #e53935; font-weight: bold;">${wl || "-"} ม.รทก. </span></div>
             </div>
 
               <button 
                 onclick="window.renderChartPart('${sta_code}', 'discharge')" 
-                style="background-color: #1e88e5; color: white; padding: 4px 10px; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s;">
+                style="font-family: 'Prompt', sans-serif; background-color: #1e88e5; color: white; padding: 4px 10px; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s;">
                 📉 อัตราการไหล
               </button>
 
               <button 
                 onclick="window.renderChartPart('${sta_code}', 'wl')" 
-                style="background-color: #e53935; color: white; padding: 4px 10px; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s;">
+                style="font-family: 'Prompt', sans-serif; background-color: #e53935; color: white; padding: 4px 10px; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s;">
                 📈 ระดับน้ำ
               </button>
 
               <a href="/flow?tab=0&station=${sta_code}" 
-                style="padding: 4px 10px;  background-color: #1976d2; color: white; border-radius: 6px; text-decoration: none; font-size: 0.9rem; display: inline-block; margin-top: 8px; cursor: pointer; transition: background-color 0.2s;">
+                style="padding: 4px 10px;  font-family: 'Prompt', sans-serif; background-color: #1976d2; color: white; border-radius: 6px; text-decoration: none; font-size: 0.9rem; display: inline-block; margin-top: 8px; cursor: pointer; transition: background-color 0.2s;">
                  ข้อมูลเพิ่มเติม
               </a>
          
@@ -604,34 +604,34 @@ const prepareChartDataForFlow = (rawData: any[], targetStaCode: string) => {
     let icon = "";
   
       title = `<img src="${Path_URL}images/icons/flow_station_icon.png" style="width:25px; height:25px; vertical-align:middle; margin-right:5px" />
-        <span style="font-size:1.1rem; font-weight:bold; vertical-align:middle;">${item.sta_name} อ.${item.district} จ.${item.province}</span>`;
+        <span style="font-family: 'Prompt', sans-serif; font-size:1.1rem; font-weight:bold; vertical-align:middle;">${item.sta_name} อ.${item.district} จ.${item.province}</span>`;
       detail = `
-           <div style="font-size: 1rem;">
+           <div style="font-family: 'Prompt', sans-serif; font-size: 1rem;">
                          <b>ข้อมูลประจำวันที่ ${formatThaiDay(todayStr)}</b>
           </div>
-            <div style="font-size: 0.9rem; line-height: 1.4rem;">
+            <div style="font-family: 'Prompt', sans-serif; font-size: 0.9rem; line-height: 1.4rem;">
               <div><b>รหัสสถานี:</b> <span style="color: #4caf50; font-weight: bold;"> ${item.sta_code || "-"}</span></div>
             </div>
-              <div style="font-size: 0.9rem; line-height: 1.4rem;">
+              <div style="font-family: 'Prompt', sans-serif; font-size: 0.9rem; line-height: 1.4rem;">
               <div><b>📉 อัตราการไหล:</b> <span style="color: #1e88e5; font-weight: bold;">${item.discharge || "-"} ลบ.ม./วินาที </span></div>
             </div>
-              <div style="font-size: 0.9rem; line-height: 1.4rem;">
+              <div style="font-family: 'Prompt', sans-serif; font-size: 0.9rem; line-height: 1.4rem;">
                 <div><b>📈 ระดับน้ำ:</b> <span style="color: #e53935; font-weight: bold;">${item.wl || "-"} ม.รทก.</span></div>
             </div>
               <button 
                 onclick="window.renderChartPart('${item.sta_code}', 'discharge')" 
-                style="background-color: #1e88e5; color: white; padding: 4px 10px; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s;">
+                style="font-family: 'Prompt', sans-serif; background-color: #1e88e5; color: white; padding: 4px 10px; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s;">
                 📉 อัตราการไหล
               </button>
 
               <button 
                 onclick="window.renderChartPart('${item.sta_code}', 'wl')" 
-                style="background-color: #e53935; color: white; padding: 4px 10px; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s;">
+                style="font-family: 'Prompt', sans-serif; background-color: #e53935; color: white; padding: 4px 10px; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s;">
                 📈 ระดับน้ำ
               </button>
 
               <a href="/flow?tab=0&station=${item.sta_code}" 
-                style="padding: 4px 10px;  background-color: #1976d2; color: white; border-radius: 6px; text-decoration: none; font-size: 0.9rem; display: inline-block; margin-top: 8px; cursor: pointer; transition: background-color 0.2s;">
+                style="padding: 4px 10px;  font-family: 'Prompt', sans-serif; background-color: #1976d2; color: white; border-radius: 6px; text-decoration: none; font-size: 0.9rem; display: inline-block; margin-top: 8px; cursor: pointer; transition: background-color 0.2s;">
                  ข้อมูลเพิ่มเติม
               </a>
             
@@ -706,9 +706,7 @@ const prepareChartDataForFlow = (rawData: any[], targetStaCode: string) => {
                   <ListItemAvatar sx={{ marginInline: "10px" }}>
                     <Avatar src={`${Path_URL}images/icons/flow_station_icon.png`} />
                   </ListItemAvatar>
-                  <ListItemText
-                    secondary={
-                      <>
+                  <ListItemText>
                         <Typography sx={{ fontFamily:"Prompt", fontWeight: "bold", color: "#333" }}>
                           {`สถานีวัดน้ำท่า${item.sta_name}`}
                         </Typography>
@@ -738,9 +736,7 @@ const prepareChartDataForFlow = (rawData: any[], targetStaCode: string) => {
                           </span>{" "}
                           ม.รทก.
                         </Typography>
-                      </>
-                    }
-                  />
+                      </ListItemText>
                 </ListItem>
               );
             });

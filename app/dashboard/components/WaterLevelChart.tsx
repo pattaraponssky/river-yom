@@ -23,12 +23,12 @@ interface WaterLevelData {
   elevation: number;
 }
 
-const warningLevels: Record<string, { watch: number; alert: number; crisis: number }> = {
-  "Y.15": { watch: 2.90, alert: 3.20, crisis: 3.50 },
-  "Y.16": { watch: 2.16, alert: 2.28, crisis: 2.40 },
-  "Y.4": { watch: 1.60, alert: 1.70, crisis: 1.80 },
-  "Y.50": { watch: 1.25, alert: 1.38, crisis: 1.50 },
-  "Y.64": { watch: 1.20, alert: 1.35, crisis: 1.50 },
+const warningLevels: Record<string, { watch: number; alert: number; crisis: number; normal: number }> = {
+  "Y.15": { watch: 2.90, alert: 3.20, crisis: 3.50 ,normal: 2.50},
+  "Y.16": { watch: 2.16, alert: 2.28, crisis: 2.40 ,normal: 2.00},
+  "Y.4": { watch: 1.60, alert: 1.70, crisis: 1.80 ,normal: 1.50},
+  "Y.50": { watch: 1.25, alert: 1.38, crisis: 1.50 ,normal: 1.20},
+  "Y.64": { watch: 1.20, alert: 1.35, crisis: 1.50 ,normal: 1.10},
 };
 
 const stationMapping: Record<string, number> = {
@@ -47,7 +47,7 @@ interface Props {
   data: WaterLevelData[];
   chartHeight?: number;
 }
-const WaterLevelChart: React.FC<Props> = ({ data, chartHeight = 450 }) => {
+const WaterLevelChart: React.FC<Props> = ({ data, chartHeight = 550 }) => {
   const [secondData, setSecondData] = useState<WaterLevelData[]>([]);
   const [selectedStation, setSelectedStation] = useState<string>("Y.15");
   const [shiftValue, setShiftValue] = useState<number>(0);
@@ -114,7 +114,7 @@ const WaterLevelChart: React.FC<Props> = ({ data, chartHeight = 450 }) => {
     }, {} as Record<string, WaterLevelData[]>);
   }, [stationData]);
 
-  const availableDates = useMemo(() => {
+  const availableDates = useMemo(() => {/////////////////////////////////////////////////////////
   const today = new Date().toISOString().split("T")[0]; // รูปแบบ YYYY-MM-DD
   return Object.keys(groupedByDate)
     .filter(date => date >= today) // กรองเอาเฉพาะวันที่ >= วันนี้
@@ -192,6 +192,24 @@ const WaterLevelChart: React.FC<Props> = ({ data, chartHeight = 450 }) => {
     
     return [
       {
+        y: Levels.normal + shiftValue,
+        borderWidth: 2,
+        strokeDashArray: 0,
+        borderColor: "#69fc00ff",
+        label: {
+          position: "center",
+          offsetY: 22,
+          offsetX: -428,
+          text: `ปกติ: ${Levels.normal.toFixed(2)} ม.รทก.`,
+          style: {
+            color: "#000",
+            background: "#69fc00ff",
+            fontWeight: "bold",
+            fontSize: "0.8rem",
+          },
+        },
+      },
+      {
         y: Levels.watch + shiftValue,
         borderWidth: 2,
         strokeDashArray: 0,
@@ -245,6 +263,7 @@ const WaterLevelChart: React.FC<Props> = ({ data, chartHeight = 450 }) => {
           },
         },
       },
+
      
     ];
   }, [Levels, shiftValue]);

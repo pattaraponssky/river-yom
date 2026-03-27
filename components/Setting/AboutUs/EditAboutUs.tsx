@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from "react";
 import {
-  Box, TextField, Button, Typography,
-  Snackbar, Alert, Stack
+  Box,
+  TextField,
+  Button,
+  Typography,
+  Snackbar,
+  Alert,
+  Stack,
 } from "@mui/material";
 import { API_URL } from "@/lib/utility";
 import { titleStyle } from "@/theme/style";
-
 
 const EditAboutUs: React.FC = () => {
   const [aboutUs, setAboutUs] = useState("");
@@ -16,7 +20,7 @@ const EditAboutUs: React.FC = () => {
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
-    severity: "success" as "success" | "error"
+    severity: "success" as "success" | "error",
   });
 
   const fetchAboutUs = async () => {
@@ -31,7 +35,7 @@ const EditAboutUs: React.FC = () => {
       setSnackbar({
         open: true,
         message: "โหลดข้อมูลไม่สำเร็จ",
-        severity: "error"
+        severity: "error",
       });
     }
   };
@@ -49,7 +53,7 @@ const EditAboutUs: React.FC = () => {
         body: JSON.stringify({
           about_us: aboutUs,
           contact: contact,
-          address: address
+          address: address,
         }),
       });
 
@@ -58,15 +62,14 @@ const EditAboutUs: React.FC = () => {
       setSnackbar({
         open: true,
         message: "บันทึกข้อมูลสำเร็จ",
-        severity: "success"
+        severity: "success",
       });
     } catch (err) {
-      console.log(err);
-      
+      console.error(err);
       setSnackbar({
         open: true,
         message: "เกิดข้อผิดพลาดขณะบันทึก",
-        severity: "error"
+        severity: "error",
       });
     } finally {
       setLoading(false);
@@ -74,8 +77,13 @@ const EditAboutUs: React.FC = () => {
   };
 
   return (
-    <Box sx={{ p: {md:4,xs:1}, margin: "0 auto" }}>
-      <Typography fontWeight="bold" mb={2} sx={titleStyle}>
+    <Box sx={{ p: { md: 4, xs: 1 }, margin: "0 auto" }}>
+      <Typography
+        fontWeight="bold"
+        mb={2}
+        sx={titleStyle}
+        component="div" 
+      >
         แก้ไขข้อมูลเว็บไซต์
       </Typography>
 
@@ -122,10 +130,13 @@ const EditAboutUs: React.FC = () => {
       <Snackbar
         open={snackbar.open}
         autoHideDuration={4000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
-        <Alert severity={snackbar.severity} onClose={() => setSnackbar({ ...snackbar, open: false })}>
+        <Alert
+          severity={snackbar.severity}
+          onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
+        >
           {snackbar.message}
         </Alert>
       </Snackbar>

@@ -542,34 +542,34 @@ const RainMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,heig
       if (position.lat && position.lon) {
         const marker = new longdo.Marker(position, {
           title: `<img src="${Path_URL}images/icons/rain_station_icon.png" style="width:25px; height:25px; vertical-align:middle; margin-right:5px" /> 
-            <span style="font-size:1.1rem; font-weight:bold; vertical-align:middle;">${name} อ.${district} จ.${province}</span>`,
+            <span style="font-family: Prompt; font-size:1.1rem; font-weight:bold; vertical-align:middle;">${name} อ.${district} จ.${province}</span>`,
           detail: `
-            <div style="font-size: 1rem;">
+            <div style="font-size: 1rem;font-family: Prompt;">
                 <b>
                 ข้อมูลประจำวันที่
                   ${formatThaiDay(todayStr)}
                 <b>
             </div>
-                <div style="font-size: 0.9rem; line-height: 1.4rem;">
+                <div style="font-family: Prompt; font-size: 0.9rem; line-height: 1.4rem;">
               <div><b>รหัสสถานี:</b> <span style="color: #4caf50; font-weight: bold;"> ${sta_code || "-"}</span></div>
            </div>
-              <div style="font-size: 0.9rem; line-height: 1.4rem;">
+              <div style="font-family: Prompt; font-size: 0.9rem; line-height: 1.4rem;">
               <div><b>📉 ปริมาณน้ำฝน:</b> <span style="color: #1e88e5; font-weight: bold;">${rain_mm || "-"} มม.</span></div>
            </div>
               <button 
                 onclick="window.renderChartPart('${sta_code}', 'rain_mm')" 
-                style="background-color: #1e88e5; color: white; padding: 4px 10px; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s;">
-                📈 ปริมาณน้ำฝน
+                style="font-family: Prompt; background-color: #1e88e5; color: white; padding: 4px 10px; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s;">
+                ปริมาณน้ำฝน
               </button>
 
               <button 
                 onclick="window.renderChartPart('${sta_code}', 'rain_series')" 
-                style="background-color: #e53935; color: white; padding: 4px 10px; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s;">
-                📉 ปริมาณน้ำฝนสะสม
+                style="font-family: Prompt; background-color: #e53935; color: white; padding: 4px 10px; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s;">
+                ปริมาณน้ำฝนสะสม
               </button>
 
               <a href="/rain?tab=0&station=${sta_code}" 
-                style="padding: 4px 10px;  background-color: #1976d2; color: white; border-radius: 6px; text-decoration: none; font-size: 0.9rem; display: inline-block; margin-top: 8px; cursor: pointer; transition: background-color 0.2s;">
+                style="font-family: Prompt; padding: 4px 10px;  background-color: #1976d2; color: white; border-radius: 6px; text-decoration: none; font-size: 0.9rem; display: inline-block; margin-top: 8px; cursor: pointer; transition: background-color 0.2s;">
                  ข้อมูลเพิ่มเติม
               </a>
             </div>
@@ -610,35 +610,36 @@ const RainMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,heig
     let icon = "";
   
       title = `<img src="${Path_URL}images/icons/rain_station_icon.png" style="width:25px; height:25px; vertical-align:middle; margin-right:5px" />
-        <span style="font-size:1.1rem; font-weight:bold; vertical-align:middle;">${item.name} อ.${item.district} จ.${item.province}</span>`;
+        <span style="font-size:1.1rem; font-family: Prompt; font-weight:bold; vertical-align:middle; padding:5px">${item.name} อ.${item.district} จ.${item.province}</span>`;
   
       detail = `
-            <div style="font-size: 1rem;">
+            <div style="font-size: 1rem; font-family: Prompt;">
                 <b>ข้อมูลประจำวันที่ ${formatThaiDay(todayStr)}</b>
             </div>
-                <div style="font-size: 0.9rem; line-height: 1.4rem;">
+                <div style="font-size: 0.9rem; font-family: Prompt; line-height: 1.4rem;">
               <div><b>รหัสสถานี:</b> <span style="color: #4caf50; font-weight: bold;"> ${item.sta_code || "-"}</span></div>
            </div>
-              <div style="font-size: 0.9rem; line-height: 1.4rem;">
+              <div style="font-size: 0.9rem; font-family: Prompt; line-height: 1.4rem;">
               <div><b>📉 ปริมาณน้ำฝน:</b> <span style="color: #1e88e5; font-weight: bold;">${item.rain_mm || "-"} มม.</span></div>
            </div>
             <div style="margin-top: 10px; gap: 5px;">
               <button 
                 onclick="window.renderChartPart('${item.sta_code}', 'rain_mm')" 
-                style="background-color: #1e88e5; color: white; padding: 4px 10px; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s;">
-                📉 ปริมาณน้ำฝน
+                style="font-family: Prompt; background-color: #1e88e5; color: white; padding: 4px 10px; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s;">
+                ปริมาณน้ำฝน
               </button>
 
               <button 
                 onclick="window.renderChartPart('${item.sta_code}', 'rain_series')" 
-                style="background-color: #e53935; color: white; padding: 4px 10px; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s;">
-                📈 ปริมาณน้ำฝนสะสม
+                style="font-family: Prompt; background-color: #e53935; color: white; padding: 4px 10px; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s;">
+                ปริมาณน้ำฝนสะสม
               </button>
 
               <a href="/rain?tab=0&station=${item.sta_code}" 
-                style="padding: 4px 10px;  background-color: #1976d2; color: white; border-radius: 6px; text-decoration: none; font-size: 0.9rem; display: inline-block; margin-top: 8px; cursor: pointer; transition: background-color 0.2s;">
+                style="font-family: Prompt; font-weight: bold; padding: 4px 10px;  background-color: #1976d2; color: white; border-radius: 6px; text-decoration: none; font-size: 0.9rem; display: inline-block; margin-top: 8px; cursor: pointer; transition: background-color 0.2s;">
                  ข้อมูลเพิ่มเติม
               </a>
+              
             </div>
             <!-- Container ของกราฟ -->
             <br>
@@ -666,7 +667,8 @@ const RainMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,heig
   };
   
   return (
-    <Grid container spacing={2}>
+    <Box sx={{fontFamily:"Prompt"}}>
+    <Grid container spacing={2} >
       <Grid size={{xs:12, sm:12, md:8}}>
         <Box 
           ref={mapContainerRef}
@@ -705,13 +707,10 @@ const RainMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,heig
                   <ListItemAvatar sx={{ marginInline: "10px" }}>
                     <Avatar src={`${Path_URL}images/icons/${parseFloat(rain_mm) > 0 ? 'rain_station_icon.png' : 'sun_station_icon.png'}`} />
                   </ListItemAvatar>
-                  <ListItemText
-                    secondary={
-                      <>
+                      <Box>
                         <Typography sx={{ fontFamily:"Prompt", fontWeight: "bold", color: "#333" }}>
                           {`สถานี${item.name}`}
                         </Typography>
-                  
 
                         <Typography variant="body2" sx={{ fontFamily:"Prompt", color: "text.primary" }}>
                           <span style={{ color: "rgb(46, 58, 108)", fontWeight: "bold", fontSize: "0.9rem" }}>
@@ -732,7 +731,6 @@ const RainMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,heig
                           </span>{" "}
                         </Typography>
        
-       
                         <Typography variant="body2" sx={{ fontFamily:"Prompt", color: "text.primary" }}>
                           <b>ปริมาณน้ำฝน:</b>{" "}
                           <span style={{ color: "#64b5f6", fontWeight: "bold", fontSize: "0.9rem" }}>
@@ -740,10 +738,8 @@ const RainMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,heig
                           </span>{" "}
                           มม.
                         </Typography>
-                      </>
-                    }
-                  />
-                </ListItem>
+                        </Box>
+                  </ListItem>
               );
             });
           })()
@@ -755,6 +751,7 @@ const RainMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,heig
       </List>
       </Grid>
     </Grid>
+    </Box>
   );
 };
 

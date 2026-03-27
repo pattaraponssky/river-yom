@@ -67,7 +67,6 @@ const RainStation: React.FC = () => {
         {/* Content Display */}
         <Box>
           {mainTab === 1 && (
-            <Typography variant="h5" sx={{ marginBottom: "1rem", fontWeight: 600, fontFamily: "Prompt", color: "#28378B" }}>
               <RainMap
                 id="longdo-map"
                 stationType="rain"
@@ -75,7 +74,6 @@ const RainStation: React.FC = () => {
                 JsonPaths={JsonPaths} // ส่งข้อมูล GeoJSON เข้าไป
                 height="75vh"
               />
-            </Typography>
           )}
 
           {mainTab === 0 && (

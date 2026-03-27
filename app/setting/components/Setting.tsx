@@ -157,9 +157,7 @@ const Setting: React.FC = () => {
           )}
 
           {mainTab === 3 && (
-            <Typography sx={{ marginBottom: "1rem", fontWeight: 600, ...titleStyle, color: "#28378B" }}>
               <EditAboutUs/>
-            </Typography>
           )}
         </Box>
       </Box>

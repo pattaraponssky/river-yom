@@ -744,9 +744,8 @@
                   <ListItemAvatar sx={{ marginInline: "10px" }}>
                     <Avatar src={`${Path_URL}images/icons/reservoir_icon.png`} />
                   </ListItemAvatar>
-                  <ListItemText
-                    secondary={
-                      <>
+                  <ListItemText>
+                   
                         <Typography sx={{ fontFamily:"Prompt" , fontWeight: "bold", color: "#333" }}>
                           {`อ่างเก็บน้ำ${item.res_name}`}
                         </Typography>
@@ -779,9 +778,7 @@
                           </span>{" "}
                           ล้าน ลบ.ม.
                         </Typography>
-                      </>
-                    }
-                  />
+                   </ListItemText>
                 </ListItem>
               );
             });
