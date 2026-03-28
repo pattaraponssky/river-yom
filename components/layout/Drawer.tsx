@@ -1,27 +1,16 @@
 // src/components/layout/DrawerComponent.tsx
 'use client';
-
 import React, { useState } from "react";
 import {
-  Drawer,
-  List,
-  ListItem,
-  ListItemText,
-  Collapse,
-  IconButton,
-  Box,
-  ListItemIcon,
-  Typography,
-  useMediaQuery,
-  useTheme,
-  Avatar,
-  Button,
-  CircularProgress,
+  Drawer, List, ListItem, ListItemText, Collapse,
+  IconButton, Box, ListItemIcon, Typography,
+  useMediaQuery, useTheme, Avatar, Button, CircularProgress, Tooltip, Chip,
+  Menu,
+  MenuItem,
 } from "@mui/material";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import DashboardIcon from "@mui/icons-material/Dashboard";
-import ModelTrainingIcon from "@mui/icons-material/ModelTraining";
 import DataUsageIcon from "@mui/icons-material/DataUsage";
 import SettingsIcon from "@mui/icons-material/Settings";
 import GroupIcon from "@mui/icons-material/Group";
@@ -29,76 +18,58 @@ import InfoIcon from "@mui/icons-material/Info";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import PlaceIcon from "@mui/icons-material/Place";
-import WaterDamageIcon from "@mui/icons-material/WaterDamage";
 import WaterDropIcon from "@mui/icons-material/WaterDrop";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import MenuIcon from "@mui/icons-material/Menu";
-import LoginDialog from "../Users/LoginDialog";
 import LogoutIcon from "@mui/icons-material/Logout";
 import LoginIcon from "@mui/icons-material/Login";
 import StorageIcon from "@mui/icons-material/Storage";
 import OpacityIcon from "@mui/icons-material/Opacity";
+import AccountTreeIcon from "@mui/icons-material/AccountTree";
+import { Handyman } from "@mui/icons-material";
+import LoginDialog from "../Users/LoginDialog";
 import { Path_URL } from "../../lib/utility";
 import { useAuth } from "@/contexts/AuthContext";
-import { Handyman } from "@mui/icons-material";
-import AccountTreeIcon from '@mui/icons-material/AccountTree';
 
 interface DrawerProps {
   open: boolean;
   setOpen: (open: boolean) => void;
 }
 
-// เมนูหลัก (ทุกคนเห็นได้)
 const publicMenuItems = [
-  {
-    icon: <DashboardIcon sx={{ marginRight: "15px" }} />,
-    text: "สรุปสถานการณ์น้ำ",
-    path: "/dashboard",
-  },
-  {
-    icon: <AccountTreeIcon sx={{ marginRight: "15px" }} />,
-    text: "แผนผังลุ่มน้ำ",
-    path: "/schematic",
-  },
-  // {
-  //   icon: <ModelTrainingIcon sx={{ marginRight: "15px" }} />,
-  //   text: "ผลพยากรณ์",
-  //   path: "/forecast",
-  // },
-  {
-    icon: <InfoIcon sx={{ marginRight: "15px" }} />,
-    text: "เกี่ยวกับเรา",
-    path: "/aboutus",
-  },
+  { icon: <DashboardIcon fontSize="small" />, text: "สรุปสถานการณ์น้ำ", path: "/dashboard" },
+  { icon: <AccountTreeIcon fontSize="small" />, text: "แผนผังลุ่มน้ำ", path: "/schematic" },
+  { icon: <InfoIcon fontSize="small" />, text: "เกี่ยวกับเรา", path: "/aboutus" },
 ];
 
-// เมนูที่ต้องมีสิทธิ์ระดับ 1-2
 const advancedMenuItems = [
-  {
-    icon: <DataUsageIcon sx={{ marginRight: "15px" }} />,
-    text: "แบบจำลอง",
-    path: "/model",
-  },
-  {
-    icon: <Handyman sx={{ marginRight: "15px" }} />,
-    text: "รายการอุปกรณ์",
-    path: "/equipment",
-  },
+  { icon: <DataUsageIcon fontSize="small" />, text: "แบบจำลอง", path: "/model" },
+  { icon: <Handyman fontSize="small" />, text: "รายการอุปกรณ์", path: "/equipment" },
 ];
 
-// เมนู admin เท่านั้น (ระดับ 2)
 const adminMenuItems = [
-  {
-    icon: <SettingsIcon sx={{ marginRight: "15px" }} />,
-    text: "ตั้งค่า",
-    path: "/setting",
-  },
-  {
-    icon: <GroupIcon sx={{ marginRight: "15px" }} />,
-    text: "ผู้ใช้งาน",
-    path: "/users",
-  },
+  { icon: <SettingsIcon fontSize="small" />, text: "ตั้งค่า", path: "/setting" },
+  { icon: <GroupIcon fontSize="small" />, text: "ผู้ใช้งาน", path: "/users" },
 ];
+
+const subStationItems = [
+  { path: "/rain", icon: <WaterDropIcon fontSize="small" />, text: "สถานีวัดน้ำฝน" },
+  { path: "/flow", icon: <PlaceIcon fontSize="small" />, text: "สถานีน้ำท่า" },
+  { path: "/gate", icon: <OpacityIcon fontSize="small" />, text: "ประตูระบายน้ำ" },
+];
+
+const SectionLabel = ({ label, open }: { label: string; open: boolean }) =>
+  open ? (
+    <Typography
+      sx={{
+        fontSize: '0.65rem', fontWeight: 500, letterSpacing: '0.07em',
+        color: 'text.disabled', px: 1.5, pt: 1.5, pb: 0.5,
+        textTransform: 'uppercase', fontFamily: 'Prompt',
+      }}
+    >
+      {label}
+    </Typography>
+  ) : <Box sx={{ my: 0.5, mx: 1, borderTop: '0.5px solid', borderColor: 'divider' }} />;
 
 const DrawerComponent: React.FC<DrawerProps> = ({ open, setOpen }) => {
   const [stationOpen, setStationOpen] = useState(false);
@@ -108,429 +79,406 @@ const DrawerComponent: React.FC<DrawerProps> = ({ open, setOpen }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [loginOpen, setLoginOpen] = useState(false);
-  const drawerWidth = open ? 290 : 72;
-  
+  const [stationAnchorEl, setStationAnchorEl] = useState<null | HTMLElement>(null);
+
+  const drawerWidth = open ? 268 : 68;
+  const isDark = theme.palette.mode === 'dark';
 
   const handleItemClick = () => {
-    if (isMobile || (open && !isMobile)) setOpen(false);
+    if (isMobile) setOpen(false);
   };
 
   if (authLoading) {
     return (
-      <Box
-        sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}
-      >
-        <CircularProgress />
+      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
+        <CircularProgress size={28} />
       </Box>
     );
   }
 
+  const handleStationClick = (event: React.MouseEvent<HTMLElement>) => {
+    if (open) {
+      // โหมดเปิด → toggle collapse ปกติ
+      setStationOpen(!stationOpen);
+    } else {
+      // โหมดย่อ → เปิด popup menu
+      setStationAnchorEl(event.currentTarget);
+    }
+  };
+
+  const handleStationPopupClose = () => setStationAnchorEl(null);
+
+  const menuItemSx = (path: string) => ({
+    borderRadius: '8px',
+    mb: 0.25,
+    px: open ? 1.5 : 0,
+    py: 0.9,
+    justifyContent: open ? 'flex-start' : 'center',
+    color: pathname === path ? 'primary.main' : 'text.secondary',
+    backgroundColor: pathname === path
+      ? (isDark ? 'rgba(21,101,192,0.18)' : 'rgba(21,101,192,0.08)')
+      : 'transparent',
+    '&:hover': {
+      backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+      color: 'text.primary',
+    },
+    transition: 'all 0.15s',
+  });
+
+  const iconSx = (path?: string) => ({
+    minWidth: 0,
+    mr: open ? 1.5 : 0,
+    color: path && pathname === path ? 'primary.main' : 'text.secondary',
+  });
+
   return (
     <>
       <Drawer
-        variant={isMobile || open ? "temporary" : "persistent"}
+        variant={isMobile ? "temporary" : "persistent"}
         open={isMobile ? open : true}
         onClose={() => setOpen(false)}
         sx={{
           width: drawerWidth,
           flexShrink: 0,
-          whiteSpace: "nowrap",
           zIndex: theme.zIndex.appBar + 1,
-          "& .MuiDrawer-paper": {
+          '& .MuiDrawer-paper': {
             width: drawerWidth,
-            overflowX: "hidden",
-            backgroundColor:
-              theme.palette.mode === "dark"
-                ? theme.palette.background.default // หรือ "#0f172a" (slate-900)
-                : "#f8fafc", // slate-50 สีเทาอ่อนสะอาดตา
-            color: theme.palette.text.primary,
-            borderRight: `1px solid ${theme.palette.divider}`,
-            transition: theme.transitions.create("width", {
+            overflowX: 'hidden',
+            backgroundColor: isDark ? theme.palette.background.default : '#f8fafc',
+            borderRight: `0.5px solid ${theme.palette.divider}`,
+            boxShadow: isDark
+              ? '4px 0 24px rgba(0,0,0,0.4)'
+              : '4px 0 16px rgba(0,0,0,0.06)',
+            transition: theme.transitions.create('width', {
               easing: theme.transitions.easing.sharp,
               duration: theme.transitions.duration.enteringScreen,
             }),
-            boxShadow:
-              theme.palette.mode === "dark"
-                ? "4px 0 20px rgba(0,0,0,0.5)"
-                : "4px 0 15px rgba(0,0,0,0.12)",
+            display: 'flex',
+            flexDirection: 'column',
           },
         }}
       >
-        {/* ส่วนหัว Logo + ปุ่มปิด/เปิด */}
+        {/* ─── หัว: Logo + Toggle ─── */}
         <Box
-          display="flex"
-          justifyContent={open ? "space-between" : "center"}
-          alignItems="center"
-          padding="12px 16px"
           sx={{
-            // พื้นหลังส่วนหัวเด่นขึ้น
-            background:
-              theme.palette.mode === "dark"
-                ? `linear-gradient(to bottom,
-                  ${theme.palette.background.paper},
-                  ${theme.palette.background.default}
-                )`
-                : `linear-gradient(to bottom,
-                  ${theme.palette.primary.light}22,
-                  ${theme.palette.background.paper}
-                )`,
-            borderBottom: `1px solid ${theme.palette.divider}`,
+            mt: "64px",
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: open ? 'space-between' : 'center',
+            px: open ? 1.5 : 0,
+            py: 1.2,
+            borderBottom: `0.5px solid ${theme.palette.divider}`,
+            background: isDark
+              ? 'linear-gradient(to bottom, rgba(21,101,192,0.12), transparent)'
+              : 'linear-gradient(to bottom, rgba(21,101,192,0.06), transparent)',
+            minHeight: 64,
           }}
         >
           {open && (
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-              <img src={`${Path_URL}images/logo_rid.png`} alt="Logo" style={{ height: "48px" }} />
-              <Typography
-                variant="h6"
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2 }}>
+              <Box
                 sx={{
-                  fontWeight: 700,
-                  fontFamily: "Prompt",
-                  color:
-                    theme.palette.mode === "dark"
-                      ? theme.palette.primary.light
-                      : theme.palette.primary.main,
-
-                  letterSpacing: "-0.5px",
+                  width: 38, height: 38, borderRadius: '8px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  flexShrink: 0,
                 }}
               >
-                ระบบบริหารจัดการน้ำ
-              </Typography>
+                <img
+                  src={`${Path_URL}images/logo_rid.png`}
+                  alt="RID Logo"
+                  style={{ height: isMobile ? 38 : 46, objectFit: 'contain' }}
+                />
+              </Box>
+              <Box>
+                <Typography sx={{ fontWeight: 600, fontSize: '0.85rem', fontFamily: 'Prompt', lineHeight: 1.3, color: 'text.primary' }}>
+                  ระบบบริหารจัดการน้ำ
+                </Typography>
+                <Typography sx={{ fontSize: '0.65rem', color: 'text.disabled', fontFamily: 'Prompt' }}>
+                  พื้นที่ฝั่งขวาแม่น้ำยม
+                </Typography>
+              </Box>
             </Box>
           )}
-          <IconButton
-            onClick={() => setOpen(!open)}
-            sx={{
-              backgroundColor: theme.palette.primary.main,
-              color: "#fff",
-              "&:hover": {
-                background:
-                  theme.palette.mode === "dark"
-                    ? `linear-gradient(to bottom,
-                    ${theme.palette.background.paper},
-                    ${theme.palette.background.default}
-                  )`
-                    : `linear-gradient(to bottom,
-                    ${theme.palette.primary.light}22,
-                    ${theme.palette.background.paper}
-                  )`,
-              },
-              borderRadius: "50%",
-              boxShadow: "0px 3px 8px rgba(0, 0, 0, 0.3)",
-              width: 40,
-              height: 40,
-            }}
-          >
-            {open ? <ChevronLeftIcon /> : <MenuIcon />}
-          </IconButton>
-        </Box>
 
-        <List sx={{ px: 1 }}>
-          {/* เมนูหลัก */}
-          {publicMenuItems.map((item, index) => (
-            <ListItem
-              key={index}
-              component={Link}
-              href={item.path}
-              onClick={handleItemClick}
+          <Tooltip title={open ? 'ย่อเมนู' : 'ขยายเมนู'} placement="right">
+            <IconButton
+              onClick={() => setOpen(!open)}
+              size="small"
               sx={{
-                padding: "8px 20px",
-                justifyContent: open ? "initial" : "center",
-                backgroundColor: pathname === item.path ? theme.palette.action.selected : "inherit",
-                "&:hover": { backgroundColor: theme.palette.action.hover },
+                width: 30, height: 30,
+                borderRadius: '8px',
+                border: `0.5px solid ${theme.palette.divider}`,
+                backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(21,101,192,0.08)',
+                color: 'primary.main',
+                '&:hover': { backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(21,101,192,0.15)' },
               }}
             >
-              <ListItemIcon
-                sx={{
-                  minWidth: 0,
-                  marginLeft: open ? "0" : "15px",
-                  color:
-                    theme.palette.mode === "dark"
-                      ? theme.palette.primary.light
-                      : theme.palette.primary.main,
-                }}
-              >
-                {item.icon}
-              </ListItemIcon>
+              {open ? <ChevronLeftIcon fontSize="small" /> : <MenuIcon fontSize="small" />}
+            </IconButton>
+          </Tooltip>
+        </Box>
 
-              {open && (
-                <ListItemText
-                  primary={item.text}
-                  primaryTypographyProps={{
-                    sx: {
-                      fontSize: { md: "1.2rem", xs: "1rem" },
-                      fontWeight: 600,
-                      fontFamily: "Prompt",
-                    },
-                  }}
-                />
-              )}
-            </ListItem>
+        {/* ─── เมนู ─── */}
+        <List sx={{ px: 1, py: 1, flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
+          <SectionLabel label="เมนูหลัก" open={open} />
+
+          {publicMenuItems.map((item) => (
+            <Tooltip key={item.path} title={!open ? item.text : ''} placement="right">
+              <ListItem component={Link} href={item.path} onClick={handleItemClick} sx={menuItemSx(item.path)}>
+                <ListItemIcon sx={iconSx(item.path)}>{item.icon}</ListItemIcon>
+                {open && (
+                  <ListItemText
+                    primary={item.text}
+                    primaryTypographyProps={{ sx: { fontFamily: 'Prompt', fontSize: '1rem', fontWeight: pathname === item.path ? 600 : 600 } }}
+                  />
+                )}
+              </ListItem>
+            </Tooltip>
           ))}
 
-          {/* เมนูย่อย - ข้อมูลสถานี (ทุกคนเห็น) */}
-          <ListItem
-            onClick={() => setStationOpen(!stationOpen)}
-            sx={{
-              borderRadius: "8px",
-              marginY: "4px",
-              padding: "8px 20px",
-              justifyContent: open ? "initial" : "center",
-              backgroundColor: stationOpen ? theme.palette.primary.main + "11" : "transparent",
-              "&:hover": { backgroundColor: theme.palette.action.hover },
-            }}
-          >
-            <StorageIcon
-              sx={{ marginRight: open ? "15px" : "0", color: theme.palette.primary.main }}
-            />
-            {open && (
-              <>
-                <ListItemText
-                  primary="ข้อมูล"
-                  primaryTypographyProps={{
-                    sx: {
-                      fontSize: { md: "1.2rem", xs: "1rem" },
-                      fontWeight: 600,
-                      fontFamily: "Prompt",
-                      color:
-                        theme.palette.mode === "dark"
-                          ? theme.palette.primary.light
-                          : theme.palette.primary.main,
-                    },
-                  }}
-                />
-                {stationOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-              </>
-            )}
-          </ListItem>
+          <SectionLabel label="ข้อมูลสถานี" open={open} />
 
-          <Collapse in={stationOpen} timeout="auto" unmountOnExit>
-            <List component="div" disablePadding>
-              {[
-                // { path: "/reservoir", icon: <WaterDamageIcon />, text: "อ่างเก็บน้ำ" },
-                { path: "/rain", icon: <WaterDropIcon />, text: "สถานีวัดน้ำฝน" },
-                { path: "/flow", icon: <PlaceIcon />, text: "สถานีน้ำท่า" },
-                { path: "/gate", icon: <OpacityIcon />, text: "ประตูระบายน้ำ" },
-              ].map((item) => (
+          {/* ปุ่มข้อมูล (collapsible) */}
+          <Tooltip title={!open ? 'ข้อมูล' : ''} placement="right">
+            <ListItem
+              onClick={handleStationClick}
+              sx={{
+                ...menuItemSx(''),
+                backgroundColor: stationOpen
+                  ? (isDark ? 'rgba(21,101,192,0.1)' : 'rgba(21,101,192,0.06)')
+                  : 'transparent',
+              }}
+            >
+              <ListItemIcon sx={{ minWidth: 0, mr: open ? 1.5 : 0, color: stationOpen ? 'primary.main' : 'text.secondary' }}>
+                <StorageIcon fontSize="small" />
+              </ListItemIcon>
+              {open && (
+                <>
+                  <ListItemText
+                    primary="ข้อมูล"
+                    primaryTypographyProps={{
+                      sx: { fontFamily: 'Prompt', fontSize: '0.875rem', fontWeight: 600, color: stationOpen ? 'primary.main' : 'text.secondary' },
+                    }}
+                  />
+                  {stationOpen
+                    ? <ExpandLessIcon fontSize="small" sx={{ color: 'text.disabled' }} />
+                    : <ExpandMoreIcon fontSize="small" sx={{ color: 'text.disabled' }} />
+                  }
+                </>
+              )}
+            </ListItem>
+          </Tooltip>
+
+          {/* โหมดเปิด → Collapse ปกติ */}
+          <Collapse in={stationOpen && open} timeout="auto" unmountOnExit>
+            <List component="div" disablePadding sx={{ pl: 1 }}>
+              {subStationItems.map((item) => (
                 <ListItem
                   key={item.path}
                   component={Link}
                   href={item.path}
                   onClick={handleItemClick}
                   sx={{
-                    paddingLeft: open ? "30px" : "15px",
-                    backgroundColor:
-                      pathname === item.path ? theme.palette.action.selected : "inherit",
-                    "&:hover": { backgroundColor: theme.palette.action.hover },
+                    ...menuItemSx(item.path),
+                    pl: 3,
+                    borderLeft: `2px solid ${pathname === item.path ? theme.palette.primary.main : theme.palette.divider}`,
+                    borderRadius: '0 8px 8px 0',
                   }}
                 >
-                  <ListItemIcon
-                    sx={{
-                      minWidth: 0,
-                      marginRight: open ? "15px" : "0",
-                      color:
-                        theme.palette.mode === "dark"
-                          ? theme.palette.primary.light
-                          : theme.palette.primary.main,
-                    }}
-                  >
-                    {item.icon}
-                  </ListItemIcon>
-                  {open && (
-                    <ListItemText
-                      primary={item.text}
-                      primaryTypographyProps={{
-                        sx: { fontFamily: "Prompt", fontWeight: "bold" },
-                      }}
-                    />
-                  )}
+                  <ListItemIcon sx={iconSx(item.path)}>{item.icon}</ListItemIcon>
+                  <ListItemText
+                    primary={item.text}
+                    primaryTypographyProps={{ sx: { fontFamily: 'Prompt', fontSize: '0.825rem', fontWeight: pathname === item.path ? 600 : 600 } }}
+                  />
                 </ListItem>
               ))}
             </List>
           </Collapse>
 
-          {iduser_level === 1 || iduser_level === 2 ? (
-            advancedMenuItems.map((item, index) => (
-              <ListItem
-                key={index}
+          {/* โหมดย่อ → Popup Menu */}
+          <Menu
+            anchorEl={stationAnchorEl}
+            open={Boolean(stationAnchorEl)}
+            onClose={handleStationPopupClose}
+            anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+            transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+            PaperProps={{
+              elevation: 3,
+              sx: {
+                ml: 0.5,
+                minWidth: 180,
+                borderRadius: 2,
+                border: `0.5px solid ${theme.palette.divider}`,
+                '& .MuiMenuItem-root': {
+                  fontFamily: 'Prompt',
+                  fontSize: '0.875rem',
+                  gap: 1.2,
+                  px: 2,
+                  py: 1,
+                  borderRadius: 1,
+                  mx: 0.5,
+                  color: 'text.secondary',
+                  '&:hover': { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', color: 'text.primary' },
+                },
+              },
+            }}
+          >
+            <Typography sx={{ px: 2, pt: 1, pb: 0.5, fontSize: '0.65rem', fontWeight: 500, color: 'text.disabled', fontFamily: 'Prompt', letterSpacing: '0.07em', textTransform: 'uppercase' }}>
+              ข้อมูลสถานี
+            </Typography>
+            {subStationItems.map((item) => (
+              <MenuItem
+                key={item.path}
                 component={Link}
                 href={item.path}
-                onClick={handleItemClick}
+                onClick={handleStationPopupClose}
+                selected={pathname === item.path}
                 sx={{
-                  justifyContent: open ? "initial" : "center",
-                  backgroundColor: pathname === item.path ? theme.palette.action.selected : "inherit",
-                  "&:hover": { backgroundColor: theme.palette.action.hover },
-                  display: [1, 2].includes(iduser_level) ? "flex" : "none",
+                  color: pathname === item.path ? 'primary.main !important' : undefined,
+                  fontWeight: pathname === item.path ? 600 : 600,
+                  backgroundColor: pathname === item.path
+                    ? `${isDark ? 'rgba(21,101,192,0.18)' : 'rgba(21,101,192,0.08)'} !important`
+                    : undefined,
                 }}
               >
-                <ListItemIcon
-                  sx={{
-                    minWidth: 0,
-                    marginLeft: open ? "5px" : "15px",
-                    color:
-                      theme.palette.mode === "dark"
-                        ? theme.palette.primary.light
-                        : theme.palette.primary.main,
-                  }}
-                >
+                <ListItemIcon sx={{ minWidth: 0, color: pathname === item.path ? 'primary.main' : 'text.secondary' }}>
                   {item.icon}
                 </ListItemIcon>
+                {item.text}
+              </MenuItem>
+            ))}
+          </Menu>
 
-                {open && (
-                  <ListItemText
-                    primary={item.text}
-                    primaryTypographyProps={{
-                      sx: {
-                        fontSize: { md: "1.2rem", xs: "1rem" },
-                        fontWeight: 600,
-                        fontFamily: "Prompt",
-                      },
-                    }}
-                  />
-                )}
-              </ListItem>
-            ))) : null}
+          {(iduser_level === 1 || iduser_level === 2) && (
+            <>
+              <SectionLabel label="ขั้นสูง" open={open} />
+              {advancedMenuItems.map((item) => (
+                <Tooltip key={item.path} title={!open ? item.text : ''} placement="right">
+                  <ListItem component={Link} href={item.path} onClick={handleItemClick} sx={menuItemSx(item.path)}>
+                    <ListItemIcon sx={iconSx(item.path)}>{item.icon}</ListItemIcon>
+                    {open && (
+                      <ListItemText
+                        primary={item.text}
+                        primaryTypographyProps={{ sx: { fontFamily: 'Prompt', fontSize: '1rem', fontWeight: pathname === item.path ? 600 : 600 } }}
+                      />
+                    )}
+                  </ListItem>
+                </Tooltip>
+              ))}
+            </>
+          )}
 
-          {iduser_level === 2 ? (
-          adminMenuItems.map((item, index) => (
-            <ListItem
-              key={index}
-              component={Link}
-              href={item.path}
-              onClick={handleItemClick}
-              sx={{
-                justifyContent: open ? "initial" : "center",
-                backgroundColor: pathname === item.path ? theme.palette.action.selected : "inherit",
-                "&:hover": { backgroundColor: theme.palette.action.hover },
-                display: iduser_level === 2 ? "flex" : "none",
-              }}
-            >
-              <ListItemIcon
-                sx={{
-                  minWidth: 0,
-                  marginLeft: open ? "5px" : "15px",
-                  color:
-                    theme.palette.mode === "dark"
-                      ? theme.palette.primary.light
-                      : theme.palette.primary.main,
-                }}
-              >
-                {item.icon}
-              </ListItemIcon>
-
-              {open && (
-                <ListItemText
-                  primary={item.text}
-                  primaryTypographyProps={{
-                    sx: {
-                      fontSize: { md: "1.2rem", xs: "1rem" },
-                      fontWeight: 600,
-                      fontFamily: "Prompt",
-                    },
-                  }}
-                />
-              )}
-            </ListItem>
-          ))) : null}
+          {iduser_level === 2 && (
+            <>
+              <SectionLabel label="ผู้ดูแลระบบ" open={open} />
+              {adminMenuItems.map((item) => (
+                <Tooltip key={item.path} title={!open ? item.text : ''} placement="right">
+                  <ListItem component={Link} href={item.path} onClick={handleItemClick} sx={menuItemSx(item.path)}>
+                    <ListItemIcon sx={iconSx(item.path)}>{item.icon}</ListItemIcon>
+                    {open && (
+                      <>
+                        <ListItemText
+                          primary={item.text}
+                          primaryTypographyProps={{ sx: { fontFamily: 'Prompt', fontSize: '1rem', fontWeight: pathname === item.path ? 600 : 600 } }}
+                        />
+                        <Chip label="admin" size="small" sx={{ fontSize: '0.6rem', height: 18, fontFamily: 'Prompt', bgcolor: 'rgba(21,101,192,0.1)', color: 'primary.main' }} />
+                      </>
+                    )}
+                  </ListItem>
+                </Tooltip>
+              ))}
+            </>
+          )}
         </List>
 
-        {/* ส่วนผู้ใช้ อยู่ด้านล่าง */}
+        {/* ─── ส่วนล่าง: User / Login ─── */}
         <Box
           sx={{
-            marginTop: "auto",
-            padding: "16px",
-            borderTop: `1px solid ${theme.palette.divider}`,
-            background:
-              theme.palette.mode === "dark" ? "rgba(15, 23, 42, 0.6)" : "rgba(248, 250, 252, 0.8)",
+            px: open ? 1.5 : 1,
+            py: 1.5,
+            borderTop: `0.5px solid ${theme.palette.divider}`,
+            backgroundColor: isDark ? 'rgba(0,0,0,0.2)' : 'rgba(248,250,252,0.9)',
           }}
         >
           {currentUser ? (
-            <>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: open ? 1.2 : 0, justifyContent: open ? 'flex-start' : 'center' }}>
+              <Tooltip title={!open ? currentUser.username : ''} placement="right">
+                <Avatar
+                  src={`${Path_URL}images/icons/user_icon.png`}
+                  alt={currentUser.username}
+                  sx={{
+                    width: 34, height: 34, flexShrink: 0,
+                    bgcolor: isDark ? 'rgba(21,101,192,0.25)' : 'rgba(21,101,192,0.1)',
+                    color: 'primary.main',
+                    border: `1.5px solid`,
+                    borderColor: isDark ? 'rgba(21,101,192,0.4)' : 'rgba(21,101,192,0.25)',
+                    fontSize: 13, fontWeight: 700,
+                  }}
+                >
+                  {currentUser.username?.charAt(0).toUpperCase()}
+                </Avatar>
+              </Tooltip>
               {open && (
-                <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}>
-                  <Avatar
-                    alt={currentUser.username}
-                    src={`${Path_URL}images/icons/user_icon.png`}
-                    sx={{
-                      width: 40,
-                      height: 40,
-                      bgcolor:
-                        theme.palette.mode === "dark" ? theme.palette.background.paper : "#fff",
-                      p: "7px",
-                      m: 1,
-                      border: `2px solid ${theme.palette.primary.main}`,
-                    }}
-                  />
-                  <Box sx={{ flexGrow: 1 }}>
-                    <Typography
-                      sx={{
-                        fontWeight: "bold",
-                        fontSize: { md: "1rem", xs: "0.8rem" },
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        color: theme.palette.text.primary,
-                      }}
-                    >
+                <>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Typography sx={{ fontSize: '0.8rem', fontWeight: 600, fontFamily: 'Prompt', color: 'text.primary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {currentUser.username}
                     </Typography>
+                    <Typography sx={{ fontSize: '0.65rem', color: 'text.disabled', fontFamily: 'Prompt' }}>
+                      {iduser_level === 2 ? 'ผู้ดูแลระบบ' : iduser_level === 1 ? 'ผู้ใช้งานขั้นสูง' : 'ผู้ใช้งานทั่วไป'}
+                    </Typography>
                   </Box>
-
-                  <IconButton
-                    onClick={logout}
-                    aria-label="logout"
-                    sx={{ color: "error.main", "&:hover": { color: "error.dark" } }}
-                  >
-                    <LogoutIcon />
-                  </IconButton>
-                </Box>
-                )
-              }
-            </>
-          ) : (
-            <>
-              {open ? (
-                <Button
-                  fullWidth
-                  color="inherit"
-                  onClick={() => setLoginOpen(true)}
-                  sx={{
-                    fontFamily: "Prompt",
-                    fontSize: { md: "1rem", xs: "0.8rem" },
-                    fontWeight: 600,
-                    borderRadius: "999px",
-                    background: "linear-gradient(to right, #43A047, #66BB6A)",
-                    color: "#fff",
-                    "&:hover": {
-                      background: "linear-gradient(to right, #388E3C, #4CAF50)",
-                    },
-                  }}
-                >
-                  เข้าสู่ระบบ
-                </Button>
-              ) : (
-                <IconButton
-                  onClick={() => setLoginOpen(true)}
-                  aria-label="login"
-                  sx={{
-                    color: theme.palette.success.main,
-                    "&:hover": { color: theme.palette.success.dark },
-                  }}
-                >
-                  <LoginIcon />
-                </IconButton>
+                  <Tooltip title="ออกจากระบบ">
+                    <IconButton
+                      onClick={logout}
+                      size="small"
+                      sx={{
+                        width: 30, height: 30, borderRadius: '8px',
+                        border: `0.5px solid ${theme.palette.divider}`,
+                        color: 'text.secondary',
+                        '&:hover': { bgcolor: 'error.lighter', color: 'error.main', borderColor: 'error.light' },
+                      }}
+                    >
+                      <LogoutIcon sx={{ fontSize: 15 }} />
+                    </IconButton>
+                  </Tooltip>
+                </>
               )}
-            </>
+            </Box>
+          ) : (
+            open ? (
+              <Button
+                fullWidth
+                startIcon={<LoginIcon fontSize="small" />}
+                onClick={() => setLoginOpen(true)}
+                variant="outlined"
+                size="small"
+                sx={{
+                  fontFamily: 'Prompt', fontSize: '0.8rem', fontWeight: 500,
+                  borderRadius: '8px', textTransform: 'none',
+                  borderColor: 'divider',
+                  color: 'text.secondary',
+                  '&:hover': { borderColor: 'primary.main', color: 'primary.main', bgcolor: 'rgba(21,101,192,0.05)' },
+                }}
+              >
+                เข้าสู่ระบบ
+              </Button>
+            ) : (
+              <Tooltip title="เข้าสู่ระบบ" placement="right">
+                <IconButton onClick={() => setLoginOpen(true)} size="small" sx={{ color: 'text.secondary', '&:hover': { color: 'primary.main' } }}>
+                  <LoginIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            )
           )}
         </Box>
-
-        <LoginDialog
-          open={loginOpen}
-          onClose={() => setLoginOpen(false)}
-          onLoginSuccess={() => {
-            window.location.reload();
-          }}
-        />
       </Drawer>
+
+      <LoginDialog
+        open={loginOpen}
+        onClose={() => setLoginOpen(false)}
+        onLoginSuccess={() => window.location.reload()}
+      />
     </>
   );
 };

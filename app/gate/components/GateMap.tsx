@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { API_URL, formatThaiDay, Path_URL } from "@/lib/utility";
-import { Avatar, Box, Grid, List, ListItem, ListItemAvatar, ListItemText, Typography } from "@mui/material";
+import { alpha, Avatar, Box, Grid, List, ListItem, ListItemAvatar, ListItemText, Typography, useTheme } from "@mui/material";
 import ApexCharts from 'apexcharts';
 
 declare global {
@@ -36,6 +36,7 @@ interface GateDataItem {
 }
 
 const GateMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,height }) => {
+  
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const [JsonDataList, setJsonDataList] = useState<any[]>([]);
   const [isMapReady, setIsMapReady] = useState<boolean>(false);
@@ -44,6 +45,8 @@ const GateMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,heig
   const [gateApiData, setGateApiData] = useState<GateDataItem[]>([]);
   const [latestGateData, setLatestGateData] = useState<GateDataItem[]>([]);
   const todayStr = new Date().toISOString().slice(0, 10); 
+  const theme = useTheme();
+  const primary = theme.palette.primary.main;
   
   useEffect(() => {
     const loadMapScript = () => {
@@ -738,7 +741,7 @@ const prepareChartDataForGate = (rawData: any[], targetStaCode: string) => {
                     padding: "2px",
                     borderRadius:"20px",
                     margin:"2px",
-                    backgroundColor: index % 2 === 0 ? "rgb(250, 250, 250)" : "rgb(240, 240, 240)",
+                    background: `linear-gradient(135deg, ${alpha(primary, 0.25)}, ${alpha(primary, 0.05)})`,
                     "&:hover": { backgroundColor: "#e0e0e0", cursor: "pointer" },
                   }}
                   onClick={() => handleListItemClick({...item,discharge,wl_upper,wl_lower}, "gate")}
@@ -747,7 +750,7 @@ const prepareChartDataForGate = (rawData: any[], targetStaCode: string) => {
                     <Avatar src={`${Path_URL}images/icons/gate_icon.png`} />
                   </ListItemAvatar>
                   <ListItemText>
-                        <Typography sx={{ fontFamily:"Prompt", fontWeight: "bold", color: "#333" }}>
+                        <Typography sx={{ fontFamily:"Prompt", fontWeight: "bold", color: "text.primary" }}>
                           {`สถานีวัดน้ำท่า${item.sta_name}`}
                         </Typography>
                         <Typography variant="body2" sx={{ fontFamily:"Prompt", color: "text.primary" }}>

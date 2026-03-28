@@ -15,6 +15,7 @@ import {
   TableRow,
   Paper,
   Box,
+  alpha,
 } from "@mui/material";
 import { API_URL, Path_URL } from '../../lib/utility';
 import { textStyle } from '../../theme/style';
@@ -49,6 +50,8 @@ const ReservoirDashboard: React.FC = () => {
 
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
+   const primary = theme.palette.primary.main;
+  const secondary = theme.palette.secondary.main;
 
   const cardColor = isDark
     ? `linear-gradient(135deg, ${theme.palette.background.paper}88, ${theme.palette.background.paper}cc)` // โปร่งแสงเข้ม
@@ -114,6 +117,11 @@ const titleStyle = {
             <Avatar
               src={`${Path_URL}/images/icons/reservoir_icon.png`}
               alt="reservoir"
+               sx={{
+                    width: { xs: 35, md: 45 },
+                    height: { xs: 35, md: 45 },
+                    boxShadow: `0 4px 12px ${alpha(primary, 0.4)}`,
+                }}
             />
           }
           title={

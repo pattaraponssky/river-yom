@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { API_URL, formatThaiDay, Path_URL } from "../../../lib/utility";
-import { Avatar, Box, Grid, List, ListItem, ListItemAvatar, ListItemText, Typography } from "@mui/material";
+import { alpha, Avatar, Box, Grid, List, ListItem, ListItemAvatar, ListItemText, Typography, useTheme } from "@mui/material";
 import ApexCharts from 'apexcharts';
 
 declare global {
@@ -44,6 +44,8 @@ const FlowMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,heig
   const [flowApiData, setFlowApiData] = useState<FlowDataItem[]>([]);
   const [latestFlowData, setLatestFlowData] = useState<FlowDataItem[]>([]);
   const todayStr = new Date().toISOString().slice(0, 10); 
+  const theme = useTheme();
+  const primary = theme.palette.primary.main;
   
   useEffect(() => {
     const loadMapScript = () => {
@@ -698,8 +700,7 @@ const prepareChartDataForFlow = (rawData: any[], targetStaCode: string) => {
                     padding: "2px",
                     borderRadius:"20px",
                     margin:"2px",
-                    backgroundColor: index % 2 === 0 ? "rgb(250, 250, 250)" : "rgb(240, 240, 240)",
-                    "&:hover": { backgroundColor: "#e0e0e0", cursor: "pointer" },
+                    background: `linear-gradient(135deg, ${alpha(primary, 0.25)}, ${alpha(primary, 0.05)})`,
                   }}
                   onClick={() => handleListItemClick({...item,discharge,wl}, "flow")}
                 >

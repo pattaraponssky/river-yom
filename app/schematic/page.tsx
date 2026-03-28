@@ -1031,13 +1031,13 @@ projectAreas.forEach((zone, index) => {
         </IconButton>
       </Box>
 
-      <Box mt={3} textAlign="center">
+      {/* <Box mt={3} textAlign="center">
         <Typography variant="body2" color="text.secondary">
           • เขียว = ปกติ (&gt;70%) &nbsp; เหลือง = เฝ้าระวัง (40-70%) &nbsp; แดง = วิกฤต (&lt;40%)
           <br />
           ข้อมูลจาก API: https://app.rid.go.th/reservoir/api/reservoir/public
         </Typography>
-      </Box>
+      </Box> */}
 
       <Dialog
         open={openDialog}

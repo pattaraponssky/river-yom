@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
+  alpha,
   Avatar,
   Box,
   Card,
@@ -33,6 +34,8 @@ const GateCard: React.FC = () => {
   const [totalDcToday, setTotalDcToday] = useState<number>(0);
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
+  const primary = theme.palette.primary.main;
+  const secondary = theme.palette.secondary.main;
 
   const cardColor = isDark
     ? `linear-gradient(135deg, ${theme.palette.background.paper}88, ${theme.palette.background.paper}cc)` // โปร่งแสงเข้ม
@@ -82,11 +85,12 @@ const titleStyle = {
           <Box display="flex" alignItems="center" mb={2}>
             <Avatar
               src={`${Path_URL}/images/icons/gate_icon.png`}
-              sx={{
-                width: { xs: 35, md: 45 },
-                height: { xs: 35, md: 45 },
-                mr: 1.5,
-              }}
+               sx={{
+                    width: { xs: 35, md: 45 },
+                    height: { xs: 35, md: 45 },
+                    boxShadow: `0 4px 12px ${alpha(primary, 0.4)}`,
+                    mr: 2,
+                }}
             />
             <Typography 
                sx={{ fontWeight: "bold", fontSize: { md: "1.4rem", xs: "1rem" }, fontFamily:"Prompt" }}
@@ -113,7 +117,15 @@ const titleStyle = {
                 <Typography sx={textStyle}>ประตูระบายน้ำทั้งหมด</Typography>
               </Grid>
               <Grid size={{ xs: 3 }} textAlign="center">
-                <Typography sx={{...titleStyle,color: "#28378B"}} fontWeight="bold">
+                <Typography 
+                  sx={{
+                    fontWeight: 800,
+                    fontSize: '1.4rem',
+                    background: `linear-gradient(90deg, ${primary}, ${secondary})`,
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                  }}
+                >
                   {data.length}
                 </Typography>
               </Grid>
@@ -125,7 +137,15 @@ const titleStyle = {
                 <Typography sx={textStyle}>ปริมาณน้ำท่ารายวันรวม</Typography>
               </Grid>
               <Grid size={{ xs: 3 }} textAlign="center">
-                <Typography sx={{...titleStyle,color: "#28378B"}} fontWeight="bold">
+                <Typography 
+                    sx={{
+                      fontWeight: 800,
+                      fontSize: '1.4rem',
+                      background: `linear-gradient(90deg, ${primary}, ${secondary})`,
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                    }}
+                  >
                   {numberFormat(totalDcToday, 2)}
                 </Typography>
               </Grid>
