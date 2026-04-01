@@ -747,12 +747,12 @@
                   </ListItemAvatar>
                   <ListItemText>
                    
-                        <Typography sx={{ fontFamily:"Prompt" , fontWeight: "bold", color: "#333" }}>
+                        <Typography sx={{ fontFamily:"Prompt" , fontWeight: "bold", color: "text.secondary"}}>
                           {`อ่างเก็บน้ำ${item.res_name}`}
                         </Typography>
                 
-                        <Typography variant="body2" sx={{ fontFamily:"Prompt" , color: "text.primary" }}>
-                          <span style={{ color: "rgb(46, 58, 108)", fontWeight: "bold", fontSize: "0.9rem" }}>
+                        <Typography variant="body2" sx={{ fontFamily:"Prompt" , color: "text.secondary" }}>
+                          <span style={{ color: "text.secondary", fontWeight: "bold", fontSize: "0.9rem" }}>
                           ตำบล{item.tambon} อำเภอ{item.district} จังหวัด{item.province}
                           </span>
                         </Typography>

@@ -1052,23 +1052,25 @@ projectAreas.forEach((zone, index) => {
           },
         }}
       >
-        <DialogTitle sx={{ m: 0, p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h5">{`รายละเอียดสถานี ${selectedName}`}</Typography>
+        <DialogTitle sx={{ m: 0, p: 2, display: 'flex', justifyContent: 'space-between'}}>
+          <span>
+            {selectedName}
+          </span>
           <IconButton aria-label="close" onClick={handleCloseDialog}>
             <CloseIcon />
           </IconButton>
         </DialogTitle>
 
-        <DialogContent dividers sx={{ p: 2 }}>
+        <DialogContent dividers>
           {selectedStation && selectedType === 'reservoir' ? (
             <DataReservoirStation propsSelectedStation={selectedStation} />
           ) : selectedStation && selectedType === 'flow' ? (
-            <Box sx={{ p: 2, textAlign: 'center' }}>
+            <Box >
               <DataFlowCombined propsSelectedStation={selectedStation} />
               <Typography>ข้อมูลสถานีไหล: {selectedStation}</Typography>
             </Box>
           ) : (
-            <Box sx={{ p: 4, textAlign: 'center' }}>
+            <Box>
               <Typography>กำลังโหลดข้อมูล...</Typography>
             </Box>
           )}

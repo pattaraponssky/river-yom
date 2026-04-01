@@ -165,7 +165,11 @@ const titleStyle = {
           >
             <Table size="small">
               <TableHead >
-                <TableRow sx={{ backgroundColor: "#01579B" }}>
+                 <TableRow
+                    sx={{
+                      background: `linear-gradient(90deg, ${primary}, #01579B)`,
+                    }}
+                  >
                   <TableCell align="center" sx={{ color: "white",...textStyle, fontWeight: "bold" }}>
                     ประตูระบายน้ำ
                   </TableCell>

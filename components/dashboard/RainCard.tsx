@@ -176,7 +176,11 @@ const RainCard: React.FC = () => {
           <Card variant="outlined" sx={{ borderRadius: 2,overflow: "auto",  }}>
             <Table size="small">
               <TableHead>
-                <TableRow sx={{ bgcolor: "#01579B" }}>
+                 <TableRow
+                    sx={{
+                      background: `linear-gradient(90deg, ${primary}, #01579B)`,
+                    }}
+                  >
                   <TableCell
                     align="center"
                     sx={{ color: "white", fontWeight: "bold", ...textStyle }}

@@ -750,11 +750,11 @@ const prepareChartDataForGate = (rawData: any[], targetStaCode: string) => {
                     <Avatar src={`${Path_URL}images/icons/gate_icon.png`} />
                   </ListItemAvatar>
                   <ListItemText>
-                        <Typography sx={{ fontFamily:"Prompt", fontWeight: "bold", color: "text.primary" }}>
+                        <Typography sx={{ fontFamily:"Prompt", fontWeight: "bold", color: "text.secondary" }}>
                           {`สถานีวัดน้ำท่า${item.sta_name}`}
                         </Typography>
-                        <Typography variant="body2" sx={{ fontFamily:"Prompt", color: "text.primary" }}>
-                          <span style={{ color: "rgb(46, 58, 108)", fontWeight: "bold", fontSize: "0.9rem" }}>
+                        <Typography variant="body2" sx={{ fontFamily:"Prompt", color: "text.secondary" }}>
+                          <span style={{ color: "text.secondary", fontWeight: "bold", fontSize: "0.9rem" }}>
                           ตำบล{item.tambon} อำเภอ{item.district} จังหวัด{item.province}
                           </span>
                         </Typography>

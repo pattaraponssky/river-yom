@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Box, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, useMediaQuery } from "@mui/material";
+import { Box, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, useMediaQuery, useTheme } from "@mui/material";
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
@@ -139,7 +139,8 @@ const FloodWarningTable: React.FC<FloodWarningTableProps> = ({ maxLevels, waterT
   const isSmallScreen = useMediaQuery("(max-width: 600px)");
   const isMediumScreen = useMediaQuery("(max-width: 900px)");
   const [flowLevels, setFlowLevels] = useState<Record<string, number>>({});
-  const theme = useThemeMode();
+  const theme = useTheme();
+  const primary = theme.palette.primary.main;
   
   // โหลดข้อมูลจาก API
   useEffect(() => {
@@ -360,7 +361,7 @@ const FloodWarningTable: React.FC<FloodWarningTableProps> = ({ maxLevels, waterT
 
         {/* หัวตาราง */}
         <TableHead sx={{ clipPath: "none" }}>
-          <TableRow>
+           <TableRow>
             <TableCell sx={HeaderCellStyle} rowSpan={2}>
               ตำแหน่งเตือนภัย
             </TableCell>

@@ -709,12 +709,12 @@ const RainMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,heig
                     <Avatar src={`${Path_URL}images/icons/${parseFloat(rain_mm) > 0 ? 'rain_station_icon.png' : 'sun_station_icon.png'}`} />
                   </ListItemAvatar>
                       <Box>
-                        <Typography sx={{ fontFamily:"Prompt", fontWeight: "bold", color: "#333" }}>
+                        <Typography sx={{ fontFamily:"Prompt", fontWeight: "bold", color: "text.primary" }}>
                           {`สถานี${item.name}`}
                         </Typography>
 
-                        <Typography variant="body2" sx={{ fontFamily:"Prompt", color: "text.primary" }}>
-                          <span style={{ color: "rgb(46, 58, 108)", fontWeight: "bold", fontSize: "0.9rem" }}>
+                        <Typography variant="body2" sx={{ fontFamily:"Prompt", color: "text.secondary" }}>
+                          <span style={{fontWeight: "bold", fontSize: "0.9rem" }}>
                           ตำบล{item.tambon} อำเภอ{item.district} จังหวัด{item.province}
                           </span>
                         </Typography>
