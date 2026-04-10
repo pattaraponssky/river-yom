@@ -198,6 +198,84 @@ export default function AboutUsPage() {
         </Typography>
 
         <Divider sx={{ my: 4 }} />
+          
+          {/* ช่องทางติดต่อ */}
+        <Typography
+          variant="h5"
+          component="h2"
+          sx={{ mb: 2, fontWeight: "bold", color: "text.primary" }}
+        >
+          5. ช่องทางติดต่อ
+        </Typography>
+
+        {/* กรมชลประทาน */}
+        <Typography
+          variant="h6"
+          sx={{ mb: 1, fontWeight: "bold", color: "primary.main" }}
+        >
+          กรมชลประทาน
+        </Typography>
+        <Typography variant="body1" sx={{ ...textStyle, mb: 0.5 }}>
+          📍 811 ถ.สามเสน แขวงถนนนครไชยศรี เขตดุสิต กรุงเทพมหานคร 10300
+        </Typography>
+        <Typography variant="body1" sx={{ ...textStyle, mb: 0.5 }}>
+          📞 โทรศัพท์: 02-241-0020 ถึง 29
+        </Typography>
+        <Typography variant="body1" sx={{ ...textStyle, mb: 0.5 }}>
+          ☎️ สายด่วน: 1460 (ชลประทาน บริการประชาชน)
+        </Typography>
+        <Typography variant="body1" sx={{ ...textStyle, mb: 2 }}>
+          🌐 เว็บไซต์:{" "}
+          <a href="https://www.rid.go.th" target="_blank" rel="noopener noreferrer">
+            www.rid.go.th
+          </a>
+        </Typography>
+
+        <Divider sx={{ my: 2 }} />
+
+        {/* สำนักชลประทานที่ 3 */}
+        <Typography
+          variant="h6"
+          sx={{ mb: 1, fontWeight: "bold", color: "primary.main" }}
+        >
+          สำนักชลประทานที่ 3
+        </Typography>
+        <Typography variant="body1" sx={{ ...textStyle, mb: 0.5 }}>
+          📍 204 หมู่ 8 ต.ท่าทอง อ.เมือง จ.พิษณุโลก 65000
+        </Typography>
+        <Typography variant="body1" sx={{ ...textStyle, mb: 0.5 }}>
+          📞 โทรศัพท์ / โทรสาร: 0-5533-3021
+        </Typography>
+        <Typography variant="body1" sx={{ ...textStyle, mb: 0.5 }}>
+          📧 อีเมล:{" "}
+          <a href="mailto:rio3@rid.go.th">rio3@rid.go.th</a>
+        </Typography>
+        <Typography variant="body1" sx={{ ...textStyle, mb: 0.5 }}>
+          👥 Facebook:{" "}
+          <a
+            href="https://www.facebook.com/IrrigationOfficeThree"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            สำนักงานชลประทานที่ 3
+          </a>
+        </Typography>
+        <Typography variant="body1" sx={{ ...textStyle }}>
+          🌐 เว็บไซต์:{" "}
+          <a href="http://irrigation.rid.go.th/rid3" target="_blank" rel="noopener noreferrer">
+            www.irrigation.rid.go.th/rid3
+          </a>
+        </Typography>
+
+        <Divider sx={{ my: 3 }} />
+
+        {/* 
+        <Typography
+          variant="body1"
+          sx={{ textAlign: "center", color: "text.secondary", mt: 2 }}
+        >
+          © 2026 กรมชลประทาน. All rights reserved.
+        </Typography> */}
 
       </Paper>
     </Container>

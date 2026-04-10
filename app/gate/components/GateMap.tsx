@@ -687,7 +687,7 @@ const prepareChartDataForGate = (rawData: any[], targetStaCode: string) => {
       icon: {
         html: `<div style="text-align:center;">
           <img src="${icon}" style="width:24px; height:24px;" />
-          <div style="background-color: rgba(255, 255, 255, 0.4); padding:2px; border-radius:5px; font-size: 12px; margin-top: 2px;width:30px;">
+          <div style="background-color: rgba(255, 255, 255, 0.4); padding:2px; border-radius:5px; font-size: 12px; margin-top: 2px;width:30px; text-align:center;">
           ${type === "gate" ? `${item.sta_code}` : item.sta_name}</div></div>`
       },
       size: { width: 550, height: 'auto' },

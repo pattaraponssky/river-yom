@@ -119,7 +119,7 @@ const FlowCard: React.FC = () => {
                 <Typography 
                     sx={{
                       fontWeight: 800,
-                      fontSize: '1.4rem',
+                      fontSize: '1.3rem',
                       background: `linear-gradient(90deg, ${primary}, ${secondary})`,
                       WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
@@ -139,7 +139,7 @@ const FlowCard: React.FC = () => {
                 <Typography 
                     sx={{
                       fontWeight: 800,
-                      fontSize: '1.4rem',
+                      fontSize: '1.3rem',
                       background: `linear-gradient(90deg, ${primary}, ${secondary})`,
                       WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
@@ -208,13 +208,13 @@ const FlowCard: React.FC = () => {
               <TableBody>
                 {data.map((flow, i) => (
                   <TableRow key={i} hover>
-                    <TableCell sx={{ textAlign: "center", ...textStyle, lineHeight:{md:"2.16rem",xs:"1.2rem"} }}>{flow.sta_code}</TableCell>
-                    <TableCell sx={{ textAlign: "center", ...textStyle, lineHeight:{md:"2.16rem",xs:"1.2rem"} ,whiteSpace: "normal",}}>{flow.sta_name}</TableCell>
-                    <TableCell sx={{ textAlign: "center", ...textStyle, lineHeight:{md:"2.16rem",xs:"1.2rem"} ,whiteSpace: "normal",}}>{flow.province}</TableCell>
-                    <TableCell sx={{ textAlign: "center", ...textStyle, lineHeight:{md:"2.16rem",xs:"1.2rem"} ,}}>
+                    <TableCell sx={{ textAlign: "center", ...textStyle, lineHeight:{md:"1.94rem",xs:"1.2rem"} }}>{flow.sta_code}</TableCell>
+                    <TableCell sx={{ textAlign: "center", ...textStyle, lineHeight:{md:"1.94rem",xs:"1.2rem"} ,whiteSpace: "normal",}}>{flow.sta_name}</TableCell>
+                    <TableCell sx={{ textAlign: "center", ...textStyle, lineHeight:{md:"1.94rem",xs:"1.2rem"} ,whiteSpace: "normal",}}>{flow.province}</TableCell>
+                    <TableCell sx={{ textAlign: "center", ...textStyle, lineHeight:{md:"1.94rem",xs:"1.2rem"} ,}}>
                       {numberFormat(flow.wl, 2)}
                     </TableCell>
-                       <TableCell sx={{ textAlign: "center", ...textStyle, lineHeight:{md:"2.16rem",xs:"1.2rem"} ,}}>
+                       <TableCell sx={{ textAlign: "center", ...textStyle, lineHeight:{md:"1.94rem",xs:"1.2rem"} ,}}>
                       {numberFormat(flow.discharge, 2)}
                     </TableCell>
                   </TableRow>

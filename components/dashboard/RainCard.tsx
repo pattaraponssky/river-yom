@@ -134,7 +134,7 @@ const RainCard: React.FC = () => {
                 <Typography 
                     sx={{
                       fontWeight: 800,
-                      fontSize: '1.4rem',
+                      fontSize: '1.3rem',
                       background: `linear-gradient(90deg, ${primary}, ${secondary})`,
                       WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
@@ -155,7 +155,7 @@ const RainCard: React.FC = () => {
                 <Typography 
                     sx={{
                       fontWeight: 800,
-                      fontSize: '1.4rem',
+                      fontSize: '1.3rem',
                       background: `linear-gradient(90deg, ${primary}, ${secondary})`,
                       WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
@@ -195,7 +195,7 @@ const RainCard: React.FC = () => {
                   </TableCell>
                   <TableCell
                     align="center"
-                    sx={{ color: "white", fontWeight: "bold", ...textStyle,  }}
+                    sx={{ color: "white", fontWeight: "bold", ...textStyle, whiteSpace: "nowrap" }}
                   >
                     ปริมาณน้ำฝน
                     <br />
@@ -205,6 +205,7 @@ const RainCard: React.FC = () => {
                         fontSize: "0.8rem",
                         fontWeight: "bold",
                         fontFamily: "Prompt",
+                        
                       }}
                     >
                       (มม.)

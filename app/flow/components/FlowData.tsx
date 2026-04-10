@@ -254,7 +254,7 @@ const DataFlowCombined: React.FC<{ propsSelectedStation?: string }> = ({ propsSe
         <Grid size={{xs:12,md:4}}>
           <Box sx={{ display: "flex", justifyContent: "center" }}>
             <img
-              src={station ? `${Path_URL}images/flow_station/${station.sta_code}.png` : `${Path_URL}images/flow_station/${station.sta_code}.jpg`}
+              src={station ? `${Path_URL}images/flow_station/${station.sta_code}.jpg` : `${Path_URL}images/flow_station/${station.sta_code}.png`}
               alt="Station"
               style={{
                 width: "100%",

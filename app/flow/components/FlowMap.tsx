@@ -650,7 +650,7 @@ const prepareChartDataForFlow = (rawData: any[], targetStaCode: string) => {
       icon: {
         html: `<div style="text-align:center;">
           <img src="${icon}" style="width:24px; height:24px;" />
-          <div style="background-color: rgba(255, 255, 255, 0.4); padding:2px; border-radius:5px; font-size: 12px; margin-top: 2px;width:30px;">
+          <div style="background-color: rgba(255, 255, 255, 0.4); padding:2px; border-radius:5px; font-size: 12px; margin-top: 2px;width:30px; text-align:center;">
           ${type === "flow" ? `${item.sta_code}` : item.sta_name}</div></div>`
       },
       size: { width: 450, height: 'auto' },
@@ -696,12 +696,13 @@ const prepareChartDataForFlow = (rawData: any[], targetStaCode: string) => {
               return (
                 <ListItem
                   key={item.sta_code}
-                  sx={{
-                    padding: "2px",
-                    borderRadius:"20px",
-                    margin:"2px",
-                    background: `linear-gradient(135deg, ${alpha(primary, 0.25)}, ${alpha(primary, 0.05)})`,
-                  }}
+                    sx={{
+                      padding: "2px",
+                      borderRadius:"20px",
+                      margin:"2px",
+                      background: `linear-gradient(135deg, ${alpha(primary, 0.25)}, ${alpha(primary, 0.05)})`,
+                      "&:hover": { backgroundColor: "#e0e0e0", cursor: "pointer" },
+                    }}
                   onClick={() => handleListItemClick({...item,discharge,wl}, "flow")}
                 >
                   <ListItemAvatar sx={{ marginInline: "10px" }}>

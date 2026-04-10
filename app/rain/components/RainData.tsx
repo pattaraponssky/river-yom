@@ -262,7 +262,7 @@ const DataRainStation: React.FC<DataRainStationProps> = ({ propsSelectedStation 
             <img
               src={
                 station
-                  ? `${Path_URL}images/rain_station/${station.sta_code}.png`
+                  ? `${Path_URL}images/rain_station/${station.sta_code}.jpg`
                   : `${Path_URL}images/default_img.png`
               }
               alt="Station"
@@ -282,7 +282,7 @@ const DataRainStation: React.FC<DataRainStationProps> = ({ propsSelectedStation 
         <Grid size={{xs:12, sm:12, md:8}}>
           <Grid container spacing={3} alignItems="center">
             <Grid size={{xs:12, sm:12, md:4.5}}>
-              <FormControl fullWidth>
+              <FormControl fullWidth>111111111111111
                 <InputLabel sx={{ fontFamily: "Prompt" }}>เลือกสถานีฝน</InputLabel>
                 <Select value={selectedStation || ""} label="เลือกสถานีฝน" onChange={handleStationSelect} sx={fontInfo}>
                   {stations.map((s: any) => (
@@ -403,3 +403,4 @@ const DataRainStation: React.FC<DataRainStationProps> = ({ propsSelectedStation 
 }
   
 export default DataRainStation;
+1

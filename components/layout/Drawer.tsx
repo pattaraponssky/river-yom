@@ -190,7 +190,7 @@ const DrawerComponent: React.FC<DrawerProps> = ({ open, setOpen }) => {
                 />
               </Box>
               <Box>
-                <Typography sx={{ fontWeight: 600, fontSize: '0.85rem', fontFamily: 'Prompt', lineHeight: 1.3, color: 'text.primary' }}>
+                <Typography sx={{ fontWeight: 600, fontSize: '0.85rem', fontFamily: 'Prompt', lineHeight: 1.3, color: 'text.primary', whiteSpace: 'nowrap' }}>
                   ระบบบริหารจัดการน้ำ
                 </Typography>
                 <Typography sx={{ fontSize: '0.65rem', color: 'text.disabled', fontFamily: 'Prompt' }}>

@@ -656,7 +656,7 @@ const RainMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,heig
       icon: {
         html: `<div style="text-align:center;">
           <img src="${icon}" style="width:24px; height:24px;" />
-          <div style="background-color: rgba(255, 255, 255, 0.4); padding:2px; border-radius:5px; font-size: 12px; margin-top: 2px;width:80px;">
+          <div style="background-color: rgba(255, 255, 255, 0.4); padding:2px; border-radius:5px; font-size: 12px; margin-top: 2px;width:80px; text-align:center;">
           ${type === "rain" ? `${item.sta_code}` : item.name}</div></div>`
       },
       size: { width: 450, height: 'auto' },
@@ -702,6 +702,7 @@ const RainMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,heig
                     borderRadius:"20px",
                     margin:"2px",
                     background: `linear-gradient(135deg, ${alpha(primary, 0.25)}, ${alpha(primary, 0.05)})`,
+                    "&:hover": { backgroundColor: "#e0e0e0", cursor: "pointer" },
                   }}
                   onClick={() => handleListItemClick({...item,rain_mm}, "rain")}
                 > 
