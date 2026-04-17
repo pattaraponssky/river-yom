@@ -18,6 +18,7 @@ interface DataChartProps {
   type: string;
   height?: number;
   sta_code?: string;
+  sta_name?: string;
   mode?: 'daily' | 'hourly';
   isDark?: boolean;
 }
@@ -144,7 +145,7 @@ const flowWaterLevelYAxisRange: Record<string, { min: number; max: number }> = {
   'Y.17': { min: 30, max: 42 },
 };
 
-const FlowChart: React.FC<DataChartProps> = ({ data, type, height = 350 ,sta_code ,mode = 'daily', isDark }) => {
+const FlowChart: React.FC<DataChartProps> = ({ data, type, height = 350 ,sta_code ,sta_name, mode = 'daily', isDark }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const bgColor = isDark ? "#1e2533" : "#f8fafc"; 
@@ -325,7 +326,7 @@ const FlowChart: React.FC<DataChartProps> = ({ data, type, height = 350 ,sta_cod
 
       const link = document.createElement("a");
       link.href = imgData;
-      link.download = `chart.${format}`;
+      link.download = `chart_${sta_code}_${sta_name}.${format}`;
       link.click();
     }
 
@@ -336,7 +337,7 @@ const FlowChart: React.FC<DataChartProps> = ({ data, type, height = 350 ,sta_cod
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
       pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-      pdf.save("chart.pdf");
+      pdf.save(`chart_${sta_code}_${sta_name}.pdf`);
     }
   };
 

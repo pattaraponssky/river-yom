@@ -19,6 +19,8 @@ interface Props {
   inflowGroupedData?: GroupedData;
   outflowGroupedData?: GroupedData;
   availableYears: string[];
+  res_code?: string;
+  res_name?: string;
 }
 
 const ReservoirExportTable: React.FC<Props> = ({
@@ -26,6 +28,8 @@ const ReservoirExportTable: React.FC<Props> = ({
   inflowGroupedData = {},
   outflowGroupedData = {},
   availableYears,
+  res_code,
+  res_name,
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedYear, setSelectedYear] = useState("ทั้งหมด");
@@ -84,7 +88,7 @@ const ReservoirExportTable: React.FC<Props> = ({
 
     const content = '\uFEFF' + headers.join('\t') + '\n' + rows.map(r => r.join('\t')).join('\n');
     const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-    saveAs(blob, 'reservoir_data.txt');
+    saveAs(blob, `reservoir_data_${res_code}_${res_name}.txt`);
   };
 
   const exportToCSV = () => {
@@ -98,7 +102,7 @@ const ReservoirExportTable: React.FC<Props> = ({
 
     const csv = '\uFEFF' + headers.join(',') + '\n' + rows.map(r => r.join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
-    saveAs(blob, 'reservoir_data.csv');
+    saveAs(blob, `reservoir_data_${res_code}_${res_name}.csv`);
   };
 
   const exportToXLSX = () => {
@@ -113,7 +117,7 @@ const ReservoirExportTable: React.FC<Props> = ({
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'ข้อมูลอ่างเก็บน้ำ');
     const buf = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-    saveAs(new Blob([buf]), 'reservoir_data.xlsx');
+    saveAs(new Blob([buf]), `reservoir_data_${res_code}_${res_name}.xlsx`);
   };
 
   const exportToXLS = () => {
@@ -128,7 +132,7 @@ const ReservoirExportTable: React.FC<Props> = ({
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'ข้อมูลอ่างเก็บน้ำ');
     const buf = XLSX.write(wb, { bookType: 'xls', type: 'array' });
-    saveAs(new Blob([buf]), 'reservoir_data.xls');
+    saveAs(new Blob([buf]), `reservoir_data_${res_code}_${res_name}.xls`);
   };
 
   return (

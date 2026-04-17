@@ -394,7 +394,7 @@ const DrawerComponent: React.FC<DrawerProps> = ({ open, setOpen }) => {
         {/* ─── ส่วนล่าง: User / Login ─── */}
         <Box
           sx={{
-            px: open ? 1.5 : 1,
+            px: open ? 1.5 : 2,
             py: 1.5,
             borderTop: `0.5px solid ${theme.palette.divider}`,
             backgroundColor: isDark ? 'rgba(0,0,0,0.2)' : 'rgba(248,250,252,0.9)',

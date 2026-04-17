@@ -17,12 +17,14 @@ interface DataChartProps {
   type: string;
   height?: number;
   isDark: boolean;
+  sta_code?: string;
+  sta_name?: string;
 }
 
 const BASE_YEAR = 2000;
 
 
-const RainChart: React.FC<DataChartProps> = ({ data, type = 'rain', height = 350, isDark }) => {
+const RainChart: React.FC<DataChartProps> = ({ data, type = 'rain', sta_code, sta_name, height = 350, isDark }) => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
     const bgColor = isDark ? "#1e2533" : "#f8fafc"; 
@@ -186,7 +188,7 @@ const RainChart: React.FC<DataChartProps> = ({ data, type = 'rain', height = 350
 
       const link = document.createElement("a");
       link.href = imgData;
-      link.download = `chart.${format}`;
+      link.download = `chart_${sta_code}_${sta_name}.${format}`;
       link.click();
     }
 
@@ -197,7 +199,7 @@ const RainChart: React.FC<DataChartProps> = ({ data, type = 'rain', height = 350
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
       pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-      pdf.save("chart.pdf");
+      pdf.save(`chart_${sta_code}_${sta_name}.pdf`);
     }
   };
 

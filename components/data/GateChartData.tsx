@@ -1,4 +1,4 @@
-'use client';
+  'use client';
 
 import { Box, Button, Menu, MenuItem } from '@mui/material';
 import { ArrowDropDownIcon } from '@mui/x-date-pickers';
@@ -19,11 +19,12 @@ interface DataChartProps {
   height?: number;
   sta_code?: string;
   isDark: boolean;
+  sta_name?: string;
 }
 
 const BASE_YEAR = 2000;
 
-const GateChart: React.FC<DataChartProps> = ({ data, type , height = 350 ,sta_code, isDark}) => {
+const GateChart: React.FC<DataChartProps> = ({ data, type , height = 350 ,sta_code, sta_name, isDark}) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const bgColor = isDark ? "#1e2533" : "#f8fafc"; 
@@ -287,7 +288,7 @@ const GateChart: React.FC<DataChartProps> = ({ data, type , height = 350 ,sta_co
 
       const link = document.createElement("a");
       link.href = imgData;
-      link.download = `chart.${format}`;
+      link.download = `chart_${sta_code}_${sta_name}.${format}`;
       link.click();
     }
 
@@ -298,7 +299,7 @@ const GateChart: React.FC<DataChartProps> = ({ data, type , height = 350 ,sta_co
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
       pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-      pdf.save("chart.pdf");
+      pdf.save(`chart_${sta_code}_${sta_name}.pdf`);
     }
   };
 

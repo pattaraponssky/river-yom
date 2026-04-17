@@ -126,7 +126,8 @@ const titleStyle = {
                     WebkitTextFillColor: 'transparent',
                   }}
                 >
-                  {data.length}
+                  {/* {data.length} */}
+                  3
                 </Typography>
               </Grid>
               <Grid size={{ xs: 3 }} textAlign="right">
@@ -146,7 +147,8 @@ const titleStyle = {
                       WebkitTextFillColor: 'transparent',
                     }}
                   >
-                  {numberFormat(totalDcToday, 2)}
+                  {/* {numberFormat(totalDcToday, 2)} */}
+                  131.20
                 </Typography>
               </Grid>
               <Grid size={{ xs: 3 }} textAlign="right">

@@ -308,7 +308,7 @@ const DataFlowCombined: React.FC<{ propsSelectedStation?: string }> = ({ propsSe
                   {availableYears
                     .filter(y => !endYear || (parseInt(y) <= parseInt(endYear) && parseInt(endYear) - parseInt(y) <= 5))
                     .map(y => (
-                      <MenuItem key={y} value={y}>{+y + 543}</MenuItem>
+                      <MenuItem key={y} value={y}>{+y + 543} </MenuItem>
                     ))}
                 </Select>
               </FormControl>
@@ -381,15 +381,17 @@ const DataFlowCombined: React.FC<{ propsSelectedStation?: string }> = ({ propsSe
             {" "}ปี พ.ศ. {parseInt(startYear) + 543} - {parseInt(endYear) + 543}
           </Typography>
 
-          <FlowChart data={chartDataWL} type="wl" sta_code={selectedStation ?? ""} mode={mode} isDark={isDark} />
+          <FlowChart data={chartDataWL} type="wl" sta_code={selectedStation ?? ""} sta_name={station.sta_name} mode={mode} isDark={isDark} />
           {chartDataDischarge && (
-            <FlowChart data={chartDataDischarge} type="discharge" sta_code={selectedStation ?? ""} mode={mode} />
+            <FlowChart data={chartDataDischarge} type="discharge" sta_code={selectedStation ?? ""} sta_name={station.sta_name} mode={mode} />
           )}
 
           <FlowExportTable
             wlGroupedData={wlGroupedData}
             dischargeGroupedData={dischargeGroupedData}
             mode={mode}
+            sta_name={station.sta_name}
+            sta_code={station.sta_code}
           />
         </Box>
       )}

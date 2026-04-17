@@ -382,15 +382,17 @@ const DataReservoirStation: React.FC<DataReservoirStationProps> = ({ propsSelect
             {" "}ปี พ.ศ. {parseInt(startYear) + 543} - {parseInt(endYear) + 543}
           </Typography>
 
-          <ReservoirChart data={chartData1} type="main" resCode={selectedStation ?? 'ks'} isDark={isDark}/>
-          <ReservoirChart data={chartData2} type="inflow" isDark={isDark}/>
-          <ReservoirChart data={chartData3} type="outflow" isDark={isDark}/>
+          <ReservoirChart data={chartData1} type="main" resCode={selectedStation ?? 'unknown'} isDark={isDark} res_name={station?.res_name ?? 'unknown'}/>
+          <ReservoirChart data={chartData2} type="inflow" resCode={selectedStation ?? 'unknown'} isDark={isDark} res_name={station?.res_name ?? 'unknown'}/>
+          <ReservoirChart data={chartData3} type="outflow" resCode={selectedStation ?? 'unknown'} isDark={isDark} res_name={station?.res_name ?? 'unknown'}/>
 
           <ReservoirExportTable
             volumeGroupedData={volumeGroupedData}
             inflowGroupedData={inflowGroupedData}
             outflowGroupedData={outflowGroupedData}
             availableYears={availableYearsTable}
+            res_code={selectedStation ?? 'unknown'}
+            res_name={station?.res_name ?? 'unknown'}
           />
         </Box>
       )}

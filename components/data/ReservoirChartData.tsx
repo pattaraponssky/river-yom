@@ -19,6 +19,7 @@ interface DataChartProps {
   height?: number;
   resCode?: string;
   isDark: boolean;
+  res_name?: string;
 }
 
 const BASE_YEAR = 2000;
@@ -69,7 +70,7 @@ const reservoirYAxisRange: Record<string, { min: number; max: number }> = {
   hnl: { min: 0, max: 16 },
 };
 
-const ReservoirChart: React.FC<DataChartProps> = ({ data, type = 'main', height = 350, resCode, isDark }) => {
+const ReservoirChart: React.FC<DataChartProps> = ({ data, type = 'main', height = 350, resCode, res_name, isDark }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const bgColor = isDark ? "#1e2533" : "#f8fafc"; 
@@ -257,7 +258,7 @@ const ReservoirChart: React.FC<DataChartProps> = ({ data, type = 'main', height 
 
       const link = document.createElement("a");
       link.href = imgData;
-      link.download = `chart.${format}`;
+      link.download = `chart_${resCode}_${res_name}.${format}`;
       link.click();
     }
 
@@ -268,7 +269,7 @@ const ReservoirChart: React.FC<DataChartProps> = ({ data, type = 'main', height 
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
       pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-      pdf.save("chart.pdf");
+      pdf.save(`chart_${resCode}_${res_name}.pdf`);
     }
   };
 

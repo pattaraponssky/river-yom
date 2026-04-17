@@ -31,6 +31,8 @@ interface Props {
   wlUpperGroupedData?: GroupedData;
   wlLowerGroupedData?: GroupedData;
   availableYears: string[];
+  sta_name?: string;
+  sta_code?: string;
 }
 
 const GateExportTable: React.FC<Props> = ({
@@ -38,6 +40,8 @@ const GateExportTable: React.FC<Props> = ({
   wlUpperGroupedData = {},
   wlLowerGroupedData = {},
   availableYears,
+  sta_code,
+  sta_name,
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedYear, setSelectedYear] = useState("ทั้งหมด");
@@ -105,7 +109,7 @@ const GateExportTable: React.FC<Props> = ({
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Gate Data');
     const buf = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-    saveAs(new Blob([buf]), 'gate_data.xlsx');
+    saveAs(new Blob([buf]), `gate_data_${sta_code}_${sta_name}.xlsx`);
   };
 
   const exportToCSV = () => {
@@ -118,7 +122,7 @@ const GateExportTable: React.FC<Props> = ({
     ]);
 
     const content = '\uFEFF' + headers.join(',') + '\n' + rows.map(r => r.join(',')).join('\n');
-    saveAs(new Blob([content], { type: 'text/csv;charset=utf-8' }), 'gate_data.csv');
+    saveAs(new Blob([content], { type: 'text/csv;charset=utf-8' }), `gate_data_${sta_code}_${sta_name}.csv`);
   };
 
   const exportToTXT = () => {
@@ -131,7 +135,7 @@ const GateExportTable: React.FC<Props> = ({
     ]);
 
     const content = '\uFEFF' + headers.join('\t') + '\n' + rows.map(r => r.join('\t')).join('\n');
-    saveAs(new Blob([content], { type: 'text/plain;charset=utf-8' }), 'gate_data.txt');
+    saveAs(new Blob([content], { type: 'text/plain;charset=utf-8' }), `gate_data_${sta_code}_${sta_name}.txt`);
   };
 
   return (

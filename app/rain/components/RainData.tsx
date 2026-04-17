@@ -282,7 +282,7 @@ const DataRainStation: React.FC<DataRainStationProps> = ({ propsSelectedStation 
         <Grid size={{xs:12, sm:12, md:8}}>
           <Grid container spacing={3} alignItems="center">
             <Grid size={{xs:12, sm:12, md:4.5}}>
-              <FormControl fullWidth>111111111111111
+              <FormControl fullWidth>
                 <InputLabel sx={{ fontFamily: "Prompt" }}>เลือกสถานีฝน</InputLabel>
                 <Select value={selectedStation || ""} label="เลือกสถานีฝน" onChange={handleStationSelect} sx={fontInfo}>
                   {stations.map((s: any) => (
@@ -381,12 +381,14 @@ const DataRainStation: React.FC<DataRainStationProps> = ({ propsSelectedStation 
               {" "}ปี พ.ศ. {parseInt(startYear) + 543} - {parseInt(endYear) + 543}
             </Typography>
 
-            <RainChart data={chartData1} isDark={isDark} type="rain" />
-            <RainChart data={chartData2} isDark={isDark} type="rain_sum" />
+            <RainChart data={chartData1} sta_code={station?.sta_code} sta_name={station?.name} isDark={isDark} type="rain" />
+            <RainChart data={chartData2} sta_code={station?.sta_code} sta_name={station?.name} isDark={isDark} type="rain_sum" />
 
             <RainExportTable
               rain_mmGroupedData={rainGroupedData}
               availableYears={availableYearsTable}
+              sta_code={station?.sta_code}
+              sta_name={station?.name}
             />
           </Box>
         )}
@@ -403,4 +405,3 @@ const DataRainStation: React.FC<DataRainStationProps> = ({ propsSelectedStation 
 }
   
 export default DataRainStation;
-1

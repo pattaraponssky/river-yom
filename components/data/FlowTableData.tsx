@@ -34,12 +34,16 @@ interface Props {
   wlGroupedData?: GroupedData;
   availableYears?: string[];
   mode: "daily" | "hourly";
+  sta_name?: string;
+  sta_code?: string;
 }
 
 const FlowExportTable: React.FC<Props> = ({
   dischargeGroupedData = {},
   wlGroupedData = {},
   mode,
+  sta_name,
+  sta_code,
 }) => {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
@@ -136,7 +140,7 @@ const FlowExportTable: React.FC<Props> = ({
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Flow Data");
     const buf = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-    saveAs(new Blob([buf]), `flow_data_${mode}.xlsx`);
+    saveAs(new Blob([buf]), `flow_data_${mode}_${sta_code}_${sta_name}.xlsx`);
   };
 
   const exportToCSV = () => {
@@ -151,7 +155,7 @@ const FlowExportTable: React.FC<Props> = ({
     ]);
 
     const content = '\uFEFF' + headers.join(',') + '\n' + csvRows.map(r => r.join(',')).join('\n');
-    saveAs(new Blob([content], { type: 'text/csv;charset=utf-8' }), `flow_data_${mode}.csv`);
+    saveAs(new Blob([content], { type: 'text/csv;charset=utf-8' }), `flow_data_${mode}_${sta_code}_${sta_name}.csv`);
   };
 
   const exportToTXT = () => {
@@ -166,7 +170,7 @@ const FlowExportTable: React.FC<Props> = ({
     ]);
 
     const content = '\uFEFF' + headers.join('\t') + '\n' + txtRows.map(r => r.join('\t')).join('\n');
-    saveAs(new Blob([content], { type: 'text/plain;charset=utf-8' }), `flow_data_${mode}.txt`);
+    saveAs(new Blob([content], { type: 'text/plain;charset=utf-8' }), `flow_data_${mode}_${sta_code}_${sta_name}.txt`);
   };
 
   // ตรวจสอบว่ามีข้อมูลประเภทไหนบ้าง

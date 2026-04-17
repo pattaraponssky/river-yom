@@ -19,7 +19,7 @@ export default function Home() {
   return (
     <Box
       sx={{
-        minHeight: '100vh',
+        // minHeight: '100vh',
         display: 'flex',
         flexDirection: 'column',
         bgcolor: 'background.default',
@@ -54,7 +54,7 @@ export default function Home() {
           alignItems: 'center',
           justifyContent: 'center',
           textAlign: 'center',
-          py: 10,
+          py: 15,
         }}
       >
         <Chip
