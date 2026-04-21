@@ -308,7 +308,7 @@ const DataFlowCombined: React.FC<{ propsSelectedStation?: string }> = ({ propsSe
                   {availableYears
                     .filter(y => !endYear || (parseInt(y) <= parseInt(endYear) && parseInt(endYear) - parseInt(y) <= 5))
                     .map(y => (
-                      <MenuItem key={y} value={y}>{+y + 543} </MenuItem>
+                      <MenuItem key={y} value={y}>{+y + 543}</MenuItem>
                     ))}
                 </Select>
               </FormControl>

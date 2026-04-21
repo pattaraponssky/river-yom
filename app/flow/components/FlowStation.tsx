@@ -10,7 +10,6 @@ import { BoxStyle, fontTitle } from "@/theme/style";
 import DataFlowCombined from "./FlowData";
 import FlowMap from "./FlowMap";
 
-
 const mapKey = process.env.NEXT_PUBLIC_LONGDO_MAP_KEY!;
 const JsonPaths = [
   `${Path_URL}data/River.geojson`,

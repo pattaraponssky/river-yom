@@ -299,7 +299,7 @@ export default function Dashboard() {
           }}>
           <HydroMap
               mapKey={mapKey}
-              JsonPaths={JsonPaths}// ส่งข้อมูล GeoJSON เข้าไป}
+              JsonPaths={JsonPaths} // ส่งข้อมูล GeoJSON เข้าไป}
             />
         </Box>
       </Grid>
@@ -348,7 +348,7 @@ export default function Dashboard() {
         <Box sx={BoxStyle}>
             <PdfViewer src="http://irrigation.rid.go.th/rid3/water/rpt050269.pdf" title="รายงานสถานการณ์น้ำประจำวัน สำนักงานชลประทานที่ 3" />
         </Box>
-      {/* <FloatingMenu/> */}
+      <FloatingMenu/>
     </Container>
   </>
   );
