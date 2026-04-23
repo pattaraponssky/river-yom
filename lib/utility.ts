@@ -1,6 +1,7 @@
 
 ////// API PATHS //////
-export const API_URL = "http://localhost:8080";
+export const API_URL = process.env.NEXT_PUBLIC_API_URL;
+if (!API_URL) throw new Error('NEXT_PUBLIC_API_URL is not set');
 export const Path_URL = "./../"; // For Dev
 export const Model_URL = "https://swocthachin.rid.go.th/swoc-model";
 export const Forecast_URL = "https://swocthachin.rid.go.th/swoc-model/Ras_data"

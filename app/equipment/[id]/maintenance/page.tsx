@@ -353,7 +353,7 @@ export default function EquipmentMaintenancePage() {
                           size="small"
                           onClick={() => handleEdit(record)}
                         >
-                          <EditIcon fontSize="small" />
+                          <EditIcon fontSize="medium" />
                         </IconButton>
                       </Tooltip>
 
@@ -363,7 +363,7 @@ export default function EquipmentMaintenancePage() {
                           size="small"
                           onClick={() => handleDeleteClick(record.id)}
                         >
-                          <DeleteIcon fontSize="small" />
+                          <DeleteIcon fontSize="medium" />
                         </IconButton>
                       </Tooltip>
                     </TableCell>
