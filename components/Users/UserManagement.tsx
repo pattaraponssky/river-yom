@@ -32,6 +32,7 @@ import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import AddIcon from "@mui/icons-material/Add";
 import { fontTitle, getCellStyle, HeaderCellStyle, titleStyle } from "@/theme/style";
 import { useAuth } from "@/contexts/AuthContext"; // ถ้ามี context auth อยู่แล้ว
+import { apiRequest } from "@/lib/api";
 
 interface User {
   User_ID: number;
@@ -84,7 +85,7 @@ const UserManagement: React.FC = () => {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/user/users`, { credentials: "include" });
+      const res = await apiRequest(`${API_URL}/user/users`, { credentials: "include" });
       if (!res.ok) throw new Error("โหลดผู้ใช้ไม่สำเร็จ");
       const data = await res.json();
       setUsers(data);
@@ -98,7 +99,7 @@ const UserManagement: React.FC = () => {
   // โหลดคำขอลงทะเบียนชั่วคราว
   const fetchTempUsers = async () => {
     try {
-      const res = await fetch(`${API_URL}/user/user_temp`, { credentials: "include" });
+      const res = await apiRequest(`${API_URL}/user/user_temp`, { credentials: "include" });
       if (!res.ok) throw new Error("โหลดคำขอไม่สำเร็จ");
       const data = await res.json();
       setTempUsers(data);
@@ -139,7 +140,7 @@ const UserManagement: React.FC = () => {
   const handleSaveEdit = async () => {
     if (!selectedUser) return;
     try {
-      const res = await fetch(`${API_URL}/user/users/${selectedUser.User_ID}`, {
+      const res = await apiRequest(`${API_URL}/user/users/${selectedUser.User_ID}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -172,7 +173,7 @@ const UserManagement: React.FC = () => {
     if (!validateAddForm()) return;
 
     try {
-      const res = await fetch(`${API_URL}/user/register`, {
+      const res = await apiRequest(`${API_URL}/user/register`, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         credentials: "include",
@@ -201,7 +202,7 @@ const UserManagement: React.FC = () => {
   const handleApprove = async (userId: number) => {
     if (!window.confirm("ยืนยันการอนุมัติผู้ใช้นี้?")) return;
     try {
-      const res = await fetch(`${API_URL}/user/approve/${userId}`, {
+      const res = await apiRequest(`${API_URL}/user/approve/${userId}`, {
         method: "POST",
         credentials: "include",
       });
@@ -217,7 +218,7 @@ const UserManagement: React.FC = () => {
   const handleReject = async (userId: number) => {
     if (!window.confirm("ยืนยันการปฏิเสธและลบคำขอนี้?")) return;
     try {
-      const res = await fetch(`${API_URL}/user/reject/${userId}`, {
+      const res = await apiRequest(`${API_URL}/user/reject/${userId}`, {
         method: "DELETE",
         credentials: "include",
       });

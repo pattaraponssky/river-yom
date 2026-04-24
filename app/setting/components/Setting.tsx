@@ -83,12 +83,12 @@ const Setting: React.FC = () => {
             iconPosition="start"
             label="อัปเดตข้อมูลย้อนหลัง"
           />
-          <Tab
+          {/* <Tab
             sx={{ ...fontTitle}}
             icon={<HomeRepairService />} // ไอคอนลิงค์เพิ่มเติม
             iconPosition="start"
             label="ประวัติการทำงาน"
-          />
+          /> */}
           <Tab
             sx={{ ...fontTitle}}
             icon={<Info />} // ไอคอนเกี่ยวกับเรา
@@ -151,12 +151,12 @@ const Setting: React.FC = () => {
             </Box>
           )}
 
-          {mainTab === 2 && (
+          {/* {mainTab === 2 && (
             <Typography sx={{ marginBottom: "1rem", fontWeight: 600, ...titleStyle, color: "#28378B" }}>
             </Typography>
-          )}
+          )} */}
 
-          {mainTab === 3 && (
+          {mainTab === 2 && (
               <EditAboutUs/>
           )}
         </Box>

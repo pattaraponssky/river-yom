@@ -20,44 +20,27 @@ const DashboardCards: React.FC<DashboardCardsProps> = ({ data, loading = false, 
           subTitle: 'ระบายน้ำรวม',
           value: '3',
           unit: 'ปตร.',
-          value_data: data.discharge_gate?.['tng'] ?? '0', // ใช้ optional chaining + fallback
+          // value_data: data.discharge_gate?.['tng'] ?? '0', // ใช้ optional chaining + fallback
+          value_data: data.discharge_gate
+            ? [
+                'tng',
+                'wst',
+                'kpk',
+              ]
+                .reduce((sum: number, code: string) => {
+                  return sum + parseFloat(data.discharge_gate[code] || '0');
+                }, 0)
+                .toFixed(2)
+            : '—',
           unit_data: 'ลบ.ม./วินาที',
           image: `${Path_URL}images/icons/gate_icon.png`,
           gradient: 'linear-gradient(135deg, #e57373, #d32f2f)',
           link: '/gate',
         },
-        // {
-        //   title: 'ระบายผ่านอาคาร',
-        //   subTitle: 'ระบายรวม',
-        //   value: '10',
-        //   unit: 'อาคาร',
-        //   value_data: data.discharge_gate
-        //     ? [
-        //         'BYH',
-        //         'PBL',
-        //         'PPM',
-        //         'KTB',
-        //         'MHC',
-        //         'MSW',
-        //         'KYG',
-        //         'BBP',
-        //         'SPN',
-        //         'PTL',
-        //       ]
-        //         .reduce((sum: number, code: string) => {
-        //           return sum + parseFloat(data.discharge_gate[code] || '0');
-        //         }, 0)
-        //         .toFixed(2)
-        //     : '—',
-        //   unit_data: 'ลบ.ม./วินาที',
-        //   image: `${Path_URL}images/icons/gate_icon2.png`,
-        //   gradient: 'linear-gradient(135deg, #f06292, #c2185b)',
-        //   link: '/gate',
-        // },
         {
           title: 'สถานีวัดน้ำท่า',
           subTitle: 'น้ำล้นตลิ่ง',
-          value: '6',
+          value: '13',
           unit: 'สถานี',
           value_data: data.flow_stations_over_wl ?? '—',
           unit_data: 'สถานี',
@@ -67,7 +50,7 @@ const DashboardCards: React.FC<DashboardCardsProps> = ({ data, loading = false, 
         },
         {
           title: 'สถานีวัดน้ำฝน',
-          subTitle: 'ฝนเฉลี่ย',
+          subTitle: 'ฝนเฉลี่ยวันนี้',
           value: '8',
           unit: 'สถานี',
           value_data: 8.23,
@@ -78,17 +61,32 @@ const DashboardCards: React.FC<DashboardCardsProps> = ({ data, loading = false, 
           link: '/rain',
         },
         {
-          title: 'อาคารระบาย',
-          subTitle: 'ปตร.วังสะตือ ระบาย',
-          value: '2',
-          unit: 'แห่ง',
-          value_data: "33.2",
-          // value_data: data.total_reservoir_volume ?? '—',
+          title: 'สถานีติดตั้งโครงการ',
+          subTitle: 'ระบายน้ำรวม',
+          value: '6',
+          unit: 'สถานี',
+          value_data: data.discharge_flow
+            ? [
+                '01',
+                '02',
+                '03',
+                '04',
+                '05',
+                '06',
+                'Y.16',
+                'Y.64',
+              ]
+                .reduce((sum: number, code: string) => {
+                  return sum + parseFloat(data.discharge_flow[code] || '0');
+                }, 0)
+                .toFixed(2)
+            : '—',
           unit_data: 'ลบ.ม./วินาที',
           image: `${Path_URL}images/icons/reservoir_icon.png`,
           gradient: 'linear-gradient(135deg, #64b5f6, #1976d2)',
-          link: '/gate',
+          link: '/flow',
         },
+        
       ]
     : [];
 

@@ -20,6 +20,7 @@ import Papa from "papaparse";
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { API_URL } from "@/lib/utility"; // Adjust path as needed
 import { titleStyle } from "@/theme/style";
+import { apiRequest } from "@/lib/api";
 
 interface PreviewRow {
   res_code: string;
@@ -102,7 +103,7 @@ const UploadData: React.FC = () => {
         sea: `${API_URL}/api/sea_update_data`,
       };
   
-      const response = await fetch(apiUploadMap[fileType], {
+      const response = await apiRequest(apiUploadMap[fileType], {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -183,7 +184,7 @@ const UploadData: React.FC = () => {
         sea: `${API_URL}/api/sea_preview_update`,
       };
   
-      const response = await fetch(apiPreviewMap[type], {
+      const response = await apiRequest(apiPreviewMap[type], {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

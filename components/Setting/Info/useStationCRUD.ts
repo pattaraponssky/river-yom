@@ -1,6 +1,7 @@
 // components/Setting/Info/useStationCRUD.ts
 import { useState, useCallback } from "react";
 import { API_URL } from "@/lib/utility";
+import { apiRequest } from "@/lib/api";
 
 interface UseCRUDOptions {
   endpoint: string;       // เช่น "/api/rain_info"
@@ -18,7 +19,7 @@ export function useStationCRUD({ endpoint, idField, credentials = false }: UseCR
 
   const fetchAll = useCallback(async () => {
     try {
-      const res  = await fetch(`${API_URL}${endpoint}`);
+      const res  = await apiRequest(`${API_URL}${endpoint}`);
       const data = await res.json();
       setStations(Array.isArray(data) ? data : data?.data ?? []);
     } catch {
@@ -28,7 +29,7 @@ export function useStationCRUD({ endpoint, idField, credentials = false }: UseCR
 
   const handleAdd = useCallback(async (newData: any) => {
     try {
-      await fetch(`${API_URL}${endpoint}`, {
+      await apiRequest(`${API_URL}${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: credentials ? "include" : "same-origin",
@@ -43,7 +44,7 @@ export function useStationCRUD({ endpoint, idField, credentials = false }: UseCR
 
   const handleEdit = useCallback(async (editData: any) => {
     try {
-      await fetch(`${API_URL}${endpoint}/${editData[idField]}`, {
+      await apiRequest(`${API_URL}${endpoint}/${editData[idField]}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: credentials ? "include" : "same-origin",
@@ -60,7 +61,7 @@ export function useStationCRUD({ endpoint, idField, credentials = false }: UseCR
 
   const handleDelete = useCallback(async (id: string) => {
     try {
-      await fetch(`${API_URL}${endpoint}/${id}`, {
+      await apiRequest(`${API_URL}${endpoint}/${id}`, {
         method: "DELETE",
         credentials: credentials ? "include" : "same-origin",
       });

@@ -6,6 +6,7 @@ import {
 } from "@mui/material";
 import { API_URL } from '../../lib/utility';
 import { textStyle } from '../../theme/style';
+import { apiRequest } from "@/lib/api";
 
 interface ForgotPasswordDialogProps {
   open: boolean;
@@ -40,7 +41,7 @@ const ForgotPasswordDialog: React.FC<ForgotPasswordDialogProps> = ({ open, onClo
 
     setLoading(true);
     try {
-      const response = await fetch(`${API_URL}/user/forgotPassword`, {
+      const response = await apiRequest(`${API_URL}/user/forgotPassword`, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({ email }).toString(),

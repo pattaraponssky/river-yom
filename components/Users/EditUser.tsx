@@ -14,6 +14,7 @@ import {
 import { API_URL } from '../../lib/utility';
 import { titleStyle } from '../../theme/style';
 import { useAuth } from '@/contexts/AuthContext';
+import { apiRequest } from '@/lib/api';
 
 interface User {
   username: string;
@@ -81,7 +82,7 @@ const EditUser: React.FC = () => {  // ลบ token prop เพราะไม�
     }
 
     try {
-      const res = await fetch(`${API_URL}/user/updateUser/${currentUser.username}`, {
+      const res = await apiRequest(`${API_URL}/user/updateUser/${currentUser.username}`, {
         method: 'PUT',
         credentials: 'include', // ส่ง cookie ด้วย (สำคัญ!)
         headers: {
