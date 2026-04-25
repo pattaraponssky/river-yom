@@ -24,10 +24,13 @@ import CenteredLoading from "@/components/Layout/CenteredLoading";
 import { API_URL, Path_URL } from "@/lib/utility";
 import { titleStyle, textStyle, fontInfo } from "@/theme/style";
 import { HeaderCellStyle } from '../../../theme/style';
+import CameraViewer from "@/components/Data/CameraViewer";
+import { STATION_CAMERAS } from "@/lib/cameraConfig";
 
 type DataMode = "daily" | "hourly";
 
 const DataFlowCombined: React.FC<{ propsSelectedStation?: string }> = ({ propsSelectedStation }) => {
+  
   const queryParams = new URLSearchParams(location.search);
   const stationFromURL = queryParams.get("station") || "Y.16";
   const theme = useTheme();
@@ -50,6 +53,8 @@ const DataFlowCombined: React.FC<{ propsSelectedStation?: string }> = ({ propsSe
   const [yearError, setYearError] = useState<string>("");
 
   const [initialLoad, setInitialLoad] = useState(false);
+
+  const cameras = selectedStation ? (STATION_CAMERAS[selectedStation] ?? []) : [];
 
   useEffect(() => {
       if (propsSelectedStation) {
@@ -251,7 +256,8 @@ const DataFlowCombined: React.FC<{ propsSelectedStation?: string }> = ({ propsSe
     <Container component="main" sx={{ minWidth: "100%", py: 2 }}>
       <Grid container spacing={3}>
         {/* รูปสถานี */}
-        <Grid size={{xs:12,md:4}}>
+        <Grid size={{xs:12,md:5}}>
+          {cameras.length === 0 && (
           <Box sx={{ display: "flex", justifyContent: "center" }}>
             <img
               src={station ? `${Path_URL}images/flow_station/${station.sta_code}.jpg` : `${Path_URL}images/flow_station/${station.sta_code}.png`}
@@ -266,10 +272,14 @@ const DataFlowCombined: React.FC<{ propsSelectedStation?: string }> = ({ propsSe
               onError={(e) => (e.currentTarget.src = `${Path_URL}images/default_img.png`)}
             />
           </Box>
+           )}
+          {cameras.length > 0 && (
+            <CameraViewer cameras={cameras} staCode={selectedStation ?? ''} />
+          )}
         </Grid>
 
         {/* ตัวเลือก */}
-        <Grid size={{xs:12,md:8}}>
+        <Grid size={{xs:12,md:7}}>
           <Grid container spacing={2} alignItems="center">
 
             <Grid size={{ xs: 12, md: 2.5 }}>

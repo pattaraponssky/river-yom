@@ -22,6 +22,7 @@
     "date-fns": "^4.1.0",
     "file-saver": "^2.0.5",
     "framer-motion": "^12.33.0",
+    "hls.js": "^1.6.16",
     "html2canvas": "^1.4.1",
     "jose": "^6.2.2",
     "jspdf": "^4.0.0",
