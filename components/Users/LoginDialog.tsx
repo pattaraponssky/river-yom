@@ -14,7 +14,6 @@ import RegisterDialog from "./RegisterDialog";
 import ForgotPasswordDialog from "./ForgotPasswordDialog";
 import { API_URL } from '../../lib/utility';
 import { textStyle } from '../../theme/style';
-import { apiRequest } from "@/lib/api";
 
 interface LoginDialogProps {
   open: boolean;
@@ -46,7 +45,7 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose, onLoginSuccess
 
   const handleLogin = async () => {
     try {
-      const response = await apiRequest(`${API_URL}/user/login`, {
+      const response = await fetch(`${API_URL}/user/login`, {
         method: "POST",
         credentials: "include",
         headers: {

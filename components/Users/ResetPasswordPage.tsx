@@ -4,7 +4,6 @@ import {
   Box, Typography, Paper, TextField, Button, CircularProgress, Alert
 } from "@mui/material";
 import { API_URL } from '../../lib/utility';
-import { apiRequest } from "@/lib/api";
 
 
 const ResetPasswordPage: React.FC = () => {
@@ -30,7 +29,7 @@ const ResetPasswordPage: React.FC = () => {
     setStatus("loading");
 
     // ตรวจสอบ token กับ backend
-    apiRequest(`${API_URL}/user/validateResetToken`, {
+    fetch(`${API_URL}/user/validateResetToken`, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({ token: t }).toString(),
@@ -75,7 +74,7 @@ const ResetPasswordPage: React.FC = () => {
 
     setStatus("loading");
     try {
-      const res = await apiRequest(`${API_URL}/user/resetPassword`, {
+      const res = await fetch(`${API_URL}/user/resetPassword`, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({ token, password }).toString(),

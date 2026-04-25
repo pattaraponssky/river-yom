@@ -15,6 +15,7 @@ import {
   Alert,
 } from '@mui/material';
 import { API_URL } from '@/lib/utility';
+import { apiRequest } from '@/lib/api';
 
 interface Equipment {
   id?: string;
@@ -99,7 +100,7 @@ const EquipmentDialog: React.FC<EquipmentDialogProps> = ({ open, onClose, onSucc
         url = `${API_URL}/api/equipments`; // หรือ /store ถ้าคุณยังอยากใช้ store
         }
 
-        const res = await fetch(url, {
+        const res = await apiRequest(url, {
         method,
         headers: {
             'Content-Type': 'application/json',

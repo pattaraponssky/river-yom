@@ -3,7 +3,6 @@ import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom"; // ต้องติดตั้ง react-router-dom
 import { Box, Typography, CircularProgress, Alert, Paper, Button } from "@mui/material";
 import { API_URL } from '../../lib/utility';
-import { apiRequest } from "@/lib/api";
 
 const VerifyEmailPage: React.FC = () => {
   const location = useLocation();
@@ -23,7 +22,7 @@ const VerifyEmailPage: React.FC = () => {
 
     const verifyToken = async () => {
       try {
-        const response = await apiRequest(`${API_URL}/verify-email?token=${token}`, {
+        const response = await fetch(`${API_URL}/verify-email?token=${token}`, {
           method: "GET",
           credentials: "include",
         });

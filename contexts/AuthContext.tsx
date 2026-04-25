@@ -20,6 +20,7 @@ interface AuthContextType {
   refreshAuth: () => Promise<void>;
   hasPermission: (requiredLevel: number) => boolean;
   requirePermission: (requiredLevel: number, redirectTo?: string) => void;
+  setCurrentUser: (user: User | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -106,6 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         refreshAuth,
         hasPermission,
         requirePermission,
+        setCurrentUser,
       }}
     >
       {children}

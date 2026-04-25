@@ -10,6 +10,7 @@ import {
 } from "@mui/material";
 import { API_URL } from "@/lib/utility";
 import { titleStyle } from "@/theme/style";
+import { apiRequest } from "@/lib/api";
 
 const EditAboutUs: React.FC = () => {
   const [aboutUs, setAboutUs] = useState("");
@@ -47,7 +48,7 @@ const EditAboutUs: React.FC = () => {
   const handleSave = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/aboutus/update/1`, {
+      const res = await apiRequest(`${API_URL}/aboutus/update/1`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

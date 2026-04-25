@@ -7,7 +7,6 @@ import {
 } from "@mui/material";
 import { API_URL } from '../../lib/utility';
 import { textStyle } from '../../theme/style';
-import { apiRequest } from "@/lib/api";
 
 interface RegisterDialogProps {
   open: boolean;
@@ -54,7 +53,7 @@ const RegisterDialog: React.FC<RegisterDialogProps> = ({ open, onClose }) => {
 
     setLoading(true);
     try {
-      const response = await apiRequest(`${API_URL}/user/register`, {
+      const response = await fetch(`${API_URL}/user/register`, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({

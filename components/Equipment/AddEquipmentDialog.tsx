@@ -15,6 +15,7 @@ import {
   Alert,
 } from '@mui/material';
 import { API_URL } from '@/lib/utility';
+import { apiRequest } from '@/lib/api';
 
 interface AddEquipmentDialogProps {
   open: boolean;
@@ -61,7 +62,7 @@ const AddEquipmentDialog: React.FC<AddEquipmentDialogProps> = ({ open, onClose, 
     setError(null);
 
     try {
-      const res = await fetch(`${API_URL}/api/equipments`, {
+      const res = await apiRequest(`${API_URL}/api/equipments`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
