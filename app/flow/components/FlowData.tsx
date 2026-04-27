@@ -29,6 +29,11 @@ import { STATION_CAMERAS } from "@/lib/cameraConfig";
 
 type DataMode = "daily" | "hourly";
 
+const MODE_LABELS: Record<DataMode, string> = {
+  hourly:  "รายชั่วโมง",
+  daily:   "รายวัน",
+};
+
 const DataFlowCombined: React.FC<{ propsSelectedStation?: string }> = ({ propsSelectedStation }) => {
   
   const queryParams = new URLSearchParams(location.search);
@@ -281,8 +286,39 @@ const DataFlowCombined: React.FC<{ propsSelectedStation?: string }> = ({ propsSe
         {/* ตัวเลือก */}
         <Grid size={{xs:12,md:7}}>
           <Grid container spacing={2} alignItems="center">
+            {/* ─── Mode Toggle ─── */}
+            <Grid size={{ xs: 12 }}>
+              <Typography sx={{ ...textStyle, mb: 0.5, color: "text.secondary" }}>
+                รูปแบบข้อมูล
+              </Typography>
+              <ToggleButtonGroup
+                value={mode}
+                exclusive
+                onChange={(_, v) => v && setMode(v as DataMode)}
+                size="medium"
+                sx={{ flexWrap: "wrap", gap: 0.5 }}
+              >
+                {(Object.keys(MODE_LABELS) as DataMode[]).map(m => (
+                  <ToggleButton
+                    key={m}
+                    value={m}
+                    sx={{
+                      fontFamily: "Prompt",
+                      px: 2,
+                      "&.Mui-selected": {
+                        bgcolor: "primary.main",
+                        color: "white",
+                        "&:hover": { bgcolor: "primary.dark" },
+                      },
+                    }}
+                  >
+                    {MODE_LABELS[m]}
+                  </ToggleButton>
+                ))}
+              </ToggleButtonGroup>
+            </Grid>
 
-            <Grid size={{ xs: 12, md: 2.5 }}>
+            {/* <Grid size={{ xs: 12, md: 2.5 }}>
               <FormControl fullWidth>
                 <InputLabel sx={{ fontFamily: "Prompt" }}>รูปแบบข้อมูล</InputLabel>
                 <Select
@@ -295,9 +331,9 @@ const DataFlowCombined: React.FC<{ propsSelectedStation?: string }> = ({ propsSe
                   <MenuItem value="hourly">รายชั่วโมง</MenuItem>
                 </Select>
               </FormControl>
-            </Grid>
+            </Grid> */}
 
-            <Grid size={{xs:12,md:4}}>
+            <Grid size={{xs:12,md:5}}>
               <FormControl fullWidth>
                 <InputLabel sx={{ fontFamily: "Prompt" }}>เลือกสถานี</InputLabel>
                 <Select value={selectedStation || ""} label="เลือกสถานี" onChange={e => setSelectedStation(e.target.value)} sx={fontInfo}>
@@ -311,7 +347,7 @@ const DataFlowCombined: React.FC<{ propsSelectedStation?: string }> = ({ propsSe
             </Grid>
 
             {/* ปีเริ่มต้น */}
-            <Grid size={{xs:12,md:1.75}}>
+            <Grid size={{xs:12,md:2}}>
               <FormControl fullWidth>
                 <InputLabel sx={{ fontFamily: "Prompt" }}>ปีเริ่มต้น</InputLabel>
                 <Select value={startYear} label="ปีเริ่มต้น" onChange={e => setStartYear(e.target.value)} sx={fontInfo}>
@@ -325,7 +361,7 @@ const DataFlowCombined: React.FC<{ propsSelectedStation?: string }> = ({ propsSe
             </Grid>
 
             {/* ปีสิ้นสุด */}
-            <Grid size={{xs:12,md:1.75}}>
+            <Grid size={{xs:12,md:2}}>
               <FormControl fullWidth>
                 <InputLabel sx={{ fontFamily: "Prompt" }}>ปีสิ้นสุด</InputLabel>
                 <Select value={endYear} label="ปีสิ้นสุด"  onChange={e => setEndYear(e.target.value)} sx={fontInfo}>
@@ -338,7 +374,7 @@ const DataFlowCombined: React.FC<{ propsSelectedStation?: string }> = ({ propsSe
               </FormControl>
             </Grid>
 
-            <Grid size={{xs:12,md:2}}>
+            <Grid size={{xs:12,md:3}}>
               <Button
                 variant="contained"
                 color="primary"

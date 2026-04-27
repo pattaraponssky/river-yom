@@ -19,12 +19,12 @@ interface DataChartProps {
   isDark: boolean;
   sta_code?: string;
   sta_name?: string;
+  mode?: "hourly" | "daily" | "monthly" | "yearly";
 }
 
 const BASE_YEAR = 2000;
 
-
-const RainChart: React.FC<DataChartProps> = ({ data, type = 'rain', sta_code, sta_name, height = 350, isDark }) => {
+const RainChart: React.FC<DataChartProps> = ({ data, type = 'rain', sta_code, sta_name, height = 350, isDark, mode }) => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
     const bgColor = isDark ? "#1e2533" : "#f8fafc"; 
@@ -152,11 +152,131 @@ const RainChart: React.FC<DataChartProps> = ({ data, type = 'rain', sta_code, st
           },
         },
       colors: ['#3366FF','#FF0033','#00FF33','#CD853F','#FF9900','#66CCFF','#9933FF','#009966','#000000','#333399'],
-    }
-  };
-  // เลือก options ตาม type
-  const baseOptions = chartOptionsMap[type as 'rain' | 'rain_sum'] as ApexCharts.ApexOptions;
+    },
+    rain_monthly: {
+      chart: {
+        id: "rain-monthly",
+        type: "bar",
+        background: bgColor,
+        fontFamily: "Prompt",
+        foreColor: textColor,
+      },
+      title: {
+        text: "ปริมาณฝนรายเดือน",
+        align: "center" as const,
+        style: { fontSize: "18px", color: textColor, fontFamily: "Prompt" },
+      },
+      plotOptions: {
+        bar: { columnWidth: "60%", borderRadius: 4 },
+      },
+      stroke: { width: 0 },
+      xaxis: {
+        type: "datetime",
+        min: new Date(`${BASE_YEAR}-01-01`).getTime(),
+        max: new Date(`${BASE_YEAR}-12-31`).getTime(),
+        labels: {
+          datetimeUTC: false,
+          format: "MMM",  // แสดงแค่เดือน
+          style: { colors: textColor },
+        },
+      },
+      yaxis: [{
+        labels: { formatter: (v: number) => v.toFixed(1), style: { colors: textColor } },
+        title: { text: "ปริมาณฝน (มม.)", style: { colors: textColor } },
+      }],
+      tooltip: {
+        shared: true,
+        intersect: false,
+        x: { format: "MMM" },
+        y: { formatter: (v: number) => `${v.toFixed(1)} มม.` },
+      },
+      colors: ["#3366FF","#FF0033","#00CC66","#FF9900","#9933FF","#00CCFF","#FF6699","#66FF33","#FF3300","#0099FF"],
+    },
 
+    rain_sum_monthly: {
+      chart: {
+        id: "rain-sum-monthly",
+        background: bgColor,
+        fontFamily: "Prompt",
+        foreColor: textColor,
+      },
+      title: {
+        text: "ปริมาณฝนสะสมรายเดือน",
+        align: "center" as const,
+        style: { fontSize: "18px", color: textColor, fontFamily: "Prompt" },
+      },
+      stroke: { width: Array(20).fill(3), curve: "smooth" as const },
+      xaxis: {
+        type: "datetime",
+        min: new Date(`${BASE_YEAR}-01-01`).getTime(),
+        max: new Date(`${BASE_YEAR}-12-31`).getTime(),
+        labels: { datetimeUTC: false, format: "MMM", style: { colors: textColor } },
+      },
+      yaxis: [{
+        labels: { formatter: (v: number) => v.toFixed(0), style: { colors: textColor } },
+        title: { text: "ฝนสะสม (มม.)", style: { colors: textColor } },
+      }],
+      tooltip: {
+        shared: true, intersect: false,
+        x: { format: "MMM" },
+        y: { formatter: (v: number) => `${v.toFixed(1)} มม.` },
+      },
+      colors: ["#3366FF","#FF0033","#00CC66","#FF9900","#9933FF"],
+    },
+
+    // ─── รายปี ─────────────────────────────────────────────────
+    rain_yearly: {
+      chart: {
+        id: "rain-yearly",
+        type: "bar",
+        background: bgColor,
+        fontFamily: "Prompt",
+        foreColor: textColor,
+      },
+      title: {
+        text: "ปริมาณฝนรายปี",
+        align: "center" as const,
+        style: { fontSize: "18px", color: textColor, fontFamily: "Prompt" },
+      },
+      plotOptions: {
+        bar: {
+          columnWidth: "50%",
+          borderRadius: 6,
+          dataLabels: { position: "top" },
+        },
+      },
+      dataLabels: {
+        enabled: true,
+        formatter: (v: number) => `${v.toFixed(0)}`,
+        offsetY: -20,
+        style: { fontSize: "11px", colors: [textColor] },
+      },
+      stroke: { width: 0 },
+      xaxis: {
+        type: "datetime",
+        labels: {
+          datetimeUTC: false,
+          format: "yyyy",
+          style: { colors: textColor },
+        },
+      },
+      yaxis: [{
+        labels: { formatter: (v: number) => v.toFixed(0), style: { colors: textColor } },
+        title: { text: "ปริมาณฝนรายปี (มม.)", style: { colors: textColor } },
+      }],
+      tooltip: {
+        x: { format: "yyyy" },
+        y: { formatter: (v: number) => `${v.toFixed(1)} มม.` },
+      },
+      colors: ["#1565C0"],
+      // annotations แสดงค่าเฉลี่ย (optional)
+    },
+  };
+
+  // เลือก options ตาม type
+  const baseOptions = chartOptionsMap[
+    type as "rain" | "rain_sum" | "rain_monthly" | "rain_sum_monthly" | "rain_yearly"
+  ] as ApexCharts.ApexOptions;
    const options = {
     ...baseOptions,
    };

@@ -13,14 +13,14 @@ export const STATION_CAMERAS: Record<string, CameraConfig[]> = {
       id: 'y15-cam1',
       label: 'กล้อง 1 - มุมเสาวัดระดับน้ำในแม่น้ำ',
       type: 'hls',
-      streamUrl: 'http://125.25.183.165:1935/SamsenRID/myStream/SamsenRID/chunklist_w513270344.m3u8',
-      snapshotUrl: 'http://125.25.183.165:1935/SamsenRID/myStream/SamsenRID/chunklist_w513270344.m3u8',
+      streamUrl: 'http://125.25.183.165:1935/SamsenRID/myStream/SamsenRID/playlist.m3u8',
+      snapshotUrl: 'http://125.25.183.165:1935/SamsenRID/myStream/SamsenRID/playlist.m3u8',
     },
     {
       id: 'y15-cam2',
       label: 'กล้อง 2 - มุมหน้าสถานี',
       type: 'hls',
-      streamUrl: 'http://125.25.183.165:1935/UpperKLP/myStream/UpperKLP/chunklist_w133703879.m3u8',
+      streamUrl: 'http://125.25.183.165:1935/UpperKLP/myStream/UpperKLP/playlist.m3u8',
     },
   ],
   'Y.16': [
@@ -38,7 +38,7 @@ export const STATION_CAMERAS: Record<string, CameraConfig[]> = {
       snapshotUrl: 'http://your-camera-ip2/snapshot.jpg',
     },
   ],
-  'Y.4': [
+  'Y.4': [/////////////////
     {
       id: 'y4-cam1',
       label: 'กล้อง 1',

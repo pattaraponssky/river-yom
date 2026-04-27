@@ -31,6 +31,7 @@ interface Props {
   availableYears: string[];
   sta_name?: string;
   sta_code?: string;
+  mode?: "hourly" | "daily" | "monthly" | "yearly";
 }
 
 const RainExportTable: React.FC<Props> = ({
@@ -38,6 +39,7 @@ const RainExportTable: React.FC<Props> = ({
   availableYears,
   sta_code,
   sta_name,
+  mode,
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedYear, setSelectedYear] = useState("ทั้งหมด");
@@ -91,17 +93,31 @@ const RainExportTable: React.FC<Props> = ({
 
   // Format วันที่ไทย
   const formatThaiDate = (timestamp: number) => {
-    return new Date(timestamp).toLocaleDateString('th-TH', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    });
+    const d = new Date(timestamp);
+    if (mode === "yearly") {
+      return `พ.ศ. ${d.getFullYear() + 543}`;
+    }
+    if (mode === "monthly") {
+      return d.toLocaleDateString("th-TH", { month: "long", year: "numeric" });
+    }
+    if (mode === "hourly") {
+      return d.toLocaleString("th-TH", {
+        day: "2-digit", month: "short", year: "numeric",
+        hour: "2-digit", minute: "2-digit",
+      });
+    }
+    return d.toLocaleDateString("th-TH", { day: "2-digit", month: "short", year: "numeric" });
   };
+
+  const dateColLabel =
+    mode === "yearly"  ? "ปี" :
+    mode === "monthly" ? "เดือน-ปี" :
+    mode === "hourly"  ? "วันที่/เวลา" : "วันที่";
 
   // Export Functions
   const exportToXLSX = () => {
     const data = allDataRows.map(r => ({
-      วันที่: formatThaiDate(r.timestamp),
+      dateColLabel: formatThaiDate(r.timestamp),
       'ปริมาณน้ำฝน (มม.)': r.rain_mm !== null ? r.rain_mm : '',
       'ปริมาณน้ำฝนสะสม (มม.)': r.rain_cumulative !== null ? r.rain_cumulative : '',
     }));
@@ -114,7 +130,7 @@ const RainExportTable: React.FC<Props> = ({
   };
 
   const exportToCSV = () => {
-    const headers = ['วันที่', 'ปริมาณน้ำฝน (มม.)', 'ปริมาณน้ำฝนสะสม (มม.)'];
+    const headers = [dateColLabel, 'ปริมาณน้ำฝน (มม.)', 'ปริมาณน้ำฝนสะสม (มม.)'];
     const rows = allDataRows.map(r => [
       formatThaiDate(r.timestamp),
       r.rain_mm !== null ? r.rain_mm.toFixed(2) : '',
@@ -126,7 +142,7 @@ const RainExportTable: React.FC<Props> = ({
   };
 
   const exportToTXT = () => {
-    const headers = ['วันที่', 'ปริมาณน้ำฝน (มม.)', 'ปริมาณน้ำฝนสะสม (มม.)'];
+    const headers = [dateColLabel, 'ปริมาณน้ำฝน (มม.)', 'ปริมาณน้ำฝนสะสม (มม.)'];
     const rows = allDataRows.map(r => [
       formatThaiDate(r.timestamp),
       r.rain_mm !== null ? r.rain_mm.toFixed(2) : '-',
@@ -183,7 +199,7 @@ const RainExportTable: React.FC<Props> = ({
         <Table size="small" stickyHeader>
           <TableHead>
             <TableRow>
-              <TableCell sx={HeaderCellStyle(theme)}>วันที่</TableCell>
+              <TableCell sx={HeaderCellStyle(theme)}>{dateColLabel}</TableCell>
               <TableCell sx={HeaderCellStyle(theme)}>ปริมาณน้ำฝน (มม.)</TableCell>
               <TableCell sx={HeaderCellStyle(theme)}>ปริมาณน้ำฝนสะสม (มม.)</TableCell>
             </TableRow>
