@@ -348,8 +348,6 @@ const DataRainStation: React.FC<DataRainStationProps> = ({ propsSelectedStation 
   // max ปีที่เลือกได้ตาม mode
   const maxRange = mode === "yearly" ? 30 : mode === "monthly" ? 10 : 5;
 
-  console.log({ rainGroupedData, chartDataBar, chartDataSum });
-
   return (
     <Container component="main" sx={{ minWidth: "100%" }}>
       <Grid container spacing={2}>

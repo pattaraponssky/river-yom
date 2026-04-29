@@ -26,6 +26,9 @@ import LoginIcon from "@mui/icons-material/Login";
 import StorageIcon from "@mui/icons-material/Storage";
 import OpacityIcon from "@mui/icons-material/Opacity";
 import AccountTreeIcon from "@mui/icons-material/AccountTree";
+import AssessmentIcon from '@mui/icons-material/Assessment';
+import WaterfallChartIcon from '@mui/icons-material/WaterfallChart';
+import ModelTrainingIcon from '@mui/icons-material/ModelTraining';
 import { Handyman } from "@mui/icons-material";
 import LoginDialog from "../Users/LoginDialog";
 import { Path_URL } from "../../lib/utility";
@@ -37,7 +40,6 @@ interface DrawerProps {
 }
 
 const publicMenuItems = [
-  { icon: <DashboardIcon fontSize="small" />, text: "สรุปสถานการณ์น้ำ", path: "/dashboard" },
   { icon: <AccountTreeIcon fontSize="small" />, text: "แผนผังลุ่มน้ำ", path: "/schematic" },
   { icon: <InfoIcon fontSize="small" />, text: "เกี่ยวกับเรา", path: "/aboutus" },
 ];
@@ -50,6 +52,12 @@ const advancedMenuItems = [
 const adminMenuItems = [
   { icon: <SettingsIcon fontSize="small" />, text: "ตั้งค่า", path: "/setting" },
   { icon: <GroupIcon fontSize="small" />, text: "ผู้ใช้งาน", path: "/users" },
+];
+
+const subDashboardItems = [
+  { path: "/dashboard", icon: <WaterfallChartIcon fontSize="small" />, text: "สถานการณ์น้ำประจำวัน" },
+  { path: "/forecast", icon: <ModelTrainingIcon fontSize="small" />, text: "ผลพยากรณ์น้ำโดยโมเดล" },
+  { path: "/report", icon: <AssessmentIcon fontSize="small" />, text: "รายงานสถานการณ์น้ำ สชป.3" },
 ];
 
 const subStationItems = [
@@ -73,6 +81,7 @@ const SectionLabel = ({ label, open }: { label: string; open: boolean }) =>
 
 const DrawerComponent: React.FC<DrawerProps> = ({ open, setOpen }) => {
   const [stationOpen, setStationOpen] = useState(false);
+  const [dashboardOpen, setDashboardOpen] = useState(false);
   const pathname = usePathname();
   const { currentUser, loading: authLoading, logout } = useAuth();
   const iduser_level = currentUser?.iduser_level ?? 0;
@@ -80,6 +89,7 @@ const DrawerComponent: React.FC<DrawerProps> = ({ open, setOpen }) => {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [loginOpen, setLoginOpen] = useState(false);
   const [stationAnchorEl, setStationAnchorEl] = useState<null | HTMLElement>(null);
+  const [dashboardAnchorEl, setDashboardAnchorEl] = useState<null | HTMLElement>(null);
 
   const drawerWidth = open ? 268 : 68;
   const isDark = theme.palette.mode === 'dark';
@@ -106,7 +116,18 @@ const DrawerComponent: React.FC<DrawerProps> = ({ open, setOpen }) => {
     }
   };
 
+  const handleDashboardClick = (event: React.MouseEvent<HTMLElement>) => {
+    if (open) {
+      // โหมดเปิด → toggle collapse ปกติ
+      setDashboardOpen(!dashboardOpen);
+    } else {
+      // โหมดย่อ → เปิด popup menu
+      setDashboardAnchorEl(event.currentTarget);
+    }
+  };
+
   const handleStationPopupClose = () => setStationAnchorEl(null);
+  const handleDashboardPopupClose = () => setDashboardAnchorEl(null);
 
   const menuItemSx = (path: string) => ({
     borderRadius: '8px',
@@ -220,7 +241,119 @@ const DrawerComponent: React.FC<DrawerProps> = ({ open, setOpen }) => {
 
         {/* ─── เมนู ─── */}
         <List sx={{ px: 1, py: 1, flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
-          <SectionLabel label="เมนูหลัก" open={open} />
+          <SectionLabel label="สรุปสถานการณ์น้ำ" open={open} />
+
+          {/* ปุ่มข้อมูล (collapsible) */}
+          <Tooltip title={!open ? 'สรุปสถานการณ์น้ำ' : ''} placement="right">
+            <ListItem
+              onClick={handleDashboardClick}
+              sx={{
+                ...menuItemSx(''),
+                backgroundColor: dashboardOpen
+                  ? (isDark ? 'rgba(21,101,192,0.1)' : 'rgba(21,101,192,0.06)')
+                  : 'transparent',
+              }}
+            >
+              <ListItemIcon sx={{ minWidth: 0, mr: open ? 1.5 : 0, color: dashboardOpen ? 'primary.main' : 'text.secondary' }}>
+                <DashboardIcon fontSize="small" />
+              </ListItemIcon>
+              {open && (
+                <>
+                  <ListItemText
+                    primary="สรุปสถานการณ์น้ำ"
+                    primaryTypographyProps={{
+                      sx: { fontFamily: 'Prompt', fontSize: '1rem', fontWeight: 600, color: dashboardOpen ? 'primary.main' : 'text.secondary' },
+                    }}
+                  />
+                  {dashboardOpen
+                    ? <ExpandLessIcon fontSize="small" sx={{ color: 'text.disabled' }} />
+                    : <ExpandMoreIcon fontSize="small" sx={{ color: 'text.disabled' }} />
+                  }
+                </>
+              )}
+            </ListItem>
+          </Tooltip>
+
+          {/* โหมดเปิด → Collapse ปกติ */}
+          <Collapse in={dashboardOpen && open} timeout="auto" unmountOnExit>
+            <List component="div" disablePadding sx={{ pl: 1 }}>
+              {subDashboardItems.map((item) => (
+                <ListItem
+                  key={item.path}
+                  component={Link}
+                  href={item.path}
+                  onClick={handleItemClick}
+                  sx={{
+                    ...menuItemSx(item.path),
+                    pl: 3,
+                    borderLeft: `2px solid ${pathname === item.path ? theme.palette.primary.main : theme.palette.divider}`,
+                    borderRadius: '0 8px 8px 0',
+                  }}
+                >
+                  <ListItemIcon sx={iconSx(item.path)}>{item.icon}</ListItemIcon>
+                  <ListItemText
+                    primary={item.text}
+                    primaryTypographyProps={{ sx: { fontFamily: 'Prompt', fontSize: '0.825rem', fontWeight: pathname === item.path ? 600 : 600 } }}
+                  />
+                </ListItem>
+              ))}
+            </List>
+          </Collapse>
+
+
+          {/* โหมดย่อ → Popup Menu */}
+          <Menu
+            anchorEl={dashboardAnchorEl}
+            open={Boolean(dashboardAnchorEl)}
+            onClose={handleDashboardPopupClose}
+            anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+            transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+            PaperProps={{
+              elevation: 3,
+              sx: {
+                ml: 0.5,
+                minWidth: 180,
+                borderRadius: 2,
+                border: `0.5px solid ${theme.palette.divider}`,
+                '& .MuiMenuItem-root': {
+                  fontFamily: 'Prompt',
+                  fontSize: '1rem',
+                  gap: 1.2,
+                  px: 2,
+                  py: 1,
+                  borderRadius: 1,
+                  mx: 0.5,
+                  color: 'text.secondary',
+                  '&:hover': { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', color: 'text.primary' },
+                },
+              },
+            }}
+          >
+            <Typography sx={{ px: 2, pt: 1, pb: 0.5, fontSize: '0.65rem', fontWeight: 500, color: 'text.disabled', fontFamily: 'Prompt', letterSpacing: '0.07em', textTransform: 'uppercase' }}>
+              สรุปสถานการณ์น้ำ
+            </Typography>
+            {subDashboardItems.map((item) => (
+              <MenuItem
+                key={item.path}
+                component={Link}
+                href={item.path}
+                onClick={handleDashboardPopupClose}
+                selected={pathname === item.path}
+                sx={{
+                  color: pathname === item.path ? 'primary.main !important' : undefined,
+                  fontWeight: pathname === item.path ? 600 : 600,
+                  backgroundColor: pathname === item.path
+                    ? `${isDark ? 'rgba(21,101,192,0.18)' : 'rgba(21,101,192,0.08)'} !important`
+                    : undefined,
+                }}  
+              >
+                <ListItemIcon sx={{ minWidth: 0, color: pathname === item.path ? 'primary.main' : 'text.secondary' }}>
+                  {item.icon}
+                </ListItemIcon>
+                {item.text}
+              </MenuItem>
+            ))}
+          </Menu>
 
           {publicMenuItems.map((item) => (
             <Tooltip key={item.path} title={!open ? item.text : ''} placement="right">
@@ -257,7 +390,7 @@ const DrawerComponent: React.FC<DrawerProps> = ({ open, setOpen }) => {
                   <ListItemText
                     primary="ข้อมูล"
                     primaryTypographyProps={{
-                      sx: { fontFamily: 'Prompt', fontSize: '0.875rem', fontWeight: 600, color: stationOpen ? 'primary.main' : 'text.secondary' },
+                      sx: { fontFamily: 'Prompt', fontSize: '1rem', fontWeight: 600, color: stationOpen ? 'primary.main' : 'text.secondary' },
                     }}
                   />
                   {stationOpen
@@ -295,6 +428,7 @@ const DrawerComponent: React.FC<DrawerProps> = ({ open, setOpen }) => {
             </List>
           </Collapse>
 
+
           {/* โหมดย่อ → Popup Menu */}
           <Menu
             anchorEl={stationAnchorEl}
@@ -311,7 +445,7 @@ const DrawerComponent: React.FC<DrawerProps> = ({ open, setOpen }) => {
                 border: `0.5px solid ${theme.palette.divider}`,
                 '& .MuiMenuItem-root': {
                   fontFamily: 'Prompt',
-                  fontSize: '0.875rem',
+                  fontSize: '1rem',
                   gap: 1.2,
                   px: 2,
                   py: 1,

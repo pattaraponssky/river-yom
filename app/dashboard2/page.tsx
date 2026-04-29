@@ -1,18 +1,26 @@
 'use client';
 
 import '@/app/globals.css';
-import { Container, Grid, Box, useTheme } from '@mui/material';
-import  { useState, useEffect } from "react";
-import { Path_URL, API_URL } from '../../lib/utility';
+import { Container, Typography, Grid, Box, useTheme } from '@mui/material';
+import  { useState, useEffect, use } from "react";
+import { Path_URL, API_URL, formatThaiDay } from '../../lib/utility';
+import FlowCard from '../../components/Dashboard/FlowCard';
+import RainCard from '../../components/Dashboard/RainCard';
+import GateCard from '@/components/Dashboard/GateCard';
 import { BoxStyle} from '@/theme/style';
 import Papa from "papaparse";
 import FloatingMenu from '@/components/Dashboard/FloatingMenu';
 import ImageComponent from '../../components/Image';
 import PdfViewer from '../../components/PdfViewer';
+import DashboardCards from '../dashboard/components/DashboardCard';
+import LongProfileChart from '../dashboard/components/LongProfile';
+import HydroMap from '../dashboard/components/Map';
 import FloodWarningTable from '../dashboard/components/WarningTable';
 import WaterForecastChart from '../dashboard/components/WaterForecastChart';
-import LongProfileChart from '../dashboard/components/LongProfile';
 import WaterLevelChart from '../dashboard/components/WaterLevelChart';
+
+
+
 
 interface WaterLevelData {
   time: string;
@@ -40,6 +48,13 @@ const stationMapping: Record<string, number> = {
 };
 
 export default function Dashboard() {
+  const mapKey = process.env.NEXT_PUBLIC_LONGDO_MAP_KEY!;
+  
+  const theme = useTheme();
+  const isDark = theme.palette.mode === "dark";
+
+  const [dailySummary, setDailySummary] = useState<any>(null);
+
   const [forecastLongProfile, setForecastLongProfile] = useState<waterData[]>([]);
   const [forecastChart, setForecastChart] = useState<waterData[]>([]);
   const [rawData, setRawData] = useState<WaterLevelData[]>([]);
@@ -49,6 +64,16 @@ export default function Dashboard() {
   const [waterPeaks, setWaterPeaks] = useState<Record<string, { elevation: number; time: string }>>({});
   const [waterTrends, setWaterTrends] = useState<Record<string, string>>({});
 
+  // โหลด dailySummary
+  useEffect(() => {
+    fetch(`${API_URL}/api/dailySummary`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`dailySummary failed: ${res.status}`);
+        return res.json();
+      })
+      .then((json) => setDailySummary(json))
+      .catch((err) => console.error("Failed to load dailySummary:", err));
+  }, []);
 
   // โหลดและประมวลผล RAS CSV
   useEffect(() => {
@@ -255,10 +280,41 @@ export default function Dashboard() {
     };
   }, []);
     
+  const JsonPaths = [
+    `${Path_URL}data/River.geojson`,
+    `${Path_URL}data/ProjectArea.geojson`,
+  ];
+
   return (
   <>
     <Container maxWidth="xl" sx={{ py: 2 }}>
-
+      <Typography variant="h5" id="card-daily" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+        ภาพรวมสถานการณ์น้ำ วันที่ {formatThaiDay(Date())}
+      </Typography>
+        <DashboardCards data={dailySummary}/>
+      <Grid size={{xs:12, md:6}}>
+        <Box id="map" sx={{
+              display:"flex",
+              flexDirection:{xs:"column",md:"row"},
+              py:2,
+          }}>
+          <HydroMap
+              mapKey={mapKey}
+              JsonPaths={JsonPaths} // ส่งข้อมูล GeoJSON เข้าไป}
+            />
+        </Box>
+      </Grid>
+        <Grid container spacing={1} id="water-daily">
+          <Grid size={{xs:12, md:6}}>
+            <FlowCard />
+          </Grid>
+            <Grid size={{xs:12, md:6}}>
+            <RainCard />
+          </Grid>
+          <Grid size={{xs:12, md:12}}>
+            <GateCard />
+          </Grid>
+        </Grid>
       <Box sx={BoxStyle} id="flood-warning">
         <FloodWarningTable maxLevels={maxElevations} waterTrends={waterTrends} waterPeaks={waterPeaks}   />
       </Box>
@@ -272,7 +328,7 @@ export default function Dashboard() {
       <Box sx={BoxStyle} id="water-level" >
         <WaterLevelChart data={forecastData}/>
       </Box>
-      {/* <Box sx={BoxStyle} id="diagrams-report">
+      <Box sx={BoxStyle} id="diagrams-report">
        <Grid container spacing={1}>
           <Grid size={{xs:12, md:6}}>
             <ImageComponent src="http://irrigation.rid.go.th/rid3/water/images/3dams.jpg" alt="สภาพน้ำเขื่อนภูมิพล เขื่อนสิริกิต์ และเขื่อแควน้อยฯ" title={'สภาพน้ำในเขื่อนประจำวัน'} />
@@ -292,7 +348,7 @@ export default function Dashboard() {
         </Box>
         <Box sx={BoxStyle}>
             <PdfViewer src="http://irrigation.rid.go.th/rid3/water/rpt050269.pdf" title="รายงานสถานการณ์น้ำประจำวัน สำนักงานชลประทานที่ 3" />
-        </Box> */}
+        </Box>
       <FloatingMenu/>
     </Container>
   </>
