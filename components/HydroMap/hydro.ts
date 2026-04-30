@@ -7,6 +7,7 @@ export interface HydroMapProps {
 
 export interface RainDataItem { sta_code: string; date: string; wl?: string | null; volume?: string | null; rain_mm?: string | null; rainSeries?: string | null; }
 export interface FlowDataItem { sta_code: string; date: string; wl?: string | null; discharge?: string | null; }
+export interface TeleDataItem { sta_code: string; date: string; wl?: string | null; discharge?: string | null; rain_mm?: string | null; }
 export interface GateDataItem { sta_code: string; date: string; wl_upper?: string | null; wl_lower?: string | null; discharge?: string | null; }
 
 export interface StationInfo {

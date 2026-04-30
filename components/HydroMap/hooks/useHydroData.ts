@@ -1,19 +1,22 @@
 import { useEffect, useState } from 'react';
 import { API_URL } from '@/lib/utility';
-import { StationInfo, RainDataItem, FlowDataItem, GateDataItem } from '../hydro';
+import { StationInfo, RainDataItem, FlowDataItem, GateDataItem, TeleDataItem } from '../hydro';
 
 export const useHydroData = () => {
   const [flowInfo, setFlowInfo] = useState<StationInfo[]>([]);
   const [gateInfo, setGateInfo] = useState<StationInfo[]>([]);
   const [rainInfo, setRainInfo] = useState<StationInfo[]>([]);
+  const [teleInfo, setTeleInfo] = useState<StationInfo[]>([]);
 
   const [latestRainData, setLatestRainData] = useState<RainDataItem[]>([]);
   const [latestFlowData, setLatestFlowData] = useState<FlowDataItem[]>([]);
   const [latestGateData, setLatestGateData] = useState<GateDataItem[]>([]);
+  const [latestTeleData, setLatestTeleData] = useState<TeleDataItem[]>([]);
 
   const [rainData14d, setRainData14d] = useState<RainDataItem[]>([]);
   const [flowData14d, setFlowData14d] = useState<FlowDataItem[]>([]);
   const [gateData14d, setGateData14d] = useState<GateDataItem[]>([]);
+  const [teleData14d, setTeleData14d] = useState<TeleDataItem[]>([]);
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -22,11 +25,13 @@ export const useHydroData = () => {
           fetch(`${API_URL}/api/flow_info`).then(r => r.json()),
           fetch(`${API_URL}/api/rain_info`).then(r => r.json()),
           fetch(`${API_URL}/api/gate_info`).then(r => r.json()),
+          fetch(`${API_URL}/api/tele_info`).then(r => r.json()),
         ]),
         Promise.allSettled([
           fetch(`${API_URL}/api/rain_data_last_14_days`).then(r => r.json()),
           fetch(`${API_URL}/api/flow_data_last_14_days`).then(r => r.json()),
           fetch(`${API_URL}/api/gate_data_last_14_days`).then(r => r.json()),
+          fetch(`${API_URL}/api/tele_data_last_14_days`).then(r => r.json()),
         ]),
       ]);
 
@@ -34,6 +39,7 @@ export const useHydroData = () => {
       setFlowInfo(info[0].status === 'fulfilled' ? info[0].value.data : []);
       setRainInfo(info[1].status === 'fulfilled' ? info[1].value.data : []);
       setGateInfo(info[2].status === 'fulfilled' ? info[2].value.data : []);
+      setTeleInfo(info[3].status === 'fulfilled' ? info[3].value.data : []);
 
       // 14 days + latest
       if (data14d[0].status === 'fulfilled' && data14d[0].value.status === 'success') {
@@ -50,6 +56,11 @@ export const useHydroData = () => {
         const data = data14d[2].value.data;
         setGateData14d(data);
         setLatestGateData(getLatest(data));
+      }
+      if (data14d[3].status === 'fulfilled' && data14d[3].value.status === 'success') {
+        const data = data14d[3].value.data;
+        setTeleData14d(data);
+        setLatestTeleData(getLatest(data));
       }
     };
 
@@ -77,6 +88,13 @@ export const useHydroData = () => {
     }
     }, [gateData14d]);
 
+    useEffect(() => {
+    if (teleData14d.length > 0) {
+        (window as any).teleDataLast14d = teleData14d;
+        console.log(`window.teleDataLast14d อัปเดตแล้ว (${teleData14d.length} รายการ)`);
+    }
+    }, [teleData14d]);
+
   const getLatest = <T extends { sta_code: string; date: string }>(arr: T[]) => {
     const map = new Map<string, T>();
     arr.forEach(item => {
@@ -87,8 +105,8 @@ export const useHydroData = () => {
   };
 
   return {
-    flowInfo, gateInfo, rainInfo,
-    latestRainData, latestFlowData, latestGateData,
-    rainData14d, flowData14d, gateData14d,
+    flowInfo, gateInfo, rainInfo, teleInfo,
+    latestRainData, latestFlowData, latestGateData, latestTeleData,
+    teleData14d, rainData14d, flowData14d, gateData14d,
   };
 };

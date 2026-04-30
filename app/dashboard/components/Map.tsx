@@ -13,6 +13,7 @@ import { useGeoJsonRenderer } from '@/components/HydroMap/hooks/useGeoJsonRender
 import { renderChart } from '@/components/HydroMap/utils/chartUtils';
 import { createToggleMenu } from '@/components/HydroMap/utils/markerUtils';
 import { HydroMapProps } from '@/components/HydroMap/hydro';
+import { useTeleMarkers } from '@/components/HydroMap/hooks/useTeleMarkers';
 
 const HydroMap: React.FC<HydroMapProps> = ({ mapKey, JsonPaths, height }) => {
   const { mode } = useThemeMode();
@@ -27,6 +28,7 @@ const HydroMap: React.FC<HydroMapProps> = ({ mapKey, JsonPaths, height }) => {
   const [showFlow, setShowFlow] = useState(false);
   const [showGate, setShowGate] = useState(false);
   const [showRain, setShowRain] = useState(false);
+  const [showTele, setShowTele] = useState(false);
 
   // ตั้งค่า window.renderChart
   useEffect(() => {
@@ -46,6 +48,7 @@ const HydroMap: React.FC<HydroMapProps> = ({ mapKey, JsonPaths, height }) => {
     map.Ui.add(createToggleMenu('🚰 สถานีน้ำท่า', 'flow', true, setShowFlow));
     map.Ui.add(createToggleMenu('🌧️ สถานีน้ำฝน', 'rain', true, setShowRain));
     map.Ui.add(createToggleMenu('💧 ประตูระบายน้ำ', 'gate', true, setShowGate));
+    map.Ui.add(createToggleMenu('📡 สถานีโทรมาตร', 'tele', true, setShowTele));
 
     map.location({ lat: 16.750, lon: 100 }, true);
     map.zoom(11, true);
@@ -57,7 +60,8 @@ const HydroMap: React.FC<HydroMapProps> = ({ mapKey, JsonPaths, height }) => {
   useFlowMarkers(map, hydroData.flowInfo, hydroData.latestFlowData, showFlow);
   useGateMarkers(map, hydroData.gateInfo, hydroData.latestGateData, showGate);
   useRainMarkers(map, hydroData.rainInfo, hydroData.latestRainData, showRain);
-
+  useTeleMarkers(map, hydroData.teleInfo, hydroData.latestTeleData, showTele);
+  
   return (
     <div
       ref={mapContainerRef}
