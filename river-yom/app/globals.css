@@ -1,0 +1,162 @@
+
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+* {
+    font-family: 'Prompt', sans-serif;
+}
+
+html, body {
+    height: 100%;
+    max-width: 100%;
+    overflow: auto;
+  }
+  
+
+:root {
+  /* Light mode (default) */
+  --ldmap-popup-bg: rgba(255, 255, 255, 0.95);
+  --ldmap-popup-text: #1a202c;
+  --ldmap-popup-border: rgba(0, 0, 0, 0.12);
+  --ldmap-dropdown-bg: #ffffff;
+  --ldmap-dropdown-text: #333333;
+  --ldmap-dropdown-hover: #f0f0f0;
+  --ldmap-text-normal: #1a202c;
+  --ldmap-text-title: #28378b;
+}
+
+[data-theme="dark"] {
+  /* Dark mode */
+  --ldmap-popup-bg: rgba(26, 31, 43, 0.95);
+  --ldmap-popup-text: #e2e8f0;
+  --ldmap-popup-border: rgba(255, 255, 255, 0.08);
+  --ldmap-dropdown-bg: #1a1f2b;
+  --ldmap-dropdown-text: #e2e8f0;
+  --ldmap-dropdown-hover: #2d3748;
+  --ldmap-text-normal: #e2e8f0;
+  --ldmap-text-title: #a3bffa;
+}
+
+
+.ldmap_placeholder .ldmap_frame .ldmap_popup_title {
+  font-size: large;
+  height: auto !important;
+  background: var(--ldmap-popup-bg) !important;
+  color: var(--ldmap-popup-text) !important;
+  border-bottom: 1px solid var(--ldmap-popup-border) !important;
+  display: flex !important;    
+  flex-direction: row !important;
+} 
+
+.ldmap_placeholder .ldmap_frame .ldmap_popup_detail{
+  color: #000;
+}
+
+.ldmap_placeholder .ldmap_topright {
+  line-height: 30px !important;
+  top: 0px !important;
+  display: flex !important;              /* ทำให้ทั้ง container เป็น flex */
+  flex-wrap: nowrap;                     /* ห้ามขึ้นบรรทัดใหม่ */
+  align-items: center;                   /* จัดแนวตั้งกลาง */        
+}
+
+.ldmap_placeholder .ldmap_topleft {
+  left: 0px !important;
+  margin-left: 56px !important;   /* เว้นระยะซ้ายเท่ากับขนาด fullscreen */
+}
+
+.ldmap_topright {
+  flex-direction: row;
+  justify-content: flex-end;             /* เรียงจากซ้ายไปขวา */
+}
+
+.ldmap_placeholder_fullscreen .ldmap_topright  {
+  top: 68px !important;
+  left: 78px !important;
+}
+
+.ldmap_placeholder_fullscreen .ldmap_navigation {
+  top: 68px !important;
+  left: 78px !important;
+}
+
+.ldmap_placeholder_fullscreen .ldmap_topleft {
+  left: 78px !important;
+  top: 68px !important;
+}
+
+.ldmap-menubar {
+    top: 16px !important;
+  }
+
+.ldmap_dropdown_head span,
+.ldmap_option,
+.ldmap_menubar, 
+.ldmap_item,
+.ldmap_fullscreen {
+  font-size: 16px !important;
+  background: var(--ldmap-dropdown-bg) !important;
+  color: var(--ldmap-dropdown-text) !important;
+}
+
+/* Hover effect ใน dropdown */
+.ldmap_option:hover,
+.ldmap_item:hover {
+  background: var(--ldmap-dropdown-hover) !important;
+}
+
+/* ปรับขนาดปุ่ม dropdown */
+.ldmap_dropdown_head,
+.ldmap_menubar, 
+.ldmap_option, 
+.ldmap_item,
+.ldmap_fullscreen span {
+  height: 16px !important;
+  line-height: 16px !important;
+  
+}
+
+.ldmap_placeholder .ldmap_fullscreen {
+    width: 28px !important;
+    height: 28px !important;
+    margin: 10px 0 0 4px !important; 
+    vertical-align: top;
+}
+
+/* Text classes */
+.text-normal {
+  font-family: 'Prompt', sans-serif;
+  font-size: 1rem;
+  color: var(--ldmap-text-normal);
+}
+
+.text-title {
+  font-family: 'Prompt', sans-serif;
+  font-size: 1.2rem;
+  color: var(--ldmap-text-title);
+}
+

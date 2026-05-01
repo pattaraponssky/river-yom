@@ -1,0 +1,15 @@
+// src/app/gate/page.tsx
+'use client';
+import { Box } from '@mui/material';
+import dynamic from 'next/dynamic';
+
+const GateStation = dynamic(
+  () => import('./components/GateStation'),
+  { ssr: false }   // ปิด SSR สำหรับ component นี้
+);
+
+export default function GatePage() {
+  return <Box sx={{p:1}}>
+    <GateStation/>
+  </Box>
+}
