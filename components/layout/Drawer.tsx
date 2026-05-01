@@ -29,6 +29,7 @@ import AccountTreeIcon from "@mui/icons-material/AccountTree";
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import WaterfallChartIcon from '@mui/icons-material/WaterfallChart';
 import ModelTrainingIcon from '@mui/icons-material/ModelTraining';
+import WaterDamageIcon from '@mui/icons-material/WaterDamage';
 import { Handyman } from "@mui/icons-material";
 import LoginDialog from "../Users/LoginDialog";
 import { Path_URL } from "../../lib/utility";
@@ -64,6 +65,7 @@ const subStationItems = [
   { path: "/rain", icon: <WaterDropIcon fontSize="small" />, text: "สถานีวัดน้ำฝน" },
   { path: "/flow", icon: <PlaceIcon fontSize="small" />, text: "สถานีน้ำท่า" },
   { path: "/gate", icon: <OpacityIcon fontSize="small" />, text: "ประตูระบายน้ำ" },
+  { path: "/tele", icon: <WaterDamageIcon fontSize="small" />, text: "สถานีโทรมาตร" },
 ];
 
 const SectionLabel = ({ label, open }: { label: string; open: boolean }) =>

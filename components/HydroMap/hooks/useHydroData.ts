@@ -61,6 +61,7 @@ export const useHydroData = () => {
         const data = data14d[3].value.data;
         setTeleData14d(data);
         setLatestTeleData(getLatest(data));
+        console.log(`teleData14d โหลดแล้ว (${data.length} รายการ)`, data);
       }
     };
 
@@ -108,5 +109,6 @@ export const useHydroData = () => {
     flowInfo, gateInfo, rainInfo, teleInfo,
     latestRainData, latestFlowData, latestGateData, latestTeleData,
     teleData14d, rainData14d, flowData14d, gateData14d,
+
   };
 };

@@ -8,6 +8,22 @@ export interface CameraConfig {
 }
 
 export const STATION_CAMERAS: Record<string, CameraConfig[]> = {
+  '02': [
+    {
+      id: 'y15-cam1',
+      label: 'กล้อง 1 - มุมเสาวัดระดับน้ำในแม่น้ำ',
+      type: 'hls',
+      streamUrl: 'http://125.25.183.165:1935/SamsenRID/myStream/SamsenRID/playlist.m3u8',
+      snapshotUrl: 'http://125.25.183.165:1935/SamsenRID/myStream/SamsenRID/playlist.m3u8',
+    },
+    {
+      id: 'y15-cam2',
+      label: 'กล้อง 2 - มุมหน้าสถานี',
+      type: 'hls',
+      streamUrl: 'http://125.25.183.165:1935/UpperKLP/myStream/UpperKLP/playlist.m3u8',
+    },
+  ],
+  //////////////////////////////////////////////////////////////////////////////////////
   'Y.15': [
     {
       id: 'y15-cam1',

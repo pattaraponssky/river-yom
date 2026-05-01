@@ -53,22 +53,21 @@ const addTeleMarkers = (
           <div><b>รหัสสถานี:</b> <span style="color:#4caf50;font-weight:bold;">${sta_code || '-'}</span></div>
           <div><b>📉 อัตราการไหล:</b> <span style="color:#1e88e5;font-weight:bold;">${discharge} ลบ.ม./วินาที</span></div>
           <div><b>📈 ระดับน้ำ:</b> <span style="color:#e53935;font-weight:bold;">${wl} ม.รทก.</span></div>
-          <div><b>🌧️ ปริมาณน้ำฝน:</b> <span style="color:#1e88e5;font-weight:bold;">${rain_mm} มม.</span></div>
+          <div><b>🌧️ ปริมาณฝน:</b> <span style="color:#43a047;font-weight:bold;">${rain_mm} มม.</span></div>
         </div>
 
-        <button onclick="window.renderChart('${sta_code}', 'discharge')"
+        <button onclick="window.renderChart('${sta_code}', 'tele_discharge')"
                 style="background:#1e88e5;color:white;padding:4px 10px;border:none;border-radius:6px;font-size:0.9rem;cursor:pointer;margin:4px 2px;">
           📉 อัตราการไหล
         </button>
 
-        <button onclick="window.renderChart('${sta_code}', 'wl')"
+        <button onclick="window.renderChart('${sta_code}', 'tele_wl')"
                 style="background:#e53935;color:white;padding:4px 10px;border:none;border-radius:6px;font-size:0.9rem;cursor:pointer;margin:4px 2px;">
           📈 ระดับน้ำ
         </button>
-
-         <button onclick="window.renderChart('${sta_code}', 'rain_mm')"
-                style="background:#1e88e5;color:white;padding:4px 10px;border:none;border-radius:6px;font-size:0.9rem;cursor:pointer;margin:4px 2px;">
-          📈 ปริมาณน้ำฝน
+        <button onclick="window.renderChart('${sta_code}', 'tele_rain_mm')"
+                style="background:#43a047;color:white;padding:4px 10px;border:none;border-radius:6px;font-size:0.9rem;cursor:pointer;margin:4px 2px;">
+          🌧️ ปริมาณฝน
         </button>
 
         <a href="/tele?tab=0&station=${sta_code}" 
@@ -76,9 +75,9 @@ const addTeleMarkers = (
                 ข้อมูลเพิ่มเติม
         </a>
         <br/>
-        <div id="chart-discharge-${safeStaCode}" style="display:none; width:100%; height:220px;"></div>
-        <div id="chart-wl-${safeStaCode}" style="display:none; width:100%; height:220px;"></div>
-        <div id="chart-rain_mm-${safeStaCode}" style="display:none; width:100%; height:220px;"></div>
+        <div id="chart-tele_discharge-${safeStaCode}" style="display:none; width:100%; height:220px;"></div>
+        <div id="chart-tele_wl-${safeStaCode}" style="display:none; width:100%; height:220px;"></div>
+        <div id="chart-tele_rain_mm-${safeStaCode}" style="display:none; width:100%; height:220px;"></div>
       `,
 
       icon: {
