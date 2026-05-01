@@ -1,0 +1,28 @@
+RewriteEngine On
+RewriteCond %{HTTPS} off
+# Allow access to index.php but deny access to other PHP files
+<Files "*.php">
+    Require all denied
+</Files>
+
+<Files "index.php">
+    Require all granted
+</Files>
+
+# Security: Prevent access to configuration files
+<FilesMatch "\.(htaccess|htpasswd|ini|phar|sh|bat|cmd|exe|pl|py|rb|conf|config)$">
+    Require all denied
+</FilesMatch>
+
+# Security: Prevent access to backup and source files
+<FilesMatch "\.(bak|old|orig|save|swp|swo|log|err)$">
+    Require all denied
+</FilesMatch>
+
+# CORS settings
+<IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Methods "GET, POST, OPTIONS, DELETE, PUT"
+    Header set Access-Control-Allow-Headers "Content-Type, Authorization"
+	Header set Access-Control-Allow-Credentials "true"
+</IfModule>
