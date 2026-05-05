@@ -9,6 +9,8 @@ use App\Models\ReservoirInfoModel;
 use App\Models\ReservoirModel;
 use App\Models\GateInfoModel;
 use App\Models\GateModel;
+use App\Models\TeleInfoModel;
+use App\Models\TeleModel;
 use App\Models\FlowInfoModel;
 use App\Models\FlowModel;
 use App\Models\RainInfoModel;
@@ -157,6 +159,41 @@ class DailyApi extends ResourceController
                     'date' => $daily['date'],
                     'wl' => round($daily['wl'], 2),
                     'discharge' => round($daily['discharge'], 2)
+                ];
+            }
+        }
+
+        return $this->respond(['data' => $result]);
+    }
+
+    public function tele($date = null)
+    {
+        $infoModel = new TeleInfoModel();
+        $dataModel = new TeleModel();
+
+        if (!$date) {
+            $latest = $dataModel->selectMax('date')->first();
+            $date = $latest ? $latest['date'] : date('Y-m-d');
+        }
+
+        $flows = $infoModel->findAll();
+        $result = [];
+        $no = 1;
+
+        foreach ($flows as $flow) {
+            $daily = $dataModel->where('sta_code', $flow['sta_code'])->where('date', $date)->first();
+            if ($daily) {
+                $result[] = [
+                    'no' => $no++,
+                    'sta_code' => $flow['sta_code'],
+                    'sta_name' => $flow['sta_name'],
+                    'province' => $flow['province'],
+                    'lat' => $flow['lat'],
+                    'long' => $flow['long'],
+                    'date' => $daily['date'],
+                    'wl' => round($daily['wl'], 2),
+                    'discharge' => round($daily['discharge'], 2),
+                    'rain' => round($daily['rain'], 2)
                 ];
             }
         }

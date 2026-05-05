@@ -21,6 +21,9 @@ $routes->group('api/daily', function($routes) {
     $routes->get('flow', 'DailyApi::flow');
     $routes->get('flow/(:segment)', 'DailyApi::flow/$1');
 
+    $routes->get('tele', 'DailyApi::tele');
+    $routes->get('tele/(:segment)', 'DailyApi::tele/$1');
+
     $routes->get('rain', 'DailyApi::rain');
     $routes->get('rain/(:segment)', 'DailyApi::rain/$1');
 });

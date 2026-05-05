@@ -10,6 +10,7 @@ import FlowCard from '../../components/Dashboard/FlowCard';
 import RainCard from '../../components/Dashboard/RainCard';
 import GateCard from '@/components/Dashboard/GateCard';
 import FloatingMenu from '@/components/Dashboard/FloatingMenu';
+import TeleCard from '@/components/Dashboard/TeleCard';
 
 export default function Dashboard() {
   const mapKey = process.env.NEXT_PUBLIC_LONGDO_MAP_KEY!;
@@ -59,6 +60,9 @@ export default function Dashboard() {
           </Grid>
           <Grid size={{xs:12, md:12}}>
             <GateCard />
+          </Grid>
+          <Grid size={{xs:12, md:12}}>
+            <TeleCard />
           </Grid>
         </Grid>
       <FloatingMenu/>

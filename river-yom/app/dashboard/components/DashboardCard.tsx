@@ -40,7 +40,7 @@ const DashboardCards: React.FC<DashboardCardsProps> = ({ data, loading = false, 
         {
           title: 'สถานีวัดน้ำท่า',
           subTitle: 'น้ำล้นตลิ่ง',
-          value: '13',
+          value: '7',
           unit: 'สถานี',
           value_data: data.flow_stations_over_wl ?? '—',
           unit_data: 'สถานี',
@@ -61,7 +61,7 @@ const DashboardCards: React.FC<DashboardCardsProps> = ({ data, loading = false, 
           link: '/rain',
         },
         {
-          title: 'สถานีติดตั้งโครงการ',
+          title: 'สถานีโทรมาตร',
           subTitle: 'ระบายน้ำรวม',
           value: '6',
           unit: 'สถานี',
@@ -73,8 +73,6 @@ const DashboardCards: React.FC<DashboardCardsProps> = ({ data, loading = false, 
                 '04',
                 '05',
                 '06',
-                'Y.16',
-                'Y.64',
               ]
                 .reduce((sum: number, code: string) => {
                   return sum + parseFloat(data.discharge_flow[code] || '0');
@@ -82,9 +80,9 @@ const DashboardCards: React.FC<DashboardCardsProps> = ({ data, loading = false, 
                 .toFixed(2)
             : '—',
           unit_data: 'ลบ.ม./วินาที',
-          image: `${Path_URL}images/icons/reservoir_icon.png`,
+          image: `${Path_URL}images/icons/tele_station_icon.png`,
           gradient: 'linear-gradient(135deg, #64b5f6, #1976d2)',
-          link: '/flow',
+          link: '/tele',
         },
         
       ]

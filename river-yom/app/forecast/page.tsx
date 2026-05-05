@@ -9,10 +9,10 @@ import Papa from "papaparse";
 import FloatingMenu from '@/components/Dashboard/FloatingMenu';
 import ImageComponent from '../../components/Image';
 import PdfViewer from '../../components/PdfViewer';
-import FloodWarningTable from '../dashboard/components/WarningTable';
-import WaterForecastChart from '../dashboard/components/WaterForecastChart';
-import LongProfileChart from '../dashboard/components/LongProfile';
-import WaterLevelChart from '../dashboard/components/WaterLevelChart';
+import FloodWarningTable from './components/WarningTable';
+import WaterForecastChart from './components/WaterForecastChart';
+import LongProfileChart from './components/LongProfile';
+import WaterLevelChart from './components/WaterLevelChart';
 
 interface WaterLevelData {
   time: string;

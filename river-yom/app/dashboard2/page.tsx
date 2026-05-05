@@ -13,11 +13,11 @@ import FloatingMenu from '@/components/Dashboard/FloatingMenu';
 import ImageComponent from '../../components/Image';
 import PdfViewer from '../../components/PdfViewer';
 import DashboardCards from '../dashboard/components/DashboardCard';
-import LongProfileChart from '../dashboard/components/LongProfile';
+import LongProfileChart from '../forecast/components/LongProfile';
 import HydroMap from '../dashboard/components/Map';
-import FloodWarningTable from '../dashboard/components/WarningTable';
-import WaterForecastChart from '../dashboard/components/WaterForecastChart';
-import WaterLevelChart from '../dashboard/components/WaterLevelChart';
+import FloodWarningTable from '../forecast/components/WarningTable';
+import WaterForecastChart from '../forecast/components/WaterForecastChart';
+import WaterLevelChart from '../forecast/components/WaterLevelChart';
 
 
 
