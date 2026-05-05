@@ -93,7 +93,7 @@ const FlowCard: React.FC = () => {
                   fontFamily: "Prompt",
                 }}
               >
-                น้ำท่า
+                สถานีวัดน้ำท่า 
               </Typography>
             }
           />

@@ -3,7 +3,7 @@
 import '@/app/globals.css';
 import { Container, Grid, Box } from '@mui/material';
 import { BoxStyle} from '@/theme/style';
-import FloatingMenu from '@/components/Dashboard/FloatingMenu';
+import FloatingMenu, { reportMenus } from '@/components/Dashboard/FloatingMenu';
 import ImageComponent from '../../components/Image';
 import PdfViewer from '../../components/PdfViewer';
 
@@ -32,7 +32,7 @@ export default function Report() {
             <Box sx={BoxStyle}>
                 <PdfViewer src="http://irrigation.rid.go.th/rid3/water/rpt050269.pdf" title="รายงานสถานการณ์น้ำประจำวัน สำนักงานชลประทานที่ 3" />
             </Box>
-        <FloatingMenu/>
+        <FloatingMenu menus={reportMenus} />
         </Container>
     </>
     );

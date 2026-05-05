@@ -106,7 +106,7 @@ const RainCard: React.FC = () => {
                 fontFamily: "Prompt",
               }}
             >
-              น้ำฝน
+              สถานีวัดน้ำฝน
             </Typography>
           }
         />

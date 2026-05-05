@@ -13,6 +13,7 @@ import FloodWarningTable from './components/WarningTable';
 import WaterForecastChart from './components/WaterForecastChart';
 import LongProfileChart from './components/LongProfile';
 import WaterLevelChart from './components/WaterLevelChart';
+import { forecastMenus } from '@/lib/menuFloating';
 
 interface WaterLevelData {
   time: string;
@@ -293,7 +294,7 @@ export default function Dashboard() {
         <Box sx={BoxStyle}>
             <PdfViewer src="http://irrigation.rid.go.th/rid3/water/rpt050269.pdf" title="รายงานสถานการณ์น้ำประจำวัน สำนักงานชลประทานที่ 3" />
         </Box> */}
-      <FloatingMenu/>
+      <FloatingMenu menus={forecastMenus} />
     </Container>
   </>
   );

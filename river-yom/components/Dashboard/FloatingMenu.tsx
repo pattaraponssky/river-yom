@@ -2,7 +2,32 @@ import React, { useState } from "react";
 import { Fab, Menu, MenuItem } from "@mui/material";
 import { ExpandLess, ExpandMore } from "@mui/icons-material";
 
-const FloatingMenu: React.FC = () => {
+type MenuItemType = {
+  label: string;
+  targetId: string;
+};
+
+type FloatingMenuProps = {
+  menus: MenuItemType[];
+};
+
+export const dashboardMenus = [
+  { label: "แผนที่ตำแหน่งสถานีสำคัญ", targetId: "map" },
+  { label: "รายงานสถานการณ์น้ำประจำวัน", targetId: "water-daily" },
+  { label: "ระดับน้ำแต่ละสถานี", targetId: "water-level" },
+];
+
+export const forecastMenus = [
+  { label: "ผลการพยากรณ์ปริมาณน้ำท่า", targetId: "forecast-chart" },
+  { label: "รูปตัดตามยาวแม่น้ำ", targetId: "profile-chart" },
+];
+
+export const reportMenus = [
+  { label: "รายงานสถานการณ์น้ำประจำวัน", targetId: "diagrams-report" },
+  { label: "เกณฑ์การเฝ้าระวังและเตือนภัย", targetId: "flood-warning" },
+];
+
+const FloatingMenu: React.FC<FloatingMenuProps> = ({ menus }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -14,13 +39,13 @@ const FloatingMenu: React.FC = () => {
   };
 
   const handleScrollTo = (id: string) => {
-    handleClose(); // ปิดเมนูก่อนที่จะเลื่อน
+    handleClose();
     setTimeout(() => {
       const element = document.getElementById(id);
       if (element) {
         element.scrollIntoView({ behavior: "smooth", block: "start" });
       }
-    }, 200); // รอให้เมนูปิดก่อนค่อยเลื่อน
+    }, 200);
   };
 
   return (
@@ -32,14 +57,17 @@ const FloatingMenu: React.FC = () => {
       >
         {anchorEl ? <ExpandLess /> : <ExpandMore />}
       </Fab>
+
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-        <MenuItem sx={{fontFamily: "Prompt"}} onClick={() => handleScrollTo("map")}>แผนที่ตำแหน่งสถานีสำคัญ</MenuItem>
-        <MenuItem sx={{fontFamily: "Prompt"}} onClick={() => handleScrollTo("water-daily")}>รายงานสถานการณ์น้ำประจำวัน</MenuItem>
-        <MenuItem sx={{fontFamily: "Prompt"}} onClick={() => handleScrollTo("flood-warning")}>เกณฑ์การเฝ้าระวังและเตือนภัย</MenuItem>
-        <MenuItem sx={{fontFamily: "Prompt"}} onClick={() => handleScrollTo("forecast-chart")}>ผลการพยากรณ์ปริมาณน้ำท่า</MenuItem>
-        <MenuItem sx={{fontFamily: "Prompt"}} onClick={() => handleScrollTo("profile-chart")}>รูปตัดตามยาวแม่น้ำ</MenuItem>
-        <MenuItem sx={{fontFamily: "Prompt"}} onClick={() => handleScrollTo("water-level")}>ระดับน้ำแต่ละสถานี</MenuItem>
-        <MenuItem sx={{fontFamily: "Prompt"}} onClick={() => handleScrollTo("diagrams-report")}>รายงานสถานการณ์น้ำประจำวัน</MenuItem>
+        {menus.map((menu, index) => (
+          <MenuItem
+            key={index}
+            sx={{ fontFamily: "Prompt" }}
+            onClick={() => handleScrollTo(menu.targetId)}
+          >
+            {menu.label}
+          </MenuItem>
+        ))}
       </Menu>
     </>
   );

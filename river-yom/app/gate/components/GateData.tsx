@@ -23,6 +23,8 @@ import { API_URL, Path_URL } from "@/lib/utility";
 import { titleStyle, textStyle, HeaderCellStyle } from "@/theme/style";
 import { fontInfo } from "@/theme/style";
 import { useState, useEffect, useMemo } from "react";
+import GateOpeningDisplay from "@/components/Data/GateOpeningDisplay";
+import { GATE_STATION_CONFIGS } from "@/lib/gateConfig";
 
 
 interface DataGateStationProps {
@@ -44,6 +46,7 @@ const DataGateStation: React.FC<DataGateStationProps> = ({propsSelectedStation})
   const [chartData2, setChartData2] = useState<any>(null); // สำหรับ chartOptions2
   const [chartData3, setChartData3] = useState<any>(null); // สำหรับ chartOptions2
   const [, setLoading] = useState(false);
+  const gateConfig = selectedStation ? GATE_STATION_CONFIGS[selectedStation] : null;
  
   const [wlUpperGroupedData, setWlUpperGroupedData] = useState<{ [year: string]: [number, number][] }>({});
   const [wlLowerGroupedData, setWlLowerGroupedData] = useState<{ [year: string]: [number, number][] }>({});
@@ -266,6 +269,7 @@ const DataGateStation: React.FC<DataGateStationProps> = ({propsSelectedStation})
                 }}
               onError={(e) => (e.currentTarget.src = `${Path_URL}images/default_img.png`)}
             />
+          
           </Box>
         </Grid>
   
@@ -331,6 +335,7 @@ const DataGateStation: React.FC<DataGateStationProps> = ({propsSelectedStation})
                 แสดงผล
               </Button>
             </Grid>
+            
 
 
           {/* แสดงข้อผิดพลาด */}
@@ -368,6 +373,10 @@ const DataGateStation: React.FC<DataGateStationProps> = ({propsSelectedStation})
           </Grid>
         </Grid>
       </Grid>
+
+      {gateConfig && (
+            <GateOpeningDisplay config={gateConfig} />
+          )}
 
       <Divider sx={{ my: 3 }} />
       {/* แสดงผลเฉพาะเมื่อกดปุ่ม "แสดงผล" และไม่มี error */}
