@@ -5,11 +5,13 @@ import {
   Map,
 } from "@mui/icons-material"; // Import ไอคอน
 import PlaceIcon from "@mui/icons-material/Place";
+import BarChartIcon from '@mui/icons-material/BarChart';
 import { BoxStyle } from "@/theme/style";
 import { Path_URL } from "@/lib/utility";
 import DataGateStation from "./GateData";
 import GateMap from "./GateMap";
 import { fontTitle } from '../../../theme/style';
+import GateDashboard from "./GateDashboard";
 
 const mapKey = process.env.NEXT_PUBLIC_LONGDO_MAP_KEY!;
 const JsonPaths = [
@@ -48,11 +50,17 @@ const GateStation: React.FC = () => {
           variant="scrollable" // ใช้ scrollable tab
           scrollButtons="auto" // เพิ่มปุ่มเลื่อนอัตโนมัติ
         >
-           <Tab
+          <Tab
             sx={{ ...fontTitle}}
             icon={<PlaceIcon />} // ไอคอนข้อมูลสถานี
             iconPosition="start"
-            label="ประตูระบายน้ำ"
+            label="ข้อมูลประตูระบายน้ำ"
+          />
+           <Tab
+            sx={{ ...fontTitle}}
+            icon={<BarChartIcon />} // ไอคอนข้อมูลสถานี
+            iconPosition="start"
+            label="ข้อมูลย้อนหลัง"
           />
           <Tab
             sx={{ ...fontTitle}}
@@ -65,12 +73,15 @@ const GateStation: React.FC = () => {
 
         {/* Content Display */}
           {mainTab === 0 && (
+              <GateDashboard />
+          )}
+          {mainTab === 1 && (
             <Box>
               <DataGateStation propsSelectedStation={selectedStationFromURL}/>
             </Box>
           )}
         <Box>
-          {mainTab === 1 && (
+          {mainTab === 2 && (
               <GateMap
                 id="longdo-map"
                 stationType="gate"

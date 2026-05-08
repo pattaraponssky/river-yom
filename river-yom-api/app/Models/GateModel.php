@@ -172,4 +172,28 @@ class GateModel extends Model
                     ->where('date <=', $today)
                     ->findAll();
     }
+
+    public function getGateOpeningLast14Days()
+    {
+        return $this->db->query("
+            SELECT
+                g.date,
+                g.sta_code,
+                g.wl_upper,
+                g.wl_lower,
+                g.discharge,
+                o.gate1_height,
+                o.gate2_height,
+                o.gate3_height,
+                o.gate4_height,
+                o.gate5_height,
+                o.gate6_height
+            FROM gate_data g
+            LEFT JOIN gate_opening o
+                ON g.sta_code = o.sta_code
+                AND g.date = o.date
+            WHERE g.date >= DATE_SUB(CURDATE(), INTERVAL 14 DAY)
+            ORDER BY g.sta_code, g.date DESC
+        ")->getResultArray();
+    }
 }

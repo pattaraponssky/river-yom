@@ -171,29 +171,40 @@ class DailyApi extends ResourceController
         $infoModel = new TeleInfoModel();
         $dataModel = new TeleModel();
 
-        if (!$date) {
-            $latest = $dataModel->selectMax('date')->first();
-            $date = $latest ? $latest['date'] : date('Y-m-d');
-        }
-
         $flows = $infoModel->findAll();
         $result = [];
         $no = 1;
 
         foreach ($flows as $flow) {
-            $daily = $dataModel->where('sta_code', $flow['sta_code'])->where('date', $date)->first();
+            $builder = $dataModel->where('sta_code', $flow['sta_code']);
+
+            if ($date) {
+                // ดึงข้อมูลเฉพาะเวลา 07:00 ของวันที่ระบุ
+                $daily = $builder
+                            ->where('DATE(datetime)', $date)           // กรองวัน
+                            ->where('HOUR(datetime)', 7)               // กรองชั่วโมง = 7
+                            ->where('MINUTE(datetime)', 0)             // นาที = 0
+                            ->first();
+            } else {
+                // ถ้าไม่ส่งวันที่มา → ดึงข้อมูลล่าสุดของสถานี
+                $daily = $builder
+                            ->orderBy('datetime', 'DESC')
+                            ->first();
+            }
+
             if ($daily) {
                 $result[] = [
-                    'no' => $no++,
-                    'sta_code' => $flow['sta_code'],
-                    'sta_name' => $flow['sta_name'],
-                    'province' => $flow['province'],
-                    'lat' => $flow['lat'],
-                    'long' => $flow['long'],
-                    'date' => $daily['date'],
-                    'wl' => round($daily['wl'], 2),
-                    'discharge' => round($daily['discharge'], 2),
-                    'rain' => round($daily['rain'], 2)
+                    'no'        => $no++,
+                    'sta_code'  => $flow['sta_code'],
+                    'sta_name'  => $flow['sta_name'],
+                    'province'  => $flow['province'],
+                    'lat'       => $flow['lat'],
+                    'long'      => $flow['long'],
+                    'datetime'  => $daily['datetime'],           // แสดงเวลาจริง
+                    'date'      => $date ?? substr($daily['datetime'], 0, 10),
+                    'wl'        => round($daily['wl'] ?? 0, 2),
+                    'discharge' => round($daily['discharge'] ?? 0, 2),
+                    'rain'      => round($daily['rain_mm'] ?? 0, 2),
                 ];
             }
         }

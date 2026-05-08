@@ -11,22 +11,6 @@ type FloatingMenuProps = {
   menus: MenuItemType[];
 };
 
-export const dashboardMenus = [
-  { label: "แผนที่ตำแหน่งสถานีสำคัญ", targetId: "map" },
-  { label: "รายงานสถานการณ์น้ำประจำวัน", targetId: "water-daily" },
-  { label: "ระดับน้ำแต่ละสถานี", targetId: "water-level" },
-];
-
-export const forecastMenus = [
-  { label: "ผลการพยากรณ์ปริมาณน้ำท่า", targetId: "forecast-chart" },
-  { label: "รูปตัดตามยาวแม่น้ำ", targetId: "profile-chart" },
-];
-
-export const reportMenus = [
-  { label: "รายงานสถานการณ์น้ำประจำวัน", targetId: "diagrams-report" },
-  { label: "เกณฑ์การเฝ้าระวังและเตือนภัย", targetId: "flood-warning" },
-];
-
 const FloatingMenu: React.FC<FloatingMenuProps> = ({ menus }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 

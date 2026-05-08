@@ -213,7 +213,7 @@ const WaterLevelBar: React.FC<{
       </Typography>
     </Box>
     <Typography sx={{ fontFamily: 'Prompt', fontWeight: 700, fontSize: '1rem', color }}>
-      {value != null ? `${value.toFixed(2)} ${unit}` : '-'}
+      {value != null ? `${value} ${unit}` : '-'}
     </Typography>
   </Box>
 );
@@ -244,7 +244,6 @@ const GateOpeningDisplay: React.FC<GateOpeningDisplayProps> = ({ config }) => {
 
   useEffect(() => {
     fetchData();
-    // auto refresh ทุก 5 นาที
     const interval = setInterval(fetchData, 5 * 60 * 1000);
     return () => clearInterval(interval);
   }, [fetchData]);
@@ -264,7 +263,7 @@ const GateOpeningDisplay: React.FC<GateOpeningDisplayProps> = ({ config }) => {
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Box>
           <Typography sx={{ fontFamily: 'Prompt', fontWeight: 700, fontSize: '1rem' }}>
-            🚪 สถานะการเปิด-ปิดบาน
+            🚪 สถานะการเปิด-ปิดบาน ปัจจุบัน
           </Typography>
           <Typography sx={{ fontFamily: 'Prompt', fontSize: '0.78rem', color: 'text.secondary' }}>
             {lastUpdate ? `อัปเดตล่าสุด: ${lastUpdate.toLocaleTimeString('th-TH')}` : 'กำลังโหลด...'}
@@ -302,7 +301,7 @@ const GateOpeningDisplay: React.FC<GateOpeningDisplayProps> = ({ config }) => {
           border: '1px solid',
           borderColor: 'divider',
           // พื้นน้ำ
-          background: 'linear-gradient(180deg, #ECEFF1 0%, #E3F2FD 100%)',
+        //   background: 'linear-gradient(180deg, #ECEFF1 0%, #E3F2FD 100%)',
         }}
       >
         {config.gates.map((gate, idx) => (
@@ -366,7 +365,7 @@ const GateOpeningDisplay: React.FC<GateOpeningDisplayProps> = ({ config }) => {
             }}
           >
             <Typography sx={{ fontFamily: 'Prompt', fontSize: '1.8rem', fontWeight: 800, color: '#1565C0', lineHeight: 1 }}>
-              {totalDischarge != null ? totalDischarge.toFixed(2) : '-'}
+              {totalDischarge != null ? totalDischarge : '-'}
             </Typography>
             <Typography sx={{ fontFamily: 'Prompt', fontSize: '0.8rem', color: '#1565C0', mt: 0.25 }}>
               ลบ.ม./วินาที

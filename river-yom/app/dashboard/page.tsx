@@ -53,6 +53,9 @@ export default function Dashboard() {
         </Box>
       </Grid>
         <Grid container spacing={1} id="water-daily">
+          <Grid size={{xs:12, md:12}}>
+            <TeleCard />
+          </Grid>
           <Grid size={{xs:12, md:6}}>
             <FlowCard />
           </Grid>
@@ -61,9 +64,6 @@ export default function Dashboard() {
           </Grid>
           <Grid size={{xs:12, md:12}}>
             <GateCard />
-          </Grid>
-          <Grid size={{xs:12, md:12}}>
-            <TeleCard />
           </Grid>
         </Grid>
       <FloatingMenu menus={dashboardMenus} />

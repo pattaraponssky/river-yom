@@ -203,5 +203,102 @@ class GateAPI extends Controller
         }
     }
 
-   
+    public function openingLatest($sta_code)
+    {
+        $db = db_connect();
+
+        // ดึงข้อมูลล่าสุดรวม gate opening heights
+         $row = $db->query("
+            SELECT
+                g.date,
+                g.sta_code,
+                g.wl_upper,
+                g.wl_lower,
+                g.discharge,
+                o.gate1_height,
+                o.gate2_height,
+                o.gate3_height,
+                o.gate4_height,
+                o.gate5_height,
+                o.gate6_height
+            FROM gate_data g
+            LEFT JOIN gate_opening o
+                ON g.sta_code = o.sta_code
+            AND g.date     = o.date
+            WHERE g.sta_code = ?
+            ORDER BY g.date DESC
+            LIMIT 1
+        ", [$sta_code])->getRowArray();
+
+        if (!$row) {
+            return $this->response->setJSON(['status' => 'success', 'data' => null]);
+        }
+
+        return $this->response->setJSON(['status' => 'success', 'data' => $row]);
+    }
+
+   public function openingLatestAll()
+    {
+        $db = db_connect();
+
+        // ดึงข้อมูลล่าสุดรวม gate opening heights
+        $rows = $db->query("
+            SELECT
+                g.date,
+                g.sta_code,
+                g.wl_upper,
+                g.wl_lower,
+                g.discharge,
+                o.gate1_height,
+                o.gate2_height,
+                o.gate3_height,
+                o.gate4_height,
+                o.gate5_height,
+                o.gate6_height
+            FROM gate_data g
+            INNER JOIN (
+                SELECT sta_code, MAX(date) as max_date
+                FROM gate_data
+                GROUP BY sta_code
+            ) lateste
+                ON g.sta_code = latest.sta_code
+                AND g.date = latest.max_date
+            LEFT JOIN gate_opening o
+                ON g.sta_code = o.sta_code
+                AND g.date = o.date
+        ")->getResultArray();
+
+        if (!$rows) {
+            return $this->response->setJSON(['status' => 'success', 'data' => null]);
+        }
+
+        return $this->response->setJSON(['status' => 'success', 'data' => $rows]);
+    }
+
+    public function gateOpeningLast14Days()
+    {
+        try {
+            $model = new GateModel();
+
+            $data = $model->getGateOpeningLast14Days();
+
+            if (!empty($data)) {
+                return $this->response->setJSON([
+                    'status' => 'success',
+                    'data' => $data
+                ]);
+            } else {
+                return $this->response->setJSON([
+                    'status' => 'error',
+                    'message' => 'ไม่พบข้อมูล gate opening ในช่วง 14 วันล่าสุด'
+                ]);
+            }
+
+        } catch (\Exception $e) {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => '❌ Database Query Failed: ' . $e->getMessage()
+            ]);
+        }
+    }
 }

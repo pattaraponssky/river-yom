@@ -111,6 +111,8 @@ $routes->get('/api/gate_data/(:segment)', 'GateAPI::gateData/$1');
 $routes->get('/api/gate_years', 'GateAPI::gate_years'); 
 $routes->get('/api/gate_data_last_7_days', 'GateAPI::gateDataLast7Days');
 $routes->get('/api/gate_data_last_14_days', 'GateAPI::gateDataLast14Days');
+$routes->get('/api/gate_opening_latest/(:segment)', 'GateAPI::openingLatest/$1');
+$routes->get('/api/gate_opening_all_latest', 'GateAPI::openingLatestAll');
 
 //////Rain API//////
 $routes->get('api/rain_info', 'RainInfo::index');

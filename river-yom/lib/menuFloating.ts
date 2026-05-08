@@ -11,5 +11,7 @@ export const forecastMenus = [
 ];
 
 export const reportMenus = [
+  { label: "สภาพน้ำในเขื่อน", targetId: "dams-report" },
+  { label: "สรุปสถานการณ์น้ำ สำนักงานชลประทานที่ 3", targetId: "rid3-report" },
   { label: "รายงานสถานการณ์น้ำประจำวัน", targetId: "diagrams-report" },
 ];
