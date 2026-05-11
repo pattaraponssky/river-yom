@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { API_URL, Path_URL } from '../../lib/utility';
 import { textStyle, titleStyle } from '../../theme/style';
-import { alpha, CardHeader, useTheme } from '@mui/material';
+import { alpha, CardHeader, IconButton, Tooltip, useTheme } from '@mui/material';
+import SourceIcon from '@mui/icons-material/Source';
 import {
   Avatar,
   Box,
@@ -94,8 +95,30 @@ const FlowCard: React.FC = () => {
                 }}
               >
                 สถานีวัดน้ำท่า 
+                  <Typography component="span" sx={{ fontWeight: "bold", fontSize: { md: "1.1rem", xs: "0.85rem" }, fontFamily:"Prompt", color: "text.secondary"}}>
+                    (ข้อมูลตรวจวัดเวลา 07:00 น.)
+                    <Tooltip title="แหล่งที่มาของข้อมูล">
+                      <IconButton
+                        size="medium"
+                        sx={{ ml: 1 }}
+                        onClick={() =>
+                          window.open(
+                            'http://hydro-2.rid.go.th/',
+                            '_blank'
+                          )
+                        }
+                      >
+                        <SourceIcon fontSize="medium" />
+                      </IconButton>
+                    </Tooltip>
+                  </Typography>
+
+                
               </Typography>
+              
+              
             }
+            
           />
           <Divider />
 

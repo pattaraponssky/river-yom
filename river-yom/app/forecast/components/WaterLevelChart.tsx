@@ -199,7 +199,7 @@ const WaterLevelChart: React.FC<Props> = ({ data, chartHeight = 550 }) => {
         label: {
           position: "center",
           offsetY: 22,
-          offsetX: -428,
+          offsetX: -160,
           text: `ปกติ: ${Levels.normal.toFixed(2)} ม.รทก.`,
           style: {
             color: "#000",

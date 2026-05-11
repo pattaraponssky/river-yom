@@ -65,7 +65,7 @@ const subStationItems = [
   { path: "/rain", icon: <WaterDropIcon fontSize="small" />, text: "สถานีวัดน้ำฝน" },
   { path: "/flow", icon: <PlaceIcon fontSize="small" />, text: "สถานีน้ำท่า" },
   { path: "/gate", icon: <OpacityIcon fontSize="small" />, text: "ประตูระบายน้ำ" },
-  { path: "/tele", icon: <WaterDamageIcon fontSize="small" />, text: "สถานีโทรมาตร" },
+  { path: "/tele", icon: <WaterDamageIcon fontSize="small" />, text: "สถานีติดตั้งโครงการ" },
 ];
 
 const SectionLabel = ({ label, open }: { label: string; open: boolean }) =>

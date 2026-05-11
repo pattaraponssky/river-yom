@@ -7,6 +7,7 @@ import {
   CardContent,
   Divider,
   Grid,
+  IconButton,
   Paper,
   Table,
   TableBody,
@@ -14,11 +15,13 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import { API_URL, Path_URL } from '../../lib/utility';
 import { textStyle } from '../../theme/style';
 import { useTheme } from '@mui/material';
+import SourceIcon from '@mui/icons-material/Source';
 
 interface TeleData {
   sta_name: string;
@@ -90,8 +93,25 @@ const TeleCard: React.FC = () => {
             <Typography 
                sx={{ fontWeight: "bold", fontSize: { md: "1.4rem", xs: "1rem" }, fontFamily:"Prompt" }}
             >
-              สถานีโทรมาตร (ฝั่งขวาแม่น้ำยม)
+              สถานีติดตั้งโครงการพื้นที่ฝั่งขวาแม่น้ำยม
             </Typography>
+            <Typography component="span" sx={{ fontWeight: "bold", fontSize: { md: "1.1rem", xs: "0.85rem" }, fontFamily:"Prompt", color: "text.secondary", ml: 1 }}>
+              (ข้อมูลตรวจวัดเวลา 07:00 น.)
+            </Typography>
+             {/* <Tooltip title="แหล่งที่มาของข้อมูล">
+                <IconButton
+                  size="medium"
+                  sx={{ ml: 1 }}
+                  onClick={() =>
+                    window.open(
+                      'https://hyd-app-db.rid.go.th/',
+                      '_blank'
+                    )
+                  }
+                >
+                  <SourceIcon fontSize="medium" />
+                </IconButton>
+            </Tooltip> */}
           </Box>
 
           <Divider sx={{ mb: 2 }} />

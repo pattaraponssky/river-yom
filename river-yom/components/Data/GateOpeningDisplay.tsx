@@ -5,11 +5,14 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box, Typography, Paper, Grid, Chip, CircularProgress,
   Tooltip, IconButton, Divider, Alert,
+  Avatar,
+  alpha,
+  useTheme,
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import WaterIcon   from '@mui/icons-material/Water';
 import { GateStationConfig } from '@/lib/gateConfig';
-import { API_URL } from '@/lib/utility';
+import { API_URL, Path_URL } from '@/lib/utility';
 
 interface GateOpeningData {
   sta_code: string;
@@ -224,6 +227,8 @@ const GateOpeningDisplay: React.FC<GateOpeningDisplayProps> = ({ config }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState<string | null>(null);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+  const theme = useTheme();
+  const primary = theme.palette.primary.main;
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -262,11 +267,24 @@ const GateOpeningDisplay: React.FC<GateOpeningDisplayProps> = ({ config }) => {
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Box>
-          <Typography sx={{ fontFamily: 'Prompt', fontWeight: 700, fontSize: '1rem' }}>
-            🚪 สถานะการเปิด-ปิดบาน ปัจจุบัน
-          </Typography>
+            <Box display="flex" alignItems="center" mb={2}>
+            <Avatar
+              src={`${Path_URL}/images/icons/gate_icon.png`}
+               sx={{
+                    width: { xs: 35, md: 45 },
+                    height: { xs: 35, md: 45 },
+                    boxShadow: `0 4px 12px ${alpha(primary, 0.4)}`,
+                    mr: 2,
+                }}
+            />
+            <Typography 
+               sx={{ fontWeight: "bold", fontSize: { md: "1.4rem", xs: "1rem" }, fontFamily:"Prompt" }}
+            >
+              สถานะการเปิด-ปิดบานประตูระบายน้ำ ปัจจุบัน
+            </Typography>
+          </Box>
           <Typography sx={{ fontFamily: 'Prompt', fontSize: '0.78rem', color: 'text.secondary' }}>
-            {lastUpdate ? `อัปเดตล่าสุด: ${lastUpdate.toLocaleTimeString('th-TH')}` : 'กำลังโหลด...'}
+            {lastUpdate ? `อัปเดตล่าสุด: ${data?.date ?? null}` : 'กำลังโหลด...'}
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

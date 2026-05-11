@@ -7,6 +7,7 @@ import {
   CardContent,
   Divider,
   Grid,
+  IconButton,
   Paper,
   Table,
   TableBody,
@@ -14,11 +15,13 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import { API_URL, Path_URL } from '../../lib/utility';
 import { textStyle } from '../../theme/style';
 import { useTheme } from '@mui/material';
+import SourceIcon from '@mui/icons-material/Source';
 
 interface GateData {
   sta_name: string;
@@ -72,11 +75,6 @@ const GateCard: React.FC = () => {
     });
   };
 
-const titleStyle = {
-  fontFamily: "Prompt",
-  fontSize: { md: "1.2rem", xs: "1rem" },
-};
-
   return (
     <Box sx={{mx: "auto", mb: 2 }}>
       <Card sx={{ borderRadius: 3, boxShadow: 2 }}>
@@ -97,6 +95,24 @@ const titleStyle = {
             >
               ประตูระบายน้ำ
             </Typography>
+            <Typography component="span" sx={{ fontWeight: "bold", fontSize: { md: "1.1rem", xs: "0.85rem" }, fontFamily:"Prompt", color: "text.secondary", ml: 1 }}>
+              (ข้อมูลตรวจวัดเวลา 07:00 น.)
+            </Typography>
+              <Tooltip title="แหล่งที่มาของข้อมูล">
+                    <IconButton
+                      size="medium"
+                      sx={{ ml: 1 }}
+                      onClick={() =>
+                        window.open(
+                          'https://rid3a.itthirit.io/',
+                          '_blank'
+                        )
+                      }
+                    >
+                      <SourceIcon fontSize="medium" />
+                    </IconButton>
+                  </Tooltip>
+            
           </Box>
 
           <Divider sx={{ mb: 2 }} />
@@ -117,7 +133,7 @@ const titleStyle = {
                 <Typography sx={textStyle}>ประตูระบายน้ำทั้งหมด</Typography>
               </Grid>
               <Grid size={{ xs: 3 }} textAlign="center">
-                <Typography 
+                <Typography
                   sx={{
                     fontWeight: 800,
                     fontSize: '1.4rem',

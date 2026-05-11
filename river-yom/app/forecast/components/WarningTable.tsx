@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Box, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, useMediaQuery, useTheme } from "@mui/material";
+import { Box, Button, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography, useMediaQuery, useTheme } from "@mui/material";
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
@@ -7,6 +7,7 @@ import RemoveIcon from '@mui/icons-material/Remove';
 import { API_URL } from "@/lib/utility";
 import { getCellDiffStyle, getCellStyle, HeaderCellStyle, fontTitle } from "@/theme/style";
 import { useThemeMode } from '@/contexts/ThemeContext';
+import SourceIcon from '@mui/icons-material/Source';
 
 const warningData = [
    {
@@ -306,6 +307,23 @@ const FloodWarningTable: React.FC<FloodWarningTableProps> = ({ maxLevels, waterT
           sx={fontTitle}
         >
           เกณฑ์การเฝ้าระวังและเตือนภัยในพื้นที่ศึกษาโครงการ
+          <Typography component="span" sx={{ fontWeight: "bold", fontSize: { md: "1.1rem", xs: "0.85rem" }, fontFamily:"Prompt", color: "text.secondary", ml: 1 }}>
+                    (ข้อมูล ณ เวลา 07:00 น. ของทุกวัน)
+                    <Tooltip title="แหล่งที่มาของข้อมูล">
+                      <IconButton
+                        size="medium"
+                        sx={{ ml: 1 }}
+                        onClick={() =>
+                          window.open(
+                            'http://hydro-2.rid.go.th/',
+                            '_blank'
+                          )
+                        }
+                      >
+                        <SourceIcon fontSize="medium" />
+                      </IconButton>
+                    </Tooltip>
+                  </Typography>
         </Typography>
 
         <Button

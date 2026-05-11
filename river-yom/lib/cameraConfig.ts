@@ -3,7 +3,7 @@ export interface CameraConfig {
   id: string;
   label: string;
   streamUrl: string;   // URL สำหรับ stream (HLS, MJPEG, หรือ embed)
-  type: 'mjpeg' | 'hls' | 'embed' | 'snapshot';
+  type: 'mjpeg' | 'hls' | 'embed' | 'snapshot' | 'wss';
   snapshotUrl?: string; // URL รูปภาพ (refresh ทุก N วินาที)
 }
 

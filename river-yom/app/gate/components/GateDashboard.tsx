@@ -66,6 +66,7 @@ export default function GateDashboard() {
   const [infoLoading,  setInfoLoading]  = useState(true);
   const [error,        setError]        = useState<string | null>(null);
   const [lastUpdate,   setLastUpdate]   = useState<Date | null>(null);
+  
 
   // โหลดรายชื่อสถานี
   useEffect(() => {
@@ -122,7 +123,7 @@ export default function GateDashboard() {
     <Box>
       {/* ─── Toolbar ─────────────────────────────────────────── */}
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 2.5, flexWrap: 'wrap' }}>
-         <Grid size={{xs:12,md:12}}>
+         <Grid size={{xs:12,md:12}} sx={{mt:1}}>
               <FormControl fullWidth>
                 <InputLabel sx={{ fontFamily: "Prompt" }}>เลือกประตูระบายน้ำ</InputLabel>
                 <Select value={selectedCode || ""} label="เลือกประตูระบายน้ำ" onChange={(e: SelectChangeEvent) => setSelectedCode(e.target.value)} sx={fontInfo}>
@@ -146,8 +147,8 @@ export default function GateDashboard() {
         </Tooltip>
 
         {lastUpdate && (
-          <Typography sx={{ fontFamily: 'Prompt', fontSize: '0.75rem', color: 'text.disabled' }}>
-            อัปเดตล่าสุด {lastUpdate.toLocaleTimeString('th-TH')}
+          <Typography sx={{ fontFamily: 'Prompt', fontSize: '0.85rem', color: 'text.disabled' }}>
+            {lastUpdate ? `ข้อมูลอัปเดตล่าสุด: ${latest?.date ?? null}` : 'กำลังโหลด...'}
           </Typography>
         )}
       </Box>
@@ -240,6 +241,7 @@ export default function GateDashboard() {
                                 waterLevel={latest?.wl_upper ?? null}   // ← ระดับน้ำล่าสุด
                                 warnLevels={GATE_WARN_LEVELS[selectedCode]}
                                 title="ภาพตัดขวางระดับน้ำเหนือประตู"
+                                chartHeight={387}
                             />
                     )}
                 </Paper>

@@ -61,7 +61,7 @@ const DashboardCards: React.FC<DashboardCardsProps> = ({ data, loading = false, 
           link: '/rain',
         },
         {
-          title: 'สถานีโทรมาตร',
+          title: 'สถานีติดตั้งโครงการ',
           subTitle: 'ระบายน้ำรวม',
           value: '6',
           unit: 'สถานี',
