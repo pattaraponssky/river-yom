@@ -1,9 +1,9 @@
 'use client';
 
 import '@/app/globals.css';
-import { Container, Grid, Box, useTheme } from '@mui/material';
+import { Container, Grid, Box, useTheme, Typography } from '@mui/material';
 import  { useState, useEffect } from "react";
-import { Path_URL, API_URL } from '../../lib/utility';
+import { Path_URL, API_URL, formatThaiDay } from '../../lib/utility';
 import { BoxStyle} from '@/theme/style';
 import Papa from "papaparse";
 import FloatingMenu from '@/components/Dashboard/FloatingMenu';
@@ -259,7 +259,9 @@ export default function Dashboard() {
   return (
   <>
     <Container maxWidth="xl" sx={{ py: 2 }}>
-      
+      <Typography variant="h5" id="card-daily" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+        ผลพยากรณ์น้ำโดยแบบจำลองโมเดลลุ่มน้ำ วันที่ {formatThaiDay(Date())}
+      </Typography>
 
       <Box sx={BoxStyle} id="flood-warning">
         <FloodWarningTable maxLevels={maxElevations} waterTrends={waterTrends} waterPeaks={waterPeaks}   />

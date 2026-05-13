@@ -41,8 +41,36 @@ const addTeleMarkers = (
 
     const safeStaCode = sta_code.replace(/\./g, '_');
 
+    const getWaterLevelIcon = (wl: number | null) => {
+      if (wl == null || isNaN(wl)) {
+        return `${Path_URL}images/icons/tele_station_icon_green.png`;
+      }
+
+      if (wl >= 10) {
+        return `${Path_URL}images/icons/tele_station_icon_red.png`;
+      }
+
+      if (wl >= 8) {
+        return `${Path_URL}images/icons/tele_station_icon_orange.png`;
+      }
+
+      if (wl >= 6) {
+        return `${Path_URL}images/icons/tele_station_icon_yellow.png`;
+      }
+
+      return `${Path_URL}images/icons/tele_station_icon_green.png`;
+    };
+
+
+    const wlValue =
+      isToday && latest?.wl != null
+        ? parseFloat(latest.wl)
+        : null;
+
+    const iconUrl = getWaterLevelIcon(wlValue);
+
     const marker = new window.longdo.Marker(position, {
-      title: `<img src="${Path_URL}images/icons/tele_station_icon.png" style="width:25px;height:25px;vertical-align:middle;margin-right:5px" /> 
+      title: `<img src="${iconUrl}" style="width:25px;height:25px;vertical-align:middle;margin-right:5px" /> 
               <span style="font-size:1.1rem;font-weight:bold;vertical-align:middle;">${sta_code} - ${sta_name}  อ.${district} จ.${province}</span>`,
 
       detail: `
@@ -83,7 +111,7 @@ const addTeleMarkers = (
       icon: {
         html: `
           <div style="text-align:center;">
-            <img src="${Path_URL}images/icons/tele_station_icon.png" style="width:24px;height:24px;display:block;margin:0 auto;" />
+            <img src="${iconUrl}" style="width:24px;height:24px;display:block;margin:0 auto;" />
             <div style="background:rgba(255,255,255,0.4);padding:2px;border-radius:5px;font-size:12px;margin-top:2px;width:80px;">
               ${sta_code}
             </div>

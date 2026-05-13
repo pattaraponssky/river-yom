@@ -1,17 +1,21 @@
 'use client';
 
 import '@/app/globals.css';
-import { Container, Grid, Box } from '@mui/material';
+import { Container, Grid, Box, Typography } from '@mui/material';
 import { BoxStyle} from '@/theme/style';
 import FloatingMenu from '@/components/Dashboard/FloatingMenu';
 import ImageComponent from '../../components/Image';
 import PdfViewer from '../../components/PdfViewer';
 import { reportMenus } from '@/lib/menuFloating';
+import { formatThaiDay } from '@/lib/utility';
 
 export default function Report() {
     return (
     <>
         <Container maxWidth="xl" sx={{ py: 2 }}>
+      <Typography variant="h5" id="card-daily" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+        รายงานสถานการณ์น้ำจากสำนักงานชลประทานที่ 3 วันที่ {formatThaiDay(Date())}
+      </Typography>
         <Box sx={BoxStyle} id="dams-report">
         <Grid container spacing={1}>
             <Grid size={{xs:12, md:6}}>
