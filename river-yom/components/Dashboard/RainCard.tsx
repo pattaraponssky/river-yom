@@ -110,7 +110,7 @@ const RainCard: React.FC = () => {
               }}
             >
               สถานีวัดน้ำฝน
-              <Typography component="span" sx={{ fontWeight: "bold", fontSize: { md: "1.1rem", xs: "0.85rem" }, fontFamily:"Prompt", color: "text.secondary"}}>
+              <Typography component="span" sx={{ fontWeight: "bold", fontSize: { md: "1.1rem", xs: "0.85rem" }, fontFamily:"Prompt", color: "text.secondary", ml: 1 }}>
                 (ข้อมูลตรวจวัดเวลา 07:00 น.)
                 <Tooltip title="แหล่งที่มาของข้อมูล">
                     <IconButton

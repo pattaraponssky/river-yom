@@ -31,7 +31,7 @@ const addRainMarkers = (
     const rainValue = latest?.rain_mm != null ? parseFloat(latest.rain_mm) : NaN;
     const rain_mm = 
       isToday && !isNaN(rainValue)
-        ? rainValue.toFixed(2)          // แสดง 0.00 ถ้าเป็น 0, หรือค่าอื่นตามจริง
+        ? rainValue.toFixed(2)       
         : '-';
 
     // เปลี่ยนไอคอนตามว่ามีฝนหรือไม่ (ตัวอย่าง logic เดิม)

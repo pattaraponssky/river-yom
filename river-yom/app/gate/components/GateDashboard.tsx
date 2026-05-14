@@ -17,6 +17,7 @@ import { STATION_CAMERAS } from '@/lib/cameraConfig';
 import { GATE_STATION_CONFIGS } from '@/lib/gateConfig';
 import GateOpeningDisplay from '@/components/Data/GateOpeningDisplay';
 import StationCrossSectionChart from '@/components/Data/StationCrossSectionChart';
+import StationCoordinates from '@/components/Data/Stationcoordinates';
 
 
 // ─── Types ────────────────────────────────────────────────────
@@ -155,71 +156,201 @@ export default function GateDashboard() {
       {error && <Alert severity="error" sx={{ mb: 2, fontFamily: 'Prompt' }}>{error}</Alert>}
 
       {selectedInfo && (
-        <Grid container spacing={2.5}>
+        <Box>
+        <Grid container spacing={2.5} alignItems="stretch">
           {/* ─── คอลัมน์ซ้าย: รูป + ข้อมูลทั่วไป + metric ─── */}
-          <Grid size={{ xs: 12, md: 5.5 }}>
-            <Stack spacing={2}>
-
+          <Grid size={{ xs: 12, md: 4 }}>
+            <Stack spacing={2} sx={{ width: '100%', height: '100%' }}>
               {/* รูปสถานี */}
-              <Paper sx={{ borderRadius: 2, overflow: 'hidden' }}>
+              <Paper
+                elevation={2}
+                sx={{
+                  borderRadius: 4,
+                  overflow: 'hidden',
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  bgcolor: 'background.paper',
+                }}
+              >
+                {/* รูปภาพ */}
                 <Box
-                  component="img"
-                  src={`${Path_URL}images/gate/${selectedInfo.sta_code}.jpg`}
-                  alt={selectedInfo.sta_name}
-                  onError={(e: any) => { e.target.src = `${Path_URL}images/default_img.png`; }}
-                  sx={{ width: '100%', height: 200, objectFit: 'cover', display: 'block' }}
-                />
-                <Box sx={{ p: 1.5 }}>
-                  <Typography sx={{ fontFamily: 'Prompt', fontWeight: 700, fontSize: '1rem', color: 'primary.main' }}>
-                    {selectedInfo.sta_name}
-                  </Typography>
-                  <Typography sx={{ fontFamily: 'Prompt', fontSize: '0.8rem', color: 'text.secondary' }}>
-                    รหัส: {selectedInfo.sta_code}
-                  </Typography>
+                  sx={{
+                    position: 'relative',
+                    width: '100%',
+                    height: 300,
+                    overflow: 'hidden',
+                  }}
+                >
+                  <Box
+                    component="img"
+                    src={`${Path_URL}images/gate/${selectedInfo.sta_code}.jpg`}
+                    alt={selectedInfo.sta_name}
+                    onError={(e: any) => {
+                      e.target.src = `${Path_URL}images/default_img.png`;
+                    }}
+                    sx={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      transition: '0.4s',
+                      '&:hover': {
+                        transform: 'scale(1.03)',
+                      },
+                    }}
+                  />
+
+                  {/* Overlay */}
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      bottom: 0,
+                      left: 0,
+                      width: '100%',
+                      p: 2,
+                      background:
+                        'linear-gradient(to top, rgba(0,0,0,0.75), rgba(0,0,0,0.05))',
+                    }}
+                  >
+                    <Typography
+                      sx={{
+                        fontFamily: 'Prompt',
+                        fontWeight: 700,
+                        fontSize: '1.25rem',
+                        color: '#fff',
+                        lineHeight: 1.3,
+                      }}
+                    >
+                      {selectedInfo.sta_name}
+                    </Typography>
+
+                    <Typography
+                      sx={{
+                        fontFamily: 'Prompt',
+                        fontSize: '0.78rem',
+                        color: 'rgba(255,255,255,0.8)',
+                        mt: 0.3,
+                      }}
+                    >
+                      รหัสสถานี : {selectedInfo.sta_code || '-'}
+                    </Typography>
+                  </Box>
+                </Box>
+
+                {/* เนื้อหา */}
+                <Box
+                  sx={{
+                    p: 2,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 1.5,
+                    flex: 1,
+                  }}
+                >
+                  {/* หัวข้อ */}
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                    }}
+                  >
+                    <Typography
+                      sx={{
+                        fontFamily: 'Prompt',
+                        fontWeight: 700,
+                        fontSize: '0.95rem',
+                        color: 'primary.main',
+                      }}
+                    >
+                      ข้อมูลทั่วไป
+                    </Typography>
+
+                    <Box
+                      sx={{
+                        px: 1.2,
+                        py: 0.3,
+                        borderRadius: 99,
+                        bgcolor: 'primary.light',
+                        color: 'primary.contrastText',
+                        fontFamily: 'Prompt',
+                        fontSize: '0.7rem',
+                        fontWeight: 600,
+                      }}
+                    >
+                      Station Info
+                    </Box>
+                  </Box>
+
+                  {/* ข้อมูล */}
+                  <Stack spacing={1}>
+                    {[
+                      // { label: 'แม่น้ำ', value: selectedInfo.river || '-' },
+                      { label: 'ตำบล', value: selectedInfo.tambon || '-' },
+                      { label: 'อำเภอ', value: selectedInfo.district || '-' },
+                      { label: 'จังหวัด', value: selectedInfo.province || '-' },
+                      { label: 'จำนวนบาน', value: selectedInfo.province || '-' },
+                      { label: 'ขนาดบาน', value: selectedInfo.province || '-' },
+                      {
+                        label: 'พิกัด',
+                        value:
+                          selectedInfo.lat && selectedInfo.long
+                            ? `${parseFloat(selectedInfo.lat).toFixed(5)}, ${parseFloat(
+                                selectedInfo.long
+                              ).toFixed(5)}`
+                            : '-',
+                      },
+                    ].map((row) => (
+                      <Box
+                        key={row.label}
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'flex-start',
+                          justifyContent: 'space-between',
+                          gap: 2,
+                          py: 0.8,
+                          px: 1.2,
+                          borderRadius: 2,
+                          bgcolor: 'action.hover',
+                          height: '100%',
+                        }}
+                      >
+                        <Typography
+                          sx={{
+                            fontFamily: 'Prompt',
+                            fontSize: '0.78rem',
+                            color: 'text.secondary',
+                            minWidth: 70,
+                            fontWeight: 500,
+                          }}
+                        >
+                          {row.label}
+                        </Typography>
+
+                        <Typography
+                          sx={{
+                            fontFamily: 'Prompt',
+                            fontSize: '0.82rem',
+                            fontWeight: 700,
+                            color: 'text.primary',
+                            textAlign: 'right',
+                            lineHeight: 1.5,
+                            wordBreak: 'break-word',
+                            flex: 1,
+                          }}
+                        >
+                          {row.value}
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Stack>
                 </Box>
               </Paper>
-
-              {/* ข้อมูลสถานี */}
-              <Paper sx={{ p: 2, borderRadius: 2 }}>
-                <Typography sx={{ fontFamily: 'Prompt', fontWeight: 600, fontSize: '0.85rem', mb: 1, color: 'text.secondary' }}>
-                  ข้อมูลทั่วไป
-                </Typography>
-                <Stack spacing={0.75}>
-                  {[
-                    { label: 'แม่น้ำ',   value: selectedInfo.river    || '-' },
-                    { label: 'ตำบล',     value: selectedInfo.tambon   || '-' },
-                    { label: 'อำเภอ',    value: selectedInfo.district || '-' },
-                    { label: 'จังหวัด',  value: selectedInfo.province || '-' },
-                    { label: 'พิกัด',    value: selectedInfo.lat && selectedInfo.long
-                        ? `${parseFloat(selectedInfo.lat).toFixed(5)}, ${parseFloat(selectedInfo.long).toFixed(5)}`
-                        : '-' },
-                  ].map(row => (
-                    <Box key={row.label} sx={{ display: 'flex', gap: 1 }}>
-                      <Typography sx={{ fontFamily: 'Prompt', fontSize: '0.8rem', color: 'text.disabled', minWidth: 60 }}>
-                        {row.label}
-                      </Typography>
-                      <Typography sx={{ fontFamily: 'Prompt', fontSize: '0.8rem', fontWeight: 600 }}>
-                        {row.value}
-                      </Typography>
-                    </Box>
-                  ))}
-                </Stack>
-                
-              </Paper>
-
-                {/* กล้อง CCTV */}
-                <Paper sx={{borderRadius: 2 }}>
-                    {cameras.length > 0 && (
-                        <CameraViewer cameras={cameras} staCode={selectedCode ?? ''} />
-                    )}
-                </Paper>
             </Stack>
           </Grid>
 
-          {/* ─── คอลัมน์ขวา: บาน + กล้อง ─────────────────────── */}
-          <Grid size={{ xs: 12, md: 6.5 }}>
+          <Grid size={{ xs: 12, md: 8 }} >
             <Stack spacing={2}>
-
               {/* การเปิดบาน */}
                 {gateConfig ? (
                         <GateOpeningDisplay config={gateConfig} />
@@ -234,7 +365,22 @@ export default function GateDashboard() {
                      </Paper>
                   </>
                 )}
-                <Paper sx={{ p: 2, borderRadius: 2 }}>
+            </Stack>
+          </Grid>
+        </Grid>
+        
+         {/* ───────────────── Middle Row ───────────────── */}
+            <Grid container spacing={2.5} sx={{ mt: 2 }}>
+              <Grid size={{ xs: 12, md: 5 }}>
+                 <StationCoordinates
+                  staCode={selectedInfo.sta_code}
+                  lat={selectedInfo.lat}
+                  long={selectedInfo.long}
+                  staName={selectedInfo.sta_name}
+                />
+                </Grid>
+              <Grid size={{ xs: 12, md: 7 }}>
+                  <Paper sx={{ p: 2, borderRadius: 2 }}>
                     {selectedCode && (
                             <StationCrossSectionChart
                                 staCode={selectedCode}
@@ -244,12 +390,28 @@ export default function GateDashboard() {
                                 chartHeight={387}
                             />
                     )}
-                </Paper>
+                  </Paper>
+                </Grid>
+            </Grid>
 
-            </Stack>
-          </Grid>
-
-        </Grid>
+          {/* ───────────────── CCTV ───────────────── */}
+            <Grid container spacing={2.5} sx={{ mt: 2 }}>
+              <Grid size={{ xs: 12, md: 6 }}>
+                  <Paper sx={{borderRadius: 2 }}>
+                    {cameras.length > 0 && (
+                        <CameraViewer cameras={cameras} staCode={selectedCode ?? ''} />
+                    )}
+                  </Paper>
+              </Grid>
+               <Grid size={{ xs: 12, md: 6 }}>
+                  <Paper sx={{borderRadius: 2 }}>
+                    {cameras.length > 0 && (
+                        <CameraViewer cameras={cameras} staCode={selectedCode ?? ''} />
+                    )}
+                  </Paper>
+              </Grid>
+            </Grid>
+        </Box>
       )}
     </Box>
   );
