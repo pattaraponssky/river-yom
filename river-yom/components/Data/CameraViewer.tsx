@@ -16,6 +16,7 @@ import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import CloseIcon         from '@mui/icons-material/Close';
 import { CameraConfig }  from '@/lib/cameraConfig';
 import HlsCamera from './HlsCamera';
+import WssCamera from './WssCamera';
 
 // ─── Snapshot Camera (refresh ทุก N วินาที) ─────────────────────
 const SnapshotCamera: React.FC<{
@@ -165,6 +166,7 @@ const CameraViewer: React.FC<CameraViewerProps> = ({ cameras, staCode }) => {
       case 'mjpeg':    return <MjpegCamera    key={refreshKey} config={cam} />;
       case 'embed':    return <EmbedCamera    key={refreshKey} config={cam} />;
       case 'hls':      return <HlsCamera      key={refreshKey} config={cam} />;
+      case 'wss':      return <WssCamera key={refreshKey} config={cam} />;
       default:         return null;
     }
   };

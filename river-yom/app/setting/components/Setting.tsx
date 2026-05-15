@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from "react";
-import { Box, Tabs, Tab, Typography, Grid, CircularProgress } from '@mui/material';
+import { Box, Tabs, Tab, Typography, Grid, CircularProgress, Paper } from '@mui/material';
 import {
   Storage,
   BarChart,
@@ -137,6 +137,32 @@ const Setting: React.FC = () => {
                     <ManualUpdateReservoir />
                 </Grid> */}
               </Grid>
+              <Paper sx={{ p: { xs: 2, sm: 4 }, borderRadius: 2, mt:2}}>
+                  {/* ── ขั้นตอนการใช้งาน ── */}
+                    <Box sx={{ mb: 3 }}>
+                       <Typography sx={{ fontSize: "1.25rem", fontWeight: 600, color: "#28378B", mb: 2.5 }}>
+                        จัดการข้อมูลย้อนหลัง
+                      </Typography>
+                      <Typography sx={{ fontSize: "1rem", fontWeight: 600, color: "text.disabled", letterSpacing: "0.06em", mb: 1.5, textTransform: "uppercase", fontFamily: "'Prompt', sans-serif" }}>
+                        ขั้นตอนการใช้งาน
+                      </Typography>
+                      {[
+                        { n: 1, main: "เลือกประเภทข้อมูลที่ต้องการ: flow (น้ำท่า) / rain (ฝน) / gate (ประตูระบายน้ำ)",                    sub: "ระบบจัดการข้อมูลย้อนหลังโดยดึงจากเว็บไซต์ต้นทางของประเภทข้อมูลนั้นๆ" },
+                        { n: 2, main: "กำหนดเลือกช่วงเวลาที่ต้องการอัปเดตข้อมูล",        sub: "เลือกวันเริ่มต้นและวันสิ้นสุด" },
+                        { n: 3, main: "เลือกช่วงวันที่เสร็จแล้ว คลิกที่ปุ่มอัปเดตข้อมูล",   sub: "และรอระบบทำการอัปเดตข้อมูล ยิ่งช่วงวันที่เลือกมาก ระบบจะประมวลผลนานขึ้น" },
+                      ].map((s) => (
+                        <Box key={s.n} sx={{ display: "flex", gap: 1.5, mb: 1.5, alignItems: "flex-start" }}>
+                          <Box sx={{ width: 24, height: 24, borderRadius: "50%", bgcolor: "#28378B", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.75rem", fontWeight: 600, flexShrink: 0, mt: "2px" }}>
+                            {s.n}
+                          </Box>
+                          <Box>
+                            <Typography sx={{ fontFamily: "'Prompt', sans-serif", fontSize: "0.975rem", color: "text.primary", lineHeight: 1.5 }}>{s.main}</Typography>
+                            <Typography sx={{ fontFamily: "'Prompt', sans-serif", fontSize: "0.875rem", color: "text.secondary" }}>{s.sub}</Typography>
+                          </Box>
+                        </Box>
+                      ))}
+                    </Box>
+              
                 <Grid container spacing={2}>
                   <Grid size={{ xs: 12, sm: 4 }}>
                     <ManualUpdateFlow />
@@ -148,6 +174,7 @@ const Setting: React.FC = () => {
                     <ManualUpdateGate />
                 </Grid>
               </Grid>
+              </Paper>
             </Box>
           )}
 

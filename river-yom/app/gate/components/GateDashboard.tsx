@@ -38,7 +38,7 @@ interface GateLatest {
   wl_upper?: number;
   wl_lower?: number;
   discharge?: number;
-  [key: string]: any; // gate1_height, gate2_height, ...
+  [key: string]: any;
 }
 
 const GATE_CROSS_SECTIONS: Record<string, number> = {
@@ -76,7 +76,7 @@ export default function GateDashboard() {
       .then(json => {
         const list: GateInfo[] = json.data || [];
         setGateInfoList(list);
-        if (list.length > 0) setSelectedCode(list[0].sta_code);
+        // if (list.length > 0) setSelectedCode(list[0].sta_code);
       })
       .finally(() => setInfoLoading(false));
   }, []);
@@ -123,34 +123,67 @@ export default function GateDashboard() {
   return (
     <Box>
       {/* ─── Toolbar ─────────────────────────────────────────── */}
-        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 2.5, flexWrap: 'wrap' }}>
-         <Grid size={{xs:12,md:12}} sx={{mt:1}}>
-              <FormControl fullWidth>
-                <InputLabel sx={{ fontFamily: "Prompt" }}>เลือกประตูระบายน้ำ</InputLabel>
-                <Select value={selectedCode || ""} label="เลือกประตูระบายน้ำ" onChange={(e: SelectChangeEvent) => setSelectedCode(e.target.value)} sx={fontInfo}>
-                  {gateInfoList.map((s: any) => (
-                    <MenuItem key={s.sta_code} value={s.sta_code}>
-                      {s.sta_name} ({s.sta_code})
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
+      <Box sx={{ my: 2 }}>
+        {/* Row 1: Dropdown + Refresh */}
+        <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', width: '100%' }}>
+          <FormControl fullWidth>
+            <InputLabel sx={{ fontFamily: 'Prompt' }}>เลือกประตูระบายน้ำ</InputLabel>
+            <Select
+              value={selectedCode || 'tng'}
+              label="เลือกประตูระบายน้ำ"
+              onChange={(e: SelectChangeEvent) => setSelectedCode(e.target.value)}
+              sx={fontInfo}
+            >
+              {gateInfoList.map((s: any) => (
+                <MenuItem key={s.sta_code} value={s.sta_code}>
+                  {s.sta_name} ({s.sta_code})
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
-        <Tooltip title="รีเฟรชข้อมูล">
-          <IconButton
-            size="small"
-            onClick={() => fetchStationData(selectedCode)}
-            disabled={loading}
-          >
-            {loading ? <CircularProgress size={18} /> : <RefreshIcon />}
-          </IconButton>
-        </Tooltip>
+          <Tooltip title="รีเฟรชข้อมูล">
+            <span>
+              <IconButton
+                onClick={() => fetchStationData(selectedCode)}
+                disabled={loading}
+                sx={{
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  borderRadius: 2,
+                  width: 48,
+                  height: 48,
+                  flexShrink: 0,
+                }}
+              >
+                {loading ? <CircularProgress size={20} /> : <RefreshIcon />}
+              </IconButton>
+            </span>
+          </Tooltip>
+        </Box>
 
+        {/* Row 2: Last update */}
         {lastUpdate && (
-          <Typography sx={{ fontFamily: 'Prompt', fontSize: '0.85rem', color: 'text.disabled' }}>
-            {lastUpdate ? `ข้อมูลอัปเดตล่าสุด: ${latest?.date ?? null}` : 'กำลังโหลด...'}
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mt: 1, pl: 0.5 }}>
+            <Box
+              sx={{
+                width: 6,
+                height: 6,
+                borderRadius: '50%',
+                bgcolor: 'success.main',
+                flexShrink: 0,
+              }}
+            />
+            <Typography
+              sx={{
+                fontFamily: 'Prompt',
+                fontSize: '0.8rem',
+                color: 'text.disabled',
+              }}
+            >
+              ข้อมูลอัปเดตล่าสุด: {latest?.date ?? 'กำลังโหลด...'}
+            </Typography>
+          </Box>
         )}
       </Box>
       {error && <Alert severity="error" sx={{ mb: 2, fontFamily: 'Prompt' }}>{error}</Alert>}

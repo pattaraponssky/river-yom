@@ -27,8 +27,8 @@ export const STATION_CAMERAS: Record<string, CameraConfig[]> = {
     {
       id: 'y15-cam1',
       label: 'กล้อง 1 - มุมเสาวัดระดับน้ำในแม่น้ำ',
-      type: 'hls',
-      streamUrl: 'http://125.25.183.165:1935/SamsenRID/myStream/SamsenRID/playlist.m3u8',
+      type: 'wss',
+      streamUrl: 'wss://rid3a.cctv.itthirit.io/camera/15',
       snapshotUrl: 'http://125.25.183.165:1935/SamsenRID/myStream/SamsenRID/playlist.m3u8',
     },
     {

@@ -26,6 +26,7 @@
     "html2canvas": "^1.4.1",
     "jose": "^6.2.2",
     "jspdf": "^4.0.0",
+    "mpegts.js": "^1.8.0",
     "next": "16.1.1",
     "papaparse": "^5.5.3",
     "react": "19.2.3",
