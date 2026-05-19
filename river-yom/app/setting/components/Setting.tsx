@@ -162,7 +162,6 @@ const Setting: React.FC = () => {
                         </Box>
                       ))}
                     </Box>
-              
                 <Grid container spacing={2}>
                   <Grid size={{ xs: 12, sm: 4 }}>
                     <ManualUpdateFlow />

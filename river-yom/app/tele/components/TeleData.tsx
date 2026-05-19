@@ -262,10 +262,10 @@ const DataTeleCombined: React.FC<{ propsSelectedStation?: string }> = ({ propsSe
       <Grid container spacing={3}>
         {/* รูปสถานี */}
         <Grid size={{xs:12,md:5}}>
-          {cameras.length === 0 && (
+
           <Box sx={{ display: "flex", justifyContent: "center" }}>
             <img
-              src={station ? `${Path_URL}images/tele_station/${station.sta_code}.jpg` : `${Path_URL}images/tele_station/${station.sta_code}.png`}
+              src={station ? `${Path_URL}images/tele/${station.sta_code}.jpg` : `${Path_URL}images/tele_station/${station.sta_code}.png`}
               alt="Station"
               style={{
                 width: "100%",
@@ -277,10 +277,6 @@ const DataTeleCombined: React.FC<{ propsSelectedStation?: string }> = ({ propsSe
               onError={(e) => (e.currentTarget.src = `${Path_URL}images/default_img.png`)}
             />
           </Box>
-           )}
-          {cameras.length > 0 && (
-            <CameraViewer cameras={cameras} staCode={selectedStation ?? ''} />
-          )}
         </Grid>
 
         {/* ตัวเลือก */}

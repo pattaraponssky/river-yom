@@ -9,6 +9,8 @@ import { Path_URL } from "@/lib/utility";
 import { BoxStyle, fontTitle } from "@/theme/style";
 import TeleMap from "./TeleMap";
 import DataTeleCombined from "./TeleData";
+import BarChartIcon from '@mui/icons-material/BarChart';
+import TeleDashboard from "./TeleDashboard";
 
 
 const mapKey = process.env.NEXT_PUBLIC_LONGDO_MAP_KEY!;
@@ -65,7 +67,13 @@ export default function TelePage() {
           sx={{ ...fontTitle }}
           icon={<PlaceIcon />}
           iconPosition="start"
-          label="สถานีวัดน้ำท่า"
+          label="ข้อมูลสถานีวัดน้ำท่า"
+        />
+        <Tab
+          sx={{ ...fontTitle }}
+          icon={<BarChartIcon />}
+          iconPosition="start"
+          label="ข้อมูลย้อนหลัง"
         />
         <Tab
           sx={{ ...fontTitle }}
@@ -80,11 +88,17 @@ export default function TelePage() {
         {mainTab === 0 && (
           <Box>
             {/* ถ้ามี component แสดงข้อมูลสถานี */}
+            <TeleDashboard />
+          </Box>
+        )}
+        {mainTab === 1 && (
+          <Box>
+            {/* ถ้ามี component แสดงข้อมูลสถานี */}
             <DataTeleCombined />
           </Box>
         )}
 
-        {mainTab === 1 && (
+        {mainTab === 2 && (
           <Box>
             <TeleMap
               id="longdo-map"
