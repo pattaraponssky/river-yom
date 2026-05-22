@@ -1,4 +1,4 @@
-// app/tele/components/TeleDashboard.tsx
+// app/flow/components/FlowDashboard.tsx
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -17,10 +17,11 @@ import { STATION_CAMERAS } from '@/lib/cameraConfig';
 import StationCrossSectionChart from '@/components/Data/StationCrossSectionChart';
 import StationCoordinates from '@/components/Data/Stationcoordinates';
 import TeleMetricCards from '@/components/Data/Telemetriccards';
-import { TELE_WARN_LEVELS } from '../../../lib/warnLevels';
+import { FLOW_WARN_LEVELS } from '../../../lib/warnLevels';
+
 
 // ─── Types ────────────────────────────────────────────────────
-interface TeleInfo {
+interface FlowInfo {
   sta_code: string;
   sta_name: string;
   tambon: string;
@@ -31,7 +32,7 @@ interface TeleInfo {
   long: string;
 }
 
-interface TeleLatest {
+interface FlowLatest {
   sta_code: string;
   sta_name: string;
   date: string;
@@ -41,10 +42,10 @@ interface TeleLatest {
 }
 
 // ─── Main Component ───────────────────────────────────────────
-export default function TeleDashboard() {
-  const [teleInfoList, setTeleInfoList] = useState<TeleInfo[]>([]);
-  const [selectedCode, setSelectedCode] = useState<string>('01');
-  const [latest,       setLatest]       = useState<TeleLatest | null>(null);
+export default function FlowDashboard() {
+  const [flowInfoList, setFlowInfoList] = useState<FlowInfo[]>([]);
+  const [selectedCode, setSelectedCode] = useState<string>('Y.15');
+  const [latest,       setLatest]       = useState<FlowLatest | null>(null);
   const [loading,      setLoading]      = useState(false);
   const [infoLoading,  setInfoLoading]  = useState(true);
   const [error,        setError]        = useState<string | null>(null);
@@ -52,11 +53,11 @@ export default function TeleDashboard() {
   
   // โหลดรายชื่อสถานี
   useEffect(() => {
-    fetch(`${API_URL}/api/tele_info`)
+    fetch(`${API_URL}/api/flow_info`)
       .then(r => r.json())
       .then(json => {
-        const list: TeleInfo[] = json.data || [];
-        setTeleInfoList(list);
+        const list: FlowInfo[] = json.data || [];
+        setFlowInfoList(list);
         // if (list.length > 0) setSelectedCode(list[0].sta_code);
       })
       .finally(() => setInfoLoading(false));
@@ -69,7 +70,7 @@ export default function TeleDashboard() {
     setError(null);
 
     try {
-      const res = await fetch(`${API_URL}/api/daily/tele?sta_code=${staCode}`);
+      const res = await fetch(`${API_URL}/api/daily/flow?sta_code=${staCode}`);
       if (!res.ok) throw new Error('ไม่สามารถดึงข้อมูลได้');
 
       const json = await res.json();
@@ -104,7 +105,7 @@ export default function TeleDashboard() {
     return () => clearInterval(interval);
   }, [selectedCode, fetchStationData]);
 
-  const selectedInfo = teleInfoList.find(g => g.sta_code === selectedCode) ?? null;
+  const selectedInfo = flowInfoList.find(g => g.sta_code === selectedCode) ?? null;
   const cameras = selectedCode ? (STATION_CAMERAS[selectedCode] ?? []) : [];
 
   if (infoLoading) {
@@ -129,7 +130,7 @@ export default function TeleDashboard() {
               onChange={(e: SelectChangeEvent) => setSelectedCode(e.target.value)}
               sx={fontInfo}
             >
-              {teleInfoList.map((s: any) => (
+              {flowInfoList.map((s: any) => (
                 <MenuItem key={s.sta_code} value={s.sta_code}>
                   {s.sta_name} ({s.sta_code})
                 </MenuItem>
@@ -161,21 +162,21 @@ export default function TeleDashboard() {
         {lastUpdate && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mt: 1, pl: 0.5 }}>
             <Box
-                sx={{
-                  width: 10,
-                  height: 10,
-                  borderRadius: '50%',
-                  bgcolor: 'success.main',
-                  flexShrink: 0,
-                }}
-              />
-              <Typography
-                sx={{
-                  fontFamily: 'Prompt',
-                  fontSize: '1rem',
-                  color: 'text.disabled',
-                }}
-              >
+              sx={{
+                width: 10,
+                height: 10,
+                borderRadius: '50%',
+                bgcolor: 'success.main',
+                flexShrink: 0,
+              }}
+            />
+            <Typography
+              sx={{
+                fontFamily: 'Prompt',
+                fontSize: '1rem',
+                color: 'text.disabled',
+              }}
+            >
               ข้อมูลอัปเดตล่าสุด: {latest?.date ?? 'กำลังโหลด...'}
             </Typography>
           </Box>
@@ -212,7 +213,7 @@ export default function TeleDashboard() {
                 >
                   <Box
                     component="img"
-                    src={`${Path_URL}images/tele/${selectedInfo.sta_code}.jpg`}
+                    src={`${Path_URL}images/flow_station/${selectedInfo.sta_code}.jpg`}
                     alt={selectedInfo.sta_name}
                     onError={(e: any) => {
                       e.target.src = `${Path_URL}images/default_img.png`;
@@ -381,7 +382,7 @@ export default function TeleDashboard() {
                   wl={latest?.wl}
                   discharge={latest?.discharge}
                   rain={latest?.rain}
-                  warnLevels={TELE_WARN_LEVELS[selectedCode]}
+                  warnLevels={FLOW_WARN_LEVELS[selectedCode]}
                   loading={loading}
                 />
               <Paper sx={{ p: 2, borderRadius: 2 ,mt: 2}}>
@@ -389,7 +390,7 @@ export default function TeleDashboard() {
                         <StationCrossSectionChart
                             staCode={selectedCode}
                             waterLevel={latest?.wl ?? null}   // ← ระดับน้ำล่าสุด
-                            warnLevels={TELE_WARN_LEVELS[selectedCode]}
+                            warnLevels={FLOW_WARN_LEVELS[selectedCode]}
                             title="ภาพตัดขวางแม่น้ำ"
                             chartHeight={387}
                         />

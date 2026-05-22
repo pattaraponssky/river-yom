@@ -1,4 +1,4 @@
-// app/tele/components/TeleDashboard.tsx
+// app/rain/components/RainDashboard.tsx
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -17,12 +17,12 @@ import { STATION_CAMERAS } from '@/lib/cameraConfig';
 import StationCrossSectionChart from '@/components/Data/StationCrossSectionChart';
 import StationCoordinates from '@/components/Data/Stationcoordinates';
 import TeleMetricCards from '@/components/Data/Telemetriccards';
-import { TELE_WARN_LEVELS } from '../../../lib/warnLevels';
+
 
 // ─── Types ────────────────────────────────────────────────────
-interface TeleInfo {
+interface RainInfo {
   sta_code: string;
-  sta_name: string;
+  name: string;
   tambon: string;
   district: string;
   province: string;
@@ -31,9 +31,9 @@ interface TeleInfo {
   long: string;
 }
 
-interface TeleLatest {
+interface RainLatest {
   sta_code: string;
-  sta_name: string;
+  name: string;
   date: string;
   wl?: number;           // ระดับน้ำ
   discharge?: number;    // อัตราการไหล
@@ -41,10 +41,10 @@ interface TeleLatest {
 }
 
 // ─── Main Component ───────────────────────────────────────────
-export default function TeleDashboard() {
-  const [teleInfoList, setTeleInfoList] = useState<TeleInfo[]>([]);
-  const [selectedCode, setSelectedCode] = useState<string>('01');
-  const [latest,       setLatest]       = useState<TeleLatest | null>(null);
+export default function RainDashboard() {
+  const [rainInfoList, setRainInfoList] = useState<RainInfo[]>([]);
+  const [selectedCode, setSelectedCode] = useState<string>('120142');
+  const [latest,       setLatest]       = useState<RainLatest | null>(null);
   const [loading,      setLoading]      = useState(false);
   const [infoLoading,  setInfoLoading]  = useState(true);
   const [error,        setError]        = useState<string | null>(null);
@@ -52,11 +52,11 @@ export default function TeleDashboard() {
   
   // โหลดรายชื่อสถานี
   useEffect(() => {
-    fetch(`${API_URL}/api/tele_info`)
+    fetch(`${API_URL}/api/rain_info`)
       .then(r => r.json())
       .then(json => {
-        const list: TeleInfo[] = json.data || [];
-        setTeleInfoList(list);
+        const list: RainInfo[] = json.data || [];
+        setRainInfoList(list);
         // if (list.length > 0) setSelectedCode(list[0].sta_code);
       })
       .finally(() => setInfoLoading(false));
@@ -69,7 +69,7 @@ export default function TeleDashboard() {
     setError(null);
 
     try {
-      const res = await fetch(`${API_URL}/api/daily/tele?sta_code=${staCode}`);
+      const res = await fetch(`${API_URL}/api/daily/rain?sta_code=${staCode}`);
       if (!res.ok) throw new Error('ไม่สามารถดึงข้อมูลได้');
 
       const json = await res.json();
@@ -78,7 +78,7 @@ export default function TeleDashboard() {
       if (data) {
         setLatest({
           sta_code: data.sta_code,
-          sta_name: data.sta_name,
+          name: data.name,
           date: data.date,
           wl: data.wl,
           discharge: data.discharge,
@@ -104,7 +104,7 @@ export default function TeleDashboard() {
     return () => clearInterval(interval);
   }, [selectedCode, fetchStationData]);
 
-  const selectedInfo = teleInfoList.find(g => g.sta_code === selectedCode) ?? null;
+  const selectedInfo = rainInfoList.find(g => g.sta_code === selectedCode) ?? null;
   const cameras = selectedCode ? (STATION_CAMERAS[selectedCode] ?? []) : [];
 
   if (infoLoading) {
@@ -129,9 +129,9 @@ export default function TeleDashboard() {
               onChange={(e: SelectChangeEvent) => setSelectedCode(e.target.value)}
               sx={fontInfo}
             >
-              {teleInfoList.map((s: any) => (
+              {rainInfoList.map((s: any) => (
                 <MenuItem key={s.sta_code} value={s.sta_code}>
-                  {s.sta_name} ({s.sta_code})
+                  {s.name} ({s.sta_code})
                 </MenuItem>
               ))}
             </Select>
@@ -162,20 +162,20 @@ export default function TeleDashboard() {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mt: 1, pl: 0.5 }}>
             <Box
                 sx={{
-                  width: 10,
-                  height: 10,
-                  borderRadius: '50%',
-                  bgcolor: 'success.main',
-                  flexShrink: 0,
+                width: 10,
+                height: 10,
+                borderRadius: '50%',
+                bgcolor: 'success.main',
+                flexShrink: 0,
                 }}
-              />
-              <Typography
+            />
+            <Typography
                 sx={{
-                  fontFamily: 'Prompt',
-                  fontSize: '1rem',
-                  color: 'text.disabled',
+                fontFamily: 'Prompt',
+                fontSize: '1rem',
+                color: 'text.disabled',
                 }}
-              >
+            >
               ข้อมูลอัปเดตล่าสุด: {latest?.date ?? 'กำลังโหลด...'}
             </Typography>
           </Box>
@@ -194,7 +194,7 @@ export default function TeleDashboard() {
                 elevation={2}
                 sx={{
                   borderRadius: 4,
-                  overflow: 'hidden',
+                  overrain: 'hidden',
                   height: '100%',
                   display: 'flex',
                   flexDirection: 'column',
@@ -207,13 +207,13 @@ export default function TeleDashboard() {
                     position: 'relative',
                     width: '100%',
                     height: 300,
-                    overflow: 'hidden',
+                    overrain: 'hidden',
                   }}
                 >
                   <Box
                     component="img"
-                    src={`${Path_URL}images/tele/${selectedInfo.sta_code}.jpg`}
-                    alt={selectedInfo.sta_name}
+                    src={`${Path_URL}images/rain_station/${selectedInfo.sta_code}.jpg`}
+                    alt={selectedInfo.name}
                     onError={(e: any) => {
                       e.target.src = `${Path_URL}images/default_img.png`;
                     }}
@@ -249,7 +249,7 @@ export default function TeleDashboard() {
                         lineHeight: 1.3,
                       }}
                     >
-                      {selectedInfo.sta_name}
+                      {selectedInfo.name}
                     </Typography>
 
                     <Typography
@@ -378,22 +378,10 @@ export default function TeleDashboard() {
           <Grid size={{ xs: 12, md: 8 }} >
             <Stack spacing={2}>
                 <TeleMetricCards
-                  wl={latest?.wl}
-                  discharge={latest?.discharge}
                   rain={latest?.rain}
-                  warnLevels={TELE_WARN_LEVELS[selectedCode]}
                   loading={loading}
                 />
               <Paper sx={{ p: 2, borderRadius: 2 ,mt: 2}}>
-                {selectedCode && (
-                        <StationCrossSectionChart
-                            staCode={selectedCode}
-                            waterLevel={latest?.wl ?? null}   // ← ระดับน้ำล่าสุด
-                            warnLevels={TELE_WARN_LEVELS[selectedCode]}
-                            title="ภาพตัดขวางแม่น้ำ"
-                            chartHeight={387}
-                        />
-                )}
               </Paper>
             </Stack>
           </Grid>
@@ -406,21 +394,17 @@ export default function TeleDashboard() {
                   staCode={selectedInfo.sta_code}
                   lat={selectedInfo.lat}
                   long={selectedInfo.long}
-                  staName={selectedInfo.sta_name}
+                  staName={selectedInfo.name}
                 />
                 </Grid>
               <Grid size={{ xs: 12, md: 4 }}>
                   <Paper sx={{borderRadius: 2 }}>
-                      {cameras.length > 0 && (
-                          <CameraViewer cameras={cameras} staCode={selectedCode ?? ''} />
-                      )}
+
                 </Paper>
               </Grid>
                <Grid size={{ xs: 12, md: 4 }}>
                   <Paper sx={{borderRadius: 2 }}>
-                      {cameras.length > 0 && (
-                          <CameraViewer cameras={cameras} staCode={selectedCode ?? ''} />
-                      )}
+                   
                 </Paper>
               </Grid>
             </Grid>

@@ -18,6 +18,7 @@ import { GATE_STATION_CONFIGS } from '@/lib/gateConfig';
 import GateOpeningDisplay from '@/components/Data/GateOpeningDisplay';
 import StationCrossSectionChart from '@/components/Data/StationCrossSectionChart';
 import StationCoordinates from '@/components/Data/Stationcoordinates';
+import { GATE_WARN_LEVELS } from '../../../lib/warnLevels';
 
 
 // ─── Types ────────────────────────────────────────────────────
@@ -40,22 +41,6 @@ interface GateLatest {
   discharge?: number;
   [key: string]: any;
 }
-
-const GATE_CROSS_SECTIONS: Record<string, number> = {
-    'tng': 204540,
-    'wst': 241714,
-};
-
-// const GATE_WARN_LEVELS: Record<string, { watch: number; alert: number; crisis: number; normal: number }> = {
-//     'tng': { normal: 36.0, watch: 37.5, alert: 38.5, crisis: 39.5 },
-//     'wst': { normal: 37.0, watch: 38.5, alert: 39.5, crisis: 40.5 },
-// };
-
-const GATE_WARN_LEVELS: Record<string, { watch: number; alert: number; crisis: number; normal: number }> = {
-    'tng': { normal: 2.0, watch: 3.5, alert: 4.5, crisis: 5.5 },
-    'wst': { normal: 37.0, watch: 38.5, alert: 39.5, crisis: 40.5 },
-    'kpk': { normal: 1.0, watch: 3.5, alert: 6.5, crisis: 8.5 },
-};
 
 // ─── Main Component ───────────────────────────────────────────
 export default function GateDashboard() {
@@ -167,8 +152,8 @@ export default function GateDashboard() {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mt: 1, pl: 0.5 }}>
             <Box
               sx={{
-                width: 6,
-                height: 6,
+                width: 10,
+                height: 10,
                 borderRadius: '50%',
                 bgcolor: 'success.main',
                 flexShrink: 0,
@@ -177,7 +162,7 @@ export default function GateDashboard() {
             <Typography
               sx={{
                 fontFamily: 'Prompt',
-                fontSize: '0.8rem',
+                fontSize: '1rem',
                 color: 'text.disabled',
               }}
             >

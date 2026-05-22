@@ -48,7 +48,7 @@ const HydroMap: React.FC<HydroMapProps> = ({ mapKey, JsonPaths, height }) => {
     map.Ui.add(createToggleMenu('🚰 สถานีน้ำท่า', 'flow', true, setShowFlow));
     map.Ui.add(createToggleMenu('🌧️ สถานีน้ำฝน', 'rain', true, setShowRain));
     map.Ui.add(createToggleMenu('💧 ประตูระบายน้ำ', 'gate', true, setShowGate));
-    map.Ui.add(createToggleMenu('📡 สถานีโทรมาตร', 'tele', true, setShowTele));
+    map.Ui.add(createToggleMenu('📡 สถานีติดตั้งโครงการ', 'tele', true, setShowTele));
 
     map.location({ lat: 16.750, lon: 100 }, true);
     map.zoom(11, true);

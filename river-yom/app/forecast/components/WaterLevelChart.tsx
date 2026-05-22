@@ -14,6 +14,7 @@ import CenteredLoading from "@/components/Layout/CenteredLoading";
 import { Path_URL, formatThaiDay } from "@/lib/utility";
 import { titleStyle } from "@/theme/style";
 import dynamic from "next/dynamic";
+import { FLOW_WARN_LEVELS } from '../../../lib/warnLevels';
 
 const ApexChart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
@@ -22,14 +23,6 @@ interface WaterLevelData {
   station: string;
   elevation: number;
 }
-
-const warningLevels: Record<string, { watch: number; alert: number; crisis: number; normal: number }> = {
-  "Y.15": { watch: 2.90, alert: 3.20, crisis: 3.50 ,normal: 2.50},
-  "Y.16": { watch: 2.16, alert: 2.28, crisis: 2.40 ,normal: 2.00},
-  "Y.4": { watch: 1.60, alert: 1.70, crisis: 1.80 ,normal: 1.50},
-  "Y.50": { watch: 1.25, alert: 1.38, crisis: 1.50 ,normal: 1.20},
-  "Y.64": { watch: 1.20, alert: 1.35, crisis: 1.50 ,normal: 1.10},
-};
 
 const stationMapping: Record<string, number> = {
   "Y.15": 170764,
@@ -56,7 +49,7 @@ const WaterLevelChart: React.FC<Props> = ({ data, chartHeight = 550 }) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const Levels = useMemo(() => warningLevels[selectedStation], [selectedStation]);
+  const Levels = useMemo(() => FLOW_WARN_LEVELS[selectedStation], [selectedStation]);
 
   const clean = (val: string | undefined): number => {
     if (!val) return NaN;

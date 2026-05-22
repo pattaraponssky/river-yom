@@ -9,6 +9,8 @@ import { Path_URL } from "@/lib/utility";
 import { BoxStyle, fontTitle } from "@/theme/style";
 import DataFlowCombined from "./FlowData";
 import FlowMap from "./FlowMap";
+import FlowDashboard from './FlowDashboard';
+import BarChartIcon from '@mui/icons-material/BarChart';
 
 const mapKey = process.env.NEXT_PUBLIC_LONGDO_MAP_KEY!;
 const JsonPaths = [
@@ -43,28 +45,29 @@ export default function FlowPage() {
   return (
     <Box sx={{ ...BoxStyle }}>
       {/* Main Tabs */}
-      <Tabs
-        value={mainTab}
-        onChange={handleMainTabChange}
-        aria-label="main category"
-        sx={{
-          marginBottom: "16px",
-          overflowX: "auto",
-          whiteSpace: "nowrap",
-          "& .MuiTab-root": {
-            minWidth: { xs: "auto", md: 160 },
-            px: { xs: 2, md: 4 },
-          },
-        }}
-        variant="scrollable"
-        scrollButtons="auto"
-        allowScrollButtonsMobile
-      >
+        <Tabs
+          value={mainTab}
+          onChange={handleMainTabChange}
+          aria-label="main category"
+          sx={{
+            marginBottom: "10px",
+            overgateX: "auto", // เพิ่มการเลื่อนในแกน X
+            whiteSpace: "nowrap", // ไม่ให้ text ตัด
+          }}
+          variant="scrollable" // ใช้ scrollable tab
+          scrollButtons="auto" // เพิ่มปุ่มเลื่อนอัตโนมัติ
+        >
         <Tab
           sx={{ ...fontTitle }}
           icon={<PlaceIcon />}
           iconPosition="start"
           label="สถานีวัดน้ำท่า"
+        />
+         <Tab
+          sx={{ ...fontTitle }}
+          icon={<BarChartIcon />}
+          iconPosition="start"
+          label="ข้อมูลย้อนหลัง"
         />
         <Tab
           sx={{ ...fontTitle }}
@@ -76,14 +79,19 @@ export default function FlowPage() {
 
       {/* Content Display */}
       <Box>
-        {mainTab === 0 && (
+         {mainTab === 0 && (
+          <Box>
+            <FlowDashboard />
+          </Box>
+        )}
+
+        {mainTab === 1 && (
           <Box>
             {/* ถ้ามี component แสดงข้อมูลสถานี */}
             <DataFlowCombined />
           </Box>
         )}
-3
-        {mainTab === 1 && (
+        {mainTab === 2 && (
           <Box>
             <FlowMap
               id="longdo-map"

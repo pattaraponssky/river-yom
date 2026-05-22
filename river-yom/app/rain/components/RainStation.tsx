@@ -10,6 +10,8 @@ import { BoxStyle } from "@/theme/style";
 import DataRainStation from "./RainData";
 import RainMap from "./RainMap";
 import { fontTitle } from '../../../theme/style';
+import RainDashboard from "./RainDashboard";
+import BarChartIcon from '@mui/icons-material/BarChart';
 
 const mapKey = process.env.NEXT_PUBLIC_LONGDO_MAP_KEY!;
   const JsonPaths = [
@@ -50,11 +52,17 @@ const RainStation: React.FC = () => {
           variant="scrollable" // ใช้ scrollable tab
           scrollButtons="auto" // เพิ่มปุ่มเลื่อนอัตโนมัติ
         >
-              <Tab
+          <Tab
             sx={{ ...fontTitle }}
             icon={<WaterDrop />} // ไอคอนข้อมูลสถานี
             iconPosition="start"
             label="สถานีวัดน้ำฝน"
+          />
+          <Tab
+            sx={{ ...fontTitle }}
+            icon={<BarChartIcon />}
+            iconPosition="start"
+            label="ข้อมูลย้อนหลัง"
           />
           <Tab
             sx={{ ...fontTitle }}
@@ -66,7 +74,18 @@ const RainStation: React.FC = () => {
 
         {/* Content Display */}
         <Box>
+          {mainTab === 0 && (
+            <Box>
+              <RainDashboard/>
+            </Box>
+          )}
           {mainTab === 1 && (
+            <Box>
+              <DataRainStation propsSelectedStation={selectedStationFromURL}/>
+            </Box>
+          )}
+
+          {mainTab === 2 && (
               <RainMap
                 id="longdo-map"
                 stationType="rain"
@@ -74,12 +93,6 @@ const RainStation: React.FC = () => {
                 JsonPaths={JsonPaths} // ส่งข้อมูล GeoJSON เข้าไป
                 height="75vh"
               />
-          )}
-
-          {mainTab === 0 && (
-            <Box>
-              <DataRainStation propsSelectedStation={selectedStationFromURL}/>
-            </Box>
           )}
 
           {/* {mainTab === 2 && (

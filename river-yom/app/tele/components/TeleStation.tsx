@@ -46,23 +46,18 @@ export default function TelePage() {
   return (
     <Box sx={{ ...BoxStyle }}>
       {/* Main Tabs */}
-      <Tabs
-        value={mainTab}
-        onChange={handleMainTabChange}
-        aria-label="main category"
-        sx={{
-          marginBottom: "16px",
-          overteleX: "auto",
-          whiteSpace: "nowrap",
-          "& .MuiTab-root": {
-            minWidth: { xs: "auto", md: 160 },
-            px: { xs: 2, md: 4 },
-          },
-        }}
-        variant="scrollable"
-        scrollButtons="auto"
-        allowScrollButtonsMobile
-      >
+        <Tabs
+          value={mainTab}
+          onChange={handleMainTabChange}
+          aria-label="main category"
+          sx={{
+            marginBottom: "10px",
+            overgateX: "auto", // เพิ่มการเลื่อนในแกน X
+            whiteSpace: "nowrap", // ไม่ให้ text ตัด
+          }}
+          variant="scrollable" // ใช้ scrollable tab
+          scrollButtons="auto" // เพิ่มปุ่มเลื่อนอัตโนมัติ
+        >
         <Tab
           sx={{ ...fontTitle }}
           icon={<PlaceIcon />}
