@@ -59,7 +59,6 @@ const DataTeleCombined: React.FC<{ propsSelectedStation?: string }> = ({ propsSe
 
   const [initialLoad, setInitialLoad] = useState(false);
 
-  const cameras = selectedStation ? (STATION_CAMERAS[selectedStation] ?? []) : [];
 
   useEffect(() => {
       if (propsSelectedStation) {

@@ -318,9 +318,9 @@ export default function Dashboard() {
       <Box sx={BoxStyle} id="flood-warning">
         <FloodWarningTable maxLevels={maxElevations} waterTrends={waterTrends} waterPeaks={waterPeaks}   />
       </Box>
-      <Box sx={BoxStyle} id="forecast-chart" >
+      {/* <Box sx={BoxStyle} id="forecast-chart" >
         <WaterForecastChart data={forecastChart} />
-      </Box>
+      </Box> */}
        <Box sx={BoxStyle} id="profile-chart">
         <LongProfileChart waterData={forecastLongProfile} />
         {/* <LongProfileChart waterData={forecastLongProfile} isDark={isDark}/> */}

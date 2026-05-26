@@ -29,7 +29,7 @@ const BIG_CARDS = [
     iconColor:   '#185FA5',
     badgeBg:     '#E6F1FB',
     badgeColor:  '#0C447C',
-    badge:       'หน้าหลัก',
+    badge:       'สรูปสถานการณ์น้ำปัจจุบัน',
     title:       'Dashboard',
     description: 'ภาพรวมสถานการณ์น้ำทั้งหมด แผนที่ และสรุปค่าสำคัญแบบเรียลไทม์',
   },
@@ -40,9 +40,9 @@ const BIG_CARDS = [
     iconColor:   '#0F6E56',
     badgeBg:     '#E1F5EE',
     badgeColor:  '#085041',
-    badge:       'หน้าหลัก',
+    badge:       'พยากรณ์น้ำ',
     title:       'Forecast',
-    description: 'ภาพรวมสถานการณ์น้ำทั้งหมด แผนที่ และสรุปค่าสำคัญแบบเรียลไทม์',
+    description: 'ผลการพยากรณ์สถานการณ์น้ำล่วงหน้า 7 วันข้างหน้า พร้อมรูปตัดตามยาวแม่น้ำยมฝั่งขวาและกราฟแสดงแนวโน้ม',
   },
   {
     href:        '/report',
@@ -51,9 +51,9 @@ const BIG_CARDS = [
     iconColor:   '#854F0B',
     badgeBg:     '#FAEEDA',
     badgeColor:  '#633806',
-    badge:       'หน้าหลัก',
+    badge:       'รายงานสถานการณ์น้ำจาก สำนักงานชลประทานที่ 3',
     title:       'Report',
-    description: 'ภาพรวมสถานการณ์น้ำทั้งหมด แผนที่ และสรุปค่าสำคัญแบบเรียลไทม์',
+    description: 'รายงานสถานการณ์น้ำประจำวัน สรุปเหตุการณ์สำคัญ และการแจ้งเตือนต่างๆจากสำนักงานชลประทานที่ 3 ',
   },
    {
     href:        '/schematic',
@@ -64,7 +64,7 @@ const BIG_CARDS = [
     badgeColor:  '#0C447C',
     badge:       'แผนผังลุ่มน้ำ',
     title:       'Schematic',
-    description: 'ติดตามสถานีโทรมาตร ระดับน้ำ อัตราการไหล และกล้อง CCTV',
+    description: 'แผนผังลุ่มน้ำแสดงสถานีวัดน้ำท่า สถานีติดตั้งโครงการ และประตูระบายน้ำ พร้อมข้อมูลสรุปสถานการณ์น้ำแต่ละจุด',
   },
     {
     href:        '/aboutus',
@@ -75,7 +75,7 @@ const BIG_CARDS = [
     badgeColor:  '#444441',
     badge:       'เกี่ยวกับ',
     title:       'About Us',
-    description: 'ข้อมูลระบบและทีมผู้พัฒนา',
+    description: 'ข้อมูลเกี่ยวกับโครงการ และช่องทางติดต่อ',
   },
 
 ];
@@ -90,7 +90,7 @@ const SMALL_CARDS = [
     badgeColor:  '#633806',
     badge:       'ฝน',
     title:       'Rain',
-    description: 'ปริมาณน้ำฝนสะสมและรายวัน',
+    description: 'ปริมาณน้ำฝนสะสมและรายวัน ของสถานีวัดน้ำฝนของกรมชลประทาน',
   },
   {
     href:        '/gate',
@@ -101,7 +101,7 @@ const SMALL_CARDS = [
     badgeColor:  '#4A1B0C',
     badge:       'ประตูน้ำ',
     title:       'Gate',
-    description: 'สถานะประตูระบายน้ำและการควบคุม',
+    description: 'สถานะประตูระบายน้ำ ข้อมูลการเปิด-ปิด ระดับน้ำเหนือ-ท้าย และอัตราการไหลผ่านประตูระบายน้ำ',
   },
     {
     href:        '/tele',
@@ -112,7 +112,7 @@ const SMALL_CARDS = [
     badgeColor:  '#085041',
     badge:       'สถานีติดตั้งโครงการ',
     title:       'Tele',
-    description: 'ติดตามสถานีติดตั้งโครงการ ระดับน้ำ อัตราการไหล และกล้อง CCTV',
+    description: 'ติดตามสถานีติดตั้งโครงการในพื้นที่ฝั่งขวาแม่น้ำยม ระดับน้ำ อัตราการไหล และกล้อง CCTV',
   },
   {
     href:        '/flow',
@@ -123,7 +123,7 @@ const SMALL_CARDS = [
     badgeColor:  '#0C447C',
     badge:       'น้ำท่า',
     title:       'Flow',
-    description: 'ข้อมูลอัตราการไหลและระดับน้ำตามสถานีวัดน้ำท่า',
+    description: 'ข้อมูลอัตราการไหลและระดับน้ำตามสถานีวัดน้ำท่าของกรมชลประทาน',
   },
 ];
 
@@ -199,8 +199,8 @@ export default function Home() {
               {BIG_CARDS[0].icon}
             </Box>
             <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Box sx={{ display: 'inline-block', px: 1.25, py: 0.25, borderRadius: 99, bgcolor: BIG_CARDS[0].badgeBg, mb: 0.75 }}>
-                <Typography sx={{ fontFamily: 'Prompt', fontSize: '0.7rem', fontWeight: 600, color: BIG_CARDS[0].badgeColor, lineHeight: 1 }}>
+              <Box sx={{ display: 'inline-block', px: 1.25, py: 0.55, borderRadius: 99, bgcolor: BIG_CARDS[0].badgeBg, mb: 0.75 }}>
+                <Typography sx={{ fontFamily: 'Prompt', fontSize: '0.85rem', fontWeight: 600, color: BIG_CARDS[0].badgeColor, lineHeight: 1 }}>
                   {BIG_CARDS[0].badge}
                 </Typography>
               </Box>
@@ -220,12 +220,12 @@ export default function Home() {
               <Box sx={{ width: 42, height: 42, borderRadius: 2, bgcolor: c.iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1.75, color: c.iconColor }}>
                 {c.icon}
               </Box>
-              <Box sx={{ display: 'inline-block', px: 1.25, py: 0.25, borderRadius: 99, bgcolor: c.badgeBg, mb: 1 }}>
-                <Typography sx={{ fontFamily: 'Prompt', fontSize: '0.7rem', fontWeight: 600, color: c.badgeColor, lineHeight: 1 }}>
+              <Box sx={{ display: 'inline-block', px: 1.25, py: 0.55, borderRadius: 99, bgcolor: c.badgeBg, mb: 1 }}>
+                <Typography sx={{ fontFamily: 'Prompt', fontSize: '1rem', fontWeight: 600, color: c.badgeColor, lineHeight: 1 }}>
                   {c.badge}
                 </Typography>
               </Box>
-              <Typography sx={{ fontFamily: 'Prompt', fontWeight: 600, fontSize: '1rem', color: 'text.primary', mb: 0.5 }}>
+              <Typography sx={{ fontFamily: 'Prompt', fontWeight: 600, fontSize: '0.85rem', color: 'text.primary', mb: 0.5 }}>
                 {c.title}
               </Typography>
               <Typography sx={{ fontFamily: 'Prompt', fontSize: '0.82rem', color: 'text.secondary', lineHeight: 1.6 }}>
@@ -242,8 +242,8 @@ export default function Home() {
               <Box sx={{ width: 38, height: 38, borderRadius: 2, bgcolor: c.iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1.5, color: c.iconColor }}>
                 {c.icon}
               </Box>
-              <Box sx={{ display: 'inline-block', px: 1.25, py: 0.25, borderRadius: 99, bgcolor: c.badgeBg, mb: 0.75 }}>
-                <Typography sx={{ fontFamily: 'Prompt', fontSize: '0.7rem', fontWeight: 600, color: c.badgeColor, lineHeight: 1 }}>
+              <Box sx={{ display: 'inline-block', px: 1.25, py: 0.55, borderRadius: 99, bgcolor: c.badgeBg, mb: 0.75 }}>
+                <Typography sx={{ fontFamily: 'Prompt', fontSize: '0.85rem', fontWeight: 600, color: c.badgeColor, lineHeight: 1 }}>
                   {c.badge}
                 </Typography>
               </Box>

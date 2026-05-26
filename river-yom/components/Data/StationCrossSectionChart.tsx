@@ -18,7 +18,7 @@ interface WarnLevel {
 }
 
 interface Props {
-  staCode:     string;          // ชื่อคอลัมน์ใน ground_station.csv เช่น "Y.15"
+  staCode:     string;          // ชื่อคอลัมน์ใน ground_station.csv เช่น "C.13"
   waterLevel:  number | null;   // ระดับน้ำ ม.รทก. ค่าเดียว
   warnLevels?: WarnLevel;       // เกณฑ์ (optional)
   chartHeight?: number;
