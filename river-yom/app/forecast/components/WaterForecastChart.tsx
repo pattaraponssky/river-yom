@@ -43,10 +43,7 @@ const THRESHOLDS: ThresholdData[] = [
   { staCode:'Y.4',  location:'บ้านบางไทรป่า',        tambon:'ต.บางไทรป่า อ.บางระกำ จ.พิษณุโลก', watch:1.60, alert:1.70, crisis:1.80, maxY:1.8 },
   { staCode:'Y.50', location:'ที่ว่าการอำเภอ',       tambon:'ต.บางระกำ อ.บางระกำ จ.พิษณุโลก',  watch:1.25, alert:1.38, crisis:1.50, maxY:1.5 },
   { staCode:'Y.64', location:'ตลาดสามพราน',          tambon:'ต.บางระกำ อ.บางระกำ จ.พิษณุโลก',  watch:1.20, alert:1.35, crisis:1.50, maxY:1.5 },
-  // { staCode:'ปตร.พลเทพ',           location:'ปตร.พลเทพ',           tambon:'', watch:2.90, alert:3.20, crisis:3.50, maxY:3.5 },
-  // { staCode:'ปตร.ท่าโบสถ์',        location:'ปตร.ท่าโบสถ์',        tambon:'', watch:2.16, alert:2.28, crisis:2.40, maxY:2.4 },
-  // { staCode:'ปตร.ชลมาร์คพิจารณ์',  location:'ปตร.ชลมาร์คพิจารณ์',  tambon:'', watch:2.16, alert:2.28, crisis:2.40, maxY:2.4 },
-  // { staCode:'ปตร.โพธิ์พระยา',      location:'ปตร.โพธิ์พระยา',      tambon:'', watch:2.16, alert:2.28, crisis:2.40, maxY:2.4 },
+  { staCode:'01', location:'สะพานชุมแสงสงคราม',          tambon:'ต.ชุมแสงสงคราม อ.บางระกำ จ.พิษณุโลก',  watch:1.20, alert:1.35, crisis:1.50, maxY:1.5 },
 ];
 const THRESHOLD_MAP = new Map(THRESHOLDS.map(t => [t.staCode, t]));
 
@@ -299,7 +296,7 @@ const WaterForecastChart: React.FC<Props> = ({ today, archive }) => {
               const info       = THRESHOLD_MAP.get(code);
               const isSelected = selectedStation === code;
               return (
-                <Grid size={{ xs: 6, sm: 4, md: 3 }} key={code}>
+                <Grid size={{ xs: 6, sm: 4, md: 4 }} key={code}>
                   <Card
                     onClick={() => setSelectedStation(code)}
                     sx={{

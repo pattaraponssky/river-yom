@@ -79,3 +79,4 @@ export const STATION_CAMERAS: Record<string, CameraConfig[]> = {
     },
   ],
 };
+
