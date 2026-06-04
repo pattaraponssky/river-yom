@@ -262,7 +262,6 @@ const DataFlowCombined: React.FC<{ propsSelectedStation?: string }> = ({ propsSe
       <Grid container spacing={3}>
         {/* รูปสถานี */}
         <Grid size={{xs:12,md:5}}>
-          {cameras.length === 0 && (
           <Box sx={{ display: "flex", justifyContent: "center" }}>
             <img
               src={station ? `${Path_URL}images/flow_station/${station.sta_code}.jpg` : `${Path_URL}images/flow_station/${station.sta_code}.png`}
@@ -277,10 +276,7 @@ const DataFlowCombined: React.FC<{ propsSelectedStation?: string }> = ({ propsSe
               onError={(e) => (e.currentTarget.src = `${Path_URL}images/default_img.png`)}
             />
           </Box>
-           )}
-          {cameras.length > 0 && (
-            <CameraViewer cameras={cameras} staCode={selectedStation ?? ''} />
-          )}
+
         </Grid>
 
         {/* ตัวเลือก */}
