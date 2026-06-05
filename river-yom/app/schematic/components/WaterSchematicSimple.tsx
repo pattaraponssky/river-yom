@@ -1,217 +1,309 @@
 'use client';
 
-import React, { useRef, useEffect, useState, useCallback } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import {
   Box, Typography, Paper, useTheme, CircularProgress,
-  Dialog, DialogTitle, DialogContent, IconButton, Tabs, Tab,
+  Dialog, DialogTitle, DialogContent, IconButton,
 } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import ZoomInIcon from '@mui/icons-material/ZoomIn';
-import ZoomOutIcon from '@mui/icons-material/ZoomOut';
+import CloseIcon       from '@mui/icons-material/Close';
+import ZoomInIcon      from '@mui/icons-material/ZoomIn';
+import ZoomOutIcon     from '@mui/icons-material/ZoomOut';
 import AspectRatioIcon from '@mui/icons-material/AspectRatio';
 import MapIcon         from '@mui/icons-material/Map';
 import PhotoIcon       from '@mui/icons-material/Photo';
-
 import * as d3 from 'd3';
 import { API_URL, formatThaiDay, Path_URL } from '@/lib/utility';
 import DataReservoirStation from '@/app/reservoir/components/ReservoirData';
-import DataFlowCombined from '@/app/flow/components/FlowData';
-import ExportMapButton from './Exportmapbutton';
+import DataFlowCombined     from '@/app/flow/components/FlowData';
+import ExportMapButton      from './Exportmapbutton';
 
-// ====================== Interfaces ======================
+// ─── Types ────────────────────────────────────────────────────
+
 interface ReservoirNode {
-  id: string;
-  name: string;
-  res_code: string;
-  province: string;
-  x: number;
-  y: number;
-  volume: number;
-  inflow: number;
-  outflow: number;
-  percent: number;
-  date: string;
+  id: string; name: string; res_code: string; province: string;
+  x: number; y: number;
+  volume: number; inflow: number; outflow: number; percent: number; date: string;
 }
 
 interface FlowStationNode {
-  id: string;
-  name: string;
-  sta_code: string;
-  province: string;
-  x: number;
-  y: number;
-  wl: number;
-  discharge: number;
-  date: string;
-  cardOffsetX?: number;
-  cardOffsetY?: number;
+  id: string; name: string; sta_code: string; province: string;
+  x: number; y: number;
+  wl: number; discharge: number; date: string;
+  cardOffsetX?: number; cardOffsetY?: number;
 }
 
-// ====================== Component ======================
+// ─── Arrow config ─────────────────────────────────────────────
+// angle: องศา (0 = ขวา, 90 = ลง, 180 = ซ้าย, 270 = ขึ้น, หรือองศาอื่นๆ)
+// length: ระยะทาง px ของ path ที่ mov จะวิ่งตาม
+
+interface ArrowConfig {
+  startX: number;
+  startY: number;
+  angle: number;
+  length?: number;   // default 20
+}
+
+// ─── Helpers ──────────────────────────────────────────────────
+
+const endPoint = (angleDeg: number, length: number) => {
+  const rad = (angleDeg * Math.PI) / 180;
+  return { dx: Math.cos(rad) * length, dy: Math.sin(rad) * length };
+};
+
+const getFlowColor = (code: string, wl: number) => {
+  const th: Record<string, { red: number; orange: number; yellow: number }> = {
+    'Y.4':  { red: 51.4, orange: 50.5, yellow: 49.6 },
+    'Y.15': { red: 46.0, orange: 44.7, yellow: 43.5 },
+    'Y.50': { red: 41.5, orange: 40.5, yellow: 39.5 },
+    'Y.16': { red: 39.3, orange: 38.4, yellow: 37.6 },
+    'Y.64': { red: 38.0, orange: 37.3, yellow: 36.7 },
+    'Y.51': { red: 42.0, orange: 40.4, yellow: 38.8 },
+    'Y.17': { red: 41.8, orange: 40.6, yellow: 39.4 },
+  };
+  const t = th[code] || { red: 40, orange: 38, yellow: 36 };
+  if (wl > t.red)    return 'red';
+  if (wl > t.orange) return 'orange';
+  if (wl > t.yellow) return '#FFD700';
+  return '#69fc00ff';
+};
+
+// วาด animated arrow โดยใช้ orient="auto" + path ตามองศา
+function drawArrows(
+  container: d3.Selection<SVGGElement, unknown, null, undefined>,
+  arrows: ArrowConfig[],
+  markerId: string,
+  color: string = '#64b5f6'
+) {
+  arrows.forEach(({ startX, startY, angle, length = 20 }) => {
+    const rad = (angle * Math.PI) / 180;
+    const dx = Math.cos(rad) * length;
+    const dy = Math.sin(rad) * length;
+
+    const g = container.append('g')
+      .attr('transform', `translate(${startX}, ${startY})`);
+
+    // เส้นทางหลัก (มองไม่เห็น)
+    const pathEl = g.append('path')
+      .attr('d', `M 0 0 L ${dx.toFixed(2)} ${dy.toFixed(2)}`)
+      .attr('fill', 'none')
+      .attr('stroke', 'transparent')
+      .attr('opacity', 0);
+
+    // ลูกศรเคลื่อนที่
+    const moving = g.append('path')
+      .attr('d', `M 0 0 L ${dx.toFixed(2)} ${dy.toFixed(2)}`)  // ให้มีความยาวพอ
+      .attr('fill', 'none')
+      .attr('stroke', 'transparent')
+      .attr('marker-end', `url(#${markerId})`);
+
+    const animate = () => {
+      moving.transition()
+        .duration(1600)
+        .ease(d3.easeLinear)
+        .attrTween('transform', () => {
+          const node = pathEl.node() as SVGPathElement;
+          const totalLen = node.getTotalLength();
+
+          return (t: number) => {
+            const point = node.getPointAtLength(t * totalLen);
+            moving.attr('opacity', t < 0.85 ? 1 : 1 - (t - 0.85) / 0.15);
+            return `translate(${point.x.toFixed(3)}, ${point.y.toFixed(3)})`;
+          };
+        })
+        .on('end', () => {
+          moving.transition().duration(400).attr('opacity', 1).on('end', animate);
+        });
+    };
+
+    moving.attr('opacity', 0);
+    animate();
+  });
+}
+
+function addArrowMarker(
+  svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
+  id: string,
+  color: string,
+) {
+  let defs = svg.select<SVGDefsElement>('defs');
+  if (defs.empty()) defs = svg.append('defs');
+
+  // ลบ marker เก่าก่อนเพิ่มใหม่
+  defs.select(`#${id}`).remove();
+
+  defs.append('marker')
+    .attr('id', id)
+    .attr('viewBox', '0 0 24 24')
+    .attr('refX', 20).attr('refY', 12)
+    .attr('markerUnits', 'strokeWidth')  // สำคัญ
+    .attr('markerWidth', 14).attr('markerHeight', 14)
+    .attr('orient', 'auto')   // ← follow ทิศทาง path อัตโนมัติ
+    .append('path').attr('d', 'M2,10 L14,10 L14,6 L22,12 L14,18 L14,14 L2,14 Z')
+    .attr('fill', color).attr('stroke', color)
+    .attr('stroke-width', 1).attr('stroke-linejoin', 'round');
+}
+
+
+// ─── Component ────────────────────────────────────────────────
+
 const WaterSchematicSimple: React.FC = () => {
   const theme = useTheme();
-
-  // Refs
-  const svgRefTab1 = useRef<SVGSVGElement>(null);
-  const svgRefTab2 = useRef<SVGSVGElement>(null);
-
-  const zoomRefTab1 = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
-  const zoomRefTab2 = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
-  const containerRefTab1 = useRef<SVGGElement | null>(null);
-
-  // State
-  const [tabIndex, setTabIndex] = useState(0);
-  const [reservoirs, setReservoirs] = useState<ReservoirNode[]>([]);
-  const [flows, setFlows] = useState<FlowStationNode[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const [openDialog, setOpenDialog] = useState(false);
-  const [selectedStation, setSelectedStation] = useState<string | undefined>(undefined);
-  const [selectedName, setSelectedName] = useState('');
-  const [selectedType, setSelectedType] = useState<'reservoir' | 'flow' | undefined>(undefined);
-
-  const WIDTH = 650;
+  const WIDTH  = 650;
   const HEIGHT = 800;
 
-  // ====================== Zoom Helpers ======================
-  const zoomIn = (isTab2: boolean = false) => {
-    const zoomRef = isTab2 ? zoomRefTab2 : zoomRefTab1;
-    const svgRef = isTab2 ? svgRefTab2 : svgRefTab1;
-    if (!zoomRef.current || !svgRef.current) return;
-    d3.select(svgRef.current).transition().duration(450).call(zoomRef.current.scaleBy, 1.4);
-  };
+  // Refs
+  const svgRefTab1        = useRef<SVGSVGElement>(null);
+  const svgRefTab2        = useRef<SVGSVGElement>(null);
+  const zoomRefTab1       = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
+  const zoomRefTab2       = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
+  const containerRefTab1  = useRef<SVGGElement | null>(null);
+  const containerRefTab2  = useRef<SVGGElement | null>(null);  // ← เพิ่มสำหรับ tab 2
 
-  const zoomOut = (isTab2: boolean = false) => {
-    const zoomRef = isTab2 ? zoomRefTab2 : zoomRefTab1;
-    const svgRef = isTab2 ? svgRefTab2 : svgRefTab1;
-    if (!zoomRef.current || !svgRef.current) return;
-    d3.select(svgRef.current).transition().duration(450).call(zoomRef.current.scaleBy, 1 / 1.4);
-  };
+  // Dialog ref — ไม่ trigger re-render → ไม่ล้าง D3 nodes
+  const openDialogRef = useRef<(code: string, name: string, type: 'reservoir' | 'flow') => void>(() => {});
 
-  const fitToView = (isTab2: boolean = false) => {
-    const svgRef = isTab2 ? svgRefTab2.current : svgRefTab1.current;
-    const zoomRef = isTab2 ? zoomRefTab2 : zoomRefTab1;
-    if (!svgRef || !zoomRef.current) return;
+  // State
+  const [tabIndex,        setTabIndex]        = useState(0);
+  const [reservoirs,      setReservoirs]      = useState<ReservoirNode[]>([]);
+  const [flows,           setFlows]           = useState<FlowStationNode[]>([]);
+  const [loading,         setLoading]         = useState(true);
+  const [error,           setError]           = useState<string | null>(null);
+  const [openDialog,      setOpenDialog]      = useState(false);
+  const [selectedStation, setSelectedStation] = useState<string | undefined>();
+  const [selectedName,    setSelectedName]    = useState('');
+  const [selectedType,    setSelectedType]    = useState<'reservoir' | 'flow' | undefined>();
 
-    const bounds = svgRef.getBBox();
-    if (bounds.width === 0) return;
+  // อัปเดต openDialogRef ทุก render เพื่อให้ setState ล่าสุดเสมอ
+  useEffect(() => {
+    openDialogRef.current = (code, name, type) => {
+      setSelectedStation(code);
+      setSelectedName(name);
+      setSelectedType(type);
+      setOpenDialog(true);
+    };
+  });
+
+  // ─── fitToView — ใช้ containerRef.getBBox() ไม่ใช่ svgRef.getBBox() ───
+
+  const fitToView = (isTab2 = false) => {
+    const svgEl       = isTab2 ? svgRefTab2.current      : svgRefTab1.current;
+    const zoomRef     = isTab2 ? zoomRefTab2              : zoomRefTab1;
+    const containerEl = isTab2 ? containerRefTab2.current : containerRefTab1.current;
+
+    if (!svgEl || !zoomRef.current || !containerEl) return;
+
+    const bounds = containerEl.getBBox();   // ← getBBox บน <g> ได้ content จริง
+    if (bounds.width === 0 || bounds.height === 0) return;
 
     const scale = 0.92 * Math.min(WIDTH / bounds.width, HEIGHT / bounds.height);
-    const tx = WIDTH / 2 - scale * (bounds.x + bounds.width / 2);
-    const ty = HEIGHT / 2 - scale * (bounds.y + bounds.height / 2);
+    const tx    = WIDTH  / 2 - scale * (bounds.x + bounds.width  / 2);
+    const ty    = HEIGHT / 2 - scale * (bounds.y + bounds.height / 2);
 
-    d3.select(svgRef).transition().duration(600).call(
+    d3.select(svgEl).transition().duration(600).call(
       zoomRef.current.transform,
       d3.zoomIdentity.translate(tx, ty).scale(scale)
     );
   };
 
-  // ====================== Fetch Data ======================
-  // ─── Fetch data ───────────────────────────────────────────────
-  
-    useEffect(() => {
-      const fetchReservoirData = async () => {
-        const res  = await fetch(`${API_URL}/api/daily/reservoir`);
-        if (!res.ok) throw new Error('Failed to fetch reservoir');
-        const json = await res.json();
-        return (json.data || [])
-          .map((item: any) => {
-            let x: number | undefined, y: number | undefined;
-            if (item.res_code === 'srk') { x = 435; y = 140; }
-            if (item.res_code === 'pmp') { x = 40;  y = 295; }
-            if (x === undefined) return null;
-            return { id: item, name: item.res_name, res_code: item.res_code, province: item.province, x, y,
-              volume: parseFloat(item.volume), inflow: parseFloat(item.inflow),
-              outflow: parseFloat(item.outflow), percent: parseFloat(item.p), date: item.date };
-          })
-          .filter(Boolean) as ReservoirNode[];
-      };
-  
-      const fetchFlowData = async () => {
-        const res  = await fetch(`${API_URL}/api/daily/flow`);
-        if (!res.ok) throw new Error('Failed to fetch flow');
-        const json = await res.json();
-        return (json.data || [])
-          .map((item: any) => {
-            const coords: Record<string, [number, number, number, number]> = {
-              'Y.15': [174,   410, -85, -20],
-              'Y.16': [202.5, 490, -85,  -8],
-              'Y.4':  [174,   370, -85, -30],
-              'Y.50': [202.5, 470, -85, -28],
-              'Y.64': [202.5, 520,  13, -20],
-              'Y.51': [202.5, 545, -85, -17],
-              'Y.17': [202.5, 580, -85, -10],
-            };
-            const c = coords[item.sta_code];
-            if (!c) return null;
-            return { id: item.no.toString(), name: item.sta_name, sta_code: item.sta_code,
-              province: item.province, x: c[0], y: c[1], cardOffsetX: c[2], cardOffsetY: c[3],
-              wl: parseFloat(item.wl), discharge: parseFloat(item.discharge), date: item.date };
-          })
-          .filter(Boolean) as FlowStationNode[];
-      };
-  
-      Promise.all([fetchReservoirData(), fetchFlowData()])
-        .then(([res, fl]) => { setReservoirs(res); setFlows(fl); })
-        .catch(e => setError(e.message))
-        .finally(() => setLoading(false));
-    }, []);
-  
+  const zoomIn  = (isTab2 = false) => {
+    const svgEl   = isTab2 ? svgRefTab2.current : svgRefTab1.current;
+    const zoomRef = isTab2 ? zoomRefTab2        : zoomRefTab1;
+    if (!svgEl || !zoomRef.current) return;
+    d3.select(svgEl).transition().duration(450).call(zoomRef.current.scaleBy, 1.4);
+  };
 
-  // ====================== Tab 1: Interactive D3 ======================
+  const zoomOut = (isTab2 = false) => {
+    const svgEl   = isTab2 ? svgRefTab2.current : svgRefTab1.current;
+    const zoomRef = isTab2 ? zoomRefTab2        : zoomRefTab1;
+    if (!svgEl || !zoomRef.current) return;
+    d3.select(svgEl).transition().duration(450).call(zoomRef.current.scaleBy, 1 / 1.4);
+  };
+
+  // ─── Fetch data ───────────────────────────────────────────────
+
+  useEffect(() => {
+    const fetchReservoir = async () => {
+      const res  = await fetch(`${API_URL}/api/daily/reservoir`);
+      if (!res.ok) throw new Error('Failed to fetch reservoir');
+      const json = await res.json();
+      return (json.data || []).map((item: any) => {
+        let x: number | undefined, y: number | undefined;
+        if (item.res_code === 'srk') { x = 435; y = 140; }
+        if (item.res_code === 'pmp') { x = 40;  y = 295; }
+        if (x === undefined) return null;
+        return { id: item, name: item.res_name, res_code: item.res_code, province: item.province, x, y,
+          volume: parseFloat(item.volume), inflow: parseFloat(item.inflow),
+          outflow: parseFloat(item.outflow), percent: parseFloat(item.p), date: item.date };
+      }).filter(Boolean) as ReservoirNode[];
+    };
+
+    const fetchFlow = async () => {
+      const res  = await fetch(`${API_URL}/api/daily/flow`);
+      if (!res.ok) throw new Error('Failed to fetch flow');
+      const json = await res.json();
+      return (json.data || []).map((item: any) => {
+        const coords: Record<string, [number, number, number, number]> = {
+          'Y.15': [174,   410, -85, -20],
+          'Y.16': [202.5, 490, -85,  -8],
+          'Y.4':  [174,   370, -85, -30],
+          'Y.50': [202.5, 470, -85, -28],
+          'Y.64': [202.5, 520,  13, -20],
+          'Y.51': [202.5, 545, -85, -17],
+          'Y.17': [202.5, 580, -85, -10],
+        };
+        const c = coords[item.sta_code];
+        if (!c) return null;
+        return { id: item.no.toString(), name: item.sta_name, sta_code: item.sta_code,
+          province: item.province, x: c[0], y: c[1], cardOffsetX: c[2], cardOffsetY: c[3],
+          wl: parseFloat(item.wl), discharge: parseFloat(item.discharge), date: item.date };
+      }).filter(Boolean) as FlowStationNode[];
+    };
+
+    Promise.all([fetchReservoir(), fetchFlow()])
+      .then(([res, fl]) => { setReservoirs(res); setFlows(fl); })
+      .catch(e => setError(e.message))
+      .finally(() => setLoading(false));
+  }, []);
+
+  // ─── Tab 1: Interactive D3 ────────────────────────────────────
+
   useEffect(() => {
     if (tabIndex !== 0 || !svgRefTab1.current || reservoirs.length === 0) return;
 
     const svg = d3.select(svgRefTab1.current);
     svg.selectAll('*').remove();
-
     svg.attr('viewBox', `0 0 ${WIDTH} ${HEIGHT}`);
 
     const container = svg.append('g').attr('class', 'zoom-container');
-    containerRefTab1.current = container.node() as SVGGElement;
+    containerRefTab1.current = container.node() as SVGGElement;  // ← เก็บ ref
 
     const zoom = d3.zoom<SVGSVGElement, unknown>()
       .scaleExtent([0.3, 12])
       .on('zoom', e => container.attr('transform', e.transform));
-
     zoomRefTab1.current = zoom;
     svg.call(zoom);
 
-    // ── Project area ──
-    const projectAreas = [{
-      x: 100, y: 380, width: 140, height: 200,
-      color: '#FFCDD2', opacity: 0.35,
-      label: 'ขอบเขตพื้นที่โครงการ', labelXOffset: -25, labelYOffset: 25,
-    }];
+    // project area
+    container.append('rect')
+      .attr('x', 100).attr('y', 380).attr('width', 140).attr('height', 200)
+      .attr('fill', '#FFCDD2').attr('opacity', 0.35)
+      .attr('stroke', '#D32F2F').attr('stroke-width', 1.5).attr('stroke-dasharray', '5,5')
+      .attr('pointer-events', 'none').lower();
+    container.append('text').attr('x', 105).attr('y', 435)
+      .attr('font-size', 8).attr('font-weight', 'bold').attr('fill', '#B71C1C')
+      .attr('pointer-events', 'none').text('ขอบเขตพื้นที่โครงการ').lower();
 
-    projectAreas.forEach(zone => {
-      container.append('rect')
-        .attr('x', zone.x).attr('y', zone.y)
-        .attr('width', zone.width).attr('height', zone.height)
-        .attr('fill', zone.color).attr('opacity', zone.opacity)
-        .attr('stroke', '#D32F2F').attr('stroke-width', 1.5)
-        .attr('stroke-dasharray', '5,5').attr('pointer-events', 'none').lower();
-
-      container.append('text')
-        .attr('x', zone.x + zone.labelXOffset + 30)
-        .attr('y', zone.y + zone.labelYOffset + 30)
-        .attr('font-size', 8).attr('font-weight', 'bold')
-        .attr('fill', '#B71C1C').attr('pointer-events', 'none')
-        .text(zone.label).lower();
-    });
-
-    // ── Waterways (rectData) ──
+    // waterways
     const rectData = [
-      { x: 181,     y: 290,     w: 210,    h: 12, fill: '#B7F1FF' },
-      { x: 210,     y: 536,     w: 181,    h: 12, fill: '#B7F1FF' },
-      { x: 206.123, y: 497.592, w: 94.232, h: 12, rotate: -12,  cx: 206.123, cy: 497.592, fill: '#B7F1FF' },
-      { x: 297.495, y: 478,     w: 104.095,h: 12, rotate:  12,  cx: 297.495, cy: 478,     fill: '#B7F1FF' },
-      { x: 241,     y: 378,     w: 76,     h: 12, rotate: -90,  cx: 241,     cy: 378,     fill: '#B7F1FF' },
-      { x: 305,     y: 361,     w: 59,     h: 7,  rotate: -90,  cx: 305,     cy: 361,     fill: '#B7F1FF' },
-      { x: 281,     y: 418.466, w: 64.996, h: 7,  rotate: -68,  cx: 281,     cy: 418.466, fill: '#B7F1FF' },
-      { x: 278.139, y: 427.912, w: 62.498, h: 12, rotate: -126, cx: 278.139, cy: 427.912, fill: '#B7F1FF' },
-      { x: 293.281, y: 485.599, w: 66.768, h: 12, rotate: -105, cx: 293.281, cy: 485.599, fill: '#B7F1FF' },
+      { x: 181,     y: 290,     w: 210,     h: 12, fill: '#B7F1FF' },
+      { x: 210,     y: 536,     w: 181,     h: 12, fill: '#B7F1FF' },
+      { x: 206.123, y: 497.592, w: 94.232,  h: 12, rotate: -12,  cx: 206.123, cy: 497.592, fill: '#B7F1FF' },
+      { x: 297.495, y: 478,     w: 104.095, h: 12, rotate:  12,  cx: 297.495, cy: 478,     fill: '#B7F1FF' },
+      { x: 241,     y: 378,     w: 76,      h: 12, rotate: -90,  cx: 241,     cy: 378,     fill: '#B7F1FF' },
+      { x: 305,     y: 361,     w: 59,      h: 7,  rotate: -90,  cx: 305,     cy: 361,     fill: '#B7F1FF' },
+      { x: 281,     y: 418.466, w: 64.996,  h: 7,  rotate: -68,  cx: 281,     cy: 418.466, fill: '#B7F1FF' },
+      { x: 278.139, y: 427.912, w: 62.498,  h: 12, rotate: -126, cx: 278.139, cy: 427.912, fill: '#B7F1FF' },
+      { x: 293.281, y: 485.599, w: 66.768,  h: 12, rotate: -105, cx: 293.281, cy: 485.599, fill: '#B7F1FF' },
       { x: 391, y: 164, w: 15,  h: 585, fill: '#66E0FF' },
       { x: 166, y: 147, w: 15,  h: 267, fill: '#66E0FF' },
       { x: 195, y: 436, w: 15,  h: 178, fill: '#66E0FF' },
@@ -222,26 +314,16 @@ const WaterSchematicSimple: React.FC = () => {
       { x: 70,  y: 681, w: 321, h: 13,  fill: '#66E0FF' },
       { x: 198.99, y: 446.597, w: 46.655, h: 15, rotate: -135, cx: 198.99, cy: 446.597, fill: '#66E0FF' },
     ];
-
     rectData.forEach(d => {
-      const r = container.append('rect')
-        .attr('x', d.x).attr('y', d.y)
-        .attr('width', d.w).attr('height', d.h)
-        .attr('fill', d.fill);
+      const r = container.append('rect').attr('x', d.x).attr('y', d.y).attr('width', d.w).attr('height', d.h).attr('fill', d.fill);
       if (d.rotate !== undefined) r.attr('transform', `rotate(${d.rotate} ${d.cx} ${d.cy})`);
     });
 
-    // ── Reservoir nodes ──
+    // reservoir nodes
     const nodeGroup = container.selectAll<SVGGElement, ReservoirNode>('.reservoir-node')
-      .data(reservoirs).enter().append('g')
-      .attr('class', 'reservoir-node')
-      .attr('transform', d => `translate(${d.x},${d.y})`)
-      .style('cursor', 'pointer')
-      .on('click', (_, d) => {
-        setSelectedStation(d.res_code); setSelectedName(d.name);
-        setSelectedType('reservoir');   setOpenDialog(true);
-      });
-
+      .data(reservoirs).enter().append('g').attr('class', 'reservoir-node')
+      .attr('transform', d => `translate(${d.x},${d.y})`).style('cursor', 'pointer')
+      .on('click', (_, d) => openDialogRef.current(d.res_code, d.name, 'reservoir'));
     nodeGroup.append('title').text(d => `คลิกเพื่อดูรายละเอียด อ่างเก็บน้ำ${d.name}`);
     nodeGroup.append('text').attr('y', -32).attr('x', 25).attr('font-size', 8).attr('font-weight', 'bold').attr('fill', theme.palette.text.primary).text(d => d.name);
     nodeGroup.append('text').attr('y', -20).attr('font-size', 7).attr('fill', theme.palette.text.primary).text('ปริมาณน้ำ ');
@@ -251,156 +333,67 @@ const WaterSchematicSimple: React.FC = () => {
     nodeGroup.append('text').attr('y', 0).attr('font-size', 7).attr('fill', theme.palette.text.primary).text('ระบาย ');
     nodeGroup.append('text').attr('x', 40).attr('y', 0).attr('font-size', 7).attr('font-weight', 'bold').attr('fill', '#0066cc').text(d => `${d.outflow.toFixed(3)} MCM`);
 
-    // ── Flow nodes ──
-    const thresholds: Record<string, { red: number; orange: number; yellow: number }> = {
-      'Y.4':  { red: 51.4, orange: 50.5, yellow: 49.6 },
-      'Y.15': { red: 46.0, orange: 44.7, yellow: 43.5 },
-      'Y.50': { red: 41.5, orange: 40.5, yellow: 39.5 },
-      'Y.16': { red: 39.3, orange: 38.4, yellow: 37.6 },
-      'Y.64': { red: 38.0, orange: 37.3, yellow: 36.7 },
-      'Y.51': { red: 42.0, orange: 40.4, yellow: 38.8 },
-      'Y.17': { red: 41.8, orange: 40.6, yellow: 39.4 },
-    };
-    const getColor = (code: string, wl: number) => {
-      const th = thresholds[code] || { red: 40, orange: 38, yellow: 36 };
-      if (wl > th.red)    return 'red';
-      if (wl > th.orange) return 'orange';
-      if (wl > th.yellow) return '#FFD700';
-      return '#69fc00ff';
-    };
-
+    // flow nodes
     const flowGroup = container.selectAll<SVGGElement, FlowStationNode>('.flow-node')
-      .data(flows).enter().append('g')
-      .attr('class', 'flow-node')
-      .attr('transform', d => `translate(${d.x},${d.y})`)
-      .style('cursor', 'pointer')
-      .on('click', (_, d) => {
-        setSelectedStation(d.sta_code); setSelectedName(d.name);
-        setSelectedType('flow');        setOpenDialog(true);
-      });
-
+      .data(flows).enter().append('g').attr('class', 'flow-node')
+      .attr('transform', d => `translate(${d.x},${d.y})`).style('cursor', 'pointer')
+      .on('click', (_, d) => openDialogRef.current(d.sta_code, d.name, 'flow'));
     flowGroup.append('title').text(d => `คลิกเพื่อดูรายละเอียดสถานี ${d.name}`);
-    flowGroup.append('circle').attr('r', 7)
-      .attr('fill', d => getColor(d.sta_code, d.wl))
-      .attr('stroke', theme.palette.text.primary).attr('stroke-width', 1);
+    flowGroup.append('circle').attr('r', 7).attr('fill', d => getFlowColor(d.sta_code, d.wl)).attr('stroke', theme.palette.text.primary).attr('stroke-width', 1);
+    const cX1 = (d: FlowStationNode) => d.cardOffsetX ?? 20;
+    const cY1 = (d: FlowStationNode) => d.cardOffsetY ?? -30;
+    const CW1 = 75, CH1 = 35;
+    flowGroup.append('rect').attr('x', cX1).attr('y', cY1).attr('width', CW1).attr('height', CH1).attr('rx', 8).attr('ry', 8).attr('fill', theme.palette.background.paper).attr('stroke', theme.palette.divider).attr('stroke-width', 1);
+    flowGroup.append('text').attr('x', d => cX1(d) + CW1 / 2).attr('y', d => cY1(d) + 10).attr('text-anchor', 'middle').attr('font-size', 6).attr('font-weight', 'bold').attr('fill', theme.palette.text.primary).text(d => `${d.sta_code}${d.name ? ` (${d.name})` : ''}`);
+    flowGroup.append('text').attr('x', d => cX1(d) + 10).attr('y', d => cY1(d) + 20).attr('font-size', 5).attr('fill', theme.palette.text.primary).text('ระดับน้ำ: ');
+    flowGroup.append('text').attr('x', d => cX1(d) + 32).attr('y', d => cY1(d) + 20).attr('font-size', 5).attr('font-weight', 'bold').attr('fill', '#0066cc').text(d => `${d.wl.toFixed(2)} ม.รทก.`);
+    flowGroup.append('text').attr('x', d => cX1(d) + 10).attr('y', d => cY1(d) + 30).attr('font-size', 5).attr('fill', theme.palette.text.primary).text('อัตราไหล: ');
+    flowGroup.append('text').attr('x', d => cX1(d) + 32).attr('y', d => cY1(d) + 30).attr('font-size', 5).attr('font-weight', 'bold').attr('fill', '#0066cc').text(d => `${d.discharge.toFixed(2)} ลบ.ม./วินาที`);
 
-    const cX = (d: FlowStationNode) => d.cardOffsetX ?? 20;
-    const cY = (d: FlowStationNode) => d.cardOffsetY ?? -30;
-    const CW = 75, CH = 35;
+    // arrows tab 1 — กำหนด angle แต่ละอัน (90 = ลง, 0 = ขวา)
+    addArrowMarker(svg, 'arrow-t1', '#fff');
 
-    flowGroup.append('rect').attr('x', cX).attr('y', cY).attr('width', CW).attr('height', CH)
-      .attr('rx', 8).attr('ry', 8)
-      .attr('fill', theme.palette.background.paper).attr('stroke', theme.palette.divider).attr('stroke-width', 1);
-    flowGroup.append('text').attr('x', d => cX(d) + CW / 2).attr('y', d => cY(d) + 10)
-      .attr('text-anchor', 'middle').attr('font-size', 6).attr('font-weight', 'bold')
-      .attr('fill', theme.palette.text.primary).text(d => `${d.sta_code}${d.name ? ` (${d.name})` : ''}`);
-    flowGroup.append('text').attr('x', d => cX(d) + 10).attr('y', d => cY(d) + 20)
-      .attr('font-size', 5).attr('fill', theme.palette.text.primary).text('ระดับน้ำ: ');
-    flowGroup.append('text').attr('x', d => cX(d) + 32).attr('y', d => cY(d) + 20)
-      .attr('font-size', 5).attr('font-weight', 'bold').attr('fill', '#0066cc')
-      .text(d => `${d.wl.toFixed(2)} ม.รทก.`);
-    flowGroup.append('text').attr('x', d => cX(d) + 10).attr('y', d => cY(d) + 30)
-      .attr('font-size', 5).attr('fill', theme.palette.text.primary).text('อัตราไหล: ');
-    flowGroup.append('text').attr('x', d => cX(d) + 32).attr('y', d => cY(d) + 30)
-      .attr('font-size', 5).attr('font-weight', 'bold').attr('fill', '#0066cc')
-      .text(d => `${d.discharge.toFixed(2)} ลบ.ม./วินาที`);
+    const arrowsTab1: ArrowConfig[] = [
+      { startX: 398, startY: 180, angle: 90 },
+      { startX: 398, startY: 270, angle: 90 },
+      { startX: 398, startY: 360, angle: 90 },
+      { startX: 398, startY: 450, angle: 90 },
+      { startX: 398, startY: 540, angle: 90 },
+      { startX: 398, startY: 630, angle: 90 },
+      { startX: 398, startY: 720, angle: 90 },
 
-    // ── Flow arrows (down) ──
-    svg.append('defs').append('marker')
-      .attr('id', 'flow-arrow-down').attr('viewBox', '0 0 24 24')
-      .attr('refX', 12).attr('refY', 20)
-      .attr('markerWidth', 14).attr('markerHeight', 14).attr('orient', '90')
-      .append('path').attr('d', 'M2,10 L14,10 L14,6 L22,12 L14,18 L14,14 L2,14 Z')
-      .attr('fill', '#fff').attr('stroke', '#fff').attr('stroke-width', 1).attr('stroke-linejoin', 'round');
+      { startX: 174, startY: 180, angle: 90 },
+      { startX: 174, startY: 270, angle: 90 },
+      { startX: 174, startY: 360, angle: 90 },
 
-     const arrowDownGroups = [
-        {startX:394,startY:180},{startX:394,startY:270},{startX:394,startY:360},
-        {startX:394,startY:450},{startX:394,startY:540},{startX:394,startY:630},
-        {startX:394,startY:720},
+      { startX: 203, startY: 450, angle: 90 },
+      { startX: 203, startY: 570, angle: 90 },
 
-        {startX:169,startY:180},{startX:169,startY:270},{startX:169,startY:360},
-        {startX:198,startY:450},{startX:198,startY:570},
+      { startX: 78,  startY: 430, angle: 90 },
+      { startX: 78,  startY: 520, angle: 90 },
+      { startX: 78,  startY: 610, angle: 90 },
+      // ลูกศรขวา
+      { startX: 230, startY: 620, angle: 0 },
+      { startX: 320, startY: 620, angle: 0 },
 
-        {startX:73,startY:430},{startX:73,startY:520},{startX:73,startY:610},
-      ];
-  
-      arrowDownGroups.forEach((grp, i) => {
-        const g = container.append('g').attr('transform', `translate(${grp.startX},${grp.startY})`);
-        const path = g.append('path').attr('d', 'M 0 0 L 0 20').attr('fill', 'none').attr('opacity', 0);
-        const mov  = g.append('path').attr('d', 'M 0 0 L 0.1 0').attr('fill', 'none').attr('stroke', 'none')
-          .attr('marker-end', 'url(#flow-arrow-down)');
-  
-        const animate = () => {
-          mov.transition().duration(1500).ease(d3.easeLinear)
-            .attrTween('transform', () => {
-              const node = path.node() as SVGPathElement;
-              const len  = node.getTotalLength();
-              return (t: number) => {
-                const pt = node.getPointAtLength(t * len);
-                mov.attr('opacity', t < 0.8 ? 1 : 1 - (t - 0.8) / 0.2);
-                return `translate(${pt.x},${pt.y}) scale(1)`;
-              };
-            })
-            .on('end', () => mov.transition().duration(500).attr('opacity', 1).on('end', animate));
-        };
-        mov.attr('opacity', 0);
-        animate();
-      });
-  
-      // ── Flow arrows (right) ──
-      svg.append('defs').append('marker')
-        .attr('id', 'flow-arrow-right').attr('viewBox', '0 0 24 24')
-        .attr('refX', 20).attr('refY', 12)
-        .attr('markerWidth', 14).attr('markerHeight', 14).attr('orient', 'auto')
-        .append('path').attr('d', 'M2,10 L14,10 L14,6 L22,12 L14,18 L14,14 L2,14 Z')
-        .attr('fill', '#fff').attr('stroke', '#fff').attr('stroke-width', 1).attr('stroke-linejoin', 'round');
-  
-      const arrowRightGroups = [
-        {startX:230,startY:620},{startX:320,startY:620},
-        {startX:90,startY:687},{startX:180,startY:687},{startX:270,startY:687},
-        {startX:360,startY:687},
-      ];
+      { startX: 120,  startY: 687, angle: 0 },
+      { startX: 210, startY: 687, angle: 0 },
+      { startX: 300, startY: 687, angle: 0 },
+    ];
+    drawArrows(container, arrowsTab1, 'arrow-t1', '#fff');
 
-    arrowRightGroups.forEach((grp) => {
-      const g = container.append('g').attr('transform', `translate(${grp.startX},${grp.startY})`);
-      const path = g.append('path').attr('d', 'M 0 0 L 20 0').attr('fill', 'none').attr('opacity', 0);
-      const mov  = g.append('path').attr('d', 'M 0 0 L 0.1 0').attr('fill', 'none').attr('stroke', 'none')
-        .attr('marker-end', 'url(#flow-arrow-right)');
-
-      const animate = () => {
-        mov.transition().duration(1500).ease(d3.easeLinear)
-          .attrTween('transform', () => {
-            const node = path.node() as SVGPathElement;
-            const len  = node.getTotalLength();
-            return (t: number) => {
-              const pt = node.getPointAtLength(t * len);
-              mov.attr('opacity', t < 0.8 ? 1 : 1 - (t - 0.8) / 0.2);
-              return `translate(${pt.x},${pt.y}) scale(1)`;
-            };
-          })
-          .on('end', () => mov.transition().duration(500).attr('opacity', 1).on('end', animate));
-      };
-      mov.attr('opacity', 0);
-      animate();
+    // reservoir icons
+    [{ x: 390, y: 170 }, { x: 390, y: 790 }, { x: 65, y: 350 }].forEach(pos => {
+      container.append('image').attr('xlink:href', `${Path_URL}images/icons/dam.png`)
+        .attr('x', pos.x - 25).attr('y', pos.y - 60).attr('width', 75).attr('height', 75).style('pointer-events', 'none');
     });
 
-    // ── Reservoir icons ──
+    // labels
     [
-      { x: 390, y: 170 }, { x: 390, y: 790 }, { x: 65, y: 350 },
-    ].forEach(pos => {
-      container.append('image')
-        .attr('xlink:href', `${Path_URL}images/icons/dam.png`)
-        .attr('x', pos.x - 25).attr('y', pos.y - 60)
-        .attr('width', 75).attr('height', 75)
-        .style('pointer-events', 'none');
-    });
-
-    // ── Labels, scale, notes (คงเดิม) ──
-    const customTexts = [
-      { text: 'สำนักงานชลประทานที่ 3',               x: 180, y: 25,  o: 'h', fs: 25, fill: theme.palette.text.secondary, fw: 'bold' },
-      { text: 'ส่วนบริหารจัดการน้ำและบำรุงรักษา',    x: 160, y: 55,  o: 'h', fs: 20, fill: theme.palette.text.secondary, fw: 'bold' },
-      { text: 'หมายเหตุ',                             x: 55,  y: 145, o: 'h', fs: 14, fill: '#fe0000',                    fw: 'bold' },
-      { text: 'สัญลักษณ์เกณฑ์เตือนภัยระดับน้ำ',      x: 420, y: 245, o: 'h', fs: 11, fill: '#fe0000',                    fw: 'bold' },
+      { text: 'สำนักงานชลประทานที่ 3',            x: 180, y: 25,  o: 'h', fs: 25, fill: theme.palette.text.secondary, fw: 'bold' },
+      { text: 'ส่วนบริหารจัดการน้ำและบำรุงรักษา', x: 160, y: 55,  o: 'h', fs: 20, fill: theme.palette.text.secondary, fw: 'bold' },
+      { text: 'หมายเหตุ',                          x: 55,  y: 145, o: 'h', fs: 14, fill: '#fe0000', fw: 'bold' },
+      { text: 'สัญลักษณ์เกณฑ์เตือนภัยระดับน้ำ',   x: 420, y: 245, o: 'h', fs: 11, fill: '#fe0000', fw: 'bold' },
       { text: 'จ.น่าน',        x: 385, y: 100, o: 'h', fs: 11, fill: theme.palette.text.primary, fw: 'bold' },
       { text: 'จ.อตรดิตถ์',    x: 275, y: 200, o: 'h', fs: 11, fill: theme.palette.text.primary, fw: 'bold' },
       { text: 'จ.สุโขทัย',     x: 190, y: 360, o: 'h', fs: 11, fill: theme.palette.text.primary, fw: 'bold' },
@@ -415,56 +408,45 @@ const WaterSchematicSimple: React.FC = () => {
       { text: 'แม่น้ำปิง',     x: 65,  y: 530, o: 'v', fs: 8,  fill: theme.palette.text.secondary, fw: 'bold' },
       { text: 'แม่น้ำปิง',     x: 185, y: 675, o: 'h', fs: 8,  fill: theme.palette.text.secondary, fw: 'bold' },
       { text: 'แม่น้ำสะแกกรัง',x: 185, y: 730, o: 'h', fs: 7,  fill: theme.palette.text.secondary, fw: 'bold' },
-      { text: 'คลองหกบาท',             x: 195, y: 297, o: 'h', fs: 7, fill: theme.palette.text.primary },
-      { text: 'คลองผันน้ำยม-น่าน',     x: 280, y: 297, o: 'h', fs: 7, fill: theme.palette.text.primary },
-      { text: 'แม่น้ำยมสายเก่า',        x: 247, y: 340, o: 'v', fs: 7, fill: theme.palette.text.primary, fw: 'bold' },
-      { text: 'คลอง DR2.8',            x: 275, y: 543, o: 'h', fs: 7, fill: theme.palette.text.primary },
-      { text: 'คลอง DR15.8',           x: 330, y: 480, o: 'h', fs: 7, fill: theme.palette.text.primary },
-      { text: 'คลองเมม',               x: 235, y: 480, o: 'h', fs: 7, fill: theme.palette.text.primary },
-    ];
-
-    customTexts.forEach(lbl => {
-      const t = container.append('text')
-        .attr('x', lbl.x).attr('y', lbl.y)
-        .attr('font-size', lbl.fs).attr('fill', lbl.fill)
-        .attr('font-weight', lbl.fw ?? 'normal')
-        .attr('text-anchor', lbl.o === 'v' ? 'middle' : 'start')
-        .attr('dominant-baseline', 'middle')
-        .text(lbl.text);
+      { text: 'คลองหกบาท',         x: 195, y: 297, o: 'h', fs: 7, fill: theme.palette.text.primary },
+      { text: 'คลองผันน้ำยม-น่าน', x: 280, y: 297, o: 'h', fs: 7, fill: theme.palette.text.primary },
+      { text: 'แม่น้ำยมสายเก่า',    x: 247, y: 340, o: 'v', fs: 7, fill: theme.palette.text.primary, fw: 'bold' },
+      { text: 'คลอง DR2.8',        x: 275, y: 543, o: 'h', fs: 7, fill: theme.palette.text.primary },
+      { text: 'คลอง DR15.8',       x: 330, y: 480, o: 'h', fs: 7, fill: theme.palette.text.primary },
+      { text: 'คลองเมม',           x: 235, y: 480, o: 'h', fs: 7, fill: theme.palette.text.primary },
+    ].forEach(lbl => {
+      const t = container.append('text').attr('x', lbl.x).attr('y', lbl.y).attr('font-size', lbl.fs).attr('fill', lbl.fill)
+        .attr('font-weight', lbl.fw ?? 'normal').attr('text-anchor', lbl.o === 'v' ? 'middle' : 'start')
+        .attr('dominant-baseline', 'middle').text(lbl.text);
       if (lbl.o === 'v') t.attr('transform', `rotate(-90,${lbl.x},${lbl.y})`);
     });
 
-    // station notes (legend)
     [
-      { label: 'สีแดง ระดับน้ำอยู่ในเกณฑ์วิกฤต', color: 'red',        x: 440, y: 270 },
-      { label: 'สีส้ม ระดับน้ำเตือนภัย',          color: 'orange',     x: 440, y: 290 },
-      { label: 'สีเหลือง ระดับน้ำเฝ้าระวัง',      color: '#FFD700',    x: 440, y: 310 },
-      { label: 'สีเขียว ระดับน้ำปกติ',            color: '#69fc00ff',  x: 440, y: 330 },
+      { label: 'สีแดง ระดับน้ำอยู่ในเกณฑ์วิกฤต', color: 'red',       x: 440, y: 270 },
+      { label: 'สีส้ม ระดับน้ำเตือนภัย',          color: 'orange',    x: 440, y: 290 },
+      { label: 'สีเหลือง ระดับน้ำเฝ้าระวัง',      color: '#FFD700',   x: 440, y: 310 },
+      { label: 'สีเขียว ระดับน้ำปกติ',            color: '#69fc00ff', x: 440, y: 330 },
     ].forEach(d => {
-      container.append('circle').attr('cx', d.x).attr('cy', d.y).attr('r', 7)
-        .attr('fill', d.color).attr('stroke', theme.palette.text.primary).attr('stroke-width', 1);
-      container.append('text').attr('x', d.x + 15).attr('y', d.y + 3)
-        .attr('font-size', 8).attr('font-family', 'Prompt, sans-serif').attr('font-weight', '500')
-        .attr('fill', theme.palette.text.primary).text(d.label);
+      container.append('circle').attr('cx', d.x).attr('cy', d.y).attr('r', 7).attr('fill', d.color).attr('stroke', theme.palette.text.primary).attr('stroke-width', 1);
+      container.append('text').attr('x', d.x + 15).attr('y', d.y + 3).attr('font-size', 8).attr('font-family', 'Prompt, sans-serif').attr('font-weight', '500').attr('fill', theme.palette.text.primary).text(d.label);
     });
 
-    setTimeout(fitToView, 300);
+    setTimeout(() => fitToView(false), 300);
   }, [tabIndex, reservoirs, flows, theme.palette.mode]);
 
-  // ====================== Tab 2: Full SVG with D3 Zoom ======================
+  // ─── Tab 2: Full SVG + Flow Nodes ────────────────────────────
+
   useEffect(() => {
     if (tabIndex !== 1 || !svgRefTab2.current || flows.length === 0) return;
 
     const svg = d3.select(svgRefTab2.current);
     svg.selectAll('*').remove();
+    svg.attr('viewBox', '0 0 690 900');
 
-    svg.attr('viewBox', `0 0 ${WIDTH} ${HEIGHT}`);
+    const container = svg.append('g').attr('id', 'full-svg-container');
+    containerRefTab2.current = container.node() as SVGGElement;  // ← เก็บ ref
 
-    // Container สำหรับ zoom
-    const container = svg.append('g')
-      .attr('id', 'full-svg-container');
-
-    // ใส่ SVG Path ทั้งหมดจากไฟล์ที่คุณให้มา
+    // ใส่ SVG path content
     container.html(`
     <defs>
       <style>
@@ -6865,126 +6847,61 @@ const WaterSchematicSimple: React.FC = () => {
     </g>
     `);
 
-    // ====================== Flow Nodes ใน Tab 2 ======================
-  const thresholds: Record<string, { red: number; orange: number; yellow: number }> = {
-    'Y.4':  { red: 51.4, orange: 50.5, yellow: 49.6 },
-    'Y.15': { red: 46.0, orange: 44.7, yellow: 43.5 },
-    'Y.50': { red: 41.5, orange: 40.5, yellow: 39.5 },
-    'Y.16': { red: 39.3, orange: 38.4, yellow: 37.6 },
-    'Y.64': { red: 38.0, orange: 37.3, yellow: 36.7 },
-    'Y.51': { red: 42.0, orange: 40.4, yellow: 38.8 },
-    'Y.17': { red: 41.8, orange: 40.6, yellow: 39.4 },
-  };
+    // flow nodes
+    const tab2Pos: Record<string, { x: number; y: number; offsetX: number; offsetY: number }> = {
+      'Y.15': { x: 682, y: 1200, offsetX: -200, offsetY: -10 },
+      'Y.16': { x: 725, y: 1350, offsetX: -200, offsetY: -10 },
+      'Y.64': { x: 757, y: 1461, offsetX: -200, offsetY: -10 },
+      'Y.17': { x: 817, y: 1630, offsetX: -200, offsetY: -10 },
+    };
 
-  const getColor = (sta_code: string, wl: number) => {
-    const th = thresholds[sta_code] || { red: 40, orange: 38, yellow: 36 };
-    if (wl > th.red) return 'red';
-    if (wl > th.orange) return 'orange';
-    if (wl > th.yellow) return '#FFD700';
-    return '#69fc00ff';
-  };
+    const flowGroup = container.selectAll<SVGGElement, FlowStationNode>('.t2-flow-node')
+      .data(flows.filter(f => tab2Pos[f.sta_code]))
+      .enter().append('g').attr('class', 't2-flow-node')
+      .attr('transform', d => { const p = tab2Pos[d.sta_code]; return `translate(${p.x},${p.y})`; })
+      .style('cursor', 'pointer')
+      .on('click', (_, d) => openDialogRef.current(d.sta_code, d.name, 'flow'));
 
-  // พิกัดสถานีบน SVG เต็ม (ปรับตามตำแหน่งจริงในแผนที่)
-  const tab2StationPos: Record<string, { x: number; y: number; offsetX: number; offsetY: number }> = {
-    'Y.15': { x: 820,  y: 1150, offsetX: -160, offsetY: -45 },
-    'Y.16': { x: 870,  y: 1250, offsetX: -160, offsetY: -25 },
-    'Y.4':  { x: 820,  y: 1050, offsetX: -160, offsetY: -60 },
-    'Y.50': { x: 870,  y: 1200, offsetX: -160, offsetY: -50 },
-    'Y.64': { x: 900,  y: 1300, offsetX:   25, offsetY: -40 },
-    'Y.51': { x: 900,  y: 1350, offsetX: -160, offsetY: -35 },
-    'Y.17': { x: 900,  y: 1420, offsetX: -160, offsetY: -25 },
-  };
+    flowGroup.append('circle').attr('r', 12).attr('fill', d => getFlowColor(d.sta_code, d.wl)).attr('stroke', '#fff').attr('stroke-width', 2);
 
-  const flowGroup = container.selectAll<SVGGElement, FlowStationNode>('.t2-flow-node')
-    .data(flows.filter(f => tab2StationPos[f.sta_code]))
-    .enter()
-    .append('g')
-    .attr('class', 't2-flow-node')
-    .attr('transform', d => {
-      const pos = tab2StationPos[d.sta_code];
-      return `translate(${pos.x}, ${pos.y})`;
-    })
-    .style('cursor', 'pointer')
-    .on('click', (_, d) => {
-      setSelectedStation(d.sta_code);
-      setSelectedName(d.name);
-      setSelectedType('flow');
-      setOpenDialog(true);
-    });
+    const cardW = 180, cardH = 95;
+    const cX2 = (d: FlowStationNode) => tab2Pos[d.sta_code].offsetX;
+    const cY2 = (d: FlowStationNode) => tab2Pos[d.sta_code].offsetY;
 
-  // วงกลมสถานี
-  flowGroup.append('circle')
-    .attr('r', 18)
-    .attr('fill', d => getColor(d.sta_code, d.wl))
-    .attr('stroke', '#fff')
-    .attr('stroke-width', 3);
+    flowGroup.append('rect').attr('x', cX2).attr('y', cY2).attr('width', cardW).attr('height', cardH).attr('rx', 9).attr('ry', 9).attr('fill', theme.palette.background.paper).attr('stroke', theme.palette.divider).attr('stroke-width', 2);
+    flowGroup.append('text').attr('x', d => cX2(d) + cardW / 2).attr('y', d => cY2(d) + 22).attr('text-anchor', 'middle').attr('font-size', 17).attr('font-weight', 'bold').attr('fill', theme.palette.text.primary).text(d => `${d.sta_code}${d.name ? ` (${d.name})` : ''}`);
+    flowGroup.append('text').attr('x', d => cX2(d) + 15).attr('y', d => cY2(d) + 52).attr('font-size', 13).attr('fill', theme.palette.text.secondary).text('ระดับน้ำ:');
+    flowGroup.append('text').attr('x', d => cX2(d) + 90).attr('y', d => cY2(d) + 52).attr('font-size', 13).attr('font-weight', 'bold').attr('fill', '#0066cc').text(d => `${d.wl.toFixed(2)} ม.รทก.`);
+    flowGroup.append('text').attr('x', d => cX2(d) + 15).attr('y', d => cY2(d) + 74).attr('font-size', 13).attr('fill', theme.palette.text.secondary).text('อัตราไหล:');
+    flowGroup.append('text').attr('x', d => cX2(d) + 90).attr('y', d => cY2(d) + 74).attr('font-size', 13).attr('font-weight', 'bold').attr('fill', '#0066cc').text(d => `${d.discharge.toFixed(2)} ลบ.ม./วิ`);
 
-  // การ์ดข้อมูล
-  const cardW = 210;
-  const cardH = 95;
-  const cX = (d: FlowStationNode) => tab2StationPos[d.sta_code].offsetX;
-  const cY = (d: FlowStationNode) => tab2StationPos[d.sta_code].offsetY;
+    // arrows tab 2 — ตัวอย่างกำหนดองศาต่างกัน
+    addArrowMarker(svg, 'arrow-t2', '#fff');
 
-  flowGroup.append('rect')
-    .attr('x', cX).attr('y', cY)
-    .attr('width', cardW).attr('height', cardH)
-    .attr('rx', 12).attr('ry', 12)
-    .attr('fill', theme.palette.background.paper)
-    .attr('stroke', theme.palette.divider)
-    .attr('stroke-width', 2);
+    const arrowsTab2: ArrowConfig[] = [
+      { startX: 455, startY: 400,  angle: 75  },   // ลง
+      { startX: 475, startY: 470,  angle: 75  },   // ลง
+      { startX: 495, startY: 540,  angle: 75  },   // ลง
+      { startX: 515, startY: 610,  angle: 75  },   // ลง
+      { startX: 535, startY: 680,  angle: 75  },   // ลง
 
-  flowGroup.append('text')
-    .attr('x', d => cX(d) + cardW / 2)
-    .attr('y', d => cY(d) + 22)
-    .attr('text-anchor', 'middle')
-    .attr('font-size', 15)
-    .attr('font-weight', 'bold')
-    .attr('fill', theme.palette.text.primary)
-    .text(d => `${d.sta_code}${d.name ? ` (${d.name})` : ''}`);
+      // ตัวอย่างองศาเอียง
+      // { startX: 560, startY: 700,  angle: 135, length: 25 },  // 45° ลงขวา
+      // { startX: 300, startY: 600,  angle: 45,  length: 25 },  // เฉียงขึ้นขวา
+    ];
+    drawArrows(container, arrowsTab2, 'arrow-t2', '#fff');
 
-  flowGroup.append('text')
-    .attr('x', d => cX(d) + 15)
-    .attr('y', d => cY(d) + 52)
-    .attr('font-size', 13)
-    .attr('fill', theme.palette.text.secondary)
-    .text('ระดับน้ำ:');
-
-  flowGroup.append('text')
-    .attr('x', d => cX(d) + 90)
-    .attr('y', d => cY(d) + 52)
-    .attr('font-size', 13)
-    .attr('font-weight', 'bold')
-    .attr('fill', '#0066cc')
-    .text(d => `${d.wl.toFixed(2)} ม.รทก.`);
-
-  flowGroup.append('text')
-    .attr('x', d => cX(d) + 15)
-    .attr('y', d => cY(d) + 74)
-    .attr('font-size', 13)
-    .attr('fill', theme.palette.text.secondary)
-    .text('อัตราไหล:');
-
-  flowGroup.append('text')
-    .attr('x', d => cX(d) + 90)
-    .attr('y', d => cY(d) + 74)
-    .attr('font-size', 13)
-    .attr('font-weight', 'bold')
-    .attr('fill', '#0066cc')
-    .text(d => `${d.discharge.toFixed(2)} ลบ.ม./วิ`);
-
-    // ====================== Setup Zoom สำหรับ Tab 2 ======================
+    // zoom
     const zoom = d3.zoom<SVGSVGElement, unknown>()
       .scaleExtent([0.2, 8])
-      .on('zoom', (event) => {
-        container.attr('transform', event.transform);
-      });
-
+      .on('zoom', e => container.attr('transform', e.transform));
     zoomRefTab2.current = zoom;
     svg.call(zoom);
 
-    // Fit เริ่มต้น
     setTimeout(() => fitToView(true), 300);
   }, [tabIndex, flows, theme.palette.mode]);
+
+  // ─── Dialog ──────────────────────────────────────────────────
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
@@ -6994,97 +6911,66 @@ const WaterSchematicSimple: React.FC = () => {
   };
 
   if (loading) return <CircularProgress />;
-  if (error) return <Typography color="error">Error: {error}</Typography>;
+  if (error)   return <Typography color="error">Error: {error}</Typography>;
+
+  // ─── Render ───────────────────────────────────────────────────
+
+  const ZoomControls = ({ isTab2 }: { isTab2: boolean }) => (
+    <Box sx={{ position: 'absolute', top: 20, right: 20, display: 'flex', flexDirection: 'column', gap: 1, zIndex: 10 }}>
+      <IconButton size="small" onClick={() => zoomIn(isTab2)}  sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', boxShadow: 1 }}><ZoomInIcon /></IconButton>
+      <IconButton size="small" onClick={() => zoomOut(isTab2)} sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', boxShadow: 1 }}><ZoomOutIcon /></IconButton>
+      <IconButton size="small" onClick={() => fitToView(isTab2)} sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', boxShadow: 1 }}><AspectRatioIcon /></IconButton>
+    </Box>
+  );
 
   return (
-    <Box sx={{ p: 2, bgcolor: 'background.default', minHeight: '100vh' }}>
+    <Box sx={{ p: 2, bgcolor: 'background.default', height: '100vh' }}>
       <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
         แผนผังสถานการณ์น้ำประจำวันที่ {formatThaiDay(reservoirs[0]?.date) || 'ล่าสุด'}
       </Typography>
 
       <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
-        <Box
-          sx={{
-            display: 'inline-flex',
-            mb: 2.5,
-            border: '0.5px solid',
-            borderColor: 'divider',
-            borderRadius: 2,
-            overflow: 'hidden',
-          }}
-        >
+        <Box sx={{ display: 'inline-flex', mb: 2.5, border: '0.5px solid', borderColor: 'divider', borderRadius: 2, overflow: 'hidden' }}>
           {[
-            { label: 'แผนผังลุ่มน้ำพื้นที่โครงการ',      icon: <MapIcon sx={{ fontSize: 18 }} />,   index: 0 },
+            { label: 'แผนผังลุ่มน้ำพื้นที่โครงการ',      icon: <MapIcon   sx={{ fontSize: 18 }} />, index: 0 },
             { label: 'แผนผังลุ่มน้ำเจ้าพระยา (ตอนบน)', icon: <PhotoIcon sx={{ fontSize: 18 }} />, index: 1 },
-          ].map((tab) => (
-            <Box
-              key={tab.index}
-              onClick={() => setTabIndex(tab.index)}
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1,
-                px: 2.5,
-                py: 1.25,
-                fontSize: '0.875rem',
-                fontFamily: 'Prompt',
-                cursor: 'pointer',
-                borderRight: tab.index === 0 ? '0.5px solid' : 'none',
-                borderColor: 'divider',
-                transition: 'all 0.15s',
-                bgcolor: tabIndex === tab.index ? '#28378B' : 'background.paper',
-                color:   tabIndex === tab.index ? '#fff'    : 'text.secondary',
-                fontWeight: tabIndex === tab.index ? 600 : 400,
-                '&:hover': {
-                  bgcolor: tabIndex === tab.index ? '#28378B' : 'grey.100',
-                },
-              }}
-            >
-              {tab.icon}
-              {tab.label}
+          ].map(tab => (
+            <Box key={tab.index} onClick={() => setTabIndex(tab.index)} sx={{
+              display: 'flex', alignItems: 'center', gap: 1, px: 2.5, py: 1.25,
+              fontSize: '0.875rem', fontFamily: 'Prompt', cursor: 'pointer',
+              borderRight: tab.index === 0 ? '0.5px solid' : 'none', borderColor: 'divider',
+              transition: 'all 0.15s',
+              bgcolor: tabIndex === tab.index ? '#28378B' : 'background.paper',
+              color:   tabIndex === tab.index ? '#fff'    : 'text.secondary',
+              fontWeight: tabIndex === tab.index ? 600 : 400,
+              '&:hover': { bgcolor: tabIndex === tab.index ? '#28378B' : 'grey.100' },
+            }}>
+              {tab.icon}{tab.label}
             </Box>
           ))}
-        
         </Box>
-        <ExportMapButton
-            svgRef={tabIndex === 0 ? svgRefTab1 : svgRefTab2}
-            filename={`water-schematic-${new Date().toISOString().slice(0,10)}`}
-          />
+        <ExportMapButton svgRef={tabIndex === 0 ? svgRefTab1 : svgRefTab2} filename={`water-schematic-${new Date().toISOString().slice(0,10)}`} />
       </Box>
 
       <Paper elevation={1} sx={{ p: 2, borderRadius: 2, position: 'relative', overflow: 'hidden' }}>
-        {/* Tab 1 */}
         <Box sx={{ display: tabIndex === 0 ? 'block' : 'none', position: 'relative' }}>
           <svg ref={svgRefTab1} style={{ width: '100%', height: 'auto', minHeight: '900px' }} />
-          <Box sx={{ position: 'absolute', top: 20, right: 20, zIndex: 10 }}>
-            <IconButton onClick={() => zoomIn(false)}><ZoomInIcon /></IconButton>
-            <IconButton onClick={() => zoomOut(false)}><ZoomOutIcon /></IconButton>
-            <IconButton onClick={() => fitToView(false)}><AspectRatioIcon /></IconButton>
-          </Box>
+          <ZoomControls isTab2={false} />
         </Box>
-
-        {/* Tab 2 - Full SVG with D3 Zoom */}
         <Box sx={{ display: tabIndex === 1 ? 'block' : 'none', position: 'relative' }}>
           <svg ref={svgRefTab2} style={{ width: '100%', height: 'auto', minHeight: '900px' }} />
-          <Box sx={{ position: 'absolute', top: 20, right: 20, zIndex: 10 }}>
-            <IconButton onClick={() => zoomIn(true)}><ZoomInIcon /></IconButton>
-            <IconButton onClick={() => zoomOut(true)}><ZoomOutIcon /></IconButton>
-            <IconButton onClick={() => fitToView(true)}><AspectRatioIcon /></IconButton>
-          </Box>
+          <ZoomControls isTab2={true} />
         </Box>
       </Paper>
 
-      {/* Dialog */}
       <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="xl" fullWidth>
         <DialogTitle>
           {selectedName}
-          <IconButton onClick={handleCloseDialog} sx={{ position: 'absolute', right: 8, top: 8 }}>
-            <CloseIcon />
-          </IconButton>
+          <IconButton onClick={handleCloseDialog} sx={{ position: 'absolute', right: 8, top: 8 }}><CloseIcon /></IconButton>
         </DialogTitle>
         <DialogContent dividers>
           {selectedType === 'reservoir' && selectedStation && <DataReservoirStation propsSelectedStation={selectedStation} />}
-          {selectedType === 'flow' && selectedStation && <DataFlowCombined propsSelectedStation={selectedStation} />}
+          {selectedType === 'flow'      && selectedStation && <DataFlowCombined     propsSelectedStation={selectedStation} />}
         </DialogContent>
       </Dialog>
     </Box>
