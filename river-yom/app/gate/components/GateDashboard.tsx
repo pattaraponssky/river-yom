@@ -421,13 +421,13 @@ export default function GateDashboard() {
                     )}
                   </Paper>
               </Grid>
-               <Grid size={{ xs: 12, md: 6 }}>
+               {/* <Grid size={{ xs: 12, md: 6 }}>
                   <Paper sx={{borderRadius: 2 }}>
                     {cameras.length > 0 && (
                         <CameraViewer cameras={cameras} staCode={selectedCode ?? ''} />
                     )}
                   </Paper>
-              </Grid>
+              </Grid> */}
             </Grid>
         </Box>
       )}

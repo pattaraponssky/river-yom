@@ -30,6 +30,7 @@ interface GateData {
   wl_upper: number;
   wl_lower: number;
   discharge: number;
+  rain_mm : number;
 }
 
 const GateCard: React.FC = () => {
@@ -55,6 +56,7 @@ const GateCard: React.FC = () => {
           wl_upper: parseFloat(d.wl_upper),
           wl_lower: parseFloat(d.wl_lower),
           discharge: parseFloat(d.discharge),
+          rain_mm: parseFloat(d.rain_mm),
         }));
         setData(fetchedData);
 
@@ -215,6 +217,13 @@ const GateCard: React.FC = () => {
                       (ลบ.ม./วินาที)
                     </Typography>
                   </TableCell>
+                     <TableCell align="center" sx={{ color: "white",...textStyle,fontWeight: "bold" ,}}>
+                    ปริมาณน้ำฝน
+                    <br />
+                    <Typography sx={{ color: "white", fontSize:"0.8rem",fontWeight: "bold",fontFamily:"Prompt",whiteSpace: "nowrap", }}>
+                      (มม.)
+                    </Typography>
+                  </TableCell>
                 </TableRow>
               </TableHead>
 
@@ -227,6 +236,7 @@ const GateCard: React.FC = () => {
                       <TableCell sx={{...textStyle,lineHeight:{md:"2.2rem",xs:"1.2rem"}}} align="center">{numberFormat(gate.wl_upper, 2)}</TableCell>
                       <TableCell sx={{...textStyle,lineHeight:{md:"2.2rem",xs:"1.2rem"}}} align="center">{numberFormat(gate.wl_lower, 2)}</TableCell>
                       <TableCell sx={{...textStyle,lineHeight:{md:"2.2rem",xs:"1.2rem"}}} align="center">{numberFormat(gate.discharge, 2)}</TableCell>
+                      <TableCell sx={{...textStyle,lineHeight:{md:"2.2rem",xs:"1.2rem"}}} align="center">{numberFormat(gate.rain_mm, 2)}</TableCell>
                     </TableRow>
                   );
                 })}

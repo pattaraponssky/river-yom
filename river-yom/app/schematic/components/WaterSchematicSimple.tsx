@@ -387,6 +387,7 @@ const WaterSchematicSimple: React.FC = () => {
       container.append('image').attr('xlink:href', `${Path_URL}images/icons/dam.png`)
         .attr('x', pos.x - 25).attr('y', pos.y - 60).attr('width', 75).attr('height', 75).style('pointer-events', 'none');
     });
+    
 
     // labels
     [
@@ -6924,7 +6925,7 @@ const WaterSchematicSimple: React.FC = () => {
   );
 
   return (
-    <Box sx={{ p: 2, bgcolor: 'background.default', height: '100vh' }}>
+    <Box sx={{ p: 2, bgcolor: 'background.default', minHeight: '100vh' }}>
       <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
         แผนผังสถานการณ์น้ำประจำวันที่ {formatThaiDay(reservoirs[0]?.date) || 'ล่าสุด'}
       </Typography>

@@ -77,11 +77,10 @@ html, body {
 }
 
 .ldmap_placeholder .ldmap_topright {
-  line-height: 30px !important;
   top: 0px !important;
-  display: flex !important;              /* ทำให้ทั้ง container เป็น flex */
-  flex-wrap: nowrap;                     /* ห้ามขึ้นบรรทัดใหม่ */
-  align-items: center;                   /* จัดแนวตั้งกลาง */        
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
 }
 
 .ldmap_placeholder .ldmap_topleft {
@@ -107,6 +106,16 @@ html, body {
 .ldmap_placeholder_fullscreen .ldmap_topleft {
   left: 78px !important;
   top: 68px !important;
+}
+
+@media (max-width: 900) {
+  .ldmap_placeholder_fullscreen .ldmap_navigation {
+    left: 0 !important;
+  }
+
+  .ldmap_placeholder_fullscreen .ldmap_topleft {
+    left: 0 !important;
+  }
 }
 
 .ldmap-menubar {
@@ -137,7 +146,6 @@ html, body {
 .ldmap_fullscreen span {
   height: 16px !important;
   line-height: 16px !important;
-  
 }
 
 .ldmap_placeholder .ldmap_fullscreen {

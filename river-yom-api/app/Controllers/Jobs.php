@@ -969,21 +969,25 @@ public function updateFlowData()
         $client = \Config\Services::curlrequest();
         $result = [];
 
-       $stationMap = [
+        $stationMap = [
             'tng' => [
-                'code' => 'RID3-01',
-                'base_url' => 'https://rid3a.itthirit.io'
+                'code'     => 'RID3-01',
+                'base_url' => 'http://wms-rio3.rid.go.th/thanangngam'
             ],
             'wst' => [
-                'code' => 'RID3-03',
-                'base_url' => 'https://rid3b.itthirit.io'
+                'code'     => 'RID3-03',
+                'base_url' => 'http://wms-rio3.rid.go.th/wangsatue'
+            ],
+            'kpk' => [
+                'code'     => 'RID3-04',
+                'base_url' => 'http://wms-rio3.rid.go.th/wangsatue'
             ],
         ];
 
         foreach ($stationList as $sta) {
-
             if (!isset($stationMap[$sta])) continue;
-            $code = $stationMap[$sta]['code'];
+
+            $code    = $stationMap[$sta]['code'];
             $baseUrl = $stationMap[$sta]['base_url'];
 
             $url = "{$baseUrl}/api/rid/water-data?code={$code}&startDate={$date}&endDate={$date}";
@@ -992,31 +996,62 @@ public function updateFlowData()
                 $response = $client->get($url);
                 $data = json_decode($response->getBody(), true);
 
-                if (!$data) continue;
+                if (empty($data) || !is_array($data)) {
+                    log_message('warning', "No data returned for station {$sta} on {$date}");
+                    continue;
+                }
 
-                // 🔹 เอาค่าล่าสุดของวัน
-                $last = end($data);
+                // 🔹 ค้นหาข้อมูลเวลา 07:00:00 ที่แม่นยำที่สุด
+                $selected = null;
+                $bestDiff = PHP_INT_MAX;   // ใช้หาข้อมูลที่ใกล้ 07:00 ที่สุด หากไม่มีตรงเป๊ะ
 
-                if (!$last) continue;
+                foreach ($data as $item) {
+                    if (empty($item['datetime'])) continue;
+
+                    $itemTime = \DateTime::createFromFormat('Y-m-d\TH:i:s', $item['datetime']);
+                    if (!$itemTime) continue;
+
+                    $targetTime = \DateTime::createFromFormat('Y-m-d H:i:s', $date . ' 07:00:00');
+                    $diff = abs($itemTime->getTimestamp() - $targetTime->getTimestamp());
+
+                    // ถ้าเจอตรง 07:00:00 ให้เลือกเลย
+                    if ($diff === 0) {
+                        $selected = $item;
+                        break;
+                    }
+
+                    // ถ้าใกล้เคียงกว่าเดิม ให้อัพเดท
+                    if ($diff < $bestDiff) {
+                        $bestDiff = $diff;
+                        $selected = $item;
+                    }
+                }
+
+                // ถ้าไม่มีข้อมูลเลย ให้ข้าม
+                if (!$selected) {
+                    log_message('warning', "No valid data found for station {$sta} on {$date}");
+                    continue;
+                }
 
                 $result[] = [
-                    'sta_code' => $sta,
-                    'date' => substr($last['datetime'], 0, 10),
-                    'wl_upper' => $last['upper_water'] ?? null,
-                    'wl_lower' => $last['lower_water'] ?? null,
-                    'discharge' => $last['flow'] ?? null,
+                    'sta_code'   => $sta,
+                    'date'       => $date,                    // ใช้ $date จาก loop โดยตรง
+                    'wl_upper'   => $selected['upper_water'] ?? null,
+                    'wl_lower'   => $selected['lower_water'] ?? null,
+                    'discharge'  => $selected['flow'] ?? null,
                 ];
 
             } catch (\Exception $e) {
-                log_message('error', 'Fetch RID error: ' . $e->getMessage());
+                log_message('error', "Fetch RID error for {$sta} on {$date}: " . $e->getMessage());
             }
         }
 
         return $result;
     }
+
     public function updateGateFillData(string $startDate, string $endDate)
     {
-        $stationList = ['tng', 'wst'];
+        $stationList = ['tng', 'wst', 'kpk'];
         $recordsAdded = 0;
         $recordsUpdated = 0;
 

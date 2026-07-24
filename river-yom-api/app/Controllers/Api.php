@@ -206,31 +206,31 @@ class API extends Controller
         $gateModel = new GateModel();
         $reservoirModel = new ReservoirModel();
 
-        $today = date('Y-m-d');
+        // ✅ กำหนดวันที่ + เวลา 07:00:00 สำหรับ query กับ column datetime
+        $today     = date('Y-m-d');
         $yesterday = date('Y-m-d', strtotime('-1 day'));
+        $todayDT     = $today . ' 07:00:00';
+        $yesterdayDT = $yesterday . ' 07:00:00';
 
         // 1. ฝนเฉลี่ยของทุกสถานี
-        $stations = ['690171', '690151', '40052', '40062']; // <== ปรับตามชื่อสถานีของคุณ
+        $stations = ['690171', '690151', '40052', '40062'];
 
-        // 🔹 คำนวณฝนเฉลี่ยเฉพาะสถานีที่เลือก
         $avgRain = $rainModel
             ->selectAvg('rain_mm', 'avg_rain')
-            ->where('date', $yesterday)
+            ->where('datetime', $yesterdayDT) // ✅ แก้เป็น datetime 07:00
             ->whereIn('sta_code', $stations)
             ->first();
 
         // 2. Discharge Gate ของสถานีที่กำหนด
         $stations = ['tng', 'wst', 'kpk'];
 
-        // 🔹 ดึงข้อมูลของ "วันนี้" ก่อน
         $dischargeGateData = $gateModel
             ->select('sta_code, discharge')
-            ->where('date', $today)
+            ->where('datetime', $todayDT) // ✅ แก้เป็น datetime 07:00
             ->whereIn('sta_code', $stations)
             ->where('discharge IS NOT NULL', null, false)
             ->findAll();
 
-        // แปลงเป็น associative array
         $dischargeSummaryGate = [];
         $allZeroGate = true;
 
@@ -241,11 +241,10 @@ class API extends Controller
             }
         }
 
-        // 🔸 ถ้าทุกสถานี discharge = 0 หรือไม่มีข้อมูล ให้ใช้ของเมื่อวานแทน
         if (empty($dischargeGateData) || $allZeroGate) {
             $dischargeGateDataYesterday = $gateModel
                 ->select('sta_code, discharge')
-                ->where('date', $yesterday)
+                ->where('datetime', $yesterdayDT) // ✅ แก้เป็น datetime 07:00
                 ->whereIn('sta_code', $stations)
                 ->where('discharge IS NOT NULL', null, false)
                 ->findAll();
@@ -256,18 +255,16 @@ class API extends Controller
             }
         }
 
-         // 3. Discharge Flow ของสถานีที่กำหนด
+        // 3. Discharge Flow ของสถานีที่กำหนด
         $stationsFlow = ['Y.15', 'Y.16', 'Y.4', 'Y.50', 'Y.64', 'Y.51', 'Y.17'];
 
-        // 🔹 ดึงข้อมูลของ "วันนี้" ก่อน
         $dischargeFlowData = $flowModel
             ->select('sta_code, discharge')
-            ->where('date', $today)
+            ->where('datetime', $todayDT) // ✅ แก้เป็น datetime 07:00
             ->whereIn('sta_code', $stationsFlow)
             ->where('discharge IS NOT NULL', null, false)
             ->findAll();
 
-        // แปลงเป็น associative array
         $dischargeSummaryFlow = [];
         $allZeroFlow = true;
 
@@ -278,11 +275,10 @@ class API extends Controller
             }
         }
 
-        // 🔸 ถ้าทุกสถานี discharge = 0 หรือไม่มีข้อมูล ให้ใช้ของเมื่อวานแทน
         if (empty($dischargeFlowData) || $allZeroFlow) {
             $dischargeFlowDataYesterday = $flowModel
                 ->select('sta_code, discharge')
-                ->where('date', $yesterday)
+                ->where('datetime', $yesterdayDT) // ✅ แก้เป็น datetime 07:00
                 ->whereIn('sta_code', $stationsFlow)
                 ->where('discharge IS NOT NULL', null, false)
                 ->findAll();
@@ -294,12 +290,11 @@ class API extends Controller
         }
 
         // 4. Volume น้ำรวมของอ่าง
-       $todayData = $reservoirModel
+        $todayData = $reservoirModel
             ->select('res_code, volume')
-            ->where('date', $today)
+            ->where('datetime', $todayDT) // ✅ แก้เป็น datetime 07:00
             ->findAll();
 
-        // ตรวจสอบว่ามีค่า volume เป็น 0 หรือไม่
         $hasZeroVolumeFlow = false;
         foreach ($todayData as $row) {
             if (floatval($row['volume']) == 0) {
@@ -308,20 +303,18 @@ class API extends Controller
             }
         }
 
-        // 🔸 ถ้ามีค่า 0 → ใช้ข้อมูลของเมื่อวานแทน
         if ($hasZeroVolumeFlow || empty($todayData)) {
             $totalVolumeData = $reservoirModel
                 ->selectSum('volume', 'total_volume')
-                ->where('date', $yesterday)
+                ->where('datetime', $yesterdayDT) // ✅ แก้เป็น datetime 07:00
                 ->first()['total_volume'] ?? 0;
         } else {
             $totalVolumeData = $reservoirModel
                 ->selectSum('volume', 'total_volume')
-                ->where('date', $today)
+                ->where('datetime', $todayDT) // ✅ แก้เป็น datetime 07:00
                 ->first()['total_volume'] ?? 0;
         }
 
-        // 🔹 คำนวณค่ารวมสุทธิ
         $totalVolume = $totalVolumeData - 57.46;
 
         // 5. Flow: นับจำนวนสถานีที่ wl มากกว่าที่กำหนด
@@ -336,7 +329,7 @@ class API extends Controller
         ];
 
         $stationsOverWL = 0;
-        $flowToday = $flowModel->where('date', $today)->findAll();
+        $flowToday = $flowModel->where('datetime', $todayDT)->findAll(); // ✅ แก้เป็น datetime 07:00
         foreach ($flowToday as $f) {
             if (isset($wlThresholds[$f['sta_code']]) && $f['wl'] > $wlThresholds[$f['sta_code']]) {
                 $stationsOverWL++;

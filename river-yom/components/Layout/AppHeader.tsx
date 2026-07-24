@@ -1,7 +1,7 @@
 // src/components/layout/Header.tsx
 'use client';
 
-import React, { use, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   AppBar,
   Toolbar,
@@ -16,17 +16,22 @@ import {
   useTheme,
   alpha,
   Tooltip,
+  Divider,
+  ToggleButton,
+  ToggleButtonGroup,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import LoginIcon from '@mui/icons-material/Login';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { Path_URL } from '@/lib/utility';
 import LoginDialog from '../Users/LoginDialog';
-import { useAuth } from '@/contexts/AuthContext'; // ← เปลี่ยน import ให้ตรง (จาก contexts ไม่ใช่ hooks)
-import ThemeSwitcher from '../ThemeSwitcher';
+import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import SettingsIcon from '@mui/icons-material/Settings';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import { useThemeMode } from '@/contexts/ThemeContext';
+import LightModeIcon from '@mui/icons-material/LightMode';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
 
 interface HeaderProps {
   title: string;
@@ -37,19 +42,24 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ title, open, setOpen }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const { currentUser, logout, refreshAuth } = useAuth(); // ← ดึง logout และ refreshAuth จาก context
+  const { currentUser, logout, refreshAuth } = useAuth();
   const router = useRouter();
   const [loginOpen, setLoginOpen] = useState(false);
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-
+  const [userMenu, setUserMenu] = useState<null | HTMLElement>(null);
+  const [settingsMenu, setSettingsMenu] = useState<null | HTMLElement>(null);
   const isDark = theme.palette.mode === 'dark';
   const primary = theme.palette.primary.main;
+  const { mode, toggleTheme } = useThemeMode();
+
+  // prefetch เส้นทางที่ใช้บ่อยเพื่อ routing ลื่นขึ้น
+  useEffect(() => {
+    router.prefetch('/setting');
+    router.prefetch('/users');
+  }, [router]);
+
   const appBarBg = isDark
     ? 'linear-gradient(135deg, #1a237e 0%, #283593 50%, #303f9f 100%)'
     : 'linear-gradient(135deg, #0d47a1 0%, #1565c0 50%, #1976d2 100%)';
-
-
-  const textColor = isDark ? theme.palette.text.primary : '#ffffff';
 
   const glassStyle = {
     background: 'rgba(255,255,255,0.12)',
@@ -57,33 +67,19 @@ const Header: React.FC<HeaderProps> = ({ title, open, setOpen }) => {
     borderRadius: '8px',
   };
 
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
+  const handleThemeChange = (_: React.MouseEvent<HTMLElement>, newMode: string | null) => {
+    if (newMode && newMode !== mode) toggleTheme();
   };
 
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
-
-  const onLogout = async () => {
-    handleMenuClose();
-    await logout(); // เรียก logout จาก context
-    router.push('/'); // redirect ไปหน้าแรก
-  };
-
-  const goToProfile = () => {
-    handleMenuClose();
-    router.push('/users'); 
-  };
-
-  const goToSettings = () => {
-    handleMenuClose();
-    router.push('/setting');
+  const goTo = (path: string) => {
+    setSettingsMenu(null);
+    setUserMenu(null);
+    router.push(path);
   };
 
   return (
     <>
-       <AppBar
+      <AppBar
         position="fixed"
         elevation={0}
         sx={{
@@ -93,29 +89,29 @@ const Header: React.FC<HeaderProps> = ({ title, open, setOpen }) => {
           zIndex: theme.zIndex.drawer + 2,
         }}
       >
-      
         <Toolbar
           sx={{
             minHeight: { xs: 64, sm: 64 },
             px: { xs: 3, md: 0.5 },
             pr: { xs: 2, md: 2 },
             display: 'flex',
-            justifyContent: 'space-between', // ยังคงใช้ space-between
+            justifyContent: 'space-between',
             alignItems: 'center',
-            position: 'relative', // สำคัญสำหรับ absolute positioning
+            position: 'relative',
           }}
         >
           {/* ซ้าย: Hamburger + Logo */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0, }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
             <Tooltip title={open ? 'ซ่อนเมนู' : 'เปิดเมนู'} placement="bottom">
               <IconButton
                 edge="start"
                 onClick={() => setOpen(!open)}
                 sx={{
-                  display: { sm: 'flex', md:'none' },
+                  display: { sm: 'flex', md: 'none' },
                   color: '#fff',
                   ...glassStyle,
-                  width: 34, height: 34,
+                  width: 34,
+                  height: 34,
                   '&:hover': { background: 'rgba(255,255,255,0.22)' },
                 }}
               >
@@ -125,8 +121,11 @@ const Header: React.FC<HeaderProps> = ({ title, open, setOpen }) => {
 
             <Box
               sx={{
-                width: 64, height: 64,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                width: 64,
+                height: 64,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
                 overflow: 'hidden',
               }}
             >
@@ -138,7 +137,7 @@ const Header: React.FC<HeaderProps> = ({ title, open, setOpen }) => {
             </Box>
           </Box>
 
-          {/* กลาง: ชื่อระบบ (absolute positioning ให้อยู่กึ่งกลางจริง ๆ) */}
+          {/* กลาง: ชื่อระบบ */}
           <Box
             sx={{
               position: 'absolute',
@@ -175,63 +174,157 @@ const Header: React.FC<HeaderProps> = ({ title, open, setOpen }) => {
           </Box>
 
           {/* ขวา: Theme + User / Login */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0 }}>
-            <ThemeSwitcher />
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {/* ── ปุ่มตั้งค่า: ลดความเด่นลงเป็น ghost บนพื้นเข้ม ── */}
+            <Tooltip title="ตั้งค่า">
+              <IconButton
+                onClick={(e) => setSettingsMenu(e.currentTarget)}
+                sx={{
+                  borderRadius: 2,
+                  color: '#fff',
+                  background: 'rgba(255,255,255,0.12)',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  '&:hover': { background: 'rgba(255,255,255,0.22)' },
+                }}
+              >
+                <SettingsIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
 
+            <Menu
+              anchorEl={settingsMenu}
+              open={Boolean(settingsMenu)}
+              onClose={() => setSettingsMenu(null)}
+              transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+              anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+              PaperProps={{
+                sx: {
+                  mt: 1.5,
+                  borderRadius: 3,
+                  minWidth: 220,
+                  background: alpha(theme.palette.background.paper, isDark ? 0.95 : 1),
+                  border: `1px solid ${alpha(primary, 0.15)}`,
+                  boxShadow: `0 8px 24px ${alpha(primary, 0.12)}`,
+                },
+              }}
+            >
+              <Box sx={{ px: 2, pt: 1.5, pb: 1 }}>
+                <Typography
+                  sx={{
+                    fontSize: '0.75rem',
+                    fontFamily: 'Prompt',
+                    fontWeight: 600,
+                    color: 'text.disabled',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.08em',
+                  }}
+                >
+                  ธีมการแสดงผล
+                </Typography>
+              </Box>
+
+              <Box sx={{ px: 2, pb: 1.5 }}>
+                <ToggleButtonGroup
+                  value={mode}
+                  exclusive
+                  onChange={handleThemeChange}
+                  fullWidth
+                  size="small"
+                  sx={{
+                    '& .MuiToggleButton-root': {
+                      fontFamily: 'Prompt',
+                      fontSize: '0.85rem',
+                      borderRadius: '8px !important',
+                      border: `1px solid ${alpha(primary, 0.2)} !important`,
+                      gap: 0.5,
+                      py: 0.8,
+                      color: 'text.secondary',
+                      '&.Mui-selected': {
+                        background: alpha(primary, isDark ? 0.3 : 0.12),
+                        color: 'primary.main',
+                        fontWeight: 600,
+                      },
+                    },
+                    gap: 1,
+                  }}
+                >
+                  <ToggleButton value="light">
+                    <LightModeIcon sx={{ fontSize: 16 }} />
+                    สว่าง
+                  </ToggleButton>
+                  <ToggleButton value="dark">
+                    <DarkModeIcon sx={{ fontSize: 16 }} />
+                    มืด
+                  </ToggleButton>
+                </ToggleButtonGroup>
+              </Box>
+
+              <Divider sx={{ opacity: 0.4 }} />
+
+              {/* เชื่อม route ให้ตรงกับเมนู User */}
+              <MenuItem
+                onClick={() => goTo('/setting')}
+                sx={{ fontFamily: 'Prompt', fontSize: '0.95rem', py: 1.2 }}
+              >
+                <SettingsIcon sx={{ mr: 1.5, fontSize: 18, color: 'text.secondary' }} />
+                การตั้งค่าระบบ
+              </MenuItem>
+            </Menu>
+
+            {/* ── ปุ่ม User ── */}
             {currentUser ? (
               <>
                 <Button
-                  onClick={handleMenuOpen}
+                  onClick={(e) => setUserMenu(e.currentTarget)}
                   sx={{
-                    color: textColor,
-                    textTransform: 'none',
-                    fontWeight: 600,
-                    fontFamily: 'Prompt',
-                    gap: 1.5,
                     borderRadius: '999px',
-                    px: 2,
-                    '&:hover': {
-                      backgroundColor: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.2)',
-                    },
+                    px: 1.5,
+                    textTransform: 'none',
+                    background: 'rgba(255,255,255,0.12)',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    color: '#fff',
+                    gap: 1,
+                    '&:hover': { background: 'rgba(255,255,255,0.22)' },
                   }}
                 >
                   <Avatar
-                    alt={currentUser.username}
                     src={`${Path_URL}images/icons/user_icon.png`}
-                    sx={{
-                      width: 40,
-                      height: 40,
-                      p: 0.7,
-                      bgcolor: isDark ? theme.palette.primary.main : '#ffffff',
-                      color: isDark ? '#ffffff' : theme.palette.primary.main,
-                    }}
-                  >
-                    {currentUser.username?.charAt(0).toUpperCase()}
-                  </Avatar>
+                    sx={{ width: 30, height: 30, boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}
+                  />
                   {!isMobile && currentUser.username}
                 </Button>
 
                 <Menu
-                  anchorEl={anchorEl}
-                  open={Boolean(anchorEl)}
-                  onClose={handleMenuClose}
+                  anchorEl={userMenu}
+                  open={Boolean(userMenu)}
+                  onClose={() => setUserMenu(null)}
+                  transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                  anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
                   PaperProps={{
                     sx: {
                       mt: 1.5,
-                      borderRadius: 2,
-                      backgroundColor: theme.palette.background.paper,
+                      borderRadius: 3,
+                      background: alpha(theme.palette.background.paper, 0.9),
+                      border: `1px solid ${alpha(primary, 0.2)}`,
                     },
                   }}
                 >
-                  <MenuItem onClick={goToProfile}>
-                    <AccountCircleIcon sx={{ mr: 1 }} /> โปรไฟล์
+                  <MenuItem onClick={() => goTo('/users')}>
+                    <AccountCircleIcon sx={{ mr: 1 }} />
+                    โปรไฟล์
                   </MenuItem>
-                  <MenuItem onClick={goToSettings}>
-                    <SettingsIcon sx={{ mr: 1 }} /> ตั้งค่า
+                  <MenuItem onClick={() => goTo('/setting')}>
+                    <SettingsIcon sx={{ mr: 1 }} />
+                    ตั้งค่า
                   </MenuItem>
+                  <Divider />
                   <MenuItem
-                    onClick={onLogout}
-                    sx={{ color: 'error.main', fontWeight: 'bold' }}
+                    onClick={async () => {
+                      setUserMenu(null);
+                      await logout();
+                      router.push('/');
+                    }}
+                    sx={{ color: 'error.main' }}
                   >
                     <LogoutIcon sx={{ mr: 1 }} />
                     ออกจากระบบ
@@ -240,20 +333,20 @@ const Header: React.FC<HeaderProps> = ({ title, open, setOpen }) => {
               </>
             ) : (
               <Button
-                variant="contained"
                 startIcon={<LoginIcon />}
                 onClick={() => setLoginOpen(true)}
                 sx={{
                   borderRadius: '999px',
+                  px: 2.5,
                   textTransform: 'none',
-                  px: 3,
-                  background: isDark
-                    ? 'linear-gradient(90deg, #6b8cff, #a3bffa)'
-                    : 'linear-gradient(90deg, #28378b, #64b5f6)',
+                  fontWeight: 600,
+                  background: `linear-gradient(90deg, ${theme.palette.secondary.main}, ${theme.palette.secondary.light ?? theme.palette.secondary.main})`,
+                  color: '#fff',
+                  boxShadow: `0 6px 16px ${alpha(theme.palette.secondary.main, 0.5)}`,
+                  transition: 'all .2s ease',
                   '&:hover': {
-                    background: isDark
-                      ? 'linear-gradient(90deg, #5c7aff, #8caeff)'
-                      : 'linear-gradient(90deg, #1e2f7a, #4a9ae6)',
+                    transform: 'translateY(-1px)',
+                    boxShadow: `0 10px 22px ${alpha(theme.palette.secondary.main, 0.6)}`,
                   },
                 }}
               >

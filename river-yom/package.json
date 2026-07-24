@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@cycjimmy/jsmpeg-player": "^6.1.2",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^7.3.7",
@@ -25,6 +26,7 @@
     "hls.js": "^1.6.16",
     "html2canvas": "^1.4.1",
     "jose": "^6.2.2",
+    "jsmpeg": "^1.0.0",
     "jspdf": "^4.0.0",
     "mpegts.js": "^1.8.0",
     "next": "16.1.1",

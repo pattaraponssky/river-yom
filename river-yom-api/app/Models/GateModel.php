@@ -8,7 +8,7 @@ class GateModel extends Model
 {
 
     protected $table = 'gate_data'; // ชื่อตารางจริงในฐานข้อมูลของคุณ
-    protected $allowedFields = ['sta_code', 'date', 'wl_upper','wl_lower', 'discharge']; // กำหนดฟิลด์ที่แก้ไขได้ (ถ้าจำเป็น)
+    protected $allowedFields = ['sta_code', 'date', 'wl_upper','wl_lower', 'discharge', 'rain_mm']; // กำหนดฟิลด์ที่แก้ไขได้ (ถ้าจำเป็น)
     
       public function getGateInfo()
     {
