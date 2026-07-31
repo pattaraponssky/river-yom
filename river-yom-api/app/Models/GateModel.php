@@ -6,16 +6,14 @@ use CodeIgniter\Model;
 
 class GateModel extends Model
 {
+    protected $table = 'gate_data';
+    protected $allowedFields = ['sta_code', 'datetime', 'wl_upper', 'wl_lower', 'discharge', 'rain_mm']; // ✅ 'date' -> 'datetime'
 
-    protected $table = 'gate_data'; // ชื่อตารางจริงในฐานข้อมูลของคุณ
-    protected $allowedFields = ['sta_code', 'date', 'wl_upper','wl_lower', 'discharge', 'rain_mm']; // กำหนดฟิลด์ที่แก้ไขได้ (ถ้าจำเป็น)
-    
-      public function getGateInfo()
+    public function getGateInfo()
     {
         return $this->db->table('gate_info')->get()->getResultArray();
     }
 
-    // เมธอดสำหรับดึงข้อมูลจาก Gate_data โดยใช้ sta_code
     public function getGateDataByCode($sta_code)
     {
         return $this->db->table('gate_data')
@@ -26,43 +24,43 @@ class GateModel extends Model
 
     public function getActualGateData($sta_code, $date)
     {
+        $datetime = $this->convertDateFormat($date); // ✅ แปลงเป็น datetime พร้อมเวลา 07:00
+
         return $this->where('sta_code', $sta_code)
-                    ->where('date', $date)
-                    ->first(); // ดึงข้อมูลแถวเดียว (หรือจะใช้ findAll() ก็ได้ถ้าคาดว่ามีหลายแถว)
+                    ->where('datetime', $datetime) 
+                    ->first();
     }
 
-    // ดึงข้อมูลจาก Gate_data ตาม sta_code และช่วงปี
     public function getGateDataByCodeAndYearRange($sta_code, $startYear, $endYear)
     {
         return $this->db->table('gate_data')
             ->where('sta_code', $sta_code)
-            ->where("YEAR(date) >=", $startYear)
-            ->where("YEAR(date) <=", $endYear)
-            ->orderBy('date', 'ASC')
+            ->where("YEAR(datetime) >=", $startYear) 
+            ->where("YEAR(datetime) <=", $endYear)    
+            ->orderBy('datetime', 'ASC')              
             ->get()
             ->getResultArray();
     }
 
     public function getGateDataLast7Days()
     {
-        // สมมติ field วันเก็บข้อมูลชื่อ 'date' และข้อมูลเรียงตามวันที่
-        // เอาข้อมูล 7 วันล่าสุดจากทุกอ่าง
+        $sevenDaysAgo = date('Y-m-d', strtotime('-7 days')) . ' 07:00:00'; // ✅ ระบุเวลา
+
         return $this->select('*')
-                    ->where('date >=', date('Y-m-d', strtotime('-7 days')))
-                    ->orderBy('date', 'DESC')
+                    ->where('datetime >=', $sevenDaysAgo) 
+                    ->orderBy('datetime', 'DESC')          
                     ->findAll();
     }
 
     public function getGateDataLast14Days()
     {
-        // สมมติ field วันเก็บข้อมูลชื่อ 'date' และข้อมูลเรียงตามวันที่
-        // เอาข้อมูล 14 วันล่าสุดจากทุกอ่าง
+        $fourteenDaysAgo = date('Y-m-d', strtotime('-14 days')) . ' 07:00:00'; // ✅ ระบุเวลา
+
         return $this->select('*')
-                    ->where('date >=', date('Y-m-d', strtotime('-14 days')))
-                    ->orderBy('date', 'DESC')
+                    ->where('datetime >=', $fourteenDaysAgo) 
+                    ->orderBy('datetime', 'DESC')             
                     ->findAll();
     }
-
 
     public function updateGateData(string $sta_code, string $date, array $updateData)
     {
@@ -70,22 +68,22 @@ class GateModel extends Model
             throw new \InvalidArgumentException("No data to update");
         }
 
-        $convertedDate = $this->convertDateFormat($date);
+        $convertedDateTime = $this->convertDateFormat($date); // ✅ คืนค่าพร้อมเวลา 07:00
         $builder = $this->db->table($this->table);
 
         $exists = $builder->where('sta_code', $sta_code)
-                        ->where('date', $convertedDate)
+                        ->where('datetime', $convertedDateTime) // ✅
                         ->get()
                         ->getRow();
 
         $fullData = array_merge($updateData, [
             'sta_code' => $sta_code,
-            'date' => $convertedDate
+            'datetime' => $convertedDateTime // ✅
         ]);
 
         if ($exists) {
             return $builder->where('sta_code', $sta_code)
-                        ->where('date', $convertedDate)
+                        ->where('datetime', $convertedDateTime) // ✅
                         ->update($updateData);
         } else {
             return $builder->insert($fullData);
@@ -102,7 +100,7 @@ class GateModel extends Model
             }
 
             $sta_code = $data['sta_code'];
-            $date = $this->convertDateFormat($data['date']);
+            $datetime = $this->convertDateFormat($data['date']); // ✅
 
             $updateData = $data;
             unset($updateData['sta_code'], $updateData['date']);
@@ -114,18 +112,18 @@ class GateModel extends Model
             $builder = $this->db->table($this->table);
 
             $exists = $builder->where('sta_code', $sta_code)
-                            ->where('date', $date)
+                            ->where('datetime', $datetime) // ✅
                             ->get()
                             ->getRow();
 
             $fullData = array_merge($updateData, [
                 'sta_code' => $sta_code,
-                'date' => $date
+                'datetime' => $datetime // ✅
             ]);
 
             if ($exists) {
                 $updated = $builder->where('sta_code', $sta_code)
-                                ->where('date', $date)
+                                ->where('datetime', $datetime) // ✅
                                 ->update($updateData);
             } else {
                 $updated = $builder->insert($fullData);
@@ -141,35 +139,46 @@ class GateModel extends Model
 
     public function recordExists(string $sta_code, string $date): bool
     {
-        $convertedDate = $this->convertDateFormat($date);
+        $convertedDateTime = $this->convertDateFormat($date); // ✅
 
         return (bool) $this->db->table($this->table)
             ->where('sta_code', $sta_code)
-            ->where('date', $convertedDate)
+            ->where('datetime', $convertedDateTime) // ✅
             ->countAllResults();
     }
 
+    // ✅ คืนค่าเป็น datetime string พร้อมเวลา 07:00:00 เสมอ
     private function convertDateFormat(string $date): string
     {
         $dateTime = \DateTime::createFromFormat('j/n/Y', $date);
-        return $dateTime ? $dateTime->format('Y-m-d') : $date;
+        if ($dateTime) {
+            return $dateTime->format('Y-m-d') . ' 07:00:00'; // ✅
+        }
+
+        $dateTime = \DateTime::createFromFormat('Y-m-d', $date);
+        if ($dateTime) {
+            return $dateTime->format('Y-m-d') . ' 07:00:00'; // ✅
+        }
+
+        return $date; // fallback
     }
 
-      public function findByStationAndDate(string $stationId, string $date)
+    public function findByStationAndDate(string $stationId, string $date)
     {
-        return $this->where(['sta_code' => $stationId, 'date' => $date])->first();
-    }
-    
-     public function getGateDataLast8Days(array $stationCodes) // <--- ชื่อฟังก์ชันนี้ต้องตรง
-    {
-        // กำหนดช่วงวันที่ย้อนหลัง 8 วัน (รวมวันนี้)
-        $today = date('Y-m-d');
-        $startDate = date('Y-m-d', strtotime('-7 days')); // รวมวันนี้ก็คือ 8 วัน
+        $datetime = $this->convertDateFormat($date); // ✅
 
-        return $this->select('sta_code, date, discharge')
+        return $this->where(['sta_code' => $stationId, 'datetime' => $datetime])->first(); // ✅
+    }
+
+    public function getGateDataLast8Days(array $stationCodes)
+    {
+        $today = date('Y-m-d') . ' 07:00:00'; // ✅ ระบุเวลา
+        $startDate = date('Y-m-d', strtotime('-7 days')) . ' 07:00:00'; // ✅ ระบุเวลา
+
+        return $this->select('sta_code, datetime, discharge') 
                     ->whereIn('sta_code', $stationCodes)
-                    ->where('date >=', $startDate)
-                    ->where('date <=', $today)
+                    ->where('datetime >=', $startDate) 
+                    ->where('datetime <=', $today)      
                     ->findAll();
     }
 
@@ -177,7 +186,7 @@ class GateModel extends Model
     {
         return $this->db->query("
             SELECT
-                g.date,
+                g.datetime,
                 g.sta_code,
                 g.wl_upper,
                 g.wl_lower,
@@ -191,9 +200,9 @@ class GateModel extends Model
             FROM gate_data g
             LEFT JOIN gate_opening o
                 ON g.sta_code = o.sta_code
-                AND g.date = o.date
-            WHERE g.date >= DATE_SUB(CURDATE(), INTERVAL 14 DAY)
-            ORDER BY g.sta_code, g.date DESC
+                AND g.datetime = o.datetime
+            WHERE g.datetime >= DATE_SUB(CURDATE(), INTERVAL 14 DAY) + INTERVAL 7 HOUR
+            ORDER BY g.sta_code, g.datetime DESC
         ")->getResultArray();
     }
 }

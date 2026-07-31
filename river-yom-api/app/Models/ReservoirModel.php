@@ -6,12 +6,9 @@ use CodeIgniter\Model;
 
 class ReservoirModel extends Model
 {
-    protected $table = 'reservoir_data'; // ชื่อตารางจริงในฐานข้อมูลของคุณ
-    protected $allowedFields = ['res_code', 'date', 'volume', 'inflow', 'outflow']; // กำหนดฟิลด์ที่แก้ไขได้ (ถ้าจำเป็น)
+    protected $table = 'reservoir_data';
+    protected $allowedFields = ['res_code', 'datetime', 'volume', 'inflow', 'outflow']; 
 
-  
-
-    // เมธอดสำหรับดึงข้อมูลจาก reservoir_data โดยใช้ res_code
     public function getReservoirDataByCode($res_code)
     {
         return $this->db->table('reservoir_data')
@@ -20,7 +17,6 @@ class ReservoirModel extends Model
             ->getResultArray();
     }
 
-    // เมธอดสำหรับดึงข้อมูลร่วมกันระหว่าง reservoir_info และ reservoir_data
     public function getReservoirRCByCode($res_code)
     {
         return $this->db->table('reservoir_rc')
@@ -29,20 +25,21 @@ class ReservoirModel extends Model
             ->getResultArray();
     }
 
-    // ดึงข้อมูลจาก reservoir_data ตาม res_code และช่วงปี
     public function getReservoirDataByCodeAndYearRange($res_code, $startYear, $endYear)
     {
         return $this->db->table('reservoir_data')
             ->where('res_code', $res_code)
-            ->where("YEAR(date) >=", $startYear)
-            ->where("YEAR(date) <=", $endYear)
-            ->orderBy('date', 'ASC')
+            ->where("YEAR(datetime) >=", $startYear)
+            ->where("YEAR(datetime) <=", $endYear)   
+            ->orderBy('datetime', 'ASC')             
             ->get()
             ->getResultArray();
     }
 
     public function getReservoirRCByCodeAndYearRange($res_code, $startYear, $endYear)
     {
+        // ⚠️ ตาราง reservoir_rc — ถ้ายังใช้ column 'date' เดิม (ไม่ได้เปลี่ยนเป็น datetime)
+        // ให้คงบรรทัดนี้ไว้แบบเดิม ไม่ต้องแก้ ดูหมายเหตุด้านล่าง
         return $this->db->table('reservoir_rc')
             ->where('res_code', $res_code)
             ->where("YEAR(date) >=", $startYear)
@@ -54,48 +51,47 @@ class ReservoirModel extends Model
 
     public function getReservoirDataLast7Days()
     {
-        // สมมติ field วันเก็บข้อมูลชื่อ 'date' และข้อมูลเรียงตามวันที่
-        // เอาข้อมูล 7 วันล่าสุดจากทุกอ่าง
+        $sevenDaysAgo = date('Y-m-d', strtotime('-7 days')) . ' 07:00:00'; // ✅ ระบุเวลา
+
         return $this->select('*')
-                    ->where('date >=', date('Y-m-d', strtotime('-7 days')))
-                    ->orderBy('date', 'DESC')
+                    ->where('datetime >=', $sevenDaysAgo)
+                    ->orderBy('datetime', 'DESC')         
                     ->findAll();
     }
 
     public function getReservoirDataLast14Days()
     {
-        // สมมติ field วันเก็บข้อมูลชื่อ 'date' และข้อมูลเรียงตามวันที่
-        // เอาข้อมูล 14 วันล่าสุดจากทุกอ่าง
+        $fourteenDaysAgo = date('Y-m-d', strtotime('-14 days')) . ' 07:00:00'; // ✅ ระบุเวลา
+
         return $this->select('*')
-                    ->where('date >=', date('Y-m-d', strtotime('-14 days')))
-                    ->orderBy('date', 'DESC')
+                    ->where('datetime >=', $fourteenDaysAgo)
+                    ->orderBy('datetime', 'DESC')            
                     ->findAll();
     }
-    // ฟังก์ชันสำหรับอัปเดตข้อมูล 1 รายการ
+
     public function updateReservoirData(string $res_code, string $date, array $updateData)
     {
         if (empty($updateData)) {
             throw new \InvalidArgumentException("No data to update");
         }
 
-        // แปลงวันที่จาก d/m/Y เป็น Y-m-d
-        $convertedDate = $this->convertDateFormat($date);
+        $convertedDateTime = $this->convertDateFormat($date); 
 
         $builder = $this->db->table($this->table);
 
         $exists = $builder->where('res_code', $res_code)
-                        ->where('date', $convertedDate)
+                        ->where('datetime', $convertedDateTime) // ✅
                         ->get()
                         ->getRow();
 
         $fullData = array_merge($updateData, [
             'res_code' => $res_code,
-            'date' => $convertedDate
+            'datetime' => $convertedDateTime // ✅
         ]);
 
         if ($exists) {
             return $builder->where('res_code', $res_code)
-                        ->where('date', $convertedDate)
+                        ->where('datetime', $convertedDateTime) // ✅
                         ->update($updateData);
         } else {
             return $builder->insert($fullData);
@@ -112,7 +108,7 @@ class ReservoirModel extends Model
             }
 
             $res_code = $data['res_code'];
-            $date = $this->convertDateFormat($data['date']); // ✅ แปลงรูปแบบวันที่
+            $datetime = $this->convertDateFormat($data['date']); // ✅
 
             $updateData = $data;
             unset($updateData['res_code'], $updateData['date']);
@@ -124,18 +120,18 @@ class ReservoirModel extends Model
             $builder = $this->db->table($this->table);
 
             $exists = $builder->where('res_code', $res_code)
-                            ->where('date', $date)
+                            ->where('datetime', $datetime) // ✅
                             ->get()
                             ->getRow();
 
             $fullData = array_merge($updateData, [
                 'res_code' => $res_code,
-                'date' => $date
+                'datetime' => $datetime // ✅
             ]);
 
             if ($exists) {
                 $updated = $builder->where('res_code', $res_code)
-                                ->where('date', $date)
+                                ->where('datetime', $datetime) // ✅
                                 ->update($updateData);
             } else {
                 $updated = $builder->insert($fullData);
@@ -151,20 +147,27 @@ class ReservoirModel extends Model
 
     public function recordExists(string $res_code, string $date): bool
     {
-        $convertedDate = $this->convertDateFormat($date);
-    
+        $convertedDateTime = $this->convertDateFormat($date); // ✅
+
         return (bool) $this->db->table($this->table)
             ->where('res_code', $res_code)
-            ->where('date', $convertedDate)
+            ->where('datetime', $convertedDateTime) // ✅
             ->countAllResults();
     }
 
+    // ✅ คืนค่าเป็น datetime string พร้อมเวลา 07:00:00 เสมอ
     private function convertDateFormat(string $date): string
     {
-        // แปลง 5/1/2023 -> 2023-01-05
         $dateTime = \DateTime::createFromFormat('j/n/Y', $date);
-        return $dateTime ? $dateTime->format('Y-m-d') : $date; // ถ้าแปลงไม่ได้ก็คืนค่าตามเดิม
+        if ($dateTime) {
+            return $dateTime->format('Y-m-d') . ' 07:00:00'; // ✅
+        }
+
+        $dateTime = \DateTime::createFromFormat('Y-m-d', $date);
+        if ($dateTime) {
+            return $dateTime->format('Y-m-d') . ' 07:00:00'; // ✅
+        }
+
+        return $date; // fallback
     }
-
-
 }
