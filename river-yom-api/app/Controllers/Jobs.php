@@ -5,6 +5,7 @@ use DateTime;
 use DateInterval;
 use CodeIgniter\HTTP\ResponseInterface;
 use App\Models\gateModel;
+use App\Models\gateOpen;
 use App\Models\FlowModel;
 use CodeIgniter\API\ResponseTrait;
 use App\Models\RainModel;
@@ -15,9 +16,11 @@ class Jobs extends BaseController
 {
     protected $rainModel;
     protected $gateModel;
+    protected $gateOpen;
     public function __construct()
     {
         $this->gateModel = new gateModel();
+        $this->gateOpen = new gateOpen();
         $this->rainModel = new RainModel();
     }
     public function updateReservoirData()
@@ -35,7 +38,7 @@ class Jobs extends BaseController
         }
 
         $damData = json_decode($damResponse, true);
-        $date = $damData['date'] ?? date('Y-m-d');
+        $date = ($damData['datetime'] ?? date('Y-m-d')) . ' 07:00:00';
 
         foreach ($damData['data'] as $region) {
             foreach ($region['dam'] as $dam) {
@@ -58,7 +61,7 @@ class Jobs extends BaseController
         }
 
         $resvData = json_decode($resvResponse, true);
-        $resvDate = $resvData['date'] ?? date('Y-m-d');
+        $resvDate = $resvData['datetime'] ?? date('Y-m-d') . ' 07:00:00';
 
         $reservoirMap = [
             // 'rsv389' => 'hkk',
@@ -84,7 +87,7 @@ class Jobs extends BaseController
     private function upsertReservoir($builder, $resCode, $date, $volume, $inflow, $outflow)
     {
         $existing = $builder->where('res_code', $resCode)
-                            ->where('date', $date)
+                            ->where('datetime', $date)
                             ->get()
                             ->getRowArray();
 
@@ -94,12 +97,12 @@ class Jobs extends BaseController
                 'inflow' => $inflow,
                 'outflow' => $outflow
             ])->where('res_code', $resCode)
-              ->where('date', $date)
+              ->where('datetime', $date)
               ->update();
         } else {
             $builder->insert([
                 'res_code' => $resCode,
-                'date' => $date,
+                'datetime' => $date,
                 'volume' => $volume,
                 'inflow' => $inflow,
                 'outflow' => $outflow
@@ -121,6 +124,7 @@ class Jobs extends BaseController
 
     foreach ($period as $date) {
         $d = $date->format('Y-m-d');
+        $datetime = $d . ' 07:00:00';
 
         // ---------- เขื่อนแม่งัด ----------
         $damUrl = "https://app.rid.go.th/reservoir/api/dam/public/{$d}";
@@ -133,18 +137,18 @@ class Jobs extends BaseController
                 foreach ($damData['data'] as $region) {
                     foreach ($region['dam'] as $dam) {
                         if ($dam['id'] === '200101') { 
-                            $this->upsertDailyRecord($builder, 'pmp', $d, $dam['volume'], $dam['inflow'], $dam['outflow'], $results);
+                            $this->upsertDailyRecord($builder, 'pmp', $datetime, $dam['volume'], $dam['inflow'], $dam['outflow'], $results);
                         }
                         if ($dam['id'] === '200102') { 
-                            $this->upsertDailyRecord($builder, 'srk', $d, $dam['volume'], $dam['inflow'], $dam['outflow'], $results);
+                            $this->upsertDailyRecord($builder, 'srk', $datetime, $dam['volume'], $dam['inflow'], $dam['outflow'], $results);
                         }
                     }
                 }
             } else {
-                $results[] = ['date' => $d, 'type' => 'dam', 'status' => 'fail', 'message' => 'Invalid dam API response'];
+                $results[] = ['datetime' => $datetime, 'type' => 'dam', 'status' => 'fail', 'message' => 'Invalid dam API response'];
             }
         } else {
-            $results[] = ['date' => $d, 'type' => 'dam', 'status' => 'fail', 'message' => 'API request failed'];
+            $results[] = ['datetime' => $datetime, 'type' => 'dam', 'status' => 'fail', 'message' => 'API request failed'];
         }
 
         // ---------- อ่างเก็บน้ำ (rsv389, rsv401) ----------
@@ -173,10 +177,10 @@ class Jobs extends BaseController
                     
                 }
             } else {
-                $results[] = ['date' => $d, 'type' => 'reservoir', 'status' => 'fail', 'message' => 'Invalid reservoir API response'];
+                $results[] = ['datetime' => $d, 'type' => 'reservoir', 'status' => 'fail', 'message' => 'Invalid reservoir API response'];
             }
         } else {
-            $results[] = ['date' => $d, 'type' => 'reservoir', 'status' => 'fail', 'message' => 'API request failed'];
+            $results[] = ['datetime' => $d, 'type' => 'reservoir', 'status' => 'fail', 'message' => 'API request failed'];
         }
     }
 
@@ -190,7 +194,7 @@ class Jobs extends BaseController
 private function upsertDailyRecord($builder, $resCode, $date, $volume, $inflow, $outflow, &$results)
 {
     $existing = $builder->where('res_code', $resCode)
-                        ->where('date', $date)
+                        ->where('datetime', $date)
                         ->get()
                         ->getRowArray();
 
@@ -199,18 +203,18 @@ private function upsertDailyRecord($builder, $resCode, $date, $volume, $inflow, 
             'volume' => $volume,
             'inflow' => $inflow,
             'outflow' => $outflow
-        ])->where('res_code', $resCode)->where('date', $date)->update();
+        ])->where('res_code', $resCode)->where('datetime', $date)->update();
 
-        $results[] = ['date' => $date, 'res_code' => $resCode, 'status' => 'updated'];
+        $results[] = ['datetime' => $date, 'res_code' => $resCode, 'status' => 'updated'];
     } else {
         $builder->insert([
             'res_code' => $resCode,
-            'date' => $date,
+            'datetime' => $date,
             'volume' => $volume,
             'inflow' => $inflow,
             'outflow' => $outflow
         ]);
-        $results[] = ['date' => $date, 'res_code' => $resCode, 'status' => 'inserted'];
+        $results[] = ['datetime' => $date, 'res_code' => $resCode, 'status' => 'inserted'];
     }
 }
 
@@ -367,200 +371,382 @@ private function upsertDailyRecord($builder, $resCode, $date, $volume, $inflow, 
 
 
 use ResponseTrait;
-public function updateFlowData()
-{
-    helper('date');
+    public function updateFlowData()
+    {
+        $db = \Config\Database::connect();
+        $builder = $db->table('flow_data');
 
-    $apiUrl = 'https://hyd-app-db.rid.go.th/webservice/getDailyWaterLevelListReportMSL.ashx?option=2';
-    $utokIds = [2]; // Example: An array of different 'DW[UtokID]' values [2, 7, 5] for different station groups
-    $allStationsAllowed = ['Y.4', 'Y.15', 'Y.50', 'Y.16', 'Y.64','Y.51','Y.17',]; // All stations from all APIs
-    $today = date('Y-m-d');
-    $insertData = [];
+        $url = "https://hyd-app-db.rid.go.th/webservice/getGroupHourlyWaterLevelReportAllHLWLCriteriaMSL.ashx";
 
-    foreach ($utokIds as $utokId) {
-        $postData = [
-            'option' => 2,
-            'DW[UtokID]' => $utokId,
-            'DW[TimeCurrent]' => date('d/m') . '/' . (date('Y') + 543),
-            '_search' => 'false',
-            'nd' => round(microtime(true) * 1000),
-            'rows' => 1000,
-            'page' => 1,
-            'sidx' => 'indexcount',
-            'sord' => 'asc',
+        $headers = [
+            "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+            "Accept: application/json, text/javascript, */*; q=0.01",
+            "Content-Type: application/x-www-form-urlencoded; charset=UTF-8",
+            "X-Requested-With: XMLHttpRequest",
+            "Origin: https://hyd-app-db.rid.go.th",
+            "Referer: https://hyd-app-db.rid.go.th/hydro2hd_admsl.html"
         ];
 
-        try {
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $apiUrl);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postData));
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            $response = curl_exec($ch);
-            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            curl_close($ch);
+        $basinConfigs = [
+            8 => [
+                10  => "Y.3A",
+                12  => "Y.4",
+                13  => "Y.15",
+                14 => "Y.50",
+                15 => "Y.16",
+                16 => "Y.64",
+                17 => "Y.51",
+                18 => "Y.17",
+                19 => "Y.52",
+            ],
+            9 => [
+                2 => "N.84",
+                5 => "N.2B",
+                6 => "N.60",
+                7 => "N.27A",
+                12 => "N.5A",
+                14 => "N.24A",
+                16 => "N.7A",
+                17 => "N.43A",
+                19 => "N.8B",
+                20 => "N.67",
+            ],
+        ];
 
-            if ($response === false || $httpCode !== 200) {
-                // Log or handle the error for this specific API call, but continue with the next one
-                log_message('error', "API call with UtokID={$utokId} failed: HTTP Code {$httpCode}");
-                continue;
-            }
+        $now    = new \DateTime();
+        $cutoff = (clone $now)->modify('-24 hours');
 
-            $json = json_decode($response, true);
-            if (!$json || !isset($json['rows'])) {
-                log_message('error', "API response for UtokID={$utokId} is invalid.");
-                continue;
-            }
+        $datesToFetch = [
+            (clone $now)->modify('-1 day'),
+            clone $now,
+        ];
 
-            foreach ($json['rows'] as $row) {
-                if (!in_array($row['stationcode'], $allStationsAllowed)) {
-                    continue;
-                }
+        $totalInserted = 0;
+        $totalUpdated  = 0;
+        $results = [];
 
-                $q1 = explode('|', $row['waterlevelvalueQ1']);
-                $wl = (isset($q1[0]) && floatval($q1[0]) != 0) ? floatval($q1[0]) : null;
-                $discharge = (isset($q1[1]) && floatval($q1[1]) != 0) ? floatval($q1[1]) : null;
+        // ✅ วนทุก Basin
+        foreach ($basinConfigs as $basinId => $stationMap) {
 
-                $insertData[] = [
-                    'sta_code' => $row['stationcode'],
-                    'date' => $today,
-                    'wl' => $wl,
-                    'discharge' => $discharge,
-                ];
-            }
-        } catch (\Exception $e) {
-            log_message('error', "Exception during API call with UtokID={$utokId}: " . $e->getMessage());
-            continue;
-        }
-    }
+            foreach ($datesToFetch as $date) {
+                $originalDate = $date->format('Y-m-d');
+                $thaiDate     = $date->format("d/m/") . ($date->format("Y") + 543);
 
-    if (empty($insertData)) {
-        return $this->fail('ไม่พบข้อมูลสถานีที่กำหนดจากทุก API');
-    }
+                $payload = http_build_query([
+                    "DW[UtokID]"       => 2,
+                    "DW[BasinID]"      => $basinId, // ✅ ใช้ตัวแปรแทน hardcode
+                    "DW[TimeCurrent]"  => $thaiDate,
+                    "_search"          => "false",
+                    "nd"               => round(microtime(true) * 1000),
+                    "rows"             => 100,
+                    "page"             => 1,
+                    "sidx"             => "indexhourly",
+                    "sord"             => "asc"
+                ]);
 
-    $model = new FlowModel();
+                $ch = curl_init($url);
+                curl_setopt_array($ch, [
+                    CURLOPT_POST       => true,
+                    CURLOPT_POSTFIELDS => $payload,
+                    CURLOPT_HTTPHEADER => $headers,
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_TIMEOUT    => 30,
+                ]);
 
-    // Begin a transaction for atomic operations on the database
-    $model->transBegin();
-
-    try {
-        // Delete existing data for today for all relevant stations
-        $model->whereIn('sta_code', $allStationsAllowed)
-              ->where('date', $today)
-              ->delete();
-
-        // Batch insert all the collected data at once for better performance
-        $model->insertBatch($insertData);
-
-        if ($model->transStatus() === false) {
-            $model->transRollback();
-            return $this->fail('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
-        } else {
-            $model->transCommit();
-            return $this->respond([
-                'status' => 'success',
-                'message' => 'บันทึกข้อมูลสำเร็จ',
-                'count' => count($insertData),
-                'date' => $today
-            ]);
-        }
-    } catch (\Exception $e) {
-        $model->transRollback();
-        return $this->fail('เกิดข้อผิดพลาดในการบันทึกข้อมูล: ' . $e->getMessage());
-    }
-}
-
-    public function updateFlowFillData($startDate, $endDate)
-    {
-        helper(['date', 'text']);
-
-        $model = new FlowModel();
-        // เพิ่ม C.30 เข้าในรายชื่อสถานี
-        $stationsAllowed = ['Y.4', 'Y.15', 'Y.50', 'Y.16', 'Y.64','Y.51','Y.17'];
-        // กำหนด UtokID ของแต่ละกลุ่ม
-        $utokIds = [2]; 
-
-        $start = strtotime($startDate);
-        $end = strtotime($endDate);
-
-        if ($start > $end) {
-            return $this->respond([
-                'status' => 'fail',
-                'message' => 'วันที่เริ่มต้นต้องไม่มากกว่าวันที่สิ้นสุด'
-            ]);
-        }
-
-        $insertedCount = 0;
-
-        for ($date = $start; $date <= $end; $date += 86400) {
-            $day = date('d/m', $date);
-            $yearBuddhist = date('Y', $date) + 543;
-            $thaiDate = $day . '/' . $yearBuddhist;
-            $today = date('Y-m-d', $date);
-
-            foreach ($utokIds as $utokId) {
-                $apiUrl = 'https://hyd-app-db.rid.go.th/webservice/getDailyWaterLevelListReportMSL.ashx?option=2';
-                $postData = [
-                    'option' => 2,
-                    'DW[UtokID]' => $utokId,
-                    'DW[TimeCurrent]' => $thaiDate,
-                    '_search' => 'false',
-                    'nd' => round(microtime(true) * 1000),
-                    'rows' => 1000,
-                    'page' => 1,
-                    'sidx' => 'indexcount',
-                    'sord' => 'asc',
-                ];
-
-                $ch = curl_init();
-                curl_setopt($ch, CURLOPT_URL, $apiUrl);
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($ch, CURLOPT_POST, true);
-                curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postData));
-                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
                 $response = curl_exec($ch);
                 curl_close($ch);
 
                 if (!$response) {
-                    log_message('error', "API call failed for UtokID={$utokId}, Date={$today}");
+                    $results[] = ["basin" => $basinId, "date" => $originalDate, "status" => "fail", "message" => "API request failed"];
                     continue;
                 }
 
                 $json = json_decode($response, true);
-                if (!$json || !isset($json['rows'])) {
-                    log_message('error', "Invalid response for UtokID={$utokId}, Date={$today}");
+                if (!isset($json["rows"]) || empty($json["rows"])) {
+                    $results[] = ["basin" => $basinId, "date" => $originalDate, "status" => "no_data", "message" => "No rows in response"];
                     continue;
                 }
 
-                foreach ($json['rows'] as $row) {
-                    if (!in_array($row['stationcode'], $stationsAllowed)) {
+                foreach ($json["rows"] as $row) {
+                    $hourlyRaw = $row["hourlytime"] ?? null;
+                    if (!$hourlyRaw) continue;
+
+                    $recordDate = $originalDate;
+                    $hourly     = str_replace('.', ':', trim($hourlyRaw));
+
+                    if ($hourly === "24:00" || $hourly === "24.00") {
+                        $hourly = "00:00";
+                        $recordDate = date('Y-m-d', strtotime($originalDate . ' +1 day'));
+                    } else {
+                        $hourly = sprintf("%05s", $hourly);
+                    }
+
+                    $datetime = $recordDate . " " . $hourly . ":00";
+
+                    $dtCheck = \DateTime::createFromFormat('Y-m-d H:i:s', $datetime);
+                    if (!$dtCheck || $dtCheck->format('Y-m-d H:i:s') !== $datetime) {
                         continue;
                     }
 
-                    $q1 = explode('|', $row['waterlevelvalueQ1']);
-                    $wl = (isset($q1[0]) && floatval($q1[0]) != 0) ? floatval($q1[0]) : null;
-                    $discharge = (isset($q1[1]) && floatval($q1[1]) != 0) ? floatval($q1[1]) : null;
+                    if ($dtCheck < $cutoff || $dtCheck > $now) {
+                        continue;
+                    }
 
-                    $data = [
-                        'sta_code' => $row['stationcode'],
-                        'date' => $today,
-                        'wl' => $wl,
-                        'discharge' => $discharge,
-                    ];
+                    // ✅ ใช้ stationMap ของ basin นี้โดยเฉพาะ
+                    foreach ($stationMap as $index => $staCode) {
+                        $wlKey = "wlvalues" . $index;
+                        $qKey  = "qvalues" . $index;
+                        $wl    = $row[$wlKey] ?? null;
+                        $q     = $row[$qKey] ?? null;
 
-                    $model->upsert($data);
-                    $insertedCount++;
+                        if ($wl === null || $wl === '' || $wl === '*' || !is_numeric($wl)) {
+                            continue;
+                        }
+
+                        $wl = floatval($wl);
+                        $discharge = (is_numeric($q) && $q !== '*') ? floatval($q) : null;
+
+                        $existing = $builder->where([
+                            'sta_code' => $staCode,
+                            'datetime' => $datetime
+                        ])->get()->getRowArray();
+
+                        if ($existing) {
+                            $builder->where([
+                                'sta_code' => $staCode,
+                                'datetime' => $datetime
+                            ])->set([
+                                'wl' => $wl,
+                                'discharge' => $discharge
+                            ])->update();
+                            $totalUpdated++;
+                        } else {
+                            $builder->insert([
+                                'sta_code'  => $staCode,
+                                'datetime'  => $datetime,
+                                'wl'        => $wl,
+                                'discharge' => $discharge,
+                            ]);
+                            $totalInserted++;
+                        }
+                    }
                 }
             }
         }
 
+        return $this->response->setJSON([
+            "status"    => "success",
+            "message"   => "อัปเดตข้อมูล flow รายชั่วโมงย้อนหลัง 24 ชม. สำเร็จ (หลาย Basin)",
+            "inserted"  => $totalInserted,
+            "updated"   => $totalUpdated,
+            "total"     => $totalInserted + $totalUpdated,
+            "details"   => $results
+        ]);
+    }
+
+    public function updateFlowFillData($startDate, $endDate)
+    {
+        $db      = \Config\Database::connect();
+        $builder = $db->table('flow_data');
+
+        $basinConfigs = [
+            8 => [
+                10 => "Y.3A",
+                12 => "Y.4",
+                13 => "Y.15",
+                14 => "Y.50",
+                15 => "Y.16",
+                16 => "Y.64",
+                17 => "Y.51",
+                18 => "Y.17",
+                19 => "Y.52",
+            ],
+            9 => [
+                2  => "N.84",
+                5  => "N.2B",
+                6  => "N.60",
+                7  => "N.27A",
+                12 => "N.5A",
+                14 => "N.24A",
+                16 => "N.7A",
+                17 => "N.43A",
+                19 => "N.8B",
+                20 => "N.67",
+            ],
+        ];
+
+        $url      = "https://hyd-app-db.rid.go.th/webservice/getGroupHourlyWaterLevelReportAllHLWLCriteriaMSL.ashx";
+        $mainPage = "https://hyd-app-db.rid.go.th/hydro2hd_admsl.html";
+
+        // Cookie file
+        $cookieFile = WRITEPATH . 'cache/rid_hourly_cookie.txt';
+        if (!is_dir(WRITEPATH . 'cache')) {
+            mkdir(WRITEPATH . 'cache', 0755, true);
+        }
+
+        $start = new \DateTime($startDate);
+        $end   = new \DateTime($endDate);
+        $end->modify('+1 day');
+
+        if ($start >= $end) {
+            return $this->respond(['status' => 'fail', 'message' => 'วันที่เริ่มต้นต้องไม่มากกว่าวันที่สิ้นสุด']);
+        }
+
+        $totalInserted = 0;
+        $totalUpdated  = 0;
+        $results = [];
+
+        // 1. เข้าหน้าเว็บก่อนเพื่อรับ Cookie (ถ้าจำเป็น)
+        $ch = curl_init();
+        curl_setopt_array($ch, [
+            CURLOPT_URL            => $mainPage,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_COOKIEJAR      => $cookieFile,
+            CURLOPT_COOKIEFILE     => $cookieFile,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_USERAGENT      => "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+            CURLOPT_SSL_VERIFYPEER => false,
+        ]);
+        curl_exec($ch);
+        curl_close($ch);
+
+        $period = new \DatePeriod($start, new \DateInterval('P1D'), $end);
+
+        // ✅ วนทุก Basin ก่อน แล้วค่อยวนแต่ละวันในนั้น (เหมือน updateFlowData)
+        foreach ($basinConfigs as $basinId => $stationMap) {
+
+            foreach ($period as $date) {
+                $originalDate  = $date->format('Y-m-d');
+                $thaiDate      = $date->format('d/m/') . ($date->format('Y') + 543);
+
+                $payload = http_build_query([
+                    "DW[UtokID]"      => 2,
+                    "DW[BasinID]"     => $basinId, // ✅ ใช้ตัวแปรแทน hardcode 8
+                    "DW[TimeCurrent]" => $thaiDate,
+                    "_search"         => "false",
+                    "nd"              => round(microtime(true) * 1000),
+                    "rows"            => 100,
+                    "page"            => 1,
+                    "sidx"            => "indexhourly",
+                    "sord"            => "asc"
+                ]);
+
+                $ch = curl_init();
+                curl_setopt_array($ch, [
+                    CURLOPT_URL            => $url,
+                    CURLOPT_POST           => true,
+                    CURLOPT_POSTFIELDS     => $payload,
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_TIMEOUT        => 30,
+                    CURLOPT_SSL_VERIFYPEER => false,
+                    CURLOPT_FOLLOWLOCATION => true,
+                    CURLOPT_COOKIEJAR      => $cookieFile,
+                    CURLOPT_COOKIEFILE     => $cookieFile,
+                    CURLOPT_USERAGENT      => "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+                    CURLOPT_HTTPHEADER     => [
+                        "Accept: application/json, text/javascript, */*; q=0.01",
+                        "Content-Type: application/x-www-form-urlencoded; charset=UTF-8",
+                        "X-Requested-With: XMLHttpRequest",
+                        "Origin: https://hyd-app-db.rid.go.th",
+                        "Referer: https://hyd-app-db.rid.go.th/hydro2hd_admsl.html",
+                    ],
+                ]);
+
+                $response = curl_exec($ch);
+                $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                curl_close($ch);
+
+                if (!$response || $httpCode !== 200) {
+                    log_message('error', "Hourly API failed for basin {$basinId}, {$originalDate} | HTTP: {$httpCode}");
+                    $results[] = ["basin" => $basinId, "date" => $originalDate, "status" => "fail", "message" => "HTTP {$httpCode}"];
+                    continue;
+                }
+
+                $json = json_decode($response, true);
+                if (!$json || !isset($json['rows']) || empty($json['rows'])) {
+                    log_message('info', "ไม่มีข้อมูลรายชั่วโมงสำหรับ basin {$basinId}, วันที่: {$originalDate}");
+                    $results[] = ["basin" => $basinId, "date" => $originalDate, "status" => "no_data"];
+                    continue;
+                }
+
+                foreach ($json['rows'] as $row) {
+                    $hourlyRaw = $row['hourlytime'] ?? null;
+                    if (!$hourlyRaw || strlen(trim($hourlyRaw)) < 3) continue;
+
+                    $recordDate = $originalDate;
+                    $hourly     = str_replace('.', ':', trim($hourlyRaw));
+
+                    if ($hourly === "24:00" || $hourly === "24.00") {
+                        $hourly = "00:00";
+                        $recordDate = date('Y-m-d', strtotime($originalDate . ' +1 day'));
+                    } else {
+                        $hourly = sprintf("%05s", $hourly);
+                    }
+
+                    $datetimeStr = $recordDate . " " . $hourly . ":00";
+
+                    $dtCheck = \DateTime::createFromFormat('Y-m-d H:i:s', $datetimeStr);
+                    if (!$dtCheck || $dtCheck->format('Y-m-d H:i:s') !== $datetimeStr) {
+                        log_message('error', "Invalid datetime: {$datetimeStr} (from {$hourlyRaw})");
+                        continue;
+                    }
+
+                    // ✅ ใช้ stationMap ของ basin นี้โดยเฉพาะ (แทน index 8-14 hardcode เดิม)
+                    foreach ($stationMap as $index => $staCode) {
+                        $wlKey = "wlvalues{$index}";
+                        $qKey  = "qvalues{$index}"; // ✅ เพิ่มดึง discharge เหมือน updateFlowData
+                        $wlRaw = $row[$wlKey] ?? null;
+                        $qRaw  = $row[$qKey] ?? null;
+
+                        if ($wlRaw === null || $wlRaw === '' || $wlRaw === '*' || !is_numeric($wlRaw)) {
+                            continue;
+                        }
+
+                        $wl = floatval($wlRaw);
+                        $discharge = (is_numeric($qRaw) && $qRaw !== '*') ? floatval($qRaw) : null;
+
+                        $existing = $builder->where([
+                            'sta_code' => $staCode,
+                            'datetime' => $datetimeStr
+                        ])->get()->getRowArray();
+
+                        if ($existing) {
+                            $builder->where([
+                                'sta_code' => $staCode,
+                                'datetime' => $datetimeStr
+                            ])->set([
+                                'wl' => $wl,
+                                'discharge' => $discharge // ✅ อัปเดต discharge ด้วย (เดิมไม่มี)
+                            ])->update();
+                            $totalUpdated++;
+                        } else {
+                            $builder->insert([
+                                'sta_code'  => $staCode,
+                                'datetime'  => $datetimeStr,
+                                'wl'        => $wl,
+                                'discharge' => $discharge // ✅ เดิม hardcode เป็น null เสมอ
+                            ]);
+                            $totalInserted++;
+                        }
+                    }
+                }
+            }
+        }
+
+        // ลบ cookie หลังใช้เสร็จ
+        if (file_exists($cookieFile)) {
+            @unlink($cookieFile);
+        }
+
         return $this->respond([
-            'status' => 'success',
-            'message' => 'บันทึกข้อมูลน้ำท่าย้อนหลังสำเร็จ',
-            'count' => $insertedCount,
-            'from' => $startDate,
-            'to' => $endDate
+            'status'        => 'success',
+            'message'       => 'อัปเดตข้อมูลรายชั่วโมงย้อนหลังสำเร็จ (หลาย Basin: ยม + น่าน)',
+            'from'          => $startDate,
+            'to'            => $endDate,
+            'inserted'      => $totalInserted,
+            'updated'       => $totalUpdated,
+            'total_records' => $totalInserted + $totalUpdated,
+            'details'       => $results
         ]);
     }
 
@@ -580,7 +766,7 @@ public function updateFlowData()
      */
     public function updateRainData()
         {
-            helper('date');
+            helper('datetime');
 
             // Step 1: ดึงข้อมูลจาก API ที่ 1
             $dataFromApi1 = $this->fetchDataFromApi1();
@@ -611,14 +797,14 @@ public function updateFlowData()
                     // ค้นหาข้อมูลที่มี sta_code และ date ที่ตรงกัน
                     $existingRecord = $this->rainModel
                                             ->where('sta_code', $data['sta_code'])
-                                            ->where('date', $data['date'])
+                                            ->where('datetime', $data['datetime'])
                                             ->first();
 
                     if ($existingRecord) {
                         // ถ้าข้อมูลมีอยู่แล้ว ให้อัปเดต
                         $this->rainModel
                             ->where('sta_code', $data['sta_code'])
-                            ->where('date', $data['date'])
+                            ->where('datetime', $data['datetime'])
                             ->update(null, $data); // ใช้ update() โดยตรง
                         $totalUpdated++;
                     } else {
@@ -683,7 +869,7 @@ public function updateFlowData()
                     if (in_array($row['stationcode'], $stationsAllowed)) {
                         $filteredData[] = [
                             'sta_code' => $row['stationcode'],
-                            'date' => $yesterday,
+                            'datetime' => $yesterday,
                             'rain_mm' => isset($row['RF1']) ? floatval($row['RF1']) : 0
                         ];
                     }
@@ -738,7 +924,7 @@ public function updateFlowData()
                     
                     $filteredData[$api_sta_code] = [
                         'sta_code' => $this->stationMapping[$api_sta_code],
-                        'date' => $formattedDate,
+                        'datetime' => $formattedDate,
                         'rain_mm' => $record['rain_24h'] ?? null
                     ];
                 }
@@ -761,7 +947,7 @@ public function updateFlowData()
 
     public function updateRainFillData($startDate, $endDate)
     {
-        helper('date');
+        helper('datetime');
 
         $model = new \App\Models\RainModel();
 
@@ -839,7 +1025,7 @@ public function updateFlowData()
 
                         $data = [
                             'sta_code' => $sta_code,
-                            'date' => $dateRecord,
+                            'datetime' => $dateRecord,
                             'rain_mm' => $rain_mm
                         ];
 
@@ -893,7 +1079,7 @@ public function updateFlowData()
 
                         $data = [
                             'sta_code' => $mappedCode,
-                            'date' => $date,
+                            'datetime' => $date,
                             'rain_mm' => floatval($rain_mm)
                         ];
 
@@ -915,42 +1101,53 @@ public function updateFlowData()
         $stationList = ['tng', 'wst', 'kpk'];
         $currentDate = date('Y-m-d');
 
-        $recordsAdded = 0;
-        $recordsUpdated = 0;
+        $fetched = $this->fetchRidGateData($stationList, $currentDate, $currentDate);
 
-        // ✅ ดึงข้อมูลจาก API
-        $allGateData = $this->fetchRidGateData($stationList, $currentDate);
-
-        if (empty($allGateData)) {
+        if (empty($fetched['opening']) && empty($fetched['data'])) {
             return $this->fail('ไม่พบข้อมูลจาก API');
         }
 
-        $this->gateModel->db->transStart();
+        $recordsAddedOpening   = 0;
+        $recordsUpdatedOpening = 0;
+        $recordsAddedData      = 0;
+        $recordsUpdatedData    = 0;
 
-        foreach ($allGateData as $data) {
+        $this->gateModel->db->transStart(); // ใช้ transaction ร่วมกัน
 
-            log_message('info', json_encode($data));
-
-            $existingRecord = $this->gateModel
-                ->where([
-                    'sta_code' => $data['sta_code'],
-                    'date' => $data['date']
-                ])
+        // ───── บันทึก gate_opening ─────
+        foreach ($fetched['opening'] as $row) {
+            $existing = $this->gateOpen
+                ->where(['sta_code' => $row['sta_code'], 'datetime' => $row['datetime']])
                 ->first();
 
-            if ($existingRecord) {
-                $this->gateModel
-                    ->where([
-                        'sta_code' => $data['sta_code'],
-                        'date' => $data['date']
-                    ])
-                    ->set($data)
+            if ($existing) {
+                $this->gateOpen
+                    ->where(['sta_code' => $row['sta_code'], 'datetime' => $row['datetime']])
+                    ->set($row)
                     ->update();
-
-                $recordsUpdated++;
+                $recordsUpdatedOpening++;
             } else {
-                $this->gateModel->insert($data);
-                $recordsAdded++;
+                $this->gateOpen->insert($row);
+                $recordsAddedOpening++;
+            }
+        }
+
+        // ───── บันทึก gate_data ─────
+        // สมมติว่ามี model ชื่อ $this->gateModel
+        foreach ($fetched['data'] as $row) {
+            $existing = $this->gateModel
+                ->where(['sta_code' => $row['sta_code'], 'datetime' => $row['datetime']])
+                ->first();
+
+            if ($existing) {
+                $this->gateModel
+                    ->where(['sta_code' => $row['sta_code'], 'datetime' => $row['datetime']])
+                    ->set($row)
+                    ->update();
+                $recordsUpdatedData++;
+            } else {
+                $this->gateModel->insert($row);
+                $recordsAddedData++;
             }
         }
 
@@ -958,16 +1155,23 @@ public function updateFlowData()
 
         return $this->respond([
             'status' => 'success',
-            'records_added' => $recordsAdded,
-            'records_updated' => $recordsUpdated,
-            'data' => $allGateData
+            'gate_opening' => [
+                'added'   => $recordsAddedOpening,
+                'updated' => $recordsUpdatedOpening,
+            ],
+            'gate_data' => [
+                'added'   => $recordsAddedData,
+                'updated' => $recordsUpdatedData,
+            ],
+            'total_fetched' => count($fetched['opening']),
         ]);
     }
 
-    private function fetchRidGateData(array $stationList, string $date)
+    private function fetchRidGateData(array $stationList, string $startDate, string $endDate)
     {
         $client = \Config\Services::curlrequest();
-        $result = [];
+        $openingResult = []; // สำหรับตาราง gate_opening
+        $dataResult    = []; // สำหรับตาราง gate_data
 
         $stationMap = [
             'tng' => [
@@ -989,308 +1193,131 @@ public function updateFlowData()
 
             $code    = $stationMap[$sta]['code'];
             $baseUrl = $stationMap[$sta]['base_url'];
-
-            $url = "{$baseUrl}/api/rid/water-data?code={$code}&startDate={$date}&endDate={$date}";
+            $url     = "{$baseUrl}/api/rid/water-data?code={$code}&startDate={$startDate}&endDate={$endDate}";
 
             try {
                 $response = $client->get($url);
                 $data = json_decode($response->getBody(), true);
 
                 if (empty($data) || !is_array($data)) {
-                    log_message('warning', "No data returned for station {$sta} on {$date}");
+                    log_message('warning', "No data returned for station {$sta}");
                     continue;
                 }
-
-                // 🔹 ค้นหาข้อมูลเวลา 07:00:00 ที่แม่นยำที่สุด
-                $selected = null;
-                $bestDiff = PHP_INT_MAX;   // ใช้หาข้อมูลที่ใกล้ 07:00 ที่สุด หากไม่มีตรงเป๊ะ
 
                 foreach ($data as $item) {
                     if (empty($item['datetime'])) continue;
 
                     $itemTime = \DateTime::createFromFormat('Y-m-d\TH:i:s', $item['datetime']);
+                    if (!$itemTime) {
+                        $itemTime = \DateTime::createFromFormat('Y-m-d H:i:s', $item['datetime']);
+                    }
                     if (!$itemTime) continue;
 
-                    $targetTime = \DateTime::createFromFormat('Y-m-d H:i:s', $date . ' 07:00:00');
-                    $diff = abs($itemTime->getTimestamp() - $targetTime->getTimestamp());
+                    $datetimeStr = $itemTime->format('Y-m-d H:i:s');
 
-                    // ถ้าเจอตรง 07:00:00 ให้เลือกเลย
-                    if ($diff === 0) {
-                        $selected = $item;
-                        break;
+                    // ── ข้อมูลสำหรับตาราง gate_opening (ระยะเปิดบาน) ──
+                    $openingRow = [
+                        'sta_code' => $sta,
+                        'datetime' => $datetimeStr,
+                    ];
+                    for ($i = 1; $i <= 7; $i++) {
+                        $apiKey = "gate{$i}_ht";
+                        $dbKey  = "gate{$i}_height";
+                        $openingRow[$dbKey] = array_key_exists($apiKey, $item) ? $item[$apiKey] : null;
                     }
+                    $openingResult[] = $openingRow;
 
-                    // ถ้าใกล้เคียงกว่าเดิม ให้อัพเดท
-                    if ($diff < $bestDiff) {
-                        $bestDiff = $diff;
-                        $selected = $item;
-                    }
+                    // ── ข้อมูลสำหรับตาราง gate_data (ระดับน้ำ + discharge + ฝน) ──
+                    $dataResult[] = [
+                        'sta_code'  => $sta,
+                        'datetime'  => $datetimeStr,
+                        'wl_upper'  => $item['upper_water'] ?? null,
+                        'wl_lower'  => $item['lower_water'] ?? null,
+                        'discharge' => $item['flow'] ?? null,
+                        'rain_mm'   => $item['rainfall'] ?? null,
+                    ];
                 }
-
-                // ถ้าไม่มีข้อมูลเลย ให้ข้าม
-                if (!$selected) {
-                    log_message('warning', "No valid data found for station {$sta} on {$date}");
-                    continue;
-                }
-
-                $result[] = [
-                    'sta_code'   => $sta,
-                    'date'       => $date,                    // ใช้ $date จาก loop โดยตรง
-                    'wl_upper'   => $selected['upper_water'] ?? null,
-                    'wl_lower'   => $selected['lower_water'] ?? null,
-                    'discharge'  => $selected['flow'] ?? null,
-                ];
 
             } catch (\Exception $e) {
-                log_message('error', "Fetch RID error for {$sta} on {$date}: " . $e->getMessage());
+                log_message('error', "Fetch RID error for {$sta}: " . $e->getMessage());
             }
         }
 
-        return $result;
+        return [
+            'opening' => $openingResult,
+            'data'    => $dataResult,
+        ];
     }
+
 
     public function updateGateFillData(string $startDate, string $endDate)
     {
         $stationList = ['tng', 'wst', 'kpk'];
-        $recordsAdded = 0;
-        $recordsUpdated = 0;
 
-        $start = new \DateTime($startDate);
-        $end = new \DateTime($endDate);
-        $end->modify('+1 day'); // ให้รวมวันสุดท้ายด้วย
+        $fetched = $this->fetchRidGateData($stationList, $startDate, $endDate);
+
+        if (empty($fetched['opening']) && empty($fetched['data'])) {
+            return $this->respond(['status' => 'fail', 'message' => 'ไม่พบข้อมูลจาก API']);
+        }
+
+        $recordsAddedOpening   = 0;
+        $recordsUpdatedOpening = 0;
+        $recordsAddedData      = 0;
+        $recordsUpdatedData    = 0;
 
         $this->gateModel->db->transStart();
 
-        for ($date = $start; $date < $end; $date->modify('+1 day')) {
+        // gate_opening
+        foreach ($fetched['opening'] as $row) {
+            $existing = $this->gateOpen
+                ->where(['sta_code' => $row['sta_code'], 'datetime' => $row['datetime']])
+                ->first();
 
-            $currentDate = $date->format('Y-m-d');
-            log_message('info', "Processing date: {$currentDate}");
-
-            // 🔹 ดึงข้อมูลของวันนั้น
-            $allGateData = $this->fetchRidGateData($stationList, $currentDate);
-
-            if (empty($allGateData)) {
-                log_message('warning', "No data for {$currentDate}");
-                continue;
+            if ($existing) {
+                $this->gateOpen
+                    ->where(['sta_code' => $row['sta_code'], 'datetime' => $row['datetime']])
+                    ->set($row)
+                    ->update();
+                $recordsUpdatedOpening++;
+            } else {
+                $this->gateOpen->insert($row);
+                $recordsAddedOpening++;
             }
+        }
 
-            foreach ($allGateData as $data) {
+        // gate_data
+        foreach ($fetched['data'] as $row) {
+            $existing = $this->gateModel
+                ->where(['sta_code' => $row['sta_code'], 'datetime' => $row['datetime']])
+                ->first();
 
-                $existingRecord = $this->gateModel
-                    ->where([
-                        'sta_code' => $data['sta_code'],
-                        'date' => $data['date']
-                    ])
-                    ->first();
-
-                if ($existingRecord) {
-                    $this->gateModel
-                        ->where([
-                            'sta_code' => $data['sta_code'],
-                            'date' => $data['date']
-                        ])
-                        ->set($data)
-                        ->update();
-
-                    $recordsUpdated++;
-                } else {
-                    $this->gateModel->insert($data);
-                    $recordsAdded++;
-                }
+            if ($existing) {
+                $this->gateModel
+                    ->where(['sta_code' => $row['sta_code'], 'datetime' => $row['datetime']])
+                    ->set($row)
+                    ->update();
+                $recordsUpdatedData++;
+            } else {
+                $this->gateModel->insert($row);
+                $recordsAddedData++;
             }
         }
 
         $this->gateModel->db->transComplete();
 
         return $this->respond([
-            'status' => 'success',
-            'message' => 'Backfill completed',
-            'records_added' => $recordsAdded,
-            'records_updated' => $recordsUpdated,
-            'range' => [$startDate, $endDate]
+            'status'  => 'success',
+            'message' => 'Backfill completed (รายชั่วโมง)',
+            'gate_opening' => [
+                'added'   => $recordsAddedOpening,
+                'updated' => $recordsUpdatedOpening,
+            ],
+            'gate_data' => [
+                'added'   => $recordsAddedData,
+                'updated' => $recordsUpdatedData,
+            ],
+            'range' => [$startDate, $endDate],
         ]);
     }
-
-     /**
-     * ดึงข้อมูลระดับน้ำรายชั่วโมงจาก RID ตามช่วงวันที่ที่กำหนด
-     * เหมือน updateFlowFillData() แต่สำหรับรายชั่วโมง
-     */
-    public function updateFlowHourlyFillData($startDate, $endDate)
-    {
-        $db      = \Config\Database::connect();
-        $builder = $db->table('flow_hourly');
-
-        $stationMap = [
-            8  => "Y.4",
-            9  => "Y.15",
-            10 => "Y.50",
-            11 => "Y.16",
-            12 => "Y.64",
-            13 => "Y.51",
-            14 => "Y.17",
-        ];
-
-        $url      = "https://hyd-app-db.rid.go.th/webservice/getGroupHourlyWaterLevelReportAllHLWLCriteriaMSL.ashx";
-        $mainPage = "https://hyd-app-db.rid.go.th/hydro2hd_admsl.html";
-
-        // Cookie file
-        $cookieFile = WRITEPATH . 'cache/rid_hourly_cookie.txt';
-        if (!is_dir(WRITEPATH . 'cache')) {
-            mkdir(WRITEPATH . 'cache', 0755, true);
-        }
-
-        $start = new \DateTime($startDate);
-        $end   = new \DateTime($endDate);
-        $end->modify('+1 day');
-
-        if ($start >= $end) {
-            return $this->respond(['status' => 'fail', 'message' => 'วันที่เริ่มต้นต้องไม่มากกว่าวันที่สิ้นสุด']);
-        }
-
-        $totalInserted = 0;
-        $totalUpdated  = 0;
-
-        // 1. เข้าหน้าเว็บก่อนเพื่อรับ Cookie (ถ้าจำเป็น)
-        $ch = curl_init();
-        curl_setopt_array($ch, [
-            CURLOPT_URL            => $mainPage,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_COOKIEJAR      => $cookieFile,
-            CURLOPT_COOKIEFILE     => $cookieFile,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_USERAGENT      => "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-            CURLOPT_SSL_VERIFYPEER => false,
-        ]);
-        curl_exec($ch);
-        curl_close($ch);
-
-        $period = new \DatePeriod($start, new \DateInterval('P1D'), $end);
-
-        foreach ($period as $date) {
-            $originalDate  = $date->format('Y-m-d');
-            $thaiDate      = $date->format('d/m/') . ($date->format('Y') + 543);
-
-            $payload = http_build_query([
-                "DW[UtokID]"      => 2,
-                "DW[BasinID]"     => 8,
-                "DW[TimeCurrent]" => $thaiDate,
-                "_search"         => "false",
-                "nd"              => round(microtime(true) * 1000),
-                "rows"            => 100,
-                "page"            => 1,
-                "sidx"            => "indexhourly",
-                "sord"            => "asc"
-            ]);
-
-            $ch = curl_init();
-            curl_setopt_array($ch, [
-                CURLOPT_URL            => $url,
-                CURLOPT_POST           => true,
-                CURLOPT_POSTFIELDS     => $payload,
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_TIMEOUT        => 30,
-                CURLOPT_SSL_VERIFYPEER => false,
-                CURLOPT_FOLLOWLOCATION => true,
-                CURLOPT_COOKIEJAR      => $cookieFile,
-                CURLOPT_COOKIEFILE     => $cookieFile,
-                CURLOPT_USERAGENT      => "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-                CURLOPT_HTTPHEADER     => [
-                    "Accept: application/json, text/javascript, */*; q=0.01",
-                    "Content-Type: application/x-www-form-urlencoded; charset=UTF-8",
-                    "X-Requested-With: XMLHttpRequest",
-                    "Origin: https://hyd-app-db.rid.go.th",
-                    "Referer: https://hyd-app-db.rid.go.th/hydro2hd_admsl.html",  // ปรับ Referer ให้ตรงกับหน้าเดิม
-                ],
-            ]);
-
-            $response = curl_exec($ch);
-            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            curl_close($ch);
-
-            if (!$response || $httpCode !== 200) {
-                log_message('error', "Hourly API failed for {$originalDate} | HTTP: {$httpCode}");
-                continue;
-            }
-
-            $json = json_decode($response, true);
-            if (!$json || !isset($json['rows']) || empty($json['rows'])) {
-                log_message('info', "ไม่มีข้อมูลรายชั่วโมงสำหรับวันที่: {$originalDate}");
-                continue;
-            }
-
-            foreach ($json['rows'] as $row) {
-                $hourlyRaw = $row['hourlytime'] ?? null;
-                if (!$hourlyRaw || strlen(trim($hourlyRaw)) < 3) continue;
-
-                $recordDate = $originalDate;
-                $hourly     = str_replace('.', ':', trim($hourlyRaw));
-
-                if ($hourly === "24:00" || $hourly === "24.00") {
-                    $hourly = "00:00";
-                    $recordDate = date('Y-m-d', strtotime($originalDate . ' +1 day'));
-                } else {
-                    $hourly = sprintf("%05s", $hourly);
-                }
-
-                $datetimeStr = $recordDate . " " . $hourly . ":00";
-
-                $dtCheck = \DateTime::createFromFormat('Y-m-d H:i:s', $datetimeStr);
-                if (!$dtCheck || $dtCheck->format('Y-m-d H:i:s') !== $datetimeStr) {
-                    log_message('error', "Invalid datetime: {$datetimeStr} (from {$hourlyRaw})");
-                    continue;
-                }
-
-                // วนตาม index ใน stationMap (8-14)
-                foreach ($stationMap as $index => $staCode) {
-                    $wlKey   = "wlvalues{$index}";
-                    $wlRaw   = $row[$wlKey] ?? null;
-
-                    // ข้ามถ้า null, ว่าง, ไม่ใช่ตัวเลข, หรือเป็น "*"
-                    if ($wlRaw === null || $wlRaw === '' || $wlRaw === '*' || !is_numeric($wlRaw)) {
-                        continue;
-                    }
-
-                    $wl = floatval($wlRaw);
-
-                    $existing = $builder->where([
-                        'sta_code' => $staCode,
-                        'datetime' => $datetimeStr
-                    ])->get()->getRowArray();
-
-                    if ($existing) {
-                        $builder->where([
-                            'sta_code' => $staCode,
-                            'datetime' => $datetimeStr
-                        ])->set(['wl' => $wl])->update();
-                        $totalUpdated++;
-                    } else {
-                        $builder->insert([
-                            'sta_code'   => $staCode,
-                            'datetime'   => $datetimeStr,
-                            'wl'         => $wl,
-                            'discharge'  => null
-                        ]);
-                        $totalInserted++;
-                    }
-                }
-            }
-        }
-
-        // ลบ cookie หลังใช้เสร็จ
-        if (file_exists($cookieFile)) {
-            @unlink($cookieFile);
-        }
-
-        return $this->respond([
-            'status'        => 'success',
-            'message'       => 'อัปเดตข้อมูลรายชั่วโมงสำเร็จ (ใช้ index 8-14 ตาม map ล่าสุด)',
-            'from'          => $startDate,
-            'to'            => $endDate,
-            'inserted'      => $totalInserted,
-            'updated'       => $totalUpdated,
-            'total_records' => $totalInserted + $totalUpdated
-        ]);
-    }
-
 
 }

@@ -140,10 +140,10 @@ const DataReservoirStation: React.FC<DataReservoirStationProps> = ({ propsSelect
       rawData.forEach((item: any) => {
         // const rawValue = sanitizeValue(item[key]);
         const rawValue = (item[key]);
-        const date = new Date(item.date);
-        const year = date.getFullYear();
+        const datetime = new Date(item.datetime);
+        const year = datetime.getFullYear();
 
-        const timestamp = date.getTime();
+        const timestamp = datetime.getTime();
 
         if (!grouped[year]) grouped[year] = [];
         grouped[year].push([timestamp, rawValue]);
@@ -159,8 +159,8 @@ const DataReservoirStation: React.FC<DataReservoirStationProps> = ({ propsSelect
     setInflowGroupedData(inflowGrouped);
     setOutflowGroupedData(outflowGrouped);
 
-    const convertDate = (date: number) => {
-      const d = new Date(date);
+    const convertDate = (datetime: number) => {
+      const d = new Date(datetime);
       const randomSeconds = Math.floor(Math.random() * 60);
       return new Date(BASE_YEAR, d.getMonth(), d.getDate(), d.getHours(), d.getMinutes(), randomSeconds).getTime();
     };

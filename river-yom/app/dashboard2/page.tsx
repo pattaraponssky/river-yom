@@ -36,16 +36,21 @@ interface waterData {
 }
 
 const stationMapping: Record<string, number> = {
-  "Y.15": 170764,
-  "Y.16": 142824,
-  "Y.4": 125488,
-  "Y.50": 84876,
-  "Y.64": 55827,
-  "ปตร.พลเทพ": 321863,
-  "ปตร.ท่าโบสถ์": 293361,
-  "ปตร.ชลมาร์คพิจารณ์": 241714,
-  "ปตร.โพธิ์พระยา": 204540,
+  // "Y.4": 181772,
+  // "Y.15": 14042,
+  // "kpk": 14042,
+  // "wst": 162247,
+  // "Y.50": 179013,
+  // "tng": 130029,
+  "Y.4": 94522,
+  "Y.15": 70401,
+  "kpk": 53147,
+  "wst": 53147,
+  "Y.50": 30227,
+  "tng": 27866,
 };
+
+
 
 export default function Dashboard() {
   const mapKey = process.env.NEXT_PUBLIC_LONGDO_MAP_KEY!;

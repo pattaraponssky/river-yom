@@ -20,7 +20,7 @@ interface LongdoMapProps {
   height?: string;
 }
 
-// Define currentDate with the current date
+// Define currentDate with the current datetime
 const currentDate = new Date();
 const formattedDate = currentDate.toLocaleDateString('th-TH', {
   weekday: 'long', // แสดงวันในสัปดาห์ เช่น จันทร์
@@ -30,7 +30,7 @@ const formattedDate = currentDate.toLocaleDateString('th-TH', {
 });
 interface TeleDataItem {
   sta_code: string;
-  date: string;
+  datetime: string;
   wl: string | null;
   discharge: string | null;
 }
@@ -102,7 +102,7 @@ const TeleMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,heig
   
           rawData.forEach(item => {
             const existing = latestDataMap.get(item.sta_code);
-            if (!existing || new Date(item.date) > new Date(existing.date)) {
+            if (!existing || new Date(item.datetime) > new Date(existing.datetime)) {
               latestDataMap.set(item.sta_code, item);
             }
           });
@@ -213,16 +213,16 @@ const TeleMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,heig
 const prepareChartDataForTele = (rawData: any[], targetStaCode: string) => {
       const filtered = rawData
         .filter(d => d.sta_code === targetStaCode)
-        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        .sort((a, b) => new Date(a.datetime).getTime() - new Date(b.datetime).getTime());
       
   
       const dischargeSeries = filtered.map(d => ({
-        x: new Date(d.date).getTime(),
+        x: new Date(d.datetime).getTime(),
         y: parseFloat(d.discharge),
       }));
   
       const wlSeries = filtered.map(d => ({
-        x: new Date(d.date).getTime(),
+        x: new Date(d.datetime).getTime(),
         y: parseFloat(d.wl),
       }));
     
@@ -527,7 +527,7 @@ const prepareChartDataForTele = (rawData: any[], targetStaCode: string) => {
       const position = { lat: parseFloat(lat), lon: parseFloat(long) };
       const latest = latestDataMap.get(sta_code);
   
-      const latestDateStr = latest?.date ? new Date(latest.date).toISOString().slice(0, 10) : null;
+      const latestDateStr = latest?.datetime ? new Date(latest.datetime).toISOString().slice(0, 10) : null;
       const isToday = latestDateStr === todayStr;
   
       const discharge = isToday && latest?.discharge != null && parseFloat(latest.discharge) !== 0

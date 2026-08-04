@@ -73,8 +73,8 @@ class ReservoirAPI extends Controller
                 $builder->where('res_code', $res_code);
             }
     
-            // ดึงปีที่มีข้อมูลจากฟิลด์ `date` (ใช้ YEAR(date))
-            $builder->select('DISTINCT YEAR(date) AS year');
+            // ดึงปีที่มีข้อมูลจากฟิลด์ `date` (ใช้ YEAR(datetime))
+            $builder->select('DISTINCT YEAR(datetime) AS year');
             $builder->orderBy('year', 'DESC');  // เรียงลำดับจากปีล่าสุด
     
             // ดึงข้อมูลจากฐานข้อมูล
@@ -173,13 +173,13 @@ class ReservoirAPI extends Controller
         } else if (is_array($input)) {
             // กรณีรับข้อมูลแถวเดียวเป็น associative array
             // ต้องมี res_code กับ date เพื่อใช้เป็นเงื่อนไข
-            if (!isset($input['res_code']) || !isset($input['date'])) {
+            if (!isset($input['res_code']) || !isset($input['datetime'])) {
                 return $this->response->setStatusCode(400, 'Missing res_code or date');
             }
     
             $res_code = $input['res_code'];
-            $date = $input['date'];
-            unset($input['res_code'], $input['date']); // เอาออกจากข้อมูลที่อัปเดต
+            $date = $input['datetime'];
+            unset($input['res_code'], $input['datetime']); // เอาออกจากข้อมูลที่อัปเดต
     
             $result = $model->updateReservoirData($res_code, $date, $input);
             return $this->response->setJSON(['success' => $result]);

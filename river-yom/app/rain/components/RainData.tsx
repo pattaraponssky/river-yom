@@ -158,7 +158,7 @@ const DataRainStation: React.FC<DataRainStationProps> = ({ propsSelectedStation 
   // ─── Transform: รายวัน / รายชั่วโมง ──────────────────────────
   const transformDailyOrHourly = (rawData: any[], m: DataMode) => {
     const BASE_YEAR  = 2000;
-    const dateField  = m === "hourly" ? "datetime" : "date";
+    const dateField  = m === "hourly" ? "datetime" : "datetime";
     const grouped: { [year: string]: [number, number][] } = {};
     const groupedDataTable: { [year: string]: [number, number][] } = {};
   
@@ -231,7 +231,7 @@ const DataRainStation: React.FC<DataRainStationProps> = ({ propsSelectedStation 
     const grouped: { [year: string]: { [month: number]: number } } = {};
       rawData.forEach((item: any, idx: number) => {
         if (item.rain_mm === null) return;
-        const d     = new Date(item.date ?? item.datetime);
+        const d     = new Date(item.datetime ?? item.datetime);
         const year  = d.getFullYear().toString();
         const month = d.getMonth(); // 0-11
         const val   = parseFloat(item.rain_mm);
@@ -256,7 +256,7 @@ const DataRainStation: React.FC<DataRainStationProps> = ({ propsSelectedStation 
 
     // รวมเป็น series เดียว (ไม่แยกปี เพราะแกน X คือปี)
     const points: [number, number][] = rawData.map((item: any) => {
-      const year = parseInt(item.year ?? item.date?.slice(0, 4));
+      const year = parseInt(item.year ?? item.datetime?.slice(0, 4));
       const ts   = new Date(year, 6, 1).getTime(); // กลางปี
       return [ts, parseFloat(item.rain_mm ?? 0)] as [number, number];
     }).sort((a, b) => a[0] - b[0]);
@@ -281,7 +281,7 @@ const DataRainStation: React.FC<DataRainStationProps> = ({ propsSelectedStation 
     });
     setChartDataSum({ series: [{ name: "ฝนสะสมรายปี", type: "line", data: sumPoints }] });
 
-    setAllAvailableYears(rawData.map((r: any) => String(r.year ?? r.date?.slice(0, 4))).sort());
+    setAllAvailableYears(rawData.map((r: any) => String(r.year ?? r.datetime?.slice(0, 4))).sort());
   };
 
   // ─── Build charts จาก grouped data ──────────────────────────

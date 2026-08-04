@@ -88,7 +88,7 @@ export default function FlowPage() {
         {mainTab === 1 && (
           <Box>
             {/* ถ้ามี component แสดงข้อมูลสถานี */}
-            <DataFlowCombined />
+            <DataFlowCombined propsSelectedStation={selectedStationFromURL}/>
           </Box>
         )}
         {mainTab === 2 && (

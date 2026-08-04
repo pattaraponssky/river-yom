@@ -42,8 +42,8 @@ class ReservoirModel extends Model
         // ให้คงบรรทัดนี้ไว้แบบเดิม ไม่ต้องแก้ ดูหมายเหตุด้านล่าง
         return $this->db->table('reservoir_rc')
             ->where('res_code', $res_code)
-            ->where("YEAR(date) >=", $startYear)
-            ->where("YEAR(date) <=", $endYear)
+            ->where("YEAR(datetime) >=", $startYear)
+            ->where("YEAR(datetime) <=", $endYear)
             ->orderBy('date', 'ASC')
             ->get()
             ->getResultArray();

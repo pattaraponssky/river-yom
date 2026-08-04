@@ -96,11 +96,11 @@ export const useHydroData = () => {
     }
     }, [teleData14d]);
 
-  const getLatest = <T extends { sta_code: string; date: string }>(arr: T[]) => {
+  const getLatest = <T extends { sta_code: string; datetime: string }>(arr: T[]) => {
     const map = new Map<string, T>();
     arr.forEach(item => {
       const exist = map.get(item.sta_code);
-      if (!exist || new Date(item.date) > new Date(exist.date)) map.set(item.sta_code, item);
+      if (!exist || new Date(item.datetime) > new Date(exist.datetime)) map.set(item.sta_code, item);
     });
     return Array.from(map.values());
   };

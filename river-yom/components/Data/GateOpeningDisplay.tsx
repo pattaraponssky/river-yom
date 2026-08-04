@@ -20,12 +20,16 @@ interface GateOpeningData {
   wl_upper?: number;
   wl_lower?: number;
   discharge?: number;
-  [key: string]: any; // gate1_height, gate2_height, ...
+  [key: string]: any; // gate1_height, gate2_height, ... (หน่วยเมตร ตามข้อมูลดิบจาก API)
 }
 
 interface GateOpeningDisplayProps {
   config: GateStationConfig;
 }
+
+// ─── หน่วยแสดงผลระยะเปิดบาน ──────────────────────────────────────
+const rawCmToMeters = (raw: number) => raw / 100;
+const fmtMeters = (m: number) => m.toFixed(2);
 
 // ─── ค่าคงที่มิติ ────────────────────────────────────────────────
 const DECK_H          = 22;   // คานทับหลัง (deck)
@@ -56,7 +60,7 @@ const Pier: React.FC = () => (
   />
 );
 
-// ─── บานประตู (แบบเดิม: บาร์เติมน้ำ) — ไม่แสดง % ─────────────────
+// ─── บานประตู (แบบเดิม: บาร์เติมน้ำ) — แสดงระยะเปิดเป็น "ซม." ────
 const GateFrame: React.FC<{
   maxHeight: number;
   currentHeight: number | null;
@@ -73,7 +77,14 @@ const GateFrame: React.FC<{
     pct >= 20 ? '#388E3C' : '#1565C0';
 
   return (
-    <Tooltip title={hasData ? `เปิด ${currentHeight} ม. จากสูงสุด ${maxHeight} ม.` : 'ไม่มีข้อมูล'} arrow>
+    <Tooltip
+      title={
+        hasData
+          ? `เปิด ${fmtMeters(currentHeight!)} ม. จากสูงสุด ${fmtMeters(maxHeight)} ม.`
+          : 'ไม่มีข้อมูล'
+      }
+      arrow
+    >
       <Box
         sx={{
           position: 'relative',
@@ -291,9 +302,6 @@ const GateOpeningDisplay: React.FC<GateOpeningDisplayProps> = ({ config }) => {
               สถานะการเปิด-ปิดบานประตูระบายน้ำ ปัจจุบัน
             </Typography>
           </Box>
-          <Typography sx={{ fontFamily: 'Prompt', fontSize: '0.78rem', color: 'text.secondary' }}>
-            {lastUpdate ? `อัปเดตล่าสุด: ${data?.date ?? null}` : 'กำลังโหลด...'}
-          </Typography>
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           {data && (
@@ -368,7 +376,7 @@ const GateOpeningDisplay: React.FC<GateOpeningDisplayProps> = ({ config }) => {
               {c.type === 'gate' && (
                 <GateFrame
                   maxHeight={c.gate.maxHeight}
-                  currentHeight={data ? (parseFloat(data[c.gate.fieldName]) || 0) : null}
+                  currentHeight={data ? rawCmToMeters(parseFloat(data[c.gate.fieldName]) || 0) : null}
                 />
               )}
             </Box>
@@ -394,13 +402,13 @@ const GateOpeningDisplay: React.FC<GateOpeningDisplayProps> = ({ config }) => {
           )}
         </Box>
 
-        {/* แถวค่าตัวเลข/สถานะใต้บาน (แสดงเฉพาะระยะเปิดบาน ไม่แสดง %) */}
+        {/* แถวค่าตัวเลข/สถานะใต้บาน (แสดงระยะเปิดบานเป็น "ซม.") */}
         <Box sx={{ display: 'flex', justifyContent: 'center',  px: 1, pb: 1.5, pt: 1, overflowX: 'auto' }}>
           {columns.map((c, i) => {
             if (c.type !== 'gate') {
               return <Box key={i} sx={{ width: colWidth(c), flexShrink: 0, height: STATS_H }} />;
             }
-            const currentHeight = data ? (parseFloat(data[c.gate.fieldName]) || 0) : null;
+            const currentHeight = data ? rawCmToMeters(parseFloat(data[c.gate.fieldName]) || 0) : null;
             const maxHeight = c.gate.maxHeight;
             const pct = currentHeight != null ? Math.min(Math.max((currentHeight / maxHeight) * 100, 0), 100) : 0;
             const hasData = currentHeight != null;
@@ -413,7 +421,7 @@ const GateOpeningDisplay: React.FC<GateOpeningDisplayProps> = ({ config }) => {
             return (
               <Box key={i} sx={{ width: colWidth(c), flexShrink: 0, height: STATS_H, textAlign: 'center' }}>
                 <Typography sx={{ fontFamily: 'Prompt', fontWeight: 700, fontSize: '0.9rem', color: fillColor }}>
-                  {hasData ? `${currentHeight} เมตร` : '-'}
+                  {hasData ? `${fmtMeters(currentHeight!)} ม.` : '-'}
                 </Typography>
               </Box>
             );

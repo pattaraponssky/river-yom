@@ -116,13 +116,13 @@ class API extends Controller
         if (isset($input['reservoir'])) {
             $model = new ReservoirModel();
             foreach ($input['reservoir'] as $data) {
-                if (!isset($data['res_code'], $data['date'])) continue;
+                if (!isset($data['res_code'], $data['datetime'])) continue;
     
-                $exists = $model->recordExists($data['res_code'], $data['date']);
+                $exists = $model->recordExists($data['res_code'], $data['datetime']);
                 $result[] = [
                     'type' => 'reservoir',
                     'code' => $data['res_code'],
-                    'date' => $data['date'],
+                    'datetime' => $data['datetime'],
                     'status' => $exists ? 'update' : 'insert',
                     'data' => $data,
                 ];
@@ -133,13 +133,13 @@ class API extends Controller
         if (isset($input['rain'])) {
             $model = new RainModel();
             foreach ($input['rain'] as $data) {
-                if (!isset($data['sta_code'], $data['date'])) continue;
+                if (!isset($data['sta_code'], $data['datetime'])) continue;
     
-                $exists = $model->recordExists($data['sta_code'], $data['date']);
+                $exists = $model->recordExists($data['sta_code'], $data['datetime']);
                 $result[] = [
                     'type' => 'rain',
                     'code' => $data['sta_code'],
-                    'date' => $data['date'],
+                    'datetime' => $data['datetime'],
                     'status' => $exists ? 'update' : 'insert',
                     'data' => $data,
                 ];
@@ -150,13 +150,13 @@ class API extends Controller
         if (isset($input['flow'])) {
             $model = new FlowModel();
             foreach ($input['flow'] as $data) {
-                if (!isset($data['sta_code'], $data['date'])) continue;
+                if (!isset($data['sta_code'], $data['datetime'])) continue;
     
-                $exists = $model->recordExists($data['sta_code'], $data['date']);
+                $exists = $model->recordExists($data['sta_code'], $data['datetime']);
                 $result[] = [
                     'type' => 'flow',
                     'code' => $data['sta_code'],
-                    'date' => $data['date'],
+                    'datetime' => $data['datetime'],
                     'status' => $exists ? 'update' : 'insert',
                     'data' => $data,
                 ];
@@ -166,13 +166,13 @@ class API extends Controller
         if (isset($input['gate'])) {
             $model = new GateModel();
             foreach ($input['gate'] as $data) {
-                if (!isset($data['sta_code'], $data['date'])) continue;
+                if (!isset($data['sta_code'], $data['datetime'])) continue;
     
-                $exists = $model->recordExists($data['sta_code'], $data['date']);
+                $exists = $model->recordExists($data['sta_code'], $data['datetime']);
                 $result[] = [
                     'type' => 'gate',
                     'code' => $data['sta_code'],
-                    'date' => $data['date'],
+                    'datetime' => $data['datetime'],
                     'status' => $exists ? 'update' : 'insert',
                     'data' => $data,
                 ];
@@ -337,7 +337,7 @@ class API extends Controller
         }
 
         return $this->respond([
-            'date' => $today,
+            'datetime' => $today,
             'avg_rain_mm' => round($avgRain['avg_rain'], 2),
             'discharge_gate' => $dischargeSummaryGate,
             'discharge_flow' => $dischargeSummaryFlow,

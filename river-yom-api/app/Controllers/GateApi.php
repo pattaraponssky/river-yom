@@ -89,8 +89,8 @@ class GateAPI extends Controller
                 $builder->where('sta_code', $sta_code);
             }
 
-            // ดึงปีที่มีข้อมูลจากฟิลด์ `date` (ใช้ YEAR(date))
-            $builder->select('DISTINCT YEAR(date) AS year');
+            // ดึงปีที่มีข้อมูลจากฟิลด์ `date` (ใช้ YEAR(datetime))
+            $builder->select('DISTINCT YEAR(datetime) AS year');
             $builder->orderBy('year', 'DESC');  // เรียงลำดับจากปีล่าสุด
 
             // ดึงข้อมูลจากฐานข้อมูล
@@ -188,13 +188,13 @@ class GateAPI extends Controller
             return $this->response->setJSON(['updated' => $count]);
         } else if (is_array($input)) {
             // ข้อมูลแถวเดียว
-            if (!isset($input['sta_code']) || !isset($input['date'])) {
+            if (!isset($input['sta_code']) || !isset($input['datetime'])) {
                 return $this->response->setStatusCode(400, 'Missing sta_code or date');
             }
 
             $sta_code = $input['sta_code'];
-            $date = $input['date'];
-            unset($input['sta_code'], $input['date']); // ลบออกจากข้อมูลที่จะอัปเดต
+            $date = $input['datetime'];
+            unset($input['sta_code'], $input['datetime']); // ลบออกจากข้อมูลที่จะอัปเดต
 
             $result = $model->updateGateData($sta_code, $date, $input);
             return $this->response->setJSON(['success' => $result]);
@@ -210,7 +210,7 @@ class GateAPI extends Controller
         // ดึงข้อมูลล่าสุดรวม gate opening heights
          $row = $db->query("
             SELECT
-                g.date,
+                g.datetime,
                 g.sta_code,
                 g.wl_upper,
                 g.wl_lower,
@@ -220,13 +220,14 @@ class GateAPI extends Controller
                 o.gate3_height,
                 o.gate4_height,
                 o.gate5_height,
-                o.gate6_height
+                o.gate6_height,
+                o.gate7_height
             FROM gate_data g
             LEFT JOIN gate_opening o
                 ON g.sta_code = o.sta_code
-            AND g.date     = o.date
+            AND g.datetime     = o.datetime
             WHERE g.sta_code = ?
-            ORDER BY g.date DESC
+            ORDER BY g.datetime DESC
             LIMIT 1
         ", [$sta_code])->getRowArray();
 
@@ -244,7 +245,7 @@ class GateAPI extends Controller
         // ดึงข้อมูลล่าสุดรวม gate opening heights
         $rows = $db->query("
             SELECT
-                g.date,
+                g.datetime,
                 g.sta_code,
                 g.wl_upper,
                 g.wl_lower,
@@ -257,15 +258,15 @@ class GateAPI extends Controller
                 o.gate6_height
             FROM gate_data g
             INNER JOIN (
-                SELECT sta_code, MAX(date) as max_date
+                SELECT sta_code, MAX(datetime) as max_date
                 FROM gate_data
                 GROUP BY sta_code
             ) lateste
                 ON g.sta_code = latest.sta_code
-                AND g.date = latest.max_date
+                AND g.datetime = latest.max_date
             LEFT JOIN gate_opening o
                 ON g.sta_code = o.sta_code
-                AND g.date = o.date
+                AND g.datetime = o.datetime
         ")->getResultArray();
 
         if (!$rows) {

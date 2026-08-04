@@ -25,7 +25,13 @@ const addFlowMarkers = (
     if (isNaN(position.lat) || isNaN(position.lon)) return;
 
     const latest = latestMap.get(sta_code);
-    const isToday = latest && new Date(latest.date).toISOString().slice(0, 10) === todayStr;
+    let isToday = false;
+    if (latest?.datetime) {
+      const parsedDate = new Date(latest.datetime);
+      if (!isNaN(parsedDate.getTime())) { // ✅ เช็คว่าแปลงได้จริงก่อน (ไม่ใช่ Invalid Date)
+        isToday = parsedDate.toISOString().slice(0, 10) === todayStr;
+      }
+    }
 
     const discharge = isToday && latest?.discharge != null && parseFloat(latest.discharge) !== 0
       ? parseFloat(latest.discharge).toFixed(2)

@@ -123,7 +123,7 @@ const DataTeleCombined: React.FC<{ propsSelectedStation?: string }> = ({ propsSe
 
   const fetchTeleData = async (start: string, end: string) => {
     const endpoint = mode === "daily" ? "tele_data" : "tele_hourly_data";
-    const dateField = mode === "daily" ? "date" : "datetime";
+    const dateField = mode === "daily" ? "datetime" : "datetime";
 
     const res = await fetch(`${API_URL}/api/${endpoint}/${selectedStation}?startYear=${start}&endYear=${end}`);
     const data = await res.json();
@@ -147,15 +147,15 @@ const DataTeleCombined: React.FC<{ propsSelectedStation?: string }> = ({ propsSe
     const dischargeSeriesMap = new Map<string, [number, number][]>();
 
     rawData.forEach((item: any) => {
-      const date = new Date(item[dateField]);
-      if (isNaN(date.getTime())) return;
+      const datetime = new Date(item[dateField]);
+      if (isNaN(datetime.getTime())) return;
 
-      const originalYear = date.getFullYear().toString();
-      const month = date.getMonth();
-      const day = date.getDate();
-      const hours = date.getHours();
-      const minutes = date.getMinutes();
-      const seconds = mode === "daily" ? Math.floor(Math.random() * 60) : date.getSeconds();
+      const originalYear = datetime.getFullYear().toString();
+      const month = datetime.getMonth();
+      const day = datetime.getDate();
+      const hours = datetime.getHours();
+      const minutes = datetime.getMinutes();
+      const seconds = mode === "daily" ? Math.floor(Math.random() * 60) : datetime.getSeconds();
 
       const chartTimestamp = new Date(BASE_YEAR, month, day, hours, minutes, seconds).getTime();
 
@@ -164,7 +164,7 @@ const DataTeleCombined: React.FC<{ propsSelectedStation?: string }> = ({ propsSe
         const value = parseFloat(item.wl);
 
         if (!wlTable[originalYear]) wlTable[originalYear] = [];
-        wlTable[originalYear].push([date.getTime(), value]);
+        wlTable[originalYear].push([datetime.getTime(), value]);
 
         // กราฟ
         if (!wlSeriesMap.has(originalYear)) wlSeriesMap.set(originalYear, []);
@@ -176,7 +176,7 @@ const DataTeleCombined: React.FC<{ propsSelectedStation?: string }> = ({ propsSe
         const value = parseFloat(item.discharge);
 
         if (!dischargeTable[originalYear]) dischargeTable[originalYear] = [];
-        dischargeTable[originalYear].push([date.getTime(), value]);
+        dischargeTable[originalYear].push([datetime.getTime(), value]);
 
         if (!dischargeSeriesMap.has(originalYear)) dischargeSeriesMap.set(originalYear, []);
         dischargeSeriesMap.get(originalYear)!.push([chartTimestamp, value]);

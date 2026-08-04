@@ -12,6 +12,7 @@ import DataGateStation from "./GateData";
 import GateMap from "./GateMap";
 import { fontTitle } from '../../../theme/style';
 import GateDashboard from "./GateDashboard";
+import { useSearchParams, useRouter } from "next/navigation"; 
 
 const mapKey = process.env.NEXT_PUBLIC_LONGDO_MAP_KEY!;
 const JsonPaths = [
@@ -20,19 +21,27 @@ const JsonPaths = [
 ];
 
 const GateStation: React.FC = () => {
-  const queryParams = new URLSearchParams(location.search);
-
-  const [mainTab, setMainTab] = useState(0);
-  const selectedStationFromURL = queryParams.get("station") || undefined;
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  
+    // ดึง tab และ station จาก URL query
+  const tabFromURL = parseInt(searchParams.get("tab") || "0", 10);
+  const [mainTab, setMainTab] = useState(tabFromURL);
+  const selectedStationFromURL = searchParams.get("station") || undefined;
 
   useEffect(() => {
-    const tabFromURL = parseInt(queryParams.get("tab") || "0");
+    const tabFromURL = parseInt(searchParams.get("tab") || "0");
     setMainTab(tabFromURL);
-  }, [location.search]);
+  }, [searchParams]);
 
-  const handleMainTabChange = (_event: React.SyntheticEvent, newValue: number) => {
-    setMainTab(newValue);
-  };
+    const handleMainTabChange = (_event: React.SyntheticEvent, newValue: number) => {
+      setMainTab(newValue);
+      // อัปเดต URL โดยคง station ไว้ถ้ามี
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("tab", newValue.toString());
+      router.push(`/gate?${params.toString()}`);
+    };
+  
 
   return (
     <div>

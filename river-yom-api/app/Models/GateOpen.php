@@ -8,7 +8,7 @@ class GateOpen extends Model
 {
 
     protected $table = 'gate_opening'; // ชื่อตารางจริงในฐานข้อมูลของคุณ
-    protected $allowedFields = ['sta_code', 'date', 'gate1_height','gate2_height', 'gate3_height', 'gate4_height', 'gate5_height', 'gate6_height']; // กำหนดฟิลด์ที่แก้ไขได้ (ถ้าจำเป็น)
+    protected $allowedFields = ['sta_code', 'datetime', 'gate1_height','gate2_height', 'gate3_height', 'gate4_height', 'gate5_height', 'gate6_height', 'gate7_height']; // กำหนดฟิลด์ที่แก้ไขได้ (ถ้าจำเป็น)
     
       public function getGateInfo()
     {
@@ -27,7 +27,7 @@ class GateOpen extends Model
     public function getActualGateData($sta_code, $date)
     {
         return $this->where('sta_code', $sta_code)
-                    ->where('date', $date)
+                    ->where('datetime', $date)
                     ->first(); // ดึงข้อมูลแถวเดียว (หรือจะใช้ findAll() ก็ได้ถ้าคาดว่ามีหลายแถว)
     }
 
@@ -36,48 +36,42 @@ class GateOpen extends Model
     {
         return $this->db->table('gate_opening')
             ->where('sta_code', $sta_code)
-            ->where("YEAR(date) >=", $startYear)
-            ->where("YEAR(date) <=", $endYear)
-            ->orderBy('date', 'ASC')
+            ->where("YEAR(datetime) >=", $startYear)
+            ->where("YEAR(datetime) <=", $endYear)
+            ->orderBy('datetime', 'ASC')
             ->get()
             ->getResultArray();
     }
 
     public function getGateDataLast7Days()
     {
-        // สมมติ field วันเก็บข้อมูลชื่อ 'date' และข้อมูลเรียงตามวันที่
-        // เอาข้อมูล 7 วันล่าสุดจากทุกอ่าง
         return $this->select('*')
-                    ->where('date >=', date('Y-m-d', strtotime('-7 days')))
-                    ->orderBy('date', 'DESC')
+                    ->where('datetime >=', date('Y-m-d 00:00:00', strtotime('-7 days')))
+                    ->orderBy('datetime', 'DESC')
                     ->findAll();
     }
 
     public function getGateDataLast14Days()
     {
-        // สมมติ field วันเก็บข้อมูลชื่อ 'date' และข้อมูลเรียงตามวันที่
-        // เอาข้อมูล 14 วันล่าสุดจากทุกอ่าง
         return $this->select('*')
-                    ->where('date >=', date('Y-m-d', strtotime('-14 days')))
-                    ->orderBy('date', 'DESC')
+                    ->where('datetime >=', date('Y-m-d 00:00:00', strtotime('-14 days')))
+                    ->orderBy('datetime', 'DESC')
                     ->findAll();
     }
-
       public function findByStationAndDate(string $stationId, string $date)
     {
-        return $this->where(['sta_code' => $stationId, 'date' => $date])->first();
+        return $this->where(['sta_code' => $stationId, 'datetime' => $date])->first();
     }
     
-     public function getGateDataLast8Days(array $stationCodes) // <--- ชื่อฟังก์ชันนี้ต้องตรง
+    public function getGateDataLast8Days(array $stationCodes)
     {
-        // กำหนดช่วงวันที่ย้อนหลัง 8 วัน (รวมวันนี้)
-        $today = date('Y-m-d');
-        $startDate = date('Y-m-d', strtotime('-7 days')); // รวมวันนี้ก็คือ 8 วัน
+        $today = date('Y-m-d 23:59:59');
+        $startDate = date('Y-m-d 00:00:00', strtotime('-7 days')); // รวมวันนี้ = 8 วัน
 
-        return $this->select('sta_code, date, discharge')
+        return $this->select('sta_code, datetime, discharge')  // เปลี่ยน date → datetime
                     ->whereIn('sta_code', $stationCodes)
-                    ->where('date >=', $startDate)
-                    ->where('date <=', $today)
+                    ->where('datetime >=', $startDate)
+                    ->where('datetime <=', $today)
                     ->findAll();
     }
 }

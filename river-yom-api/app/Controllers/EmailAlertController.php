@@ -41,8 +41,8 @@ class EmailAlertController extends ResourceController
         $userModel = new UserModel();
 
         // 1. ดึงข้อมูลวันล่าสุด
-        $latest = $dataModel->selectMax('date')->first();
-        $date = $latest ? $latest['date'] : date('Y-m-d');
+        $latest = $dataModel->selectMax('datetime')->first();
+        $date = $latest ? $latest['datetime'] : date('Y-m-d');
 
         // 2. ตรวจสอบแต่ละสถานี
         $alerts = [];
@@ -52,7 +52,7 @@ class EmailAlertController extends ResourceController
             $sta_code = $flow['sta_code'];
             $daily = $dataModel
                 ->where('sta_code', $sta_code)
-                ->where('date', $date)
+                ->where('datetime', $date)
                 ->first();
 
             if (!$daily) continue;
@@ -68,7 +68,7 @@ class EmailAlertController extends ResourceController
                     'sta_code'      => $sta_code,
                     'sta_name'      => $flow['sta_name'],
                     'province'      => $flow['province'],
-                    'date'          => $date,
+                    'datetime'          => $date,
                     'wl'            => $wl,
                     'discharge'     => $discharge,
                     'wl_level'      => $wlLevel,
@@ -104,7 +104,7 @@ class EmailAlertController extends ResourceController
 
         return $this->respond([
             'status'      => 'success',
-            'date'        => $date,
+            'datetime'        => $date,
             'alert_count' => count($alerts),
             'sent_to'     => $sentCount,
             'alerts'      => $alerts,

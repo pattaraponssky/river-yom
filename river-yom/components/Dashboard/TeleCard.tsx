@@ -167,7 +167,7 @@ const TeleCard: React.FC = () => {
                 </Typography>
               </Grid>
               <Grid size={{ xs: 3 }} textAlign="right">
-                <Typography sx={{ color: "gray",...textStyle }}>ล้าน ลบ.ม.</Typography>
+                <Typography sx={{ color: "gray",...textStyle }}>ลบ.ม./วินาที</Typography>
               </Grid>
 
               <Grid size={{ xs: 6 }}>

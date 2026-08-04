@@ -30,7 +30,7 @@ const formattedDate = currentDate.toLocaleDateString('th-TH', {
 });
 interface FlowDataItem {
   sta_code: string;
-  date: string;
+  datetime: string;
   wl: string | null;
   discharge: string | null;
 }
@@ -102,7 +102,7 @@ const FlowMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,heig
   
           rawData.forEach(item => {
             const existing = latestDataMap.get(item.sta_code);
-            if (!existing || new Date(item.date) > new Date(existing.date)) {
+            if (!existing || new Date(item.datetime) > new Date(existing.datetime)) {
               latestDataMap.set(item.sta_code, item);
             }
           });
@@ -213,16 +213,16 @@ const FlowMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,heig
 const prepareChartDataForFlow = (rawData: any[], targetStaCode: string) => {
       const filtered = rawData
         .filter(d => d.sta_code === targetStaCode)
-        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        .sort((a, b) => new Date(a.datetime).getTime() - new Date(b.datetime).getTime());
       
   
       const dischargeSeries = filtered.map(d => ({
-        x: new Date(d.date).getTime(),
+        x: new Date(d.datetime).getTime(),
         y: parseFloat(d.discharge),
       }));
   
       const wlSeries = filtered.map(d => ({
-        x: new Date(d.date).getTime(),
+        x: new Date(d.datetime).getTime(),
         y: parseFloat(d.wl),
       }));
     

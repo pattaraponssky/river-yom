@@ -116,8 +116,7 @@ const LongProfileChart: React.FC<Props> = ({ waterData, chartHeight = 500, isDar
         // ดึงระดับน้ำเดิม
         const originalLevel = reversedFiltered[index]?.WaterLevel ?? null;
 
-        // เพิ่ม +50 ให้ทุกค่า (ถ้าเป็น null ก็ยังคง null)
-        const adjustedLevel = originalLevel !== null ? originalLevel + 50 : null;
+        const adjustedLevel = originalLevel !== null ? originalLevel : null;
 
         return { ...d, WaterLevel: adjustedLevel };
       })
@@ -279,7 +278,7 @@ const LongProfileChart: React.FC<Props> = ({ waterData, chartHeight = 500, isDar
         const originalLevel = reversedFiltered[index]?.WaterLevel ?? null;
 
         // เพิ่ม +50 ให้ทุกค่า (ถ้า null ก็ยังคง null)
-        const adjustedLevel = originalLevel !== null ? originalLevel + 35 : null;
+        const adjustedLevel = originalLevel !== null ? originalLevel : null;
 
         return { ...d, WaterLevel: adjustedLevel };
       })

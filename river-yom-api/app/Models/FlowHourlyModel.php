@@ -58,7 +58,7 @@ class FlowHourlyModel extends Model
 
     public function getFlowHourlyDataByCode($sta_code)
     {
-        return $this->db->table('flow_hourly')
+        return $this->db->table('flow_data')
             ->where('sta_code', $sta_code)
             ->get()
             ->getResultArray();
@@ -67,7 +67,7 @@ class FlowHourlyModel extends Model
     // ดึงข้อมูลจาก flowHourly_data ตาม sta_code และช่วงปี
     public function getFlowHourlyDataByCodeAndYearRange($sta_code, $startYear, $endYear)
     {
-        return $this->db->table('flow_hourly')
+        return $this->db->table('flow_data')
             ->where('sta_code', $sta_code)
             ->where("YEAR(datetime) >=", $startYear)
             ->where("YEAR(datetime) <=", $endYear)

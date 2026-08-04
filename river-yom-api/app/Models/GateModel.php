@@ -196,6 +196,7 @@ class GateModel extends Model
                 o.gate3_height,
                 o.gate4_height,
                 o.gate5_height,
+                o.gate6_height,
                 o.gate6_height
             FROM gate_data g
             LEFT JOIN gate_opening o

@@ -7,11 +7,12 @@ import dynamic from "next/dynamic";
 
 // (ส่วน stationMapping และ Interfaces ยังคงเดิม)
 const stationMapping: Record<string, number> = {
-  "Y.15": 170764,
-  "Y.16": 142824,
-  "Y.64": 125488,
-  "Y.17": 84876,
-  // "Y.64": 55827,
+  "Y.4": 181772,
+  "Y.15": 14042,
+  "kpk": 14042,
+  "wst": 162247,
+  "Y.50": 179013,
+  "tng": 130029,
 };
 
 interface waterData {

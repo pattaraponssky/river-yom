@@ -90,7 +90,7 @@ class SeaAPI extends Controller
                 $builder->where('sta_code', $sta_code);
             }
 
-            // ดึงปีที่มีข้อมูลจากฟิลด์ `date` (ใช้ YEAR(date))
+            // ดึงปีที่มีข้อมูลจากฟิลด์ `date` (ใช้ YEAR(datetime))
             $builder->select('DISTINCT YEAR(datetime) AS year');
             $builder->orderBy('year', 'DESC');  // เรียงลำดับจากปีล่าสุด
 

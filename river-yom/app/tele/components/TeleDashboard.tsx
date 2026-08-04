@@ -18,6 +18,7 @@ import StationCrossSectionChart from '@/components/Data/StationCrossSectionChart
 import StationCoordinates from '@/components/Data/Stationcoordinates';
 import TeleMetricCards from '@/components/Data/Telemetriccards';
 import { TELE_WARN_LEVELS } from '../../../lib/warnLevels';
+import StationSelector, { StationOption } from '@/components/Data/StationSelector';
 
 // ─── Types ────────────────────────────────────────────────────
 interface TeleInfo {
@@ -34,7 +35,7 @@ interface TeleInfo {
 interface TeleLatest {
   sta_code: string;
   sta_name: string;
-  date: string;
+  datetime: string;
   wl?: number;           // ระดับน้ำ
   discharge?: number;    // อัตราการไหล
   rain?: number;         // ปริมาณฝน
@@ -79,7 +80,7 @@ export default function TeleDashboard() {
         setLatest({
           sta_code: data.sta_code,
           sta_name: data.sta_name,
-          date: data.date,
+          datetime: data.datetime,
           wl: data.wl,
           discharge: data.discharge,
           rain: data.rain,
@@ -104,6 +105,12 @@ export default function TeleDashboard() {
     return () => clearInterval(interval);
   }, [selectedCode, fetchStationData]);
 
+   const teleStationOptions: StationOption[] = teleInfoList.map((g) => ({
+      code: g.sta_code,
+      name: g.sta_name,
+      subLabel: [g.district, g.province].filter(Boolean).join(', ') || undefined,
+    }));
+
   const selectedInfo = teleInfoList.find(g => g.sta_code === selectedCode) ?? null;
   const cameras = selectedCode ? (STATION_CAMERAS[selectedCode] ?? []) : [];
 
@@ -121,21 +128,14 @@ export default function TeleDashboard() {
       <Box sx={{ my: 2 }}>
         {/* Row 1: Dropdown + Refresh */}
         <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', width: '100%' }}>
-          <FormControl fullWidth>
-            <InputLabel sx={{ fontFamily: 'Prompt' }}>เลือกประตูระบายน้ำ</InputLabel>
-            <Select
-              value={selectedCode || '01'}
-              label="เลือกประตูระบายน้ำ"
-              onChange={(e: SelectChangeEvent) => setSelectedCode(e.target.value)}
-              sx={fontInfo}
-            >
-              {teleInfoList.map((s: any) => (
-                <MenuItem key={s.sta_code} value={s.sta_code}>
-                  {s.sta_name} ({s.sta_code})
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <StationSelector
+            stations={teleStationOptions}
+            value={selectedCode}
+            onChange={setSelectedCode}
+            label="เลือกสถานีติดตั้งโครงการ"
+            placeholder="ค้นหาชื่อสถานี, รหัส, อำเภอ หรือจังหวัด"
+            iconSrc={`${Path_URL}/images/icons/tele_station_icon.png`}
+          />
 
           <Tooltip title="รีเฟรชข้อมูล">
             <span>
@@ -176,7 +176,7 @@ export default function TeleDashboard() {
                   color: 'text.disabled',
                 }}
               >
-              ข้อมูลอัปเดตล่าสุด: {latest?.date ?? 'กำลังโหลด...'}
+              ข้อมูลอัปเดตล่าสุด: {latest?.datetime ?? 'กำลังโหลด...'}
             </Typography>
           </Box>
         )}

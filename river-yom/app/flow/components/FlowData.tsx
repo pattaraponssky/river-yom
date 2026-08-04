@@ -104,8 +104,7 @@ const DataFlowCombined: React.FC<{ propsSelectedStation?: string }> = ({ propsSe
 
   useEffect(() => {
     if (!selectedStation) return;
-    const endpoint = mode === "daily" ? "flow_years" : "flow_hourly_years";
-    fetch(`${API_URL}/api/${endpoint}?sta_code=${selectedStation}`)
+    fetch(`${API_URL}/api/flow_years?sta_code=${selectedStation}`)
       .then(r => r.json())
       .then(d => {
         const years = (d.data || []).sort((a: string, b: string) => +a - +b);
@@ -124,7 +123,7 @@ const DataFlowCombined: React.FC<{ propsSelectedStation?: string }> = ({ propsSe
 
   const fetchFlowData = async (start: string, end: string) => {
     const endpoint = mode === "daily" ? "flow_data" : "flow_hourly_data";
-    const dateField = mode === "daily" ? "date" : "datetime";
+    const dateField = mode === "daily" ? "datetime" : "datetime";
 
     const res = await fetch(`${API_URL}/api/${endpoint}/${selectedStation}?startYear=${start}&endYear=${end}`);
     const data = await res.json();

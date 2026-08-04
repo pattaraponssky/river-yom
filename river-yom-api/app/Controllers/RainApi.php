@@ -86,16 +86,16 @@ class RainAPI extends Controller
         $db = db_connect();
         $query = $db->query("
             SELECT
-                YEAR(date)  AS year,
-                MONTH(date) AS month,
+                YEAR(datetime)  AS year,
+                MONTH(datetime) AS month,
                 ROUND(SUM(rain_mm), 2) AS rain_mm,
                 COUNT(*)    AS days
             FROM rain_data
             WHERE sta_code = ?
-            AND YEAR(date) BETWEEN ? AND ?
+            AND YEAR(datetime) BETWEEN ? AND ?
             AND rain_mm IS NOT NULL
-            GROUP BY YEAR(date), MONTH(date)
-            ORDER BY YEAR(date), MONTH(date)
+            GROUP BY YEAR(datetime), MONTH(datetime)
+            ORDER BY YEAR(datetime), MONTH(datetime)
         ", [$sta_code, $startYear, $endYear]);
 
         return $this->response->setJSON([
@@ -116,17 +116,17 @@ class RainAPI extends Controller
         $db = db_connect();
         $query = $db->query("
             SELECT
-                YEAR(date) AS year,
+                YEAR(datetime) AS year,
                 ROUND(SUM(rain_mm), 2)  AS rain_mm,
                 ROUND(AVG(rain_mm), 2)  AS rain_avg,
                 COUNT(*)                AS days,
                 MAX(rain_mm)            AS rain_max
             FROM rain_data
             WHERE sta_code = ?
-            AND YEAR(date) BETWEEN ? AND ?
+            AND YEAR(datetime) BETWEEN ? AND ?
             AND rain_mm IS NOT NULL
-            GROUP BY YEAR(date)
-            ORDER BY YEAR(date)
+            GROUP BY YEAR(datetime)
+            ORDER BY YEAR(datetime)
         ", [$sta_code, $startYear, $endYear]);
 
         return $this->response->setJSON([
@@ -151,8 +151,8 @@ class RainAPI extends Controller
                 $builder->where('sta_code', $sta_code);
             }
 
-            // ดึงปีที่มีข้อมูลจากฟิลด์ `date` (ใช้ YEAR(date))
-            $builder->select('DISTINCT YEAR(date) AS year');
+            // ดึงปีที่มีข้อมูลจากฟิลด์ `date` (ใช้ YEAR(datetime))
+            $builder->select('DISTINCT YEAR(datetime) AS year');
             $builder->orderBy('year', 'DESC');  // เรียงลำดับจากปีล่าสุด
 
             // ดึงข้อมูลจากฐานข้อมูล

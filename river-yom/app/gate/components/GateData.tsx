@@ -172,11 +172,11 @@ const DataGateStation: React.FC<DataGateStationProps> = ({propsSelectedStation})
       const grouped: { [year: string]: [number, number][] } = {};
       rawData.forEach((item: any) => {
         if (item[key] === null) return;
-        const date = new Date(item.date);
-        const year = date.getFullYear();
+        const datetime = new Date(item.datetime);
+        const year = datetime.getFullYear();
         const value = parseFloat(item[key]);
         const randomSeconds = Math.floor(Math.random() * 60);
-        const newTimestamp = (date.getTime() - date.getSeconds() * 1000) + randomSeconds * 1000;
+        const newTimestamp = (datetime.getTime() - datetime.getSeconds() * 1000) + randomSeconds * 1000;
 
         if (!grouped[year]) grouped[year] = [];
         grouped[year].push([newTimestamp, value]);
@@ -192,8 +192,8 @@ const DataGateStation: React.FC<DataGateStationProps> = ({propsSelectedStation})
     setWlLowerGroupedData(wlLowerGrouped);
     setDischargeGroupedData(dischargeGrouped);
 
-    const convertDate = (date: number) => {
-      const d = new Date(date);
+    const convertDate = (datetime: number) => {
+      const d = new Date(datetime);
       const randomSeconds = Math.floor(Math.random() * 60);
       return new Date(BASE_YEAR, d.getMonth(), d.getDate(), d.getHours(), d.getMinutes(), randomSeconds).getTime();
     };

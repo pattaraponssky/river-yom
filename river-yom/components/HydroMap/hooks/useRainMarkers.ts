@@ -26,7 +26,7 @@ const addRainMarkers = (
     if (isNaN(position.lat) || isNaN(position.lon)) return;
 
     const latest = latestMap.get(sta_code);
-    const isToday = latest && new Date(latest.date).toISOString().slice(0, 10) === yesterdayStr;
+    const isToday = latest && new Date(latest.datetime).toISOString().slice(0, 10) === yesterdayStr;
 
     const rainValue = latest?.rain_mm != null ? parseFloat(latest.rain_mm) : NaN;
     const rain_mm = 

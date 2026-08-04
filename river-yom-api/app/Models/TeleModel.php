@@ -94,24 +94,22 @@ class TeleModel extends Model
 
     public function getTeleDataLast7Days()
     {
-        // สมมติ field วันเก็บข้อมูลชื่อ 'date' และข้อมูลเรียงตามวันที่
-        // เอาข้อมูล 7 วันล่าสุดจากทุกอ่าง
-        return $this->select("DATE(datetime) as date, sta_code, wl, discharge, rain_mm")
-                    ->where('datetime >=', date('Y-m-d', strtotime('-7 days')))
-                    ->where("TIME(datetime)", '07:00:00')
-                    ->orderBy('datetime', 'DESC')
+        $sevenDaysAgo = date('Y-m-d', strtotime('-7 days')) . ' 07:00:00'; // ✅ ระบุเวลา
+
+        return $this->select('*')
+                    ->where('datetime >=', $sevenDaysAgo) 
+                    ->orderBy('datetime', 'DESC')          
                     ->findAll();
     }
 
     public function getTeleDataLast14Days()
     {
-        // สมมติ field วันเก็บข้อมูลชื่อ 'date' และข้อมูลเรียงตามวันที่
-        // เอาข้อมูล 14 วันล่าสุดจากทุกอ่าง
-        return $this->select("DATE(datetime) as date, sta_code, wl, discharge, rain_mm")
-                ->where('datetime >=', date('Y-m-d', strtotime('-14 days')))
-                ->where("TIME(datetime)", '07:00:00')
-                ->orderBy('datetime', 'DESC')
-                ->findAll();
+        $fourteenDaysAgo = date('Y-m-d', strtotime('-14 days')) . ' 07:00:00'; // ✅ ระบุเวลา
+
+        return $this->select('*')
+                    ->where('datetime >=', $fourteenDaysAgo) 
+                    ->orderBy('datetime', 'DESC')             
+                    ->findAll();
     }
 
 

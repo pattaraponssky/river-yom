@@ -19,6 +19,7 @@ import GateOpeningDisplay from '@/components/Data/GateOpeningDisplay';
 import StationCrossSectionChart from '@/components/Data/StationCrossSectionChart';
 import StationCoordinates from '@/components/Data/Stationcoordinates';
 import { GATE_WARN_LEVELS } from '../../../lib/warnLevels';
+import StationSelector, { StationOption } from '@/components/Data/StationSelector';
 
 
 // ─── Types ────────────────────────────────────────────────────
@@ -35,7 +36,7 @@ interface GateInfo {
 
 interface GateLatest {
   sta_code: string;
-  date: string;
+  datetime: string;
   wl_upper?: number;
   wl_lower?: number;
   discharge?: number;
@@ -53,7 +54,6 @@ export default function GateDashboard() {
   const [error,        setError]        = useState<string | null>(null);
   const [lastUpdate,   setLastUpdate]   = useState<Date | null>(null);
   
-
   // โหลดรายชื่อสถานี
   useEffect(() => {
     fetch(`${API_URL}/api/gate_info`)
@@ -93,6 +93,12 @@ export default function GateDashboard() {
     return () => clearInterval(interval);
   }, [selectedCode, fetchStationData]);
 
+  const gateStationOptions: StationOption[] = gateInfoList.map((g) => ({
+    code: g.sta_code,
+    name: g.sta_name,
+    subLabel: [g.district, g.province].filter(Boolean).join(', ') || undefined,
+  }));
+
   const selectedInfo = gateInfoList.find(g => g.sta_code === selectedCode) ?? null;
   const gateConfig = selectedCode ? GATE_STATION_CONFIGS[selectedCode] : null;
   const cameras = selectedCode ? (STATION_CAMERAS[selectedCode] ?? []) : [];
@@ -111,21 +117,14 @@ export default function GateDashboard() {
       <Box sx={{ my: 2 }}>
         {/* Row 1: Dropdown + Refresh */}
         <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', width: '100%' }}>
-          <FormControl fullWidth>
-            <InputLabel sx={{ fontFamily: 'Prompt' }}>เลือกประตูระบายน้ำ</InputLabel>
-            <Select
-              value={selectedCode || 'tng'}
-              label="เลือกประตูระบายน้ำ"
-              onChange={(e: SelectChangeEvent) => setSelectedCode(e.target.value)}
-              sx={fontInfo}
-            >
-              {gateInfoList.map((s: any) => (
-                <MenuItem key={s.sta_code} value={s.sta_code}>
-                  {s.sta_name} ({s.sta_code})
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <StationSelector
+            stations={gateStationOptions}
+            value={selectedCode}
+            onChange={setSelectedCode}
+            label="เลือกประตูระบายน้ำ"
+            placeholder="ค้นหาชื่อสถานี, รหัส, อำเภอ หรือจังหวัด"
+            iconSrc={`${Path_URL}/images/icons/gate_icon.png`}
+          />
 
           <Tooltip title="รีเฟรชข้อมูล">
             <span>
@@ -166,7 +165,7 @@ export default function GateDashboard() {
                 color: 'text.disabled',
               }}
             >
-              ข้อมูลอัปเดตล่าสุด: {latest?.date ?? 'กำลังโหลด...'}
+              ข้อมูลอัปเดตล่าสุด: {latest?.datetime ?? 'กำลังโหลด...'}
             </Typography>
           </Box>
         )}

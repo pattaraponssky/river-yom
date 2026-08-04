@@ -16,19 +16,35 @@ import { API_URL, formatThaiDay, Path_URL } from '@/lib/utility';
 import DataReservoirStation from '@/app/reservoir/components/ReservoirData';
 import DataFlowCombined     from '@/app/flow/components/FlowData';
 import ExportMapButton      from './Exportmapbutton';
+import DataGateStation from '@/app/gate/components/GateData';
+import DataTeleCombined from '@/app/tele/components/TeleData';
 
 // ─── Types ────────────────────────────────────────────────────
 
 interface ReservoirNode {
   id: string; name: string; res_code: string; province: string;
   x: number; y: number;
-  volume: number; inflow: number; outflow: number; percent: number; date: string;
+  volume: number; inflow: number; outflow: number; percent: number; datetime: string;
 }
 
 interface FlowStationNode {
   id: string; name: string; sta_code: string; province: string;
   x: number; y: number;
-  wl: number; discharge: number; date: string;
+  wl: number; discharge: number; datetime: string;
+  cardOffsetX?: number; cardOffsetY?: number;
+}
+
+interface TeleStationNode {
+  id: string; name: string; sta_code: string; province: string;
+  x: number; y: number;
+  wl: number; discharge: number; datetime: string;
+  cardOffsetX?: number; cardOffsetY?: number;
+}
+
+interface GateStationNode {
+  id: string; name: string; sta_code: string; province: string;
+  x: number; y: number;
+  wl_upper: number; wl_lower: number; discharge: number; datetime: string;
   cardOffsetX?: number; cardOffsetY?: number;
 }
 
@@ -160,18 +176,20 @@ const WaterSchematicSimple: React.FC = () => {
   const containerRefTab2  = useRef<SVGGElement | null>(null);  // ← เพิ่มสำหรับ tab 2
 
   // Dialog ref — ไม่ trigger re-render → ไม่ล้าง D3 nodes
-  const openDialogRef = useRef<(code: string, name: string, type: 'reservoir' | 'flow') => void>(() => {});
+  const openDialogRef = useRef<(code: string, name: string, type: 'reservoir' | 'flow' | 'tele' | 'gate' ) => void>(() => {});
 
   // State
   const [tabIndex,        setTabIndex]        = useState(0);
   const [reservoirs,      setReservoirs]      = useState<ReservoirNode[]>([]);
   const [flows,           setFlows]           = useState<FlowStationNode[]>([]);
+  const [teles,           setTeles]           = useState<TeleStationNode[]>([]);
+  const [gates,           setGates]           = useState<GateStationNode[]>([]);
   const [loading,         setLoading]         = useState(true);
   const [error,           setError]           = useState<string | null>(null);
   const [openDialog,      setOpenDialog]      = useState(false);
   const [selectedStation, setSelectedStation] = useState<string | undefined>();
   const [selectedName,    setSelectedName]    = useState('');
-  const [selectedType,    setSelectedType]    = useState<'reservoir' | 'flow' | undefined>();
+  const [selectedType,    setSelectedType]    = useState<'reservoir' | 'flow' | 'tele' | 'gate' | undefined>();
 
   // อัปเดต openDialogRef ทุก render เพื่อให้ setState ล่าสุดเสมอ
   useEffect(() => {
@@ -233,7 +251,7 @@ const WaterSchematicSimple: React.FC = () => {
         if (x === undefined) return null;
         return { id: item, name: item.res_name, res_code: item.res_code, province: item.province, x, y,
           volume: parseFloat(item.volume), inflow: parseFloat(item.inflow),
-          outflow: parseFloat(item.outflow), percent: parseFloat(item.p), date: item.date };
+          outflow: parseFloat(item.outflow), percent: parseFloat(item.p), datetime: item.datetime };
       }).filter(Boolean) as ReservoirNode[];
     };
 
@@ -241,26 +259,65 @@ const WaterSchematicSimple: React.FC = () => {
       const res  = await fetch(`${API_URL}/api/daily/flow`);
       if (!res.ok) throw new Error('Failed to fetch flow');
       const json = await res.json();
+
+      return (json.data || []).map((item: any) => {
+        return {
+          id: item.no.toString(),
+          name: item.sta_name,
+          sta_code: item.sta_code,
+          province: item.province,
+          wl: parseFloat(item.wl),
+          discharge: parseFloat(item.discharge),
+          datetime: item.datetime,
+        };
+      }); 
+    };
+
+    const fetchGate = async () => {
+      const res  = await fetch(`${API_URL}/api/daily/gate`);
+      if (!res.ok) throw new Error('Failed to fetch gate');
+      const json = await res.json();
+
+      return (json.data || []).map((item: any) => {
+        return {
+          id: item.no.toString(),
+          name: item.sta_name,
+          sta_code: item.sta_code,
+          province: item.province,
+          wl_upper: parseFloat(item.wl_upper),
+          wl_lower: parseFloat(item.wl_lower),
+          discharge: parseFloat(item.discharge),
+          datetime: item.datetime,
+        };
+      }); 
+    };
+
+    const fetchtele = async () => {
+      const res  = await fetch(`${API_URL}/api/daily/tele`);
+      if (!res.ok) throw new Error('Failed to fetch tele');
+      const json = await res.json();
       return (json.data || []).map((item: any) => {
         const coords: Record<string, [number, number, number, number]> = {
-          'Y.15': [174,   410, -85, -20],
-          'Y.16': [202.5, 490, -85,  -8],
-          'Y.4':  [174,   370, -85, -30],
-          'Y.50': [202.5, 470, -85, -28],
-          'Y.64': [202.5, 520,  13, -20],
-          'Y.51': [202.5, 545, -85, -17],
-          'Y.17': [202.5, 580, -85, -10],
+          // 'Y.15': [174,   410, -85, -20],
+          // 'Y.16': [202.5, 490, -85,  -8],
+          // 'Y.4':  [174,   370, -85, -30],
+          // 'Y.50': [202.5, 470, -85, -28],
+          // 'Y.64': [202.5, 520,  13, -20],
+          'YR.01': [202.5, 545, -85, -17],
+          'YR.02': [202.5, 580, -85, -10],
         };
         const c = coords[item.sta_code];
         if (!c) return null;
         return { id: item.no.toString(), name: item.sta_name, sta_code: item.sta_code,
           province: item.province, x: c[0], y: c[1], cardOffsetX: c[2], cardOffsetY: c[3],
-          wl: parseFloat(item.wl), discharge: parseFloat(item.discharge), date: item.date };
-      }).filter(Boolean) as FlowStationNode[];
+          wl: parseFloat(item.wl), discharge: parseFloat(item.discharge), datetime: item.datetime };
+      }).filter(Boolean) as TeleStationNode[];
     };
 
-    Promise.all([fetchReservoir(), fetchFlow()])
-      .then(([res, fl]) => { setReservoirs(res); setFlows(fl); })
+    
+
+    Promise.all([fetchReservoir(), fetchFlow(), fetchtele(), fetchGate()])
+      .then(([res, fl, tl, gt]) => { setReservoirs(res); setFlows(fl); setTeles(tl); setGates(gt); setError(null); })
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
   }, []);
@@ -295,24 +352,63 @@ const WaterSchematicSimple: React.FC = () => {
 
     // waterways
     const rectData = [
-      { x: 181,     y: 290,     w: 210,     h: 12, fill: '#B7F1FF' },
-      { x: 210,     y: 536,     w: 181,     h: 12, fill: '#B7F1FF' },
-      { x: 206.123, y: 497.592, w: 94.232,  h: 12, rotate: -12,  cx: 206.123, cy: 497.592, fill: '#B7F1FF' },
-      { x: 297.495, y: 478,     w: 104.095, h: 12, rotate:  12,  cx: 297.495, cy: 478,     fill: '#B7F1FF' },
-      { x: 241,     y: 378,     w: 76,      h: 12, rotate: -90,  cx: 241,     cy: 378,     fill: '#B7F1FF' },
-      { x: 305,     y: 361,     w: 59,      h: 7,  rotate: -90,  cx: 305,     cy: 361,     fill: '#B7F1FF' },
-      { x: 281,     y: 418.466, w: 64.996,  h: 7,  rotate: -68,  cx: 281,     cy: 418.466, fill: '#B7F1FF' },
-      { x: 278.139, y: 427.912, w: 62.498,  h: 12, rotate: -126, cx: 278.139, cy: 427.912, fill: '#B7F1FF' },
-      { x: 293.281, y: 485.599, w: 66.768,  h: 12, rotate: -105, cx: 293.281, cy: 485.599, fill: '#B7F1FF' },
-      { x: 391, y: 164, w: 15,  h: 585, fill: '#66E0FF' },
-      { x: 166, y: 147, w: 15,  h: 267, fill: '#66E0FF' },
-      { x: 195, y: 436, w: 15,  h: 178, fill: '#66E0FF' },
-      { x: 70,  y: 343, w: 15,  h: 338, fill: '#66E0FF' },
-      { x: 406, y: 180, w: 117, h: 13,  fill: '#66E0FF' },
-      { x: 195, y: 614, w: 196, h: 13,  fill: '#66E0FF' },
-      { x: 70,  y: 735, w: 321, h: 8,   fill: '#66E0FF' },
-      { x: 70,  y: 681, w: 321, h: 13,  fill: '#66E0FF' },
-      { x: 198.99, y: 446.597, w: 46.655, h: 15, rotate: -135, cx: 198.99, cy: 446.597, fill: '#66E0FF' },
+      { x: 169.16, y: 154.95, w: 34.83, h: 15, rotate: 105.39, cx: 186.57, cy: 162.45, fill: '#66E0FF' },
+      { x: 167.8, y: 178.62, w: 31.45, h: 15, rotate: 88.06, cx: 183.53, cy: 186.12, fill: '#66E0FF' },
+      { x: 172.03, y: 200.01, w: 30.38, h: 15, rotate: 71.96, cx: 187.22, cy: 207.51, fill: '#66E0FF' },
+      { x: 180.67, y: 219.46, w: 30.45, h: 15, rotate: 60.0, cx: 195.89, cy: 226.96, fill: '#66E0FF' },
+      { x: 192.5, y: 237.33, w: 30.57, h: 15, rotate: 52.73, cx: 207.78, cy: 244.83, fill: '#66E0FF' },
+      { x: 206.08, y: 253.97, w: 30.12, h: 15, rotate: 49.73, cx: 221.14, cy: 261.47, fill: '#66E0FF' },
+      { x: 219.79, y: 269.74, w: 28.83, h: 15, rotate: 51.0, cx: 234.21, cy: 277.24, fill: '#66E0FF' },
+      { x: 231.81, y: 284.97, w: 26.83, h: 15, rotate: 57.62, cx: 245.22, cy: 292.47, fill: '#66E0FF' },
+      { x: 304.93, y: 174.62, w: 32.27, h: 10, rotate: 132.9, cx: 321.06, cy: 179.62, fill: '#B7F1FF' },
+      { x: 286.64, y: 195.18, w: 33.81, h: 10, rotate: 128.11, cx: 303.54, cy: 200.18, fill: '#B7F1FF' },
+      { x: 269.44, y: 218.5, w: 35.33, h: 10, rotate: 122.41, cx: 287.1, cy: 223.5, fill: '#B7F1FF' },
+      { x: 253.96, y: 244.82, w: 37.0, h: 10, rotate: 115.94, cx: 272.46, cy: 249.82, fill: '#B7F1FF' },
+      { x: 240.83, y: 274.38, w: 39.02, h: 10, rotate: 108.87, cx: 260.34, cy: 279.38, fill: '#B7F1FF' },
+      { x: 233.68, y: 305.34, w: 34.77, h: 15, rotate: 85.26, cx: 251.06, cy: 312.84, fill: '#66E0FF' },
+      { x: 234.35, y: 330.94, w: 34.53, h: 15, rotate: 92.29, cx: 251.62, cy: 338.44, fill: '#66E0FF' },
+      { x: 232.76, y: 356.28, w: 34.28, h: 15, rotate: 95.49, cx: 249.9, cy: 363.78, fill: '#66E0FF' },
+      { x: 230.79, y: 381.17, w: 33.72, h: 15, rotate: 94.8, cx: 247.65, cy: 388.67, fill: '#66E0FF' },
+      { x: 230.16, y: 405.46, w: 32.94, h: 15, rotate: 89.93, cx: 246.63, cy: 412.96, fill: '#66E0FF' },
+      { x: 232.39, y: 428.96, w: 32.38, h: 15, rotate: 80.46, cx: 248.59, cy: 436.46, fill: '#66E0FF' },
+      { x: 238.78, y: 451.49, w: 32.96, h: 15, rotate: 66.71, cx: 255.26, cy: 458.99, fill: '#66E0FF' },
+      { x: 256.68, y: 469.09, w: 26.69, h: 9, rotate: 19.7, cx: 270.02, cy: 473.59, fill: '#B7F1FF' },
+      { x: 277.19, y: 474.46, w: 26.03, h: 9, rotate: 9.95, cx: 290.21, cy: 478.96, fill: '#B7F1FF' },
+      { x: 297.56, y: 477.75, w: 26.5, h: 9, rotate: 8.2, cx: 310.81, cy: 482.25, fill: '#B7F1FF' },
+      { x: 318.21, y: 482.0, w: 27.8, h: 9, rotate: 14.24, cx: 332.11, cy: 486.5, fill: '#B7F1FF' },
+      { x: 338.99, y: 490.29, w: 30.76, h: 9, rotate: 25.86, cx: 354.38, cy: 494.79, fill: '#B7F1FF' },
+      { x: 359.59, y: 505.66, w: 36.6, h: 9, rotate: 39.1, cx: 377.89, cy: 510.16, fill: '#B7F1FF' },
+      { x: 245.19, y: 477.51, w: 29.43, h: 9, rotate: 90.44, cx: 259.91, cy: 482.01, fill: '#B7F1FF' },
+      { x: 249.86, y: 500.29, w: 28.62, h: 9, rotate: 67.99, cx: 264.17, cy: 504.79, fill: '#B7F1FF' },
+      { x: 261.78, y: 520.15, w: 29.95, h: 9, rotate: 47.83, cx: 276.76, cy: 524.65, fill: '#B7F1FF' },
+      { x: 280.34, y: 536.26, w: 32.47, h: 9, rotate: 31.22, cx: 296.57, cy: 540.76, fill: '#B7F1FF' },
+      { x: 304.76, y: 547.79, w: 35.49, h: 9, rotate: 17.46, cx: 322.5, cy: 552.29, fill: '#B7F1FF' },
+      { x: 334.08, y: 553.9, w: 38.7, h: 9, rotate: 5.5, cx: 353.43, cy: 558.4, fill: '#B7F1FF' },
+      { x: 237.87, y: 476.22, w: 30.74, h: 9, rotate: 122.24, cx: 253.24, cy: 480.72, fill: '#B7F1FF' },
+      { x: 231.43, y: 498.62, w: 28.82, h: 9, rotate: 93.17, cx: 245.83, cy: 503.12, fill: '#B7F1FF' },
+      { x: 234.46, y: 522.28, w: 31.27, h: 9, rotate: 67.7, cx: 250.09, cy: 526.78, fill: '#B7F1FF' },
+      { x: 246.99, y: 545.8, w: 35.84, h: 9, rotate: 49.38, cx: 264.91, cy: 550.3, fill: '#B7F1FF' },
+      { x: 268.72, y: 567.79, w: 40.89, h: 9, rotate: 36.03, cx: 289.17, cy: 572.29, fill: '#B7F1FF' },
+      { x: 298.88, y: 586.87, w: 45.76, h: 9, rotate: 25.33, cx: 321.76, cy: 591.37, fill: '#B7F1FF' },
+      { x: 363.95, y: 557.57, w: 27.14, h: 15, rotate: 33.97, cx: 377.52, cy: 565.07, fill: '#66E0FF' },
+      { x: 378.78, y: 568.12, w: 27.85, h: 15, rotate: 35.6, cx: 392.71, cy: 575.62, fill: '#66E0FF' },
+      { x: 393.66, y: 579.93, w: 29.3, h: 15, rotate: 38.52, cx: 408.31, cy: 587.43, fill: '#66E0FF' },
+      { x: 408.83, y: 593.82, w: 31.55, h: 15, rotate: 42.17, cx: 424.61, cy: 601.32, fill: '#66E0FF' },
+      { x: 424.54, y: 610.62, w: 34.67, h: 15, rotate: 46.02, cx: 441.88, cy: 618.12, fill: '#66E0FF' },
+      { x: 441.05, y: 631.18, w: 38.69, h: 15, rotate: 49.68, cx: 460.39, cy: 638.68, fill: '#66E0FF' },
+      { x: 215.15, y: 468.83, w: 50.34, h: 15, rotate: 162.17, cx: 240.32, cy: 476.33, fill: '#66E0FF' },
+      { x: 179.04, y: 482.89, w: 47.71, h: 15, rotate: 156.45, cx: 202.9, cy: 490.39, fill: '#66E0FF' },
+      { x: 146.69, y: 499.77, w: 45.42, h: 15, rotate: 149.87, cx: 169.4, cy: 507.27, fill: '#66E0FF' },
+      { x: 118.16, y: 519.45, w: 43.58, h: 15, rotate: 142.41, cx: 139.95, cy: 526.95, fill: '#66E0FF' },
+      { x: 93.51, y: 541.95, w: 42.3, h: 15, rotate: 134.12, cx: 114.66, cy: 549.45, fill: '#66E0FF' },
+      { x: 72.79, y: 567.27, w: 41.7, h: 15, rotate: 125.2, cx: 93.64, cy: 574.77, fill: '#66E0FF' },
+      { x: 56.1, y: 595.39, w: 41.85, h: 15, rotate: 115.99, cx: 77.02, cy: 602.89, fill: '#66E0FF' },
+      { x: 43.51, y: 626.33, w: 42.8, h: 15, rotate: 106.9, cx: 64.91, cy: 633.83, fill: '#66E0FF' },
+      { x: 46.06, y: 656.3, w: 38.61, h: 15, rotate: 68.77, cx: 65.36, cy: 663.8, fill: '#66E0FF' },
+      { x: 61.03, y: 681.5, w: 39.22, h: 15, rotate: 48.97, cx: 80.64, cy: 689.0, fill: '#66E0FF' },
+      { x: 83.45, y: 701.9, w: 42.69, h: 15, rotate: 32.29, cx: 104.8, cy: 709.4, fill: '#66E0FF' },
+      { x: 113.39, y: 717.5, w: 47.95, h: 15, rotate: 19.81, cx: 137.36, cy: 725.0, fill: '#66E0FF' },
+      { x: 150.79, y: 728.3, w: 54.11, h: 15, rotate: 10.73, cx: 177.84, cy: 735.8, fill: '#66E0FF' },
     ];
     rectData.forEach(d => {
       const r = container.append('rect').attr('x', d.x).attr('y', d.y).attr('width', d.w).attr('height', d.h).attr('fill', d.fill);
@@ -333,22 +429,22 @@ const WaterSchematicSimple: React.FC = () => {
     nodeGroup.append('text').attr('y', 0).attr('font-size', 7).attr('fill', theme.palette.text.primary).text('ระบาย ');
     nodeGroup.append('text').attr('x', 40).attr('y', 0).attr('font-size', 7).attr('font-weight', 'bold').attr('fill', '#0066cc').text(d => `${d.outflow.toFixed(3)} MCM`);
 
-    // flow nodes
-    const flowGroup = container.selectAll<SVGGElement, FlowStationNode>('.flow-node')
-      .data(flows).enter().append('g').attr('class', 'flow-node')
+    // tele nodes
+    const teleGroup = container.selectAll<SVGGElement, TeleStationNode>('.tele-node')
+      .data(teles).enter().append('g').attr('class', 'tele-node')
       .attr('transform', d => `translate(${d.x},${d.y})`).style('cursor', 'pointer')
-      .on('click', (_, d) => openDialogRef.current(d.sta_code, d.name, 'flow'));
-    flowGroup.append('title').text(d => `คลิกเพื่อดูรายละเอียดสถานี ${d.name}`);
-    flowGroup.append('circle').attr('r', 7).attr('fill', d => getFlowColor(d.sta_code, d.wl)).attr('stroke', theme.palette.text.primary).attr('stroke-width', 1);
-    const cX1 = (d: FlowStationNode) => d.cardOffsetX ?? 20;
-    const cY1 = (d: FlowStationNode) => d.cardOffsetY ?? -30;
+      .on('click', (_, d) => openDialogRef.current(d.sta_code, d.name, 'tele'));
+    teleGroup.append('title').text(d => `คลิกเพื่อดูรายละเอียดสถานี ${d.name}`);
+    teleGroup.append('circle').attr('r', 7).attr('fill', d => getFlowColor(d.sta_code, d.wl)).attr('stroke', theme.palette.text.primary).attr('stroke-width', 1);
+    const cX1 = (d: TeleStationNode) => d.cardOffsetX ?? 20;
+    const cY1 = (d: TeleStationNode) => d.cardOffsetY ?? -30;
     const CW1 = 75, CH1 = 35;
-    flowGroup.append('rect').attr('x', cX1).attr('y', cY1).attr('width', CW1).attr('height', CH1).attr('rx', 8).attr('ry', 8).attr('fill', theme.palette.background.paper).attr('stroke', theme.palette.divider).attr('stroke-width', 1);
-    flowGroup.append('text').attr('x', d => cX1(d) + CW1 / 2).attr('y', d => cY1(d) + 10).attr('text-anchor', 'middle').attr('font-size', 6).attr('font-weight', 'bold').attr('fill', theme.palette.text.primary).text(d => `${d.sta_code}${d.name ? ` (${d.name})` : ''}`);
-    flowGroup.append('text').attr('x', d => cX1(d) + 10).attr('y', d => cY1(d) + 20).attr('font-size', 5).attr('fill', theme.palette.text.primary).text('ระดับน้ำ: ');
-    flowGroup.append('text').attr('x', d => cX1(d) + 32).attr('y', d => cY1(d) + 20).attr('font-size', 5).attr('font-weight', 'bold').attr('fill', '#0066cc').text(d => `${d.wl.toFixed(2)} ม.รทก.`);
-    flowGroup.append('text').attr('x', d => cX1(d) + 10).attr('y', d => cY1(d) + 30).attr('font-size', 5).attr('fill', theme.palette.text.primary).text('อัตราไหล: ');
-    flowGroup.append('text').attr('x', d => cX1(d) + 32).attr('y', d => cY1(d) + 30).attr('font-size', 5).attr('font-weight', 'bold').attr('fill', '#0066cc').text(d => `${d.discharge.toFixed(2)} ลบ.ม./วินาที`);
+    teleGroup.append('rect').attr('x', cX1).attr('y', cY1).attr('width', CW1).attr('height', CH1).attr('rx', 8).attr('ry', 8).attr('fill', theme.palette.background.paper).attr('stroke', theme.palette.divider).attr('stroke-width', 1);
+    teleGroup.append('text').attr('x', d => cX1(d) + CW1 / 2).attr('y', d => cY1(d) + 10).attr('text-anchor', 'middle').attr('font-size', 6).attr('font-weight', 'bold').attr('fill', theme.palette.text.primary).text(d => `${d.sta_code}${d.name ? ` (${d.name})` : ''}`);
+    teleGroup.append('text').attr('x', d => cX1(d) + 10).attr('y', d => cY1(d) + 20).attr('font-size', 5).attr('fill', theme.palette.text.primary).text('ระดับน้ำ: ');
+    teleGroup.append('text').attr('x', d => cX1(d) + 32).attr('y', d => cY1(d) + 20).attr('font-size', 5).attr('font-weight', 'bold').attr('fill', '#0066cc').text(d => `${d.wl.toFixed(2)} ม.รทก.`);
+    teleGroup.append('text').attr('x', d => cX1(d) + 10).attr('y', d => cY1(d) + 30).attr('font-size', 5).attr('fill', theme.palette.text.primary).text('อัตราไหล: ');
+    teleGroup.append('text').attr('x', d => cX1(d) + 32).attr('y', d => cY1(d) + 30).attr('font-size', 5).attr('font-weight', 'bold').attr('fill', '#0066cc').text(d => `${d.discharge.toFixed(2)} ลบ.ม./วินาที`);
 
     // arrows tab 1 — กำหนด angle แต่ละอัน (90 = ลง, 0 = ขวา)
     addArrowMarker(svg, 'arrow-t1', '#fff');
@@ -433,7 +529,7 @@ const WaterSchematicSimple: React.FC = () => {
     });
 
     setTimeout(() => fitToView(false), 300);
-  }, [tabIndex, reservoirs, flows, theme.palette.mode]);
+  }, [tabIndex, reservoirs, flows, gates, teles, theme.palette.mode]);
 
   // ─── Tab 2: Full SVG + Flow Nodes ────────────────────────────
 
@@ -6850,10 +6946,16 @@ const WaterSchematicSimple: React.FC = () => {
 
     // flow nodes
     const tab2Pos: Record<string, { x: number; y: number; offsetX: number; offsetY: number }> = {
-      'Y.15': { x: 682, y: 1200, offsetX: -200, offsetY: -10 },
-      'Y.16': { x: 725, y: 1350, offsetX: -200, offsetY: -10 },
-      'Y.64': { x: 757, y: 1461, offsetX: -200, offsetY: -10 },
-      'Y.17': { x: 817, y: 1630, offsetX: -200, offsetY: -10 },
+      'Y.1C': { x: 410, y: 500, offsetX: -180, offsetY: -5 },
+      'Y.37': { x: 430, y: 650, offsetX: -180, offsetY: -5 },
+      'Y.14A': { x: 450, y: 780, offsetX: -180, offsetY: -5 },
+      'Y.3A': { x: 596, y: 897, offsetX: -180, offsetY: -5 },
+      'Y.4': { x: 630, y: 1021, offsetX: -180, offsetY: -5 },
+      'Y.15': { x: 682, y: 1199, offsetX: -180, offsetY: -5 },
+      'Y.16': { x: 725, y: 1350, offsetX: -180, offsetY: -10 },
+      'Y.64': { x: 756, y: 1459, offsetX: -180, offsetY: -10 },
+      'Y.17': { x: 818, y: 1632, offsetX: -180, offsetY: -10 },
+      'Y.52': { x: 1061, y: 1745, offsetX: -163, offsetY: 15 },
     };
 
     const flowGroup = container.selectAll<SVGGElement, FlowStationNode>('.t2-flow-node')
@@ -6863,28 +6965,85 @@ const WaterSchematicSimple: React.FC = () => {
       .style('cursor', 'pointer')
       .on('click', (_, d) => openDialogRef.current(d.sta_code, d.name, 'flow'));
 
-    flowGroup.append('circle').attr('r', 12).attr('fill', d => getFlowColor(d.sta_code, d.wl)).attr('stroke', '#fff').attr('stroke-width', 2);
+    flowGroup.append('circle').attr('r', 9).attr('fill', d => getFlowColor(d.sta_code, d.wl)).attr('stroke', '#fff').attr('stroke-width', 2);
 
-    const cardW = 180, cardH = 95;
+    const cardW = 160, cardH = 55;
     const cX2 = (d: FlowStationNode) => tab2Pos[d.sta_code].offsetX;
     const cY2 = (d: FlowStationNode) => tab2Pos[d.sta_code].offsetY;
 
     flowGroup.append('rect').attr('x', cX2).attr('y', cY2).attr('width', cardW).attr('height', cardH).attr('rx', 9).attr('ry', 9).attr('fill', theme.palette.background.paper).attr('stroke', theme.palette.divider).attr('stroke-width', 2);
-    flowGroup.append('text').attr('x', d => cX2(d) + cardW / 2).attr('y', d => cY2(d) + 22).attr('text-anchor', 'middle').attr('font-size', 17).attr('font-weight', 'bold').attr('fill', theme.palette.text.primary).text(d => `${d.sta_code}${d.name ? ` (${d.name})` : ''}`);
-    flowGroup.append('text').attr('x', d => cX2(d) + 15).attr('y', d => cY2(d) + 52).attr('font-size', 13).attr('fill', theme.palette.text.secondary).text('ระดับน้ำ:');
-    flowGroup.append('text').attr('x', d => cX2(d) + 90).attr('y', d => cY2(d) + 52).attr('font-size', 13).attr('font-weight', 'bold').attr('fill', '#0066cc').text(d => `${d.wl.toFixed(2)} ม.รทก.`);
-    flowGroup.append('text').attr('x', d => cX2(d) + 15).attr('y', d => cY2(d) + 74).attr('font-size', 13).attr('fill', theme.palette.text.secondary).text('อัตราไหล:');
-    flowGroup.append('text').attr('x', d => cX2(d) + 90).attr('y', d => cY2(d) + 74).attr('font-size', 13).attr('font-weight', 'bold').attr('fill', '#0066cc').text(d => `${d.discharge.toFixed(2)} ลบ.ม./วิ`);
+    flowGroup.append('text').attr('x', d => cX2(d) + cardW / 2).attr('y', d => cY2(d) + 16).attr('text-anchor', 'middle').attr('font-size', 12).attr('font-weight', 'bold').attr('fill', theme.palette.text.primary).text(d => `${d.sta_code}${d.name ? ` (${d.name})` : ''}`);
+    flowGroup.append('text').attr('x', d => cX2(d) + 15).attr('y', d => cY2(d) + 36).attr('font-size', 11).attr('fill', theme.palette.text.secondary).text('ระดับน้ำ:');
+    flowGroup.append('text').attr('x', d => cX2(d) + 80).attr('y', d => cY2(d) + 36).attr('font-size', 11).attr('font-weight', 'bold').attr('fill', '#0066cc').text(d => `${d.wl.toFixed(2)} ม.รทก.`);
+    flowGroup.append('text').attr('x', d => cX2(d) + 15).attr('y', d => cY2(d) + 48).attr('font-size', 11).attr('fill', theme.palette.text.secondary).text('อัตราไหล:');
+    flowGroup.append('text').attr('x', d => cX2(d) + 80).attr('y', d => cY2(d) + 48).attr('font-size', 11).attr('font-weight', 'bold').attr('fill', '#0066cc').text(d => `${d.discharge.toFixed(2)} ลบ.ม./วิ`);
 
-    // arrows tab 2 — ตัวอย่างกำหนดองศาต่างกัน
+    const tab2GatePos: Record<string, { x: number; y: number; offsetX: number; offsetY: number }> = {
+      'tng': { x: 708, y: 1297, offsetX: 35, offsetY: -15 },
+      'wst': { x: 693, y: 1247, offsetX: 35, offsetY: -40 },
+      // 'kpk': { x: 1061, y: 1745, offsetX: -180, offsetY: -5 },
+    };
+
+    const gateGroup = container.selectAll<SVGGElement, GateStationNode>('.t2-gate-node')
+      .data(gates.filter(g => tab2GatePos[g.sta_code]))
+      .enter().append('g').attr('class', 't2-gate-node')
+      .attr('transform', d => { const p = tab2GatePos[d.sta_code]; return `translate(${p.x},${p.y})`; })
+      .style('cursor', 'pointer')
+      .on('click', (_, d) => openDialogRef.current(d.sta_code, d.name, 'gate'));
+      
+
+    const markerW = 46, markerH = 14;   
+    gateGroup.append('rect')
+      .attr('x', -markerW / 2).attr('y', -markerH / 2) // จัดกึ่งกลางที่จุด origin เหมือน circle เดิม (r:9 = centered)
+      .attr('width', markerW).attr('height', markerH)
+      .attr('rx', markerH / 2).attr('ry', markerH / 2) // ✅ ทรงแคปซูล
+      .attr('fill', d => getFlowColor(d.sta_code, d.wl_upper)) // ✅ ใช้ getGateColor
+      .attr('stroke', '#fff').attr('stroke-width', 2);
+
+    const gCardW = 165, gCardH = 68;
+    const gCX2 = (d: GateStationNode) => tab2GatePos[d.sta_code].offsetX;
+    const gCY2 = (d: GateStationNode) => tab2GatePos[d.sta_code].offsetY;
+
+    // ✅ เปลี่ยนจาก rect มุมโค้ง (rx: 9) เป็นทรงแคปซูล (rx = gateCardH / 2)
+    gateGroup.append('rect').attr('x', gCX2).attr('y', gCY2).attr('width', gCardW).attr('height', gCardH).attr('rx', 9).attr('ry', 9).attr('fill', theme.palette.background.paper).attr('stroke', theme.palette.divider).attr('stroke-width', 2);
+    gateGroup.append('text').attr('x', d => gCX2(d) + cardW / 2).attr('y', d => gCY2(d) + 16).attr('text-anchor', 'middle').attr('font-size', 12).attr('font-weight', 'bold').attr('fill', theme.palette.text.primary).text(d => `${d.sta_code}${d.name ? ` (${d.name})` : ''}`);
+
+    gateGroup.append('text')
+      .attr('x', d => gCX2(d) + 15).attr('y', d => gCY2(d) + 36)
+      .attr('font-size', 11).attr('fill', theme.palette.text.secondary)
+      .text('ระดับน้ำเหนือ:');
+    gateGroup.append('text')
+      .attr('x', d => gCX2(d) + 85).attr('y', d => gCY2(d) + 36)
+      .attr('font-size', 11).attr('font-weight', 'bold').attr('fill', '#0066cc')
+      .text(d => `${d.wl_upper.toFixed(2)} ม.รทก.`);
+
+    gateGroup.append('text')
+      .attr('x', d => gCX2(d) + 15).attr('y', d => gCY2(d) + 48)
+      .attr('font-size', 11).attr('fill', theme.palette.text.secondary)
+      .text('ระดับน้ำท้าย:');
+    gateGroup.append('text')
+      .attr('x', d => gCX2(d) + 85).attr('y', d => gCY2(d) + 48)
+      .attr('font-size', 11).attr('font-weight', 'bold').attr('fill', '#0066cc')
+      .text(d => `${d.wl_lower.toFixed(2)} ม.รทก.`);
+
+    gateGroup.append('text')
+      .attr('x', d => gCX2(d) + 15).attr('y', d => gCY2(d) + 60)
+      .attr('font-size', 11).attr('fill', theme.palette.text.secondary)
+      .text('อัตราไหล:');
+    gateGroup.append('text')
+      .attr('x', d => gCX2(d) + 85).attr('y', d => gCY2(d) + 60)
+      .attr('font-size', 11).attr('font-weight', 'bold').attr('fill', '#0066cc')
+      .text(d => `${d.discharge.toFixed(2)} ลบ.ม./วิ`);
+
+    ////////////////////////////// arrows tab 2 — ตัวอย่างกำหนดองศาต่างกัน ////////////////////////////
     addArrowMarker(svg, 'arrow-t2', '#fff');
 
     const arrowsTab2: ArrowConfig[] = [
-      { startX: 455, startY: 400,  angle: 75  },   // ลง
-      { startX: 475, startY: 470,  angle: 75  },   // ลง
-      { startX: 495, startY: 540,  angle: 75  },   // ลง
-      { startX: 515, startY: 610,  angle: 75  },   // ลง
-      { startX: 535, startY: 680,  angle: 75  },   // ลง
+      { startX: 455, startY: 400,  angle: 75  },
+      { startX: 475, startY: 470,  angle: 75  },
+      { startX: 495, startY: 540,  angle: 75  },
+      { startX: 515, startY: 610,  angle: 75  },
+      { startX: 535, startY: 680,  angle: 75  },
 
       // ตัวอย่างองศาเอียง
       // { startX: 560, startY: 700,  angle: 135, length: 25 },  // 45° ลงขวา
@@ -6927,7 +7086,7 @@ const WaterSchematicSimple: React.FC = () => {
   return (
     <Box sx={{ p: 2, bgcolor: 'background.default', minHeight: '100vh' }}>
       <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
-        แผนผังสถานการณ์น้ำประจำวันที่ {formatThaiDay(reservoirs[0]?.date) || 'ล่าสุด'}
+        แผนผังสถานการณ์น้ำประจำวันที่ {formatThaiDay(reservoirs[0]?.datetime) || 'ล่าสุด'}
       </Typography>
 
       <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
@@ -6972,6 +7131,8 @@ const WaterSchematicSimple: React.FC = () => {
         <DialogContent dividers>
           {selectedType === 'reservoir' && selectedStation && <DataReservoirStation propsSelectedStation={selectedStation} />}
           {selectedType === 'flow'      && selectedStation && <DataFlowCombined     propsSelectedStation={selectedStation} />}
+          {selectedType === 'gate'      && selectedStation && <DataGateStation propsSelectedStation={selectedStation} />}
+          {selectedType === 'tele'      && selectedStation && <DataTeleCombined     propsSelectedStation={selectedStation} />}
         </DialogContent>
       </Dialog>
     </Box>

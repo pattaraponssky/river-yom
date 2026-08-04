@@ -165,12 +165,11 @@ const GateCard: React.FC = () => {
                       WebkitTextFillColor: 'transparent',
                     }}
                   >
-                  {/* {numberFormat(totalDcToday, 2)} */}
-                  131.20
+                  {numberFormat(totalDcToday, 2)}
                 </Typography>
               </Grid>
               <Grid size={{ xs: 3 }} textAlign="right">
-                <Typography sx={{ color: "gray",...textStyle }}>ล้าน ลบ.ม.</Typography>
+                <Typography sx={{ color: "gray",...textStyle }}>ลบ.ม./วินาที</Typography>
               </Grid>
             </Grid>
           </Paper>

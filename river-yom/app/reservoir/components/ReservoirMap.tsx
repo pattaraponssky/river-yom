@@ -20,7 +20,7 @@
   height?: string;
   }
 
-  // Define currentDate with the current date
+  // Define currentDate with the current datetime
   const currentDate = new Date();
   const formattedDate = currentDate.toLocaleDateString('th-TH', {
   weekday: 'long', // แสดงวันในสัปดาห์ เช่น จันทร์
@@ -30,7 +30,7 @@
   });
   interface ReservoirDataItem {
   res_code: string;
-  date: string;
+  datetime: string;
   wl: string | null;
   volume: string | null;
   inflow: string | null;
@@ -104,7 +104,7 @@
 
           rawData.forEach(item => {
             const existing = latestDataMap.get(item.res_code);
-            if (!existing || new Date(item.date) > new Date(existing.date)) {
+            if (!existing || new Date(item.datetime) > new Date(existing.datetime)) {
               latestDataMap.set(item.res_code, item);
             }
           });
@@ -215,20 +215,20 @@
   const prepareChartDataForReservoir = (rawData: any[], targetResCode: string) => {
     const filtered = rawData
       .filter(d => d.res_code === targetResCode)
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      .sort((a, b) => new Date(a.datetime).getTime() - new Date(b.datetime).getTime());
 
     const inflowSeries = filtered.map(d => ({
-      x: new Date(d.date).getTime(),
+      x: new Date(d.datetime).getTime(),
       y: parseFloat(d.inflow),
     }));
 
     const outflowSeries = filtered.map(d => ({
-      x: new Date(d.date).getTime(),
+      x: new Date(d.datetime).getTime(),
       y: parseFloat(d.outflow),
     }));
 
     const volumeSeries = filtered.map(d => ({
-      x: new Date(d.date).getTime(),
+      x: new Date(d.datetime).getTime(),
       y: parseFloat(d.volume),
     }));
 
@@ -532,7 +532,7 @@
 
       const latest = latestDataMap.get(res_code);
 
-      const latestDateStr = latest?.date ? new Date(latest.date).toISOString().slice(0, 10) : null;
+      const latestDateStr = latest?.datetime ? new Date(latest.datetime).toISOString().slice(0, 10) : null;
       const isToday = latestDateStr === todayStr;
       
 
@@ -631,7 +631,7 @@
           <div style="font-size: 1rem;">
             <b>
             ข้อมูลประจำวันที่
-            ${latestDataMap.get(item.res_code)?.date ? new Date(latestDataMap.get(item.res_code)?.date).toLocaleDateString("th-TH", {
+            ${latestDataMap.get(item.res_code)?.datetime ? new Date(latestDataMap.get(item.res_code)?.datetime).toLocaleDateString("th-TH", {
               year: "numeric",
               month: "long",
               day: "numeric",

@@ -10,10 +10,10 @@ const chartsInstances: Record<string, Record<string, any>> = {};
 const prepareChartDataForRain = (rawData: any[], targetStaCode: string) => {
   const filtered = rawData
     .filter((d) => d.sta_code === targetStaCode)
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    .sort((a, b) => new Date(a.datetime).getTime() - new Date(b.datetime).getTime());
 
   const rain_mmSeries = filtered.map((d) => ({
-    x: new Date(d.date).getTime(),
+    x: new Date(d.datetime).getTime(),
     y: parseFloat(d.rain_mm || '0') || null,
   }));
 
@@ -21,7 +21,7 @@ const prepareChartDataForRain = (rawData: any[], targetStaCode: string) => {
   const rainSeries = filtered.map((d) => {
     const rain = parseFloat(d.rain_mm || '0') || 0;
     cumulative += rain;
-    return { x: new Date(d.date).getTime(), y: parseFloat(cumulative.toFixed(2)) };
+    return { x: new Date(d.datetime).getTime(), y: parseFloat(cumulative.toFixed(2)) };
   });
 
   return { rain_mmSeries, rainSeries };
@@ -30,15 +30,15 @@ const prepareChartDataForRain = (rawData: any[], targetStaCode: string) => {
 const prepareChartDataForFlow = (rawData: any[], targetStaCode: string) => {
   const filtered = rawData
     .filter((d) => d.sta_code === targetStaCode)
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    .sort((a, b) => new Date(a.datetime).getTime() - new Date(b.datetime).getTime());
 
   const dischargeSeries = filtered.map((d) => ({
-    x: new Date(d.date).getTime(),
+    x: new Date(d.datetime).getTime(),
     y: parseFloat(d.discharge || '0') || null,
   }));
 
   const wlSeries = filtered.map((d) => ({
-    x: new Date(d.date).getTime(),
+    x: new Date(d.datetime).getTime(),
     y: parseFloat(d.wl || '0') || null,
   }));
 
@@ -48,20 +48,20 @@ const prepareChartDataForFlow = (rawData: any[], targetStaCode: string) => {
 const prepareChartDataForGate = (rawData: any[], targetStaCode: string) => {
   const filtered = rawData
     .filter((d) => d.sta_code === targetStaCode)
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    .sort((a, b) => new Date(a.datetime).getTime() - new Date(b.datetime).getTime());
 
   const dischargeSeries = filtered.map((d) => ({
-    x: new Date(d.date).getTime(),
+    x: new Date(d.datetime).getTime(),
     y: parseFloat(d.discharge || '0') || null,
   }));
 
   const wl_upperSeries = filtered.map((d) => ({
-    x: new Date(d.date).getTime(),
+    x: new Date(d.datetime).getTime(),
     y: parseFloat(d.wl_upper || '0') || null,
   }));
 
   const wl_lowerSeries = filtered.map((d) => ({
-    x: new Date(d.date).getTime(),
+    x: new Date(d.datetime).getTime(),
     y: parseFloat(d.wl_lower || '0') || null,
   }));
 
@@ -71,20 +71,20 @@ const prepareChartDataForGate = (rawData: any[], targetStaCode: string) => {
 const prepareChartDataForTele = (rawData: any[], targetStaCode: string) => {
   const filtered = rawData
     .filter((d) => d.sta_code === targetStaCode)
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    .sort((a, b) => new Date(a.datetime).getTime() - new Date(b.datetime).getTime());
 
   const dischargeSeries = filtered.map((d) => ({
-    x: new Date(d.date).getTime(),
+    x: new Date(d.datetime).getTime(),
     y: parseFloat(d.discharge || '0') || null,
   }));
 
   const wlSeries = filtered.map((d) => ({
-    x: new Date(d.date).getTime(),
+    x: new Date(d.datetime).getTime(),
     y: parseFloat(d.wl || '0') || null,
   }));
 
   const rainSeries = filtered.map((d) => ({
-    x: new Date(d.date).getTime(),
+    x: new Date(d.datetime).getTime(),
     y: parseFloat(d.rain_mm || '0') || null,
   }));
 

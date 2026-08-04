@@ -17,6 +17,7 @@ import { STATION_CAMERAS } from '@/lib/cameraConfig';
 import StationCrossSectionChart from '@/components/Data/StationCrossSectionChart';
 import StationCoordinates from '@/components/Data/Stationcoordinates';
 import TeleMetricCards from '@/components/Data/Telemetriccards';
+import StationSelector, { StationOption } from '@/components/Data/StationSelector';
 
 
 // ─── Types ────────────────────────────────────────────────────
@@ -34,11 +35,12 @@ interface RainInfo {
 interface RainLatest {
   sta_code: string;
   name: string;
-  date: string;
+  datetime: string;
   wl?: number;           // ระดับน้ำ
   discharge?: number;    // อัตราการไหล
   rain?: number;         // ปริมาณฝน
 }
+
 
 // ─── Main Component ───────────────────────────────────────────
 export default function RainDashboard() {
@@ -79,7 +81,7 @@ export default function RainDashboard() {
         setLatest({
           sta_code: data.sta_code,
           name: data.name,
-          date: data.date,
+          datetime: data.datetime,
           wl: data.wl,
           discharge: data.discharge,
           rain: data.rain,
@@ -96,6 +98,8 @@ export default function RainDashboard() {
     }
   }, []);
 
+  
+
 
   useEffect(() => {
     if (!selectedCode) return;
@@ -103,6 +107,12 @@ export default function RainDashboard() {
     const interval = setInterval(() => fetchStationData(selectedCode), 5 * 60 * 1000);
     return () => clearInterval(interval);
   }, [selectedCode, fetchStationData]);
+
+   const rainStationOptions: StationOption[] = rainInfoList.map((g) => ({
+    code: g.sta_code,
+    name: g.name,
+    subLabel: [g.district, g.province].filter(Boolean).join(', ') || undefined,
+  }));
 
   const selectedInfo = rainInfoList.find(g => g.sta_code === selectedCode) ?? null;
   const cameras = selectedCode ? (STATION_CAMERAS[selectedCode] ?? []) : [];
@@ -114,6 +124,7 @@ export default function RainDashboard() {
       </Box>
     );
   }
+  
 
   return (
     <Box>
@@ -121,21 +132,15 @@ export default function RainDashboard() {
       <Box sx={{ my: 2 }}>
         {/* Row 1: Dropdown + Refresh */}
         <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', width: '100%' }}>
-          <FormControl fullWidth>
-            <InputLabel sx={{ fontFamily: 'Prompt' }}>เลือกประตูระบายน้ำ</InputLabel>
-            <Select
-              value={selectedCode || '01'}
-              label="เลือกประตูระบายน้ำ"
-              onChange={(e: SelectChangeEvent) => setSelectedCode(e.target.value)}
-              sx={fontInfo}
-            >
-              {rainInfoList.map((s: any) => (
-                <MenuItem key={s.sta_code} value={s.sta_code}>
-                  {s.name} ({s.sta_code})
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <StationSelector
+            stations={rainStationOptions}
+            value={selectedCode}
+            onChange={setSelectedCode}
+            label="เลือกสถานีวัดน้ำฝน"
+            placeholder="ค้นหาชื่อสถานี, รหัส, อำเภอ หรือจังหวัด"
+            iconSrc={`${Path_URL}/images/icons/rain_station_icon.png`}
+          />
+
 
           <Tooltip title="รีเฟรชข้อมูล">
             <span>
@@ -176,7 +181,7 @@ export default function RainDashboard() {
                 color: 'text.disabled',
                 }}
             >
-              ข้อมูลอัปเดตล่าสุด: {latest?.date ?? 'กำลังโหลด...'}
+              ข้อมูลอัปเดตล่าสุด: {latest?.datetime ?? 'กำลังโหลด...'}
             </Typography>
           </Box>
         )}
