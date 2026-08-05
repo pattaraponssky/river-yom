@@ -4,14 +4,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box, Grid, Card, CardContent, Typography, Chip,
-  FormControl, InputLabel, Select, MenuItem,
   Paper, CircularProgress, Alert, Divider,
   IconButton, Tooltip, Stack, SelectChangeEvent,
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { API_URL, Path_URL } from '@/lib/utility';
-import { useTheme, alpha } from '@mui/material';
-import { fontInfo } from '@/theme/style';
 import CameraViewer from '@/components/Data/CameraViewer';
 import { STATION_CAMERAS } from '@/lib/cameraConfig';
 import StationCrossSectionChart from '@/components/Data/StationCrossSectionChart';
@@ -75,7 +72,7 @@ export default function FlowDashboard() {
       if (!res.ok) throw new Error('ไม่สามารถดึงข้อมูลได้');
 
       const json = await res.json();
-      const data = json.data?.[0]; // ใช้ตัวแรก
+      const data = json.data;
 
       if (data) {
         setLatest({
@@ -403,7 +400,7 @@ export default function FlowDashboard() {
          {/* ───────────────── Middle Row ───────────────── */}
             <Grid container spacing={2.5} sx={{ mt: 2 }}>
               <Grid size={{ xs: 12, md: 4 }}>
-                 <StationCoordinates
+                <StationCoordinates
                   staCode={selectedInfo.sta_code}
                   lat={selectedInfo.lat}
                   long={selectedInfo.long}

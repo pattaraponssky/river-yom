@@ -38,13 +38,13 @@ interface TeleLatest {
   datetime: string;
   wl?: number;           // ระดับน้ำ
   discharge?: number;    // อัตราการไหล
-  rain?: number;         // ปริมาณฝน
+  rain_mm?: number;         // ปริมาณฝน
 }
 
 // ─── Main Component ───────────────────────────────────────────
 export default function TeleDashboard() {
   const [teleInfoList, setTeleInfoList] = useState<TeleInfo[]>([]);
-  const [selectedCode, setSelectedCode] = useState<string>('01');
+  const [selectedCode, setSelectedCode] = useState<string>('YR.01');
   const [latest,       setLatest]       = useState<TeleLatest | null>(null);
   const [loading,      setLoading]      = useState(false);
   const [infoLoading,  setInfoLoading]  = useState(true);
@@ -74,7 +74,7 @@ export default function TeleDashboard() {
       if (!res.ok) throw new Error('ไม่สามารถดึงข้อมูลได้');
 
       const json = await res.json();
-      const data = json.data?.[0]; // ใช้ตัวแรก
+      const data = json.data;
 
       if (data) {
         setLatest({
@@ -83,7 +83,7 @@ export default function TeleDashboard() {
           datetime: data.datetime,
           wl: data.wl,
           discharge: data.discharge,
-          rain: data.rain,
+          rain_mm: data.rain_mm,
         });
         setLastUpdate(new Date());
       } else {
@@ -380,19 +380,19 @@ export default function TeleDashboard() {
                 <TeleMetricCards
                   wl={latest?.wl}
                   discharge={latest?.discharge}
-                  rain={latest?.rain}
+                  rain={latest?.rain_mm}
                   warnLevels={TELE_WARN_LEVELS[selectedCode]}
                   loading={loading}
                 />
               <Paper sx={{ p: 2, borderRadius: 2 ,mt: 2}}>
                 {selectedCode && (
-                        <StationCrossSectionChart
-                            staCode={selectedCode}
-                            waterLevel={latest?.wl ?? null}   // ← ระดับน้ำล่าสุด
-                            warnLevels={TELE_WARN_LEVELS[selectedCode]}
-                            title="ภาพตัดขวางแม่น้ำ"
-                            chartHeight={387}
-                        />
+                  <StationCrossSectionChart
+                      staCode={selectedCode}
+                      waterLevel={latest?.wl ?? null}   // ← ระดับน้ำล่าสุด
+                      warnLevels={TELE_WARN_LEVELS[selectedCode]}
+                      title="ภาพตัดขวางแม่น้ำ"
+                      chartHeight={387}
+                  />
                 )}
               </Paper>
             </Stack>

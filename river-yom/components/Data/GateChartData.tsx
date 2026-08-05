@@ -32,48 +32,39 @@ const GateChart: React.FC<DataChartProps> = ({ data, type , height = 350 ,sta_co
   const gridColor = isDark ? "#334155" : "#e2e8f0";  
   if (!data || !data.series) return null;
   
-
   const gateAnnotations: Record<string, ApexAnnotations> = {
-    'Y.50': {
+    'kpk': {
       yaxis: [
-        { y: 1.70, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 1.70 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
-        { y: 0.56, borderColor: 'orange', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 0.56 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'orange' } } },
-        { y: -0.57, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง -0.57 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
+        { y: 43.00, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 43.00 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
+        { y: 41.93, borderColor: 'orange', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 41.93 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'orange' } } },
+        { y: 40.86, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 40.86 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
       ],
     },
-    'Y.15': {
+    'tng': {
       yaxis: [
-        { y: 6.32, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 6.32 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
-        { y: 5.47, borderColor: 'orange', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 5.47 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'orange' } } },
-        { y: 4.61, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 4.61 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
+        { y: 42.55, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 42.55 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
+        { y: 41.10, borderColor: 'orange', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 41.10 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'orange' } } },
+        { y: 39.10, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 39.10 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
       ]
     },
-    'Y.16': {
+    'wst': {
       yaxis: [  
-        { y: 2.69, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 2.69 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
-        { y: 2.02, borderColor: 'orange', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 2.02 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'orange' } } },
-        { y: 1.36, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 1.36 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
+        { y: 42.55, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 42.55 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
+        { y: 41.10, borderColor: 'orange', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 41.10 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'orange' } } },
+        { y: 37.38, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 37.38 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
         ]
-    },
-    'Y.64': {
-      yaxis: [
-        { y: 1.81, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 1.81 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
-        { y: 0.75, borderColor: 'orange', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 0.75 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'orange' } } },
-        { y: -0.31, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง -0.31 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
-      ]
-    },
-    'Y.4': {
-      yaxis: [
-        { y: 2.71, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 2.71 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
-        { y: 1.84, borderColor: 'orange', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 1.84 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'orange' } } },
-        { y: 0.98, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 0.98 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
-      ]
     },
     '': {
       yaxis: [
       ]
     },
   };
+
+  const GateWaterLevelYAxisRange: Record<string, { min: number; max: number }> = {
+  'wst': { min: 32, max: 44 },
+  'tng': { min: 33, max: 43 },
+  'kpk': { min: 36, max: 44 },
+};
 
   const chartOptionsMap = {
     discharge: {
@@ -231,10 +222,19 @@ const GateChart: React.FC<DataChartProps> = ({ data, type , height = 350 ,sta_co
   const annotations = sta_code && (type === 'wl_upper' || type === 'wl_lower') ? gateAnnotations[sta_code] || { yaxis: [] } : undefined;
   let yaxis = baseOptions.yaxis;
 
+  if ((type === 'wl_upper' || type === 'wl_lower') && sta_code && GateWaterLevelYAxisRange[sta_code]) {
+    yaxis = [{
+      ...(Array.isArray(baseOptions.yaxis) ? baseOptions.yaxis[0] : baseOptions.yaxis),
+      min: GateWaterLevelYAxisRange[sta_code].min,
+      max: GateWaterLevelYAxisRange[sta_code].max,
+    }];
+  }
+
   const options = {
     ...baseOptions,
     ...(annotations && { annotations }),
     ...(yaxis && { yaxis }),
+    
     // responsive: [{
     //         breakpoint: 768, 
     //         options: {

@@ -163,7 +163,7 @@ const TeleMetricCards: React.FC<TeleMetricCardsProps> = ({
     ...(rain !== undefined ? [{
       key:    'rain',
       icon:   <OpacityIcon sx={{ fontSize: 20, color: '#185FA5' }} />,
-      label:  'ปริมาณฝนสะสม',
+      label:  'ปริมาณฝน (1 ชม.)',
       value:  rain,
       unit:   'มม.',
       accent: '#E6F1FB',

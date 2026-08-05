@@ -37,7 +37,7 @@ const MODE_LABELS: Record<DataMode, string> = {
 const DataTeleCombined: React.FC<{ propsSelectedStation?: string }> = ({ propsSelectedStation }) => {
   
   const queryParams = new URLSearchParams(location.search);
-  const stationFromURL = queryParams.get("station") || "02";
+  const stationFromURL = queryParams.get("station") || "YR.01";
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
   const [mode, setMode] = useState<DataMode>("daily");
@@ -75,7 +75,6 @@ const DataTeleCombined: React.FC<{ propsSelectedStation?: string }> = ({ propsSe
       setInitialLoad(true); // ป้องกันไม่ให้ทำซ้ำ
     }
   }, [selectedStation, startYear, endYear, initialLoad]);
-
 
   // รีเซ็ตเมื่อเปลี่ยนสถานีหรือโหมด
   useEffect(() => {
@@ -264,7 +263,7 @@ const DataTeleCombined: React.FC<{ propsSelectedStation?: string }> = ({ propsSe
 
           <Box sx={{ display: "flex", justifyContent: "center" }}>
             <img
-              src={station ? `${Path_URL}images/tele/${station.sta_code}.jpg` : `${Path_URL}images/tele_station/${station.sta_code}.png`}
+              src={station ? `${Path_URL}images/tele/${station.sta_code}.jpg` : `${Path_URL}images/images/default_img.png`}
               alt="Station"
               style={{
                 width: "100%",

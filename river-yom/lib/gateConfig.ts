@@ -48,8 +48,8 @@ export const GATE_STATION_CONFIGS: Record<string, GateStationConfig> = {
     ],
     wlUpperField: 'wl_upper',
     wlLowerField: 'wl_lower',
-    visualMinLevel: 15,
-    visualMaxLevel: 26,
+    visualMinLevel: 34,
+    visualMaxLevel: 42,
   },
   'kpk': {
     sta_code: 'kpk',
@@ -59,7 +59,7 @@ export const GATE_STATION_CONFIGS: Record<string, GateStationConfig> = {
     ],
     wlUpperField: 'wl_upper',
     wlLowerField: 'wl_lower',
-    visualMinLevel: 15,
-    visualMaxLevel: 26,
+    visualMinLevel: 34,
+    visualMaxLevel: 42,
   },
 };

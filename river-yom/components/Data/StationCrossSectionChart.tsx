@@ -222,7 +222,6 @@ const StationCrossSectionChart: React.FC<Props> = ({
   const chartSeries = useMemo(() => [
     {
       name: 'ระดับน้ำ',
-      // เส้นระนาบ = ค่าเดียวกันตลอด
       data: shiftedWL != null
         ? Array(groundData.length).fill(shiftedWL)
         : Array(groundData.length).fill(null),

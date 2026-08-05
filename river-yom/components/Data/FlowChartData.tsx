@@ -138,7 +138,7 @@ const flowDischargeAnnotations: Record<string, ApexAnnotations> = {
 const flowWaterLevelYAxisRange: Record<string, { min: number; max: number }> = {
   'Y.4': { min: 42, max: 53 },
   'Y.15': { min: 33, max: 48 },
-  'Y.16': { min: 30, max: 44 },
+  'Y.16': { min: 30, max: 42 },
   'Y.50': { min: 34, max: 44 },
   'Y.64': { min: 33, max: 43 },
   'Y.51': { min: 32, max: 44 },

@@ -75,7 +75,7 @@ export default function RainDashboard() {
       if (!res.ok) throw new Error('ไม่สามารถดึงข้อมูลได้');
 
       const json = await res.json();
-      const data = json.data?.[0]; // ใช้ตัวแรก
+      const data = json.data;
 
       if (data) {
         setLatest({

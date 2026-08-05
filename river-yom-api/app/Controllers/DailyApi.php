@@ -28,32 +28,53 @@ class DailyApi extends ResourceController
             ->where('MINUTE(datetime)', 0);
     }
 
+    // 🔧 helper: อ่านรหัสสถานีที่ต้องการกรอง จาก query string หรือ segment ที่ 2
+    //    รองรับ: ?sta_code=Y.4  หรือ  ?res_code=srk  หรือ /api/daily/flow/2026-08-05/Y.4
+    private function getCodeFilter($paramName = 'sta_code', $segmentCode = null)
+    {
+        $code = $this->request->getGet($paramName);
+        if (!$code && $segmentCode) {
+            $code = $segmentCode;
+        }
+        return $code ? trim($code) : null;
+    }
+
     // 🟦 สรุปข้อมูลอ่างเก็บน้ำรายวัน
-    public function reservoir($date = null)
+    public function reservoir($date = null, $codeSegment = null)
     {
         $infoModel = new ReservoirInfoModel();
         $dataModel = new ReservoirModel();
 
         if (!$date) {
-            $latest = $dataModel->selectMax('datetime')->first(); // ✅ แก้เป็น datetime
+            $latest = $dataModel->selectMax('datetime')->first();
             $date = $latest ? substr($latest['datetime'], 0, 10) : date('Y-m-d');
         }
 
         $yesterday = date('Y-m-d', strtotime($date . ' -1 day'));
 
-        $reservoirs = $infoModel->findAll();
+        // ✅ รองรับการเลือกสถานีเดียวด้วย res_code
+        $resCode = $this->getCodeFilter('res_code', $codeSegment);
+
+        $infoQuery = $infoModel;
+        if ($resCode) {
+            $infoQuery = $infoModel->where('res_code', $resCode);
+        }
+        $reservoirs = $infoQuery->findAll();
+
+        if ($resCode && empty($reservoirs)) {
+            return $this->failNotFound("ไม่พบข้อมูลอ่างเก็บน้ำรหัส '{$resCode}'");
+        }
+
         $result = [];
         $no = 1;
 
         foreach ($reservoirs as $res) {
-            // 🔹 ดึงข้อมูลของวันปัจจุบันก่อน (เวลา 07:00)
             $query = $dataModel->where('res_code', $res['res_code']);
-            $daily = $this->whereDateAt7($query, $date)->first(); // ✅ แก้เป็น datetime + 07:00
+            $daily = $this->whereDateAt7($query, $date)->first();
 
-            // 🔸 ถ้าไม่มีข้อมูล หรือ volume = 0 ให้ใช้ของเมื่อวานแทน
             if (!$daily || floatval($daily['volume']) == 0) {
                 $query = $dataModel->where('res_code', $res['res_code']);
-                $daily = $this->whereDateAt7($query, $yesterday)->first(); // ✅ แก้เป็น datetime + 07:00
+                $daily = $this->whereDateAt7($query, $yesterday)->first();
             }
 
             if ($daily) {
@@ -67,8 +88,8 @@ class DailyApi extends ResourceController
                     'type' => $res['type'],
                     'long' => $res['long'],
                     'lat' => $res['lat'],
-                    'date' => substr($daily['datetime'], 0, 10), // ✅ ตัดเอาแค่ Y-m-d จาก datetime
-                    'datetime' => $daily['datetime'], // ✅ เผื่ออยากดูเวลาจริงด้วย
+                    'date' => substr($daily['datetime'], 0, 10),
+                    'datetime' => $daily['datetime'],
                     'volume' => round($daily['volume'], 3),
                     'inflow' => round($daily['inflow'], 3),
                     'outflow' => round($daily['outflow'], 3),
@@ -81,18 +102,35 @@ class DailyApi extends ResourceController
             return (float)$b['volume'] <=> (float)$a['volume'];
         });
 
+        // ✅ ถ้าเลือกสถานีเดียว ส่งเป็น object เดี่ยวแทน array (สะดวกฝั่ง frontend)
+        if ($resCode) {
+            return $this->respond(['data' => $result[0] ?? null]);
+        }
+
         return $this->respond(['data' => $result]);
     }
 
     // 🟨 สรุปข้อมูลประตูน้ำรายวัน
-    public function gate($date = null)
+    public function gate($date = null, $codeSegment = null)
     {
         $infoModel = new GateInfoModel();
         $dataModel = new GateModel();
 
         $date = $date ?? date('Y-m-d');
 
-        $sta_codes = ['tng', 'wst', 'kpk'];
+        // ✅ รองรับการเลือกสถานีเดียวด้วย sta_code (ต้องอยู่ในลิสต์ที่อนุญาตด้วย)
+        $allowedCodes = ['tng', 'wst', 'kpk'];
+        $staCode = $this->getCodeFilter('sta_code', $codeSegment);
+
+        if ($staCode) {
+            if (!in_array($staCode, $allowedCodes)) {
+                return $this->failNotFound("ไม่พบสถานีประตูน้ำรหัส '{$staCode}'");
+            }
+            $sta_codes = [$staCode];
+        } else {
+            $sta_codes = $allowedCodes;
+        }
+
         $gates = $infoModel->whereIn('sta_code', $sta_codes)->findAll();
 
         $result = [];
@@ -100,13 +138,12 @@ class DailyApi extends ResourceController
 
         foreach ($gates as $gate) {
             $query = $dataModel->where('sta_code', $gate['sta_code']);
-            $daily = $this->whereDateAt7($query, $date)->first(); // ✅ แก้เป็น datetime + 07:00
+            $daily = $this->whereDateAt7($query, $date)->first();
 
-            // ถ้าไม่มีข้อมูลหรือ discharge = 0 ให้ย้อนไป 1 วัน
             if (!$daily || (isset($daily['discharge']) && $daily['discharge'] == 0)) {
                 $yesterday = date('Y-m-d', strtotime($date . ' -1 day'));
                 $query = $dataModel->where('sta_code', $gate['sta_code']);
-                $daily = $this->whereDateAt7($query, $yesterday)->first(); // ✅ แก้เป็น datetime + 07:00
+                $daily = $this->whereDateAt7($query, $yesterday)->first();
             }
 
             if ($daily) {
@@ -117,8 +154,8 @@ class DailyApi extends ResourceController
                     'province' => $gate['province'],
                     'lat' => $gate['lat'],
                     'long' => $gate['long'],
-                    'date' => substr($daily['datetime'], 0, 10), // ✅ แก้
-                    'datetime' => $daily['datetime'], // ✅ เพิ่ม
+                    'date' => substr($daily['datetime'], 0, 10),
+                    'datetime' => $daily['datetime'],
                     'wl_upper' => round($daily['wl_upper'], 2),
                     'wl_lower' => round($daily['wl_lower'], 2),
                     'discharge' => round($daily['discharge'], 2),
@@ -129,27 +166,43 @@ class DailyApi extends ResourceController
             }
         }
 
+        if ($staCode) {
+            return $this->respond(['data' => $result[0] ?? null]);
+        }
+
         return $this->respond(['data' => $result]);
     }
 
     // 🟩 สรุปข้อมูลสถานีน้ำท่ารายวัน
-    public function flow($date = null)
+    public function flow($date = null, $codeSegment = null)
     {
         $infoModel = new FlowInfoModel();
         $dataModel = new FlowModel();
 
         if (!$date) {
-            $latest = $dataModel->selectMax('datetime')->first(); // ✅ แก้เป็น datetime
+            $latest = $dataModel->selectMax('datetime')->first();
             $date = $latest ? substr($latest['datetime'], 0, 10) : date('Y-m-d');
         }
 
-        $flows = $infoModel->findAll();
+        // ✅ รองรับการเลือกสถานีเดียวด้วย sta_code
+        $staCode = $this->getCodeFilter('sta_code', $codeSegment);
+
+        $infoQuery = $infoModel;
+        if ($staCode) {
+            $infoQuery = $infoModel->where('sta_code', $staCode);
+        }
+        $flows = $infoQuery->findAll();
+
+        if ($staCode && empty($flows)) {
+            return $this->failNotFound("ไม่พบสถานีน้ำท่ารหัส '{$staCode}'");
+        }
+
         $result = [];
         $no = 1;
 
         foreach ($flows as $flow) {
             $query = $dataModel->where('sta_code', $flow['sta_code']);
-            $daily = $this->whereDateAt7($query, $date)->first(); // ✅ แก้เป็น datetime + 07:00
+            $daily = $this->whereDateAt7($query, $date)->first();
 
             if ($daily) {
                 $result[] = [
@@ -159,24 +212,40 @@ class DailyApi extends ResourceController
                     'province' => $flow['province'],
                     'lat' => $flow['lat'],
                     'long' => $flow['long'],
-                    'date' => substr($daily['datetime'], 0, 10), // ✅ แก้
-                    'datetime' => $daily['datetime'], // ✅ เพิ่ม
+                    'date' => substr($daily['datetime'], 0, 10),
+                    'datetime' => $daily['datetime'],
                     'wl' => round($daily['wl'], 2),
                     'discharge' => round($daily['discharge'], 2)
                 ];
             }
         }
 
+        if ($staCode) {
+            return $this->respond(['data' => $result[0] ?? null]);
+        }
+
         return $this->respond(['data' => $result]);
     }
 
-    // 🟪 tele() เดิมใช้ pattern ถูกต้องอยู่แล้ว ไม่ต้องแก้ (คงไว้ตามเดิม)
-    public function tele($date = null)
+    // 🟪 tele()
+    public function tele($date = null, $codeSegment = null)
     {
         $infoModel = new TeleInfoModel();
         $dataModel = new TeleModel();
 
-        $flows = $infoModel->findAll();
+        // ✅ รองรับการเลือกสถานีเดียวด้วย sta_code
+        $staCode = $this->getCodeFilter('sta_code', $codeSegment);
+
+        $infoQuery = $infoModel;
+        if ($staCode) {
+            $infoQuery = $infoModel->where('sta_code', $staCode);
+        }
+        $flows = $infoQuery->findAll();
+
+        if ($staCode && empty($flows)) {
+            return $this->failNotFound("ไม่พบสถานีรหัส '{$staCode}'");
+        }
+
         $result = [];
         $no = 1;
 
@@ -208,17 +277,21 @@ class DailyApi extends ResourceController
                     'wl'        => round($daily['wl'] ?? 0, 2),
                     'discharge' => round($daily['discharge'] ?? 0, 2),
                     'rain_mm' => isset($daily['rain_mm']) && $daily['rain_mm'] !== null && $daily['rain_mm'] !== ''
-                    ? round($daily['rain_mm'], 2)
-                    : null
+                        ? round($daily['rain_mm'], 2)
+                        : null
                 ];
             }
+        }
+
+        if ($staCode) {
+            return $this->respond(['data' => $result[0] ?? null]);
         }
 
         return $this->respond(['data' => $result]);
     }
 
     // 🟦 สรุปข้อมูลฝนรายวัน
-    public function rain($date = null)
+    public function rain($date = null, $codeSegment = null)
     {
         $infoModel = new RainInfoModel();
         $dataModel = new RainModel();
@@ -230,7 +303,19 @@ class DailyApi extends ResourceController
 
         $yearStart = date('Y', strtotime($date)) . '-01-01';
 
-        $stations = $infoModel->findAll();
+        // ✅ รองรับการเลือกสถานีเดียวด้วย sta_code (ข้าม logic top-7 ถ้าระบุสถานี)
+        $staCode = $this->getCodeFilter('sta_code', $codeSegment);
+
+        $infoQuery = $infoModel;
+        if ($staCode) {
+            $infoQuery = $infoModel->where('sta_code', $staCode);
+        }
+        $stations = $infoQuery->findAll();
+
+        if ($staCode && empty($stations)) {
+            return $this->failNotFound("ไม่พบสถานีฝนรหัส '{$staCode}'");
+        }
+
         $result = [];
 
         foreach ($stations as $st) {
@@ -244,7 +329,6 @@ class DailyApi extends ResourceController
                 ->where('datetime <=', $date . ' 07:00:00')
                 ->first();
 
-            // ✅ เก็บ rain_sum เป็น null ถ้าไม่มีข้อมูลจริงๆ ไม่บังคับเป็น 0
             $rainSum = ($sumRain !== null && $sumRain['total_rain'] !== null)
                 ? floatval($sumRain['total_rain'])
                 : null;
@@ -261,16 +345,25 @@ class DailyApi extends ResourceController
                     'rain_mm' => isset($daily['rain_mm']) && $daily['rain_mm'] !== null && $daily['rain_mm'] !== ''
                         ? round($daily['rain_mm'], 2)
                         : null,
-                    'rain_sum' => $rainSum, // ✅ อาจเป็น null ได้แล้ว
+                    'rain_sum' => $rainSum,
                 ];
             }
         }
 
-        // ✅ เรียงลำดับโดยดัน null ไปท้ายสุด (ไม่ปนกับสถานีที่มีข้อมูลจริง)
+        // ✅ ถ้าระบุ sta_code เจาะจง ไม่ต้อง sort/ตัด top7 — คืนสถานีนั้นตรงๆ
+        if ($staCode) {
+            $r = $result[0] ?? null;
+            if ($r) {
+                $r['no'] = 1;
+                $r['rain_sum'] = $r['rain_sum'] !== null ? round($r['rain_sum'], 2) : null;
+            }
+            return $this->respond(['data' => $r]);
+        }
+
         usort($result, function ($a, $b) {
             if ($a['rain_sum'] === null && $b['rain_sum'] === null) return 0;
-            if ($a['rain_sum'] === null) return 1;  // a ไป null ท้าย
-            if ($b['rain_sum'] === null) return -1; // b ไป null ท้าย
+            if ($a['rain_sum'] === null) return 1;
+            if ($b['rain_sum'] === null) return -1;
             return $b['rain_sum'] <=> $a['rain_sum'];
         });
 
@@ -278,7 +371,6 @@ class DailyApi extends ResourceController
 
         foreach ($top8 as $i => &$r) {
             $r['no'] = $i + 1;
-            // ✅ round เฉพาะตอนที่ไม่ใช่ null
             $r['rain_sum'] = $r['rain_sum'] !== null ? round($r['rain_sum'], 2) : null;
         }
 

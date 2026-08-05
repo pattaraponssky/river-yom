@@ -299,7 +299,7 @@ const GateOpeningDisplay: React.FC<GateOpeningDisplayProps> = ({ config }) => {
               sx={{ width: { xs: 35, md: 45 }, height: { xs: 35, md: 45 }, boxShadow: `0 4px 12px ${alpha(primary, 0.4)}`, mr: 2 }}
             />
             <Typography sx={{ fontWeight: 'bold', fontSize: { md: '1.4rem', xs: '1rem' }, fontFamily: 'Prompt' }}>
-              สถานะการเปิด-ปิดบานประตูระบายน้ำ ปัจจุบัน
+              สถานะประตูระบายน้ำ
             </Typography>
           </Box>
         </Box>

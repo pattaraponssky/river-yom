@@ -39,6 +39,17 @@ const FlowCard: React.FC = () => {
     ? `linear-gradient(135deg, ${theme.palette.background.paper}88, ${theme.palette.background.paper}cc)` // โปร่งแสงเข้ม
     : "#E3F2FD"; // ใช้ gradient เดิมใน light
 
+
+    const allowStaCodes = [
+      "Y.4",
+      "Y.15",
+      "Y.16",
+      "Y.17",
+      "Y.50",
+      // "Y.51",
+      "Y.64",
+    ];
+
   useEffect(() => {
     Promise.all([
       fetch(`${API_URL}/api/daily/flow`).then((res) => res.json()),
@@ -46,7 +57,9 @@ const FlowCard: React.FC = () => {
     ])
       .then(([flowJson, summaryJson]) => {
         // --- ข้อมูลน้ำท่า ---
-        const fetchedData = flowJson.data.map((d: any) => ({
+        const fetchedData = flowJson.data
+        .filter((d: any) => allowStaCodes.includes(d.sta_code))
+        .map((d: any) => ({
           sta_code: d.sta_code,
           sta_name: d.sta_name,
           province: d.province,
@@ -115,8 +128,6 @@ const FlowCard: React.FC = () => {
 
                 
               </Typography>
-              
-              
             }
             
           />
@@ -229,60 +240,20 @@ const FlowCard: React.FC = () => {
               </TableHead>
 
               <TableBody>
-                {data.slice(0, 7).map((flow, i) => (
+                {data.map((flow, i) => (
                   <TableRow key={i} hover>
-                    <TableCell sx={{ textAlign: "center", ...textStyle, lineHeight: { md: "1.94rem", xs: "1.2rem" } }}>
-                      {flow.sta_code}
-                    </TableCell>
-
-                    <TableCell
-                      sx={{
-                        textAlign: "center",
-                        ...textStyle,
-                        lineHeight: { md: "1.94rem", xs: "1.2rem" },
-                        whiteSpace: "normal",
-                      }}
-                    >
-                      {flow.sta_name}
-                    </TableCell>
-
-                    <TableCell
-                      sx={{
-                        textAlign: "center",
-                        ...textStyle,
-                        lineHeight: { md: "1.94rem", xs: "1.2rem" },
-                        whiteSpace: "normal",
-                      }}
-                    >
-                      {flow.province}
-                    </TableCell>
-
-                    <TableCell sx={{ textAlign: "center", ...textStyle, lineHeight: { md: "1.94rem", xs: "1.2rem" } }}>
+                    <TableCell sx={{ textAlign: "center", ...textStyle, lineHeight:{md:"1.94rem",xs:"1.2rem"} }}>{flow.sta_code}</TableCell>
+                    <TableCell sx={{ textAlign: "center", ...textStyle, lineHeight:{md:"1.94rem",xs:"1.2rem"} ,whiteSpace: "normal",}}>{flow.sta_name}</TableCell>
+                    <TableCell sx={{ textAlign: "center", ...textStyle, lineHeight:{md:"1.94rem",xs:"1.2rem"} ,whiteSpace: "normal",}}>{flow.province}</TableCell>
+                    <TableCell sx={{ textAlign: "center", ...textStyle, lineHeight:{md:"1.94rem",xs:"1.2rem"} ,}}>
                       {numberFormat(flow.wl, 2)}
                     </TableCell>
-
-                    <TableCell sx={{ textAlign: "center", ...textStyle, lineHeight: { md: "1.94rem", xs: "1.2rem" } }}>
+                       <TableCell sx={{ textAlign: "center", ...textStyle, lineHeight:{md:"1.94rem",xs:"1.2rem"} ,}}>
                       {numberFormat(flow.discharge, 2)}
                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
-
-                {/* <TableBody>
-                  {data.map((flow, i) => (
-                    <TableRow key={i} hover>
-                      <TableCell sx={{ textAlign: "center", ...textStyle, lineHeight:{md:"1.94rem",xs:"1.2rem"} }}>{flow.sta_code}</TableCell>
-                      <TableCell sx={{ textAlign: "center", ...textStyle, lineHeight:{md:"1.94rem",xs:"1.2rem"} ,whiteSpace: "normal",}}>{flow.sta_name}</TableCell>
-                      <TableCell sx={{ textAlign: "center", ...textStyle, lineHeight:{md:"1.94rem",xs:"1.2rem"} ,whiteSpace: "normal",}}>{flow.province}</TableCell>
-                      <TableCell sx={{ textAlign: "center", ...textStyle, lineHeight:{md:"1.94rem",xs:"1.2rem"} ,}}>
-                        {numberFormat(flow.wl, 2)}
-                      </TableCell>
-                        <TableCell sx={{ textAlign: "center", ...textStyle, lineHeight:{md:"1.94rem",xs:"1.2rem"} ,}}>
-                        {numberFormat(flow.discharge, 2)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody> */}
               </Table>
             </Card>
         </CardContent>
