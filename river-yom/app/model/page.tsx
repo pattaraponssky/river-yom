@@ -1,17 +1,28 @@
+// ลบ cookies และ redirect ออก เปลี่ยนเป็น Client Component
+'use client';
+
 import { Box } from "@mui/material";
 import HecRun from "./components/Model";
-import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 
+export default function ModelPage() {
+    const { currentUser, loading } = useAuth();
+    const router = useRouter();
 
-export default async function ModelPage() {
-    const cookieStore = await cookies();
-    const session = cookieStore.get('access_token');
+    useEffect(() => {
+        if (!loading && !currentUser) {
+            router.replace('/dashboard');
+        }
+    }, [currentUser, loading, router]);
 
-    if (!session) {
-        redirect('/dashboard');
-    }
-    return <Box sx={{p:1}}>
-        <HecRun />
-    </Box>
+    if (loading) return null; // หรือ <LoadingSpinner />
+    if (!currentUser) return null;
+
+    return (
+        <Box sx={{ p: 1, maxWidth: 'xl', mx: 'auto', width: '100%'}}>
+            <HecRun />
+        </Box>
+    );
 }

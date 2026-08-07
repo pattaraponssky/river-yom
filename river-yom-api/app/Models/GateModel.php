@@ -182,6 +182,28 @@ class GateModel extends Model
                     ->findAll();
     }
 
+    // ตัวอย่างใน GateModel
+    public function getGateDataModelLast8Days(array $staCodes)
+    {
+        $today = date('Y-m-d') . ' 07:00:00';
+        $startDate = date('Y-m-d', strtotime('-7 days')) . ' 07:00:00'; // ✅ ระบุเวลา
+
+        // ดึงเฉพาะเวลา 07:00 ของแต่ละวัน
+        $builder = $this->db->table('gate_data'); // ชื่อตารางจริงของคุณ
+        $builder->select("
+            sta_code,
+            DATE(datetime) AS date,
+            discharge
+        ");
+        $builder->whereIn('sta_code', $staCodes);
+        $builder->where('datetime >=', $startDate);
+        $builder->where('datetime <=', $today);
+        $builder->where("TIME(datetime) = '07:00:00'");   // ← จุดสำคัญ
+        $builder->orderBy('datetime', 'ASC');
+
+        return $builder->get()->getResultArray();
+    }
+
     public function getGateOpeningLast14Days()
     {
         return $this->db->query("

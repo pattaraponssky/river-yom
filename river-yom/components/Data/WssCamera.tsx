@@ -77,7 +77,8 @@ const WssCamera = ({ config }: { config: CameraConfig }) => {
         liveBufferLatencyMaxLatency: 3.0,
         liveBufferLatencyMinRemain: 0.5,
         autoCleanupSourceBuffer: true,
-        autoCleanupMaxBackwardDuration: 10,
+        autoCleanupMaxBackwardDuration: 30,
+        autoCleanupMinBackwardDuration: 10,
       }
     );
 

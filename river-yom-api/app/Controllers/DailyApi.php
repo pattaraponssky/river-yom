@@ -117,6 +117,7 @@ class DailyApi extends ResourceController
         $dataModel = new GateModel();
 
         $date = $date ?? date('Y-m-d');
+        $yearStart = date('Y', strtotime($date)) . '-01-01';
 
         // ✅ รองรับการเลือกสถานีเดียวด้วย sta_code (ต้องอยู่ในลิสต์ที่อนุญาตด้วย)
         $allowedCodes = ['tng', 'wst', 'kpk'];
@@ -146,6 +147,17 @@ class DailyApi extends ResourceController
                 $daily = $this->whereDateAt7($query, $yesterday)->first();
             }
 
+            $sumRain = $dataModel
+                ->selectSum('rain_mm', 'total_rain')
+                ->where('sta_code', $gate['sta_code'])
+                ->where('datetime >=', $yearStart . ' 07:00:00')
+                ->where('datetime <=', $date . ' 07:00:00')
+                ->first();
+
+            $rainSum = ($sumRain !== null && $sumRain['total_rain'] !== null)
+                ? floatval($sumRain['total_rain'])
+                : null;
+
             if ($daily) {
                 $result[] = [
                     'no' => $no++,
@@ -161,7 +173,8 @@ class DailyApi extends ResourceController
                     'discharge' => round($daily['discharge'], 2),
                     'rain_mm' => isset($daily['rain_mm']) && $daily['rain_mm'] !== null && $daily['rain_mm'] !== ''
                         ? round($daily['rain_mm'], 2)
-                        : null
+                        : null,
+                    'rain_sum' => $rainSum !== null ? round($rainSum, 2) : null
                 ];
             }
         }
@@ -233,6 +246,8 @@ class DailyApi extends ResourceController
         $infoModel = new TeleInfoModel();
         $dataModel = new TeleModel();
 
+        $yearStart = date('Y', strtotime($date)) . '-01-01';
+
         // ✅ รองรับการเลือกสถานีเดียวด้วย sta_code
         $staCode = $this->getCodeFilter('sta_code', $codeSegment);
 
@@ -251,6 +266,17 @@ class DailyApi extends ResourceController
 
         foreach ($flows as $flow) {
             $builder = $dataModel->where('sta_code', $flow['sta_code']);
+
+              $sumRain = $dataModel
+                ->selectSum('rain_mm', 'total_rain')
+                ->where('sta_code', $flow['sta_code'])
+                ->where('datetime >=', $yearStart . ' 07:00:00')
+                ->where('datetime <=', $date . ' 07:00:00')
+                ->first();
+
+            $rainSum = ($sumRain !== null && $sumRain['total_rain'] !== null)
+                ? floatval($sumRain['total_rain'])
+                : null;
 
             if ($date) {
                 $daily = $builder
@@ -278,7 +304,8 @@ class DailyApi extends ResourceController
                     'discharge' => round($daily['discharge'] ?? 0, 2),
                     'rain_mm' => isset($daily['rain_mm']) && $daily['rain_mm'] !== null && $daily['rain_mm'] !== ''
                         ? round($daily['rain_mm'], 2)
-                        : null
+                        : null,
+                    'rain_sum' => $rainSum !== null ? round($rainSum, 2) : null
                 ];
             }
         }

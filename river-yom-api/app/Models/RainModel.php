@@ -43,6 +43,17 @@ class RainModel extends Model
                     ->findAll();
     }
 
+     public function getRainDataModelLast7Days()
+    {
+        $sevenDaysAgo = date('Y-m-d', strtotime('-7 days')) . ' 07:00:00'; // ✅ ระบุเวลา
+
+        return $this->select('*')
+                    ->where('datetime >=', $sevenDaysAgo) 
+                    ->orderBy('datetime', 'DESC')      
+                    ->where("TIME(datetime) = '07:00:00'")
+                    ->findAll();
+    }
+
     public function getRainDataLast14Days()
     {
         $fourteenDaysAgo = date('Y-m-d', strtotime('-14 days')) . ' 07:00:00'; // ✅ ระบุเวลา

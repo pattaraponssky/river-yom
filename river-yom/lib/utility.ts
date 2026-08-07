@@ -1,11 +1,19 @@
 
 ////// API PATHS //////
-export const API_URL = process.env.NEXT_PUBLIC_API_URL;
-if (!API_URL) throw new Error('NEXT_PUBLIC_API_URL is not set');
+// export const API_URL = process.env.NEXT_PUBLIC_API_URL;
+// if (!API_URL) throw new Error('NEXT_PUBLIC_API_URL is not set');
+// export const Path_URL = "./../"; // For Dev
+// export const Model_URL = process.env.NEXT_PUBLIC_MODEL_URL;
+// export const Forecast_URL = "./../";
+//////////////////////////
+
+////// API PATHS DEV //////
+export const API_URL = "http://localhost:8080";
 export const Path_URL = "./../"; // For Dev
-export const Model_URL = "https://swocthachin.rid.go.th/swoc-model";
-export const Forecast_URL = "https://swocthachin.rid.go.th/swoc-model/Ras_data"
-///////////////////////
+export const Model_URL = "http://localhost:8080";
+export const Forecast_URL = "./../";
+//////////////////////////
+
 
 export const nowThaiDate = () => {
   const daysOfWeek = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"];

@@ -26,7 +26,7 @@ const MODE_LABELS: Record<DataMode, string> = {
 
 const DataRainStation: React.FC<DataRainStationProps> = ({ propsSelectedStation }) => {
   const queryParams     = new URLSearchParams(location.search);
-  const stationFromURL  = queryParams.get("station") || "380012";
+  const stationFromURL  = queryParams.get("station") || "390220";
   const theme           = useTheme();
   const isDark          = theme.palette.mode === "dark";
 

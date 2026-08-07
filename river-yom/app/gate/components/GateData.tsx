@@ -23,11 +23,11 @@ import { API_URL, Path_URL } from "@/lib/utility";
 import { titleStyle, textStyle, HeaderCellStyle } from "@/theme/style";
 import { fontInfo } from "@/theme/style";
 import { useState, useEffect, useMemo } from "react";
-interface DataGateStationProps {
+interface DataGateProps {
     propsSelectedStation?: string;
   }
 
-const DataGateStation: React.FC<DataGateStationProps> = ({propsSelectedStation}) => {
+const DataGate: React.FC<DataGateProps> = ({propsSelectedStation}) => {
   const queryParams = new URLSearchParams(location.search);
   const stationFromURL = queryParams.get("station") || "tng";
   const theme = useTheme();
@@ -404,4 +404,4 @@ const DataGateStation: React.FC<DataGateStationProps> = ({propsSelectedStation})
   );
 }
   
-export default DataGateStation;
+export default DataGate;

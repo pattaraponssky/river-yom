@@ -26,8 +26,8 @@ const defaultRows = [
   { station_id: '380012', name: "สกษ.พิจิตร", type: "rain_rid", values: Array(7).fill(0) },
   { station_id: '120160', name: "P.7A", type: "rain_rid", values: Array(7).fill(0) },
 
-  { station_id: 'tng', name: "ปตร.ท่านางงาม", type: "flow", values: Array(8).fill(0) },
-  { station_id: 'wst', name: "ปตร.วังสะตือ", type: "flow", values: Array(8).fill(0) },
+  { station_id: 'tng', name: "ปตร.ท่านางงาม", type: "gate", values: Array(8).fill(0) },
+  { station_id: 'wst', name: "ปตร.วังสะตือ", type: "gate", values: Array(8).fill(0) },
   { station_id: 'Y.15', name: "บ้านกง", type: "flow", values: Array(8).fill(0) },
   { station_id: 'Y.16', name: "บางระกำ", type: "flow", values: Array(8).fill(0) },
   { station_id: 'Y.17', name: "Y.17", type: "flow", values: Array(8).fill(0) },

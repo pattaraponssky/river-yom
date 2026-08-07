@@ -6,7 +6,7 @@ import {
   Box, Typography, IconButton, Tooltip, Chip,
   CircularProgress, Alert, Grid, Card, CardContent,
   CardHeader, Dialog, DialogContent, DialogTitle,
-  ToggleButton, ToggleButtonGroup,
+  FormControl, Select, MenuItem, SelectChangeEvent,
 } from '@mui/material';
 import RefreshIcon       from '@mui/icons-material/Refresh';
 import FullscreenIcon    from '@mui/icons-material/Fullscreen';
@@ -18,10 +18,11 @@ import { CameraConfig }  from '@/lib/cameraConfig';
 import HlsCamera from './HlsCamera';
 import WssCamera from './WssCamera';
 
+
 // ─── Snapshot Camera (refresh ทุก N วินาที) ─────────────────────
 const SnapshotCamera: React.FC<{
   config: CameraConfig;
-  refreshInterval?: number; // วินาที
+  refreshInterval?: number;
 }> = ({ config, refreshInterval = 30 }) => {
   const [src, setSrc]         = useState('');
   const [loading, setLoading] = useState(true);
@@ -32,7 +33,6 @@ const SnapshotCamera: React.FC<{
   const refresh = useCallback(() => {
     setLoading(true);
     setError(false);
-    // เพิ่ม timestamp เพื่อบังคับ reload
     setSrc(`${config.snapshotUrl}?t=${Date.now()}`);
   }, [config.snapshotUrl]);
 
@@ -53,7 +53,7 @@ const SnapshotCamera: React.FC<{
         </Box>
       )}
 
-      {error ? (
+      {/* {error ? (
         <Box sx={{
           height: 200, display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center', bgcolor: '#1a1a1a',
@@ -74,9 +74,8 @@ const SnapshotCamera: React.FC<{
           onLoad={() => { setLoading(false); setLastUpdate(new Date()); }}
           onError={() => { setLoading(false); setError(true); }}
         />
-      )}
+      )} */}
 
-      {/* Timestamp overlay */}
       {lastUpdate && !error && (
         <Box sx={{
           position: 'absolute', bottom: 6, right: 8,
@@ -151,14 +150,25 @@ const EmbedCamera: React.FC<{ config: CameraConfig }> = ({ config }) => (
 interface CameraViewerProps {
   cameras: CameraConfig[];
   staCode: string;
+  defaultCameraId?: string;
 }
 
-const CameraViewer: React.FC<CameraViewerProps> = ({ cameras, staCode }) => {
-  const [activeCam, setActiveCam]     = useState(cameras[0]?.id ?? '');
+const CameraViewer: React.FC<CameraViewerProps> = ({ cameras, staCode, defaultCameraId }) => {
+  const [activeCam, setActiveCam] = useState(
+    defaultCameraId && cameras.some(c => c.id === defaultCameraId)
+      ? defaultCameraId
+      : (cameras[0]?.id ?? '')
+  );
   const [fullscreen, setFullscreen]   = useState(false);
   const [refreshKey, setRefreshKey]   = useState(0);
+  
 
   const currentCam = cameras.find(c => c.id === activeCam) ?? cameras[0];
+
+  const handleCamChange = (e: SelectChangeEvent) => {
+    setActiveCam(e.target.value);
+    setRefreshKey(k => k + 1); // รีเซ็ตเมื่อเปลี่ยนกล้อง
+  };
 
   const renderCamera = (cam: CameraConfig) => {
     switch (cam.type) {
@@ -166,7 +176,7 @@ const CameraViewer: React.FC<CameraViewerProps> = ({ cameras, staCode }) => {
       case 'mjpeg':    return <MjpegCamera    key={refreshKey} config={cam} />;
       case 'embed':    return <EmbedCamera    key={refreshKey} config={cam} />;
       case 'hls':      return <HlsCamera      key={refreshKey} config={cam} />;
-      case 'wss':      return <WssCamera key={refreshKey} config={cam} />;
+      case 'wss':      return <WssCamera      key={refreshKey} config={cam} />;
       default:         return null;
     }
   };
@@ -181,21 +191,55 @@ const CameraViewer: React.FC<CameraViewerProps> = ({ cameras, staCode }) => {
             <Typography sx={{ color: 'white', fontFamily: 'Prompt', fontWeight: 600, fontSize: '1rem' }}>
               กล้องวงจรปิด
             </Typography>
-            {/* Live indicator */}
-            <Chip
-              icon={<FiberManualRecordIcon sx={{ fontSize: '0.7rem !important', color: '#ff1744 !important' }} />}
-              label="LIVE"
-              size="small"
-              sx={{
-                bgcolor: 'rgba(255,23,68,0.2)', color: '#ff6090',
-                border: '1px solid #ff1744', fontWeight: 'bold',
-                fontSize: '0.7rem', height: 22,
-              }}
-            />
+          
           </Box>
         }
         action={
-          <Box sx={{ display: 'flex', gap: 0.5 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {/* ── Dropdown เลือกกล้อง ── */}
+            {cameras.length > 1 && (
+              <FormControl size="small" sx={{ minWidth: 140 }}>
+                <Select
+                  value={activeCam}
+                  onChange={handleCamChange}
+                  displayEmpty
+                  sx={{
+                    color: 'white',
+                    borderColor: 'rgba(255,255,255,0.6)',
+                    backgroundColor: 'rgba(255,255,255,0.25)',
+                    borderRadius: 1,
+                    fontFamily: 'Prompt',
+                    fontSize: '0.9rem',
+                    fontWeight: 500,
+                    height: 32,
+                    '.MuiOutlinedInput-notchedOutline': {
+                      borderColor: 'rgba(255,255,255,0.4)',
+                    },
+                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                      borderColor: 'rgba(255,255,255,0.7)',
+                    },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                      borderColor: 'white',
+                    },
+                    '.MuiSvgIcon-root': {
+                      color: 'white',
+                    },
+                  }}
+                  MenuProps={{
+                    PaperProps: {
+                      sx: { fontFamily: 'Prompt', fontSize: '0.85rem', fontWeight: 500 },
+                    },
+                  }}
+                >
+                  {cameras.map(cam => (
+                    <MenuItem key={cam.id} value={cam.id} sx={{ fontFamily: 'Prompt', fontSize: '0.85rem' }}>
+                      {cam.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            )}
+
             <Tooltip title="รีเฟรช">
               <IconButton size="small" onClick={() => setRefreshKey(k => k + 1)} sx={{ color: 'white' }}>
                 <RefreshIcon fontSize="small" />
@@ -210,39 +254,9 @@ const CameraViewer: React.FC<CameraViewerProps> = ({ cameras, staCode }) => {
         }
       />
 
-      <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-        {/* Camera selector (ถ้ามีหลายกล้อง) */}
-        {cameras.length > 1 && (
-          <ToggleButtonGroup
-            value={activeCam}
-            exclusive
-            onChange={(_, v) => v && setActiveCam(v)}
-            size="small"
-            sx={{ mb: 1.5, flexWrap: 'wrap', gap: 0.5 }}
-          >
-            {cameras.map(cam => (
-              <ToggleButton
-                key={cam.id}
-                value={cam.id}
-                sx={{ fontFamily: 'Prompt', fontSize: '0.78rem', px: 1.5, py: 0.5 }}
-              >
-                {cam.label}
-              </ToggleButton>
-            ))}
-          </ToggleButtonGroup>
-        )}
-
+      <CardContent sx={{ p: 0.5, '&:last-child': { pb: 1 } }}>
         {/* Camera feed */}
         {currentCam && renderCamera(currentCam)}
-
-        {/* Camera label */}
-        <Typography sx={{
-          mt: 0.75, fontFamily: 'Prompt', fontSize: '0.8rem',
-          color: 'text.secondary', textAlign: 'center',
-        }}>
-          {currentCam?.label}
-          {currentCam?.type === 'snapshot' && ' • รีเฟรชทุก 30 วินาที'}
-        </Typography>
       </CardContent>
 
       {/* Fullscreen Dialog */}

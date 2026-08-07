@@ -9,8 +9,8 @@ export interface WarnLevel {
 
 // ─── Tele (สถานีโทรมาตร) ──────────────────────────────────────
 export const TELE_WARN_LEVELS: Record<string, WarnLevel> = {
-  "01": { normal: 41.0, watch: 43.0, alert: 45.0, crisis: 47.0 },
-  "02": { normal: 42.0, watch: 44.0, alert: 46.0, crisis: 48.0 },
+  "YR.01": { normal: 41.0, watch: 43.0, alert: 45.0, crisis: 47.0 },
+  "YR.02": { normal: 42.0, watch: 44.0, alert: 46.0, crisis: 48.0 },
 };
 
 // ─── Gate (ประตูระบายน้ำ) ─────────────────────────────────────

@@ -6,278 +6,320 @@ use CodeIgniter\RESTful\ResourceController;
 use App\Models\ModelInputDataModel;
 use App\Models\RainModel;
 use App\Models\GateModel;
+use App\Models\FlowModel;
 
 class ModelInputDataController extends ResourceController
 {
     protected $modelName = 'App\Models\ModelInputDataModel';
     protected $format    = 'json';
 
+    /**
+     * แปลงค่า date ให้เหลือแค่ Y-m-d เสมอ
+     * รองรับทั้ง '2026-04-14' และ '2026-04-14 07:00:00'
+     */
+    private function toDateOnly(?string $date): ?string
+    {
+        if (empty($date)) {
+            return null;
+        }
+        return substr(trim($date), 0, 10);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // POST /api/model_input_data/update-from-main
+    // ─────────────────────────────────────────────────────────────
     public function updateFromMain()
     {
         $inputModel = new ModelInputDataModel();
-        $rainModel = new RainModel();
-        $gateModel = new GateModel();
+        $rainModel  = new RainModel();
+        $flowModel  = new FlowModel();
+        $gateModel  = new GateModel();
 
-        $allRainStations = ['390220', '120142', '390022', '590042', '590082', '380012', '120160'];
-        $allGateStations = ['tng', 'wst', 'Y.15', 'Y.16', 'Y.17', 'Y.4', 'Y.50', 'Y.51', 'Y.64'];
+        // สถานีที่ต้องดึง
+        $allRainStations = ['390220', '120142', '390022', '590042', '590082', '380012', '12016'];
+        $allFlowStations = ['Y.15', 'Y.16', 'Y.17', 'Y.4', 'Y.50', 'Y.51', 'Y.64'];
+        $allGateStations = ['tng', 'wst'];
 
         try {
-            $rainData = $rainModel->getRainDataLast7Days($allRainStations);
-            $gateData = $gateModel->getGateDataLast8Days($allGateStations);
-            
+            $rainData = $rainModel->getRainDataModelLast7Days($allRainStations);
+            $flowData = $flowModel->getFlowDataModelLast8Days($allFlowStations);
+            $gateData = $gateModel->getGateDataModelLast8Days($allGateStations);
+
             $successfulUpdates = 0;
 
-            // --- 3. ประมวลผล Rain Data ---
+            // ─────────────────────────────────────────
+            // 1. Rain Data
+            // ─────────────────────────────────────────
             if (!empty($rainData)) {
                 foreach ($rainData as $item) {
-                    $sta_code = str_pad($item['sta_code'], 6, '0', STR_PAD_LEFT);
-                    $value = isset($item['rain_mm']) && $item['rain_mm'] !== '' ? (float) $item['rain_mm'] : null;
-                    $date = (string) $item['date'];
+                    $sta_code = str_pad((string)($item['sta_code'] ?? ''), 6, '0', STR_PAD_LEFT);
+                    $date     = $this->toDateOnly($item['date'] ?? null);
+                    $value    = isset($item['rain_mm']) && $item['rain_mm'] !== '' && $item['rain_mm'] !== null
+                                ? (float) $item['rain_mm']
+                                : null;
 
-                    // ✅ ถ้าเป็น NULL หรือไม่มีค่า ให้บันทึกเป็น NULL
+                    if (!$sta_code || !$date) {
+                        continue;
+                    }
+
                     $record = [
                         'sta_code'  => $sta_code,
-                        'date' => $date,
+                        'date'      => $date,
                         'data_type' => 'rain',
-                        'value'     => $value, // เก็บ null ได้
+                        'value'     => $value,
                     ];
 
-                    if ($inputModel->upsertData($record, FALSE)) {
+                    if ($inputModel->upsertData($record, false)) {
                         $successfulUpdates++;
                     }
                 }
             }
 
-
-            // --- 4. ประมวลผล Gate Data ---
-            if (!empty($gateData)) {
-                foreach ($gateData as $item) {
+            // ─────────────────────────────────────────
+            // 2. Flow Data (สถานี Y.*)
+            // ─────────────────────────────────────────
+            if (!empty($flowData)) {
+                foreach ($flowData as $item) {
                     $sta_code = (string) ($item['sta_code'] ?? '');
-                    $date = (string) ($item['date'] ?? '');
-                    $value = isset($item['discharge']) && $item['discharge'] !== '' ? (float) $item['discharge'] : null;
+                    $date     = $this->toDateOnly($item['date'] ?? null);
+                    $value    = isset($item['discharge']) && $item['discharge'] !== '' && $item['discharge'] !== null
+                                ? (float) $item['discharge']
+                                : null;
 
-                    // ✅ ถ้าค่าเป็น null หรือ 0 → พยายามดึงจาก actual data
-                    if (($value === null || $value == 0) && !empty($sta_code) && !empty($date)) {
-                        $actualData = $gateModel->getActualGateData($sta_code, $date);
+                    // ถ้าค่าเป็น null หรือ 0 → พยายามดึงจาก actual data
+                    if (($value === null || $value == 0) && $sta_code && $date) {
+                        $actualData = $flowModel->getActualFlowData($sta_code, $date);
                         if (!empty($actualData) && isset($actualData['discharge'])) {
                             $actualValue = $actualData['discharge'];
-                            // ถ้ามีค่าจริงและไม่ใช่ null → ใช้แทน
-                            if ($actualValue !== null && is_numeric($actualValue) && $actualValue > 0) {
+                            if ($actualValue !== null && is_numeric($actualValue) && (float)$actualValue > 0) {
                                 $value = (float) $actualValue;
                             }
                         }
                     }
 
-                    // ✅ ตอนบันทึก ไม่ต้องกรองออก ถ้าเป็น NULL ก็เก็บ NULL
+                    if (!$sta_code || !$date) {
+                        continue;
+                    }
+
                     $record = [
                         'sta_code'  => $sta_code,
-                        'date' => $date,
+                        'date'      => $date,
                         'data_type' => 'flow',
                         'value'     => $value, // เก็บ null ได้
                     ];
 
-                    if ($inputModel->upsertData($record, FALSE)) {
+                    if ($inputModel->upsertData($record, false)) {
                         $successfulUpdates++;
                     }
                 }
             }
 
-
-
-            // --- 5. รวมสถานีใหม่จาก gateData ---
+            // ─────────────────────────────────────────
+            // 3. Gate Data (tng, wst)
+            // ─────────────────────────────────────────
             if (!empty($gateData)) {
                 foreach ($gateData as $item) {
                     $sta_code = (string) ($item['sta_code'] ?? '');
-                    $date = (string) ($item['date'] ?? '');
+                    $date     = $this->toDateOnly($item['date'] ?? null);
+                    $value    = isset($item['discharge']) && $item['discharge'] !== '' && $item['discharge'] !== null
+                                ? (float) $item['discharge']
+                                : null;
 
-                    $discharge = $item['discharge'] ?? null;
-                    if (!is_numeric($discharge)) {
-                        continue; // Skip if null, empty string, or non-numeric
-                    }
-                    $value = (float) $item['discharge'];
-
-                    // 🔹 ถ้าค่า discharge เป็น 0 ให้ดึงจาก actual data
-                    if ($value == 0) {
+                    // ถ้าค่าเป็น null หรือ 0 → พยายามดึงจาก actual data
+                    if (($value === null || $value == 0) && $sta_code && $date) {
                         $actualData = $gateModel->getActualGateData($sta_code, $date);
-
-                        if (!empty($actualData) && isset($actualData['discharge']) && $actualData['discharge'] !== null) {
-                            $value = (float) $actualData['discharge'];
-                        }
-                    }
-
-                    // 🔹 บันทึกเฉพาะค่ามากกว่า 0
-                    if ($value > 0) {
-                        $record = [
-                            'sta_code'  => $sta_code,
-                            'date' => $date,
-                            'data_type' => 'flow',
-                            'value'     => $value,
-                        ];
-
-                        if ($inputModel->upsertData($record, FALSE)) {
-                            $successfulUpdates++;
-                        }
-                    }
-                }
-
-                // --- รวมสถานีใหม่ ---
-                $gateGroups = [
-                    'wst' => ['Y.15', 'Y.16'],
-                ];
-
-                $gateByDate = [];
-                foreach ($gateData as $item) {
-                    $date = $item['date'];
-                    $sta = $item['sta_code'];
-                    $val = (float) $item['discharge'];
-                    if (!isset($gateByDate[$date])) {
-                        $gateByDate[$date] = [];
-                    }
-                    $gateByDate[$date][$sta] = $val;
-                }
-
-                foreach ($gateByDate as $date => $stations) {
-                    foreach ($gateGroups as $newStaCode => $group) {
-                        $sum = 0;
-                        foreach ($group as $sta) {
-                            if (isset($stations[$sta]) && is_numeric($stations[$sta])) {
-                                $sum += (float) $stations[$sta];
+                        if (!empty($actualData) && isset($actualData['discharge'])) {
+                            $actualValue = $actualData['discharge'];
+                            if ($actualValue !== null && is_numeric($actualValue) && (float)$actualValue > 0) {
+                                $value = (float) $actualValue;
                             }
                         }
+                    }
 
-                        if ($sum > 0) {
-                            $record = [
-                                'sta_code'  => $newStaCode,
-                                'date' => $date,
-                                'data_type' => 'flow',
-                                'value'     => $sum,
-                            ];
+                    if (!$sta_code || !$date) {
+                        continue;
+                    }
 
-                            if ($inputModel->upsertData($record, FALSE)) {
-                                $successfulUpdates++;
-                            }
-                        }
+                    $record = [
+                        'sta_code'  => $sta_code,
+                        'date'      => $date,
+                        'data_type' => 'flow',
+                        'value'     => $value,
+                    ];
+
+                    if ($inputModel->upsertData($record, false)) {
+                        $successfulUpdates++;
                     }
                 }
             }
 
+            // ─────────────────────────────────────────
+            // 4. รวมสถานี wst = Y.15 + Y.16 (จาก flowData)
+            // ─────────────────────────────────────────
+            // if (!empty($flowData)) {
+            //     $gateGroups = [
+            //         'wst' => ['Y.15', 'Y.16'],
+            //     ];
 
+            //     // จัดกลุ่มตามวันที่
+            //     $flowByDate = [];
+            //     foreach ($flowData as $item) {
+            //         $date = $this->toDateOnly($item['date'] ?? null);
+            //         $sta  = (string) ($item['sta_code'] ?? '');
+            //         $val  = isset($item['discharge']) && is_numeric($item['discharge'])
+            //                 ? (float) $item['discharge']
+            //                 : 0;
+
+            //         if (!$date || !$sta) {
+            //             continue;
+            //         }
+
+            //         if (!isset($flowByDate[$date])) {
+            //             $flowByDate[$date] = [];
+            //         }
+            //         $flowByDate[$date][$sta] = $val;
+            //     }
+
+            //     foreach ($flowByDate as $date => $stations) {
+            //         foreach ($gateGroups as $newStaCode => $group) {
+            //             $sum = 0;
+            //             foreach ($group as $sta) {
+            //                 if (isset($stations[$sta]) && is_numeric($stations[$sta])) {
+            //                     $sum += (float) $stations[$sta];
+            //                 }
+            //             }
+
+            //             if ($sum > 0) {
+            //                 $record = [
+            //                     'sta_code'  => $newStaCode,
+            //                     'date'      => $date,
+            //                     'data_type' => 'flow',
+            //                     'value'     => $sum,
+            //                 ];
+
+            //                 if ($inputModel->upsertData($record, false)) {
+            //                     $successfulUpdates++;
+            //                 }
+            //             }
+            //         }
+            //     }
+            // }
+
+            // ─────────────────────────────────────────
+            // 5. ลบข้อมูลเก่ากว่า 30 วัน
+            // ─────────────────────────────────────────
             $dateThreshold = date('Y-m-d', strtotime('-30 days'));
             $inputModel->where('date <', $dateThreshold)->delete();
 
             return $this->respond([
-                'status' => 'success',
+                'status'  => 'success',
                 'message' => "Successfully updated {$successfulUpdates} records from main data models.",
             ]);
 
         } catch (\Exception $e) {
             log_message('error', 'Error updating model input data from main models: ' . $e->getMessage());
-            return $this->failServerError('Internal Server Error: Could not fetch or process data from main models. ' . $e->getMessage());
+            return $this->failServerError(
+                'Internal Server Error: Could not fetch or process data from main models. ' . $e->getMessage()
+            );
         }
     }
-    
-    /**
-     * ดึงข้อมูล Input Data ทั้งหมดในช่วงวันที่ที่กำหนด
-     * Endpoint: GET /api/model_input_data
-     */
+
+    // ─────────────────────────────────────────────────────────────
+    // GET /api/model_input_data
+    // ─────────────────────────────────────────────────────────────
     public function index()
     {
-        $rainDateKeys = [];
-        $gateDateKeys = [];
         $today = date('Y-m-d');
-        
-        // 1. กำหนดช่วงวันที่ที่ต้องการ
+
         // Rain: 7 วันย้อนหลัง (ไม่รวมวันนี้)
+        $rainDateKeys = [];
         for ($i = -7; $i <= -1; $i++) {
             $rainDateKeys[] = date('Y-m-d', strtotime("{$today} {$i} days"));
         }
-        // Gate: 8 วันย้อนหลัง (รวมวันนี้)
+
+        // Flow / Gate: 8 วันย้อนหลัง (รวมวันนี้)
+        $flowDateKeys = [];
         for ($i = -7; $i <= 0; $i++) {
-            $gateDateKeys[] = date('Y-m-d', strtotime("{$today} {$i} days"));
+            $flowDateKeys[] = date('Y-m-d', strtotime("{$today} {$i} days"));
         }
-        
-        // 2. ดึงข้อมูลปริมาณน้ำฝน (rain)
+
         $rainData = $this->model
             ->where('data_type', 'rain')
             ->whereIn('date', $rainDateKeys)
             ->findAll();
 
-        // 3. ดึงข้อมูลปริมาณน้ำท่า (gate)
-        $gateData = $this->model
+        $flowData = $this->model
             ->where('data_type', 'flow')
-            ->whereIn('date', $gateDateKeys)
+            ->whereIn('date', $flowDateKeys)
             ->findAll();
 
-        $allData = array_merge($rainData, $gateData);
+        $allData = array_merge($rainData, $flowData);
 
         if (empty($allData)) {
             return $this->respond([
-                'status' => 'success',
+                'status'  => 'success',
                 'message' => 'No model input data found for the specified period.',
-                'data' => []
+                'data'    => [],
             ], 200);
         }
 
-        // 4. ส่งข้อมูลทั้งหมดกลับไป
         return $this->respond([
             'status' => 'success',
-            'data' => $allData
+            'data'   => $allData,
         ]);
     }
 
+    // ─────────────────────────────────────────────────────────────
+    // POST /api/model_input_data  (manual input)
+    // ─────────────────────────────────────────────────────────────
     public function create()
     {
-        $inputData = $this->request->getJSON(true); // รับ JSON Body เป็น Array
+        $inputData = $this->request->getJSON(true);
 
         if (empty($inputData) || !is_array($inputData)) {
             return $this->failValidationErrors('Invalid data format. Expected an array of records.');
         }
 
-        $model = new ModelInputDataModel();
-        $successfulSaves = 0;
-        $errors = [];
+        $model            = new ModelInputDataModel();
+        $successfulSaves  = 0;
+        $errors           = [];
 
         foreach ($inputData as $data) {
-            // ตรวจสอบข้อมูลพื้นฐาน
             if (empty($data['sta_code']) || empty($data['date']) || empty($data['data_type']) || !isset($data['value'])) {
-                $errors[] = "Missing required fields in a record.";
+                $errors[] = 'Missing required fields in a record.';
                 continue;
             }
 
-            // เตรียมข้อมูลสำหรับ UPSERT
             $record = [
                 'sta_code'  => $data['sta_code'],
-                'date' => $data['date'],
+                'date'      => $this->toDateOnly($data['date']),
                 'data_type' => $data['data_type'],
                 'value'     => (float) $data['value'],
-                'is_manual' => TRUE, // ตั้งค่าเป็น TRUE เพราะถูกส่งมาจากการป้อนด้วยมือ
+                'is_manual' => true,
             ];
 
             try {
-                // ใช้ฟังก์ชัน upsertData ที่เราสร้างไว้ใน Model
-                if ($model->upsertData($record)) {
+                if ($model->upsertData($record, true)) {
                     $successfulSaves++;
                 } else {
                     $errors[] = "Failed to save record for {$data['sta_code']} on {$data['date']}.";
                 }
             } catch (\Exception $e) {
-                // ดักจับข้อผิดพลาดของฐานข้อมูล
                 $errors[] = "Database error for {$data['sta_code']}: " . $e->getMessage();
             }
         }
 
         if (empty($errors)) {
             return $this->respondCreated([
-                'status' => 'success',
+                'status'  => 'success',
                 'message' => "Successfully saved {$successfulSaves} records.",
             ]);
-        } else {
-            // ส่งข้อผิดพลาดบางส่วนกลับไป
-            return $this->fail([
-                'status' => 'error',
-                'message' => "Saved {$successfulSaves} records with some errors.",
-                'errors' => $errors
-            ], 400); // 400 Bad Request
         }
+
+        return $this->fail([
+            'status'  => 'error',
+            'message' => "Saved {$successfulSaves} records with some errors.",
+            'errors'  => $errors,
+        ], 400);
     }
 }

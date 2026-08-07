@@ -109,7 +109,7 @@ const GateChart: React.FC<DataChartProps> = ({ data, type , height = 350 ,sta_co
 
         ],
 
-      tooltip: { intersect: false, x: { format: 'dd MMM' } },
+      tooltip: { intersect: false, x: { format: 'dd MMM HH:mm' } },
       colors: ['#3366FF','#FF0033','#00FF33','#CD853F','#FF9900','#66CCFF','#9933FF','#FFD700','#000000','orange'],
     },
     wl_lower: {
@@ -160,7 +160,7 @@ const GateChart: React.FC<DataChartProps> = ({ data, type , height = 350 ,sta_co
             },
           }
         ],
-      tooltip: { intersect: false, x: { format: 'dd MMM' } },
+      tooltip: { intersect: false, x: { format: 'dd MMM HH:mm' } },
       colors: ['#3366FF','#FF0033','#00FF33','#CD853F','#FF9900','#66CCFF','#9933FF','#FFD700','#000000','orange'],
     },
     wl_upper: {
@@ -211,7 +211,7 @@ const GateChart: React.FC<DataChartProps> = ({ data, type , height = 350 ,sta_co
             },
           }
         ],
-      tooltip: { intersect: false, x: { format: 'dd MMM' } },
+      tooltip: { intersect: false, x: { format: 'dd MMM HH:mm' } },
       colors: ['#3366FF','#FF0033','#00FF33','#CD853F','#FF9900','#66CCFF','#9933FF','#FFD700','#000000','orange'],
     }
   };

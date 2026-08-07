@@ -8,7 +8,7 @@ const TeleStation = dynamic(
 );
 
 export default function TelePage() {
-  return <Box sx={{p:1}}>
+  return <Box sx={{ p: 1, maxWidth: 'xl', mx: 'auto', width: '100%'}}>
           <TeleStation/>
         </Box>
 }

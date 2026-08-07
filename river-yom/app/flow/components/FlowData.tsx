@@ -34,7 +34,7 @@ const MODE_LABELS: Record<DataMode, string> = {
   daily:   "รายวัน",
 };
 
-const DataFlowCombined: React.FC<{ propsSelectedStation?: string }> = ({ propsSelectedStation }) => {
+const DataFlow: React.FC<{ propsSelectedStation?: string }> = ({ propsSelectedStation }) => {
   
   const queryParams = new URLSearchParams(location.search);
   const stationFromURL = queryParams.get("station") || "Y.16";
@@ -448,4 +448,4 @@ const DataFlowCombined: React.FC<{ propsSelectedStation?: string }> = ({ propsSe
   );
 };
 
-export default DataFlowCombined;
+export default DataFlow;

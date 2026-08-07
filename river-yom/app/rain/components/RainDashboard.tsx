@@ -39,13 +39,14 @@ interface RainLatest {
   wl?: number;           // ระดับน้ำ
   discharge?: number;    // อัตราการไหล
   rain?: number;         // ปริมาณฝน
+  rain_sum?: number;     // ฝนสะสม ตั้งแต่ 1 มค. ของปี
 }
 
 
 // ─── Main Component ───────────────────────────────────────────
 export default function RainDashboard() {
   const [rainInfoList, setRainInfoList] = useState<RainInfo[]>([]);
-  const [selectedCode, setSelectedCode] = useState<string>('120142');
+  const [selectedCode, setSelectedCode] = useState<string>('390220');
   const [latest,       setLatest]       = useState<RainLatest | null>(null);
   const [loading,      setLoading]      = useState(false);
   const [infoLoading,  setInfoLoading]  = useState(true);
@@ -84,7 +85,8 @@ export default function RainDashboard() {
           datetime: data.datetime,
           wl: data.wl,
           discharge: data.discharge,
-          rain: data.rain,
+          rain: data.rain_mm,
+          rain_sum: data.rain_sum,
         });
         setLastUpdate(new Date());
       } else {
@@ -379,40 +381,26 @@ export default function RainDashboard() {
               </Paper>
             </Stack>
           </Grid>
-        {/* ───────────────── CCTV ───────────────── */}
+
+        {/* ───────────────── Right Row  ───────────────── */}
           <Grid size={{ xs: 12, md: 8 }} >
             <Stack spacing={2}>
                 <TeleMetricCards
                   rain={latest?.rain}
+                  rain_sum={latest?.rain_sum}
                   loading={loading}
                 />
               <Paper sx={{ p: 2, borderRadius: 2 ,mt: 2}}>
-              </Paper>
-            </Stack>
-          </Grid>
-        </Grid>
-        
-         {/* ───────────────── Middle Row ───────────────── */}
-            <Grid container spacing={2.5} sx={{ mt: 2 }}>
-              <Grid size={{ xs: 12, md: 4 }}>
-                 <StationCoordinates
+                <StationCoordinates
                   staCode={selectedInfo.sta_code}
                   lat={selectedInfo.lat}
                   long={selectedInfo.long}
                   staName={selectedInfo.name}
                 />
-                </Grid>
-              <Grid size={{ xs: 12, md: 4 }}>
-                  <Paper sx={{borderRadius: 2 }}>
-
-                </Paper>
-              </Grid>
-               <Grid size={{ xs: 12, md: 4 }}>
-                  <Paper sx={{borderRadius: 2 }}>
-                   
-                </Paper>
-              </Grid>
-            </Grid>
+              </Paper>
+            </Stack>
+          </Grid>
+        </Grid>
         </Box>
       )}
     </Box>

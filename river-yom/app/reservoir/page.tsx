@@ -9,7 +9,7 @@ const ReservoirStation = dynamic(
   { ssr: false }   // ปิด SSR สำหรับ component นี้
 );
 export default function ReservoirPage() {
-  return <Box sx={{p:1}}>
+  return <Box sx={{ p: 1, maxWidth: 'xl', mx: 'auto', width: '100%'}}>
     <ReservoirStation/>
   </Box>
 }

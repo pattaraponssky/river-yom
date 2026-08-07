@@ -183,7 +183,7 @@ const FlowChart: React.FC<DataChartProps> = ({ data, type, height = 350 ,sta_cod
         type: 'datetime',
         min: new Date(`${BASE_YEAR}-01-01`).getTime(),
         max: new Date(`${BASE_YEAR}-12-31`).getTime(),
-        labels: { datetimeUTC: false, format: 'dd MMM HH:mm', style: { colors: textColor } },
+        labels: { datetimeUTC: false, format: 'dd MMM', style: { colors: textColor } },
         axisBorder: { show: false },
         axisTicks: { color: gridColor },
       },

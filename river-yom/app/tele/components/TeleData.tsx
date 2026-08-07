@@ -34,7 +34,7 @@ const MODE_LABELS: Record<DataMode, string> = {
   daily:   "รายวัน",
 };
 
-const DataTeleCombined: React.FC<{ propsSelectedStation?: string }> = ({ propsSelectedStation }) => {
+const DataTele: React.FC<{ propsSelectedStation?: string }> = ({ propsSelectedStation }) => {
   
   const queryParams = new URLSearchParams(location.search);
   const stationFromURL = queryParams.get("station") || "YR.01";
@@ -447,4 +447,4 @@ const DataTeleCombined: React.FC<{ propsSelectedStation?: string }> = ({ propsSe
   );
 };
 
-export default DataTeleCombined;
+export default DataTele;

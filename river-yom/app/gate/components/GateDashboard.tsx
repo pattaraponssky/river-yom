@@ -11,7 +11,6 @@ import {
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { API_URL, Path_URL } from '@/lib/utility';
 import { useTheme, alpha } from '@mui/material';
-import { fontInfo } from '@/theme/style';
 import CameraViewer from '@/components/Data/CameraViewer';
 import { STATION_CAMERAS } from '@/lib/cameraConfig';
 import { GATE_STATION_CONFIGS } from '@/lib/gateConfig';
@@ -416,17 +415,17 @@ export default function GateDashboard() {
               <Grid size={{ xs: 12, md: 6 }}>
                   <Paper sx={{borderRadius: 2 }}>
                     {cameras.length > 0 && (
-                        <CameraViewer cameras={cameras} staCode={selectedCode ?? ''} />
+                        <CameraViewer cameras={cameras} staCode={selectedCode ?? ''} defaultCameraId={cameras[0]?.id} />
                     )}
                   </Paper>
               </Grid>
-               {/* <Grid size={{ xs: 12, md: 6 }}>
+               <Grid size={{ xs: 12, md: 6 }}>
                   <Paper sx={{borderRadius: 2 }}>
                     {cameras.length > 0 && (
-                        <CameraViewer cameras={cameras} staCode={selectedCode ?? ''} />
+                        <CameraViewer cameras={cameras} staCode={selectedCode ?? ''} defaultCameraId={cameras[1]?.id} />
                     )}
                   </Paper>
-              </Grid> */}
+              </Grid>
             </Grid>
         </Box>
       )}

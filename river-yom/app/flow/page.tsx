@@ -8,7 +8,7 @@ const FlowStation = dynamic(
 );
 
 export default function FlowPage() {
-  return <Box sx={{p:1}}>
+  return <Box sx={{ p: 1, maxWidth: 'xl', mx: 'auto', width: '100%'}}>
           <FlowStation/>
         </Box>
 }

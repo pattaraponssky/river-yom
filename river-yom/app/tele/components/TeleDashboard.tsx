@@ -374,7 +374,7 @@ export default function TeleDashboard() {
               </Paper>
             </Stack>
           </Grid>
-        {/* ───────────────── CCTV ───────────────── */}
+        {/* ───────────────── middle row ───────────────── */}
           <Grid size={{ xs: 12, md: 8 }} >
             <Stack spacing={2}>
                 <TeleMetricCards
@@ -409,14 +409,7 @@ export default function TeleDashboard() {
                   staName={selectedInfo.sta_name}
                 />
                 </Grid>
-              <Grid size={{ xs: 12, md: 4 }}>
-                  <Paper sx={{borderRadius: 2 }}>
-                      {cameras.length > 0 && (
-                          <CameraViewer cameras={cameras} staCode={selectedCode ?? ''} />
-                      )}
-                </Paper>
-              </Grid>
-               <Grid size={{ xs: 12, md: 4 }}>
+              <Grid size={{ xs: 12, md: 8 }}>
                   <Paper sx={{borderRadius: 2 }}>
                       {cameras.length > 0 && (
                           <CameraViewer cameras={cameras} staCode={selectedCode ?? ''} />

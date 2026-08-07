@@ -399,7 +399,7 @@ export default function FlowDashboard() {
         
          {/* ───────────────── Middle Row ───────────────── */}
             <Grid container spacing={2.5} sx={{ mt: 2 }}>
-              <Grid size={{ xs: 12, md: 4 }}>
+              <Grid size={{ xs: 12, md: 12}}>
                 <StationCoordinates
                   staCode={selectedInfo.sta_code}
                   lat={selectedInfo.lat}
@@ -407,7 +407,7 @@ export default function FlowDashboard() {
                   staName={selectedInfo.sta_name}
                 />
                 </Grid>
-              <Grid size={{ xs: 12, md: 4 }}>
+              {/* <Grid size={{ xs: 12, md: 4 }}>
                   <Paper sx={{borderRadius: 2 }}>
                       {cameras.length > 0 && (
                           <CameraViewer cameras={cameras} staCode={selectedCode ?? ''} />
@@ -420,7 +420,7 @@ export default function FlowDashboard() {
                           <CameraViewer cameras={cameras} staCode={selectedCode ?? ''} />
                       )}
                 </Paper>
-              </Grid>
+              </Grid> */}
             </Grid>
         </Box>
       )}

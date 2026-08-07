@@ -13,6 +13,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import { GateStationConfig } from '@/lib/gateConfig';
 import { API_URL, Path_URL } from '@/lib/utility';
 import WaterIcon from '@mui/icons-material/Water';
+import { GATE_WARN_LEVELS, WarnLevel } from '@/lib/warnLevels';
 
 interface GateOpeningData {
   sta_code: string;
@@ -143,41 +144,65 @@ const WaterLevelLine: React.FC<{
   pct: number;
   color: string;
   align: 'top' | 'bottom';
-}> = ({ label, value, pct, color, align }) => (
-  <Box
-    sx={{
-      position: 'absolute',
-      left: 0,
-      right: 0,
-      bottom: `${pct}%`,
-      zIndex: 3,
-      pointerEvents: 'none',
-    }}
-  >
-    <Box
-      sx={{
-        borderTop: `2px dashed ${color}`,
-        boxShadow: `0 0 4px ${alpha(color, 0.6)}`,
-      }}
-    />
-    <Box
-      sx={{
-        position: 'absolute',
-        left: 6,
-        [align === 'top' ? 'bottom' : 'top']: 4,
-        px: 0.7,
-        py: 0.1,
-        borderRadius: 0.75,
-        bgcolor: alpha(color, 0.9),
-        whiteSpace: 'nowrap',
-      }}
-    >
-      <Typography sx={{ fontFamily: 'Prompt', fontSize: '0.66rem', fontWeight: 700, color: '#fff', lineHeight: 1.3 }}>
-        {label} {value} ม.
-      </Typography>
-    </Box>
-  </Box>
-);
+  hAlign?: 'left' | 'center' | 'right';
+  lineStyle?: 'solid' | 'dashed' | 'dotted';
+  lineWidth?: number;
+}> = ({
+  label, value, pct, color, align,
+  hAlign = 'left',
+  lineStyle = 'dashed',
+  lineWidth = 2,
+}) => {
+  const hPositionSx =
+    hAlign === 'left'
+      ? { left: 6 }
+      : hAlign === 'right'
+      ? { right: 6 }
+      : { left: '50%', transform: 'translateX(-50%)' };
+
+  // align='top'   → label อยู่เหนือเส้น  → ใช้ bottom offset จาก pct
+  // align='bottom'→ label อยู่ใต้เส้น    → ใช้ top offset จาก (100-pct)
+  const vPositionSx =
+    align === 'top'
+      ? { bottom: `calc(${pct}% + 4px)` }
+      : { top: `calc(${100 - pct}% + 4px)` };
+
+  return (
+    <>
+      <Box
+        sx={{
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          bottom: `${pct}%`,
+          zIndex: 1,               
+          pointerEvents: 'none',
+          borderTop: `${lineWidth}px ${lineStyle} ${color}`,
+          boxShadow: `0 0 4px ${alpha(color, 0.6)}`,
+        }}
+      />
+
+      <Box
+        sx={{
+          position: 'absolute',
+          ...hPositionSx,
+          ...vPositionSx,
+          zIndex: 10,            
+          px: 0.7,
+          py: 0.1,
+          borderRadius: 0.75,
+          bgcolor: alpha(color, 0.9),
+          whiteSpace: 'nowrap',
+          pointerEvents: 'none',
+        }}
+      >
+        <Typography sx={{ fontFamily: 'Prompt', fontSize: '0.75rem', fontWeight: 700, color: '#fff', lineHeight: 1.3 }}>
+          {label} {typeof value === 'number' ? value.toFixed(2) : value} ม.
+        </Typography>
+      </Box>
+    </>
+  );
+};
 
 // ─── Water Level Indicator ─────────────────────────────────────
 const WaterLevelBar: React.FC<{
@@ -205,6 +230,7 @@ const GateOpeningDisplay: React.FC<GateOpeningDisplayProps> = ({ config }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState<string | null>(null);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+  const warnLevels: WarnLevel | undefined = GATE_WARN_LEVELS[config.sta_code];
   const theme = useTheme();
   const primary = theme.palette.primary.main;
 
@@ -252,7 +278,7 @@ const GateOpeningDisplay: React.FC<GateOpeningDisplayProps> = ({ config }) => {
 
   // ─── สเกลสำหรับวางเส้นระดับน้ำเหนือ/ท้ายประตูบนพื้นหลัง (ใช้ config) ───────
   const { scaleMin, scaleMax } = useMemo(() => {
-    // ใช้ค่าจาก config เป็นหลัก (ที่เร เพิ่ม visualMinLevel / visualMaxLevel)
+    // ใช้ค่าจาก config เป็นหลัก
     if (config.visualMinLevel != null && config.visualMaxLevel != null) {
       return {
         scaleMin: config.visualMinLevel,
@@ -260,8 +286,16 @@ const GateOpeningDisplay: React.FC<GateOpeningDisplayProps> = ({ config }) => {
       };
     }
 
-    // Fallback หากยังไม่มีค่าจาก config
-    const levels = [data?.wl_upper, data?.wl_lower].filter((v): v is number => v != null);
+    // รวมระดับน้ำ + เกณฑ์เตือนภัย
+    const levels: number[] = [
+      data?.wl_upper,
+      data?.wl_lower,
+      warnLevels?.normal,
+      warnLevels?.watch,
+      warnLevels?.alert,
+      warnLevels?.crisis,
+    ].filter((v): v is number => v != null);
+
     if (!levels.length) {
       return { scaleMin: 15, scaleMax: 26 };
     }
@@ -270,14 +304,15 @@ const GateOpeningDisplay: React.FC<GateOpeningDisplayProps> = ({ config }) => {
     const maxLvl = Math.max(...levels);
 
     return {
-      scaleMin: Math.floor(Math.min(minLvl - 6, 15)),
-      scaleMax: Math.ceil(Math.max(maxLvl + 4, 26)),
+      scaleMin: Math.floor(Math.min(minLvl - 2, 15)),
+      scaleMax: Math.ceil(Math.max(maxLvl + 2, 26)),
     };
   }, [
     config.visualMinLevel,
     config.visualMaxLevel,
     data?.wl_upper,
     data?.wl_lower,
+    warnLevels,
   ]);
 
   const pctForLevel = (value: number) => {
@@ -382,6 +417,77 @@ const GateOpeningDisplay: React.FC<GateOpeningDisplayProps> = ({ config }) => {
             </Box>
           ))}
 
+          {/* ✅ ป้ายข้อความตลิ่งซ้าย-ขวา */}
+          <Box
+            sx={{
+              position: 'absolute',
+              left: 6,
+              top: 5,
+              zIndex: 1,
+              px: 0.8,
+              py: 0.2,
+              borderRadius: 0.75,
+              bgcolor: 'rgba(121, 85, 72, 0.85)',
+              pointerEvents: 'none',
+            }}
+          >
+            <Typography sx={{ fontFamily: 'Prompt', fontSize: '0.72rem', fontWeight: 700, color: '#fff' }}>
+              ตลิ่งซ้าย
+            </Typography>
+          </Box>
+          <Box
+            sx={{
+              position: 'absolute',
+              right: 6,
+              top: 6,
+              zIndex: 1,
+              px: 0.8,
+              py: 0.2,
+              borderRadius: 0.75,
+              bgcolor: 'rgba(121, 85, 72, 0.85)',
+              pointerEvents: 'none',
+            }}
+          >
+            <Typography sx={{ fontFamily: 'Prompt', fontSize: '0.72rem', fontWeight: 700, color: '#fff' }}>
+              ตลิ่งขวา
+            </Typography>
+          </Box>
+          {/* เส้นเกณฑ์เตือนภัย */}
+          {warnLevels && (
+            <>
+              <WaterLevelLine
+                label="ปกติ"
+                value={warnLevels.normal}
+                pct={linePctInRow(warnLevels.normal)}
+                color="#69fc00"
+                align="top"
+                hAlign="right"
+              />
+              <WaterLevelLine
+                label="เฝ้าระวัง"
+                value={warnLevels.watch}
+                pct={linePctInRow(warnLevels.watch)}
+                color="#FFD700"
+                align="top"
+                hAlign="right"
+              />
+              <WaterLevelLine
+                label="เตือนภัย"
+                value={warnLevels.alert}
+                pct={linePctInRow(warnLevels.alert)}
+                color="#FFA500"
+                align="top"
+                hAlign="right"
+              />
+              <WaterLevelLine
+                label="วิกฤต"
+                value={warnLevels.crisis}
+                pct={linePctInRow(warnLevels.crisis)}
+                color="#FF0000"
+                align="top"
+                hAlign="right"
+              />
+
           {data?.wl_upper != null && (
             <WaterLevelLine
               label="ระดับน้ำเหนือประตู"
@@ -389,6 +495,8 @@ const GateOpeningDisplay: React.FC<GateOpeningDisplayProps> = ({ config }) => {
               pct={linePctInRow(data.wl_upper)}
               color="#1565C0"
               align="top"
+              lineStyle="solid"
+              lineWidth={3}
             />
           )}
           {data?.wl_lower != null && (
@@ -398,9 +506,14 @@ const GateOpeningDisplay: React.FC<GateOpeningDisplayProps> = ({ config }) => {
               pct={linePctInRow(data.wl_lower)}
               color="#00838F"
               align="top"
+              lineStyle="solid"
+              lineWidth={3}
             />
           )}
+            </>
+          )}  
         </Box>
+
 
         {/* แถวค่าตัวเลข/สถานะใต้บาน (แสดงระยะเปิดบานเป็น "ซม.") */}
         <Box sx={{ display: 'flex', justifyContent: 'center',  px: 1, pb: 1.5, pt: 1, overflowX: 'auto' }}>

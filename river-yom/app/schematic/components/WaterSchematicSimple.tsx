@@ -396,7 +396,7 @@ const WaterSchematicSimple: React.FC = () => {
     const tab1FlowPos: Record<string, { x: number; y: number; offsetX: number; offsetY: number }> = {
       'Y.4': { x: 398, y: 190, offsetX: -86, offsetY: -15 },
       'Y.15': { x: 398, y: 250, offsetX: -86, offsetY: -25 },
-      'Y.16': { x: 398, y: 460, offsetX: -86, offsetY: -10 },
+      'Y.16': { x: 398, y: 458, offsetX: -86, offsetY: -10 },
       'Y.64': { x: 398, y: 475, offsetX: 10, offsetY: -10 },
       'Y.17': { x: 398, y: 725, offsetX: 10, offsetY: -10 },
       // 'Y.52': { x: 398, y: 666, offsetX: 10, offsetY: 15 },

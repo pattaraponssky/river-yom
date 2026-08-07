@@ -20,6 +20,7 @@ interface TeleMetricCardsProps {
   wl?:         number | null;
   discharge?:  number | null;
   rain?:       number | null;
+  rain_sum?:   number | null;
   warnLevels?: WarnLevels;
   loading?:    boolean;
 }
@@ -135,13 +136,12 @@ const TeleMetricCards: React.FC<TeleMetricCardsProps> = ({
   wl,
   discharge,
   rain,
+  rain_sum,
   warnLevels,
   loading = false,
 }) => {
   const wlStatus = getWlStatus(wl, warnLevels);
 
-  // กฎ: prop เป็น undefined = ไม่ได้ส่งมา → ซ่อน card
-  //     prop เป็น null หรือตัวเลข = ส่งมาแล้ว → แสดง card (null แสดงเป็น "—")
   const cards: CardDef[] = [
     ...(wl !== undefined ? [{
       key:    'wl',
@@ -163,8 +163,16 @@ const TeleMetricCards: React.FC<TeleMetricCardsProps> = ({
     ...(rain !== undefined ? [{
       key:    'rain',
       icon:   <OpacityIcon sx={{ fontSize: 20, color: '#185FA5' }} />,
-      label:  'ปริมาณฝน (1 ชม.)',
+      label:  'ปริมาณฝน (24 ชม.)',
       value:  rain,
+      unit:   'มม.',
+      accent: '#E6F1FB',
+    }] : []),
+    ...(rain_sum !== undefined ? [{
+      key:    'rain_sum',
+      icon:   <OpacityIcon sx={{ fontSize: 20, color: '#185FDD' }} />,
+      label:  'ปริมาณฝนสะสม (ตั้งแต่ 1 มค.)',
+      value:  rain_sum,
       unit:   'มม.',
       accent: '#E6F1FB',
     }] : []),

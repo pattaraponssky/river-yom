@@ -14,6 +14,15 @@ class FlowModel extends Model
         return $this->db->table('flow_info')->get()->getResultArray();
     }
 
+    public function getActualFlowData($sta_code, $date)
+    {
+        $datetime = $this->convertDateFormat($date); // ✅ แปลงเป็น datetime พร้อมเวลา 07:00
+
+        return $this->where('sta_code', $sta_code)
+                    ->where('datetime', $datetime) 
+                    ->first();
+    }
+
     public function getTodayFlowDataByStationCodes(array $staCodes): array
     {
         $today7am = date('Y-m-d') . ' 07:00:00'; // ✅ ระบุเวลา 07:00 ตรงๆ
@@ -54,6 +63,27 @@ class FlowModel extends Model
                     ->where('datetime >=', $sevenDaysAgo) // ✅ เปลี่ยนเป็น datetime
                     ->orderBy('datetime', 'DESC')          // ✅ เปลี่ยนเป็น datetime
                     ->findAll();
+    }
+
+    public function getFlowDataModelLast8Days(array $staCodes)
+    {
+        $today = date('Y-m-d') . ' 07:00:00';
+        $startDate = date('Y-m-d', strtotime('-7 days')) . ' 07:00:00'; // ✅ ระบุเวลา
+
+        // ดึงเฉพาะเวลา 07:00 ของแต่ละวัน
+        $builder = $this->db->table('flow_data'); 
+        $builder->select("
+            sta_code,
+            DATE(datetime) AS date,
+            discharge
+        ");
+        $builder->whereIn('sta_code', $staCodes);
+        $builder->where('datetime >=', $startDate);
+        $builder->where('datetime <=', $today);
+        $builder->where("TIME(datetime) = '07:00:00'");  
+        $builder->orderBy('datetime', 'ASC');
+
+        return $builder->get()->getResultArray();
     }
 
     public function getFlowDataLast14Days()

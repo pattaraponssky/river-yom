@@ -869,7 +869,7 @@ use ResponseTrait;
                     if (in_array($row['stationcode'], $stationsAllowed)) {
                         $filteredData[] = [
                             'sta_code' => $row['stationcode'],
-                            'datetime' => $yesterday,
+                            'datetime'  => $yesterday . ' 07:00:00',
                             'rain_mm' => isset($row['RF1']) ? floatval($row['RF1']) : 0
                         ];
                     }
@@ -920,11 +920,11 @@ use ResponseTrait;
                     // ⭐️ การแก้ไข: ลบ 1 วันออกจากเวลาที่ได้จาก API
                     $dateTimeObj->sub(new DateInterval('P1D')); 
                     
-                    $formattedDate = $dateTimeObj->format('Y-m-d');
+                    $formattedDateTime = $dateTimeObj->format('Y-m-d') . ' 07:00:00';
                     
                     $filteredData[$api_sta_code] = [
                         'sta_code' => $this->stationMapping[$api_sta_code],
-                        'datetime' => $formattedDate,
+                        'datetime' => $formattedDateTime,
                         'rain_mm' => $record['rain_24h'] ?? null
                     ];
                 }

@@ -1,13 +1,28 @@
-import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
+'use client';
+
+import { Box } from "@mui/material";
 import UserPage from './components/Users';
 
-export default async function UsersPage() {
-  const cookieStore = await cookies();
-  const session = cookieStore.get('access_token');
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import { useAuth } from "@/contexts/AuthContext";
 
-  if (!session) {
-    redirect('/dashboard');
-  }
-  return <div ><UserPage/></div>;
+export default function UsersPage() {
+    const { currentUser, loading } = useAuth();
+    const router = useRouter();
+
+    useEffect(() => {
+        if (!loading && !currentUser) {
+            router.replace('/dashboard');
+        }
+    }, [currentUser, loading, router]);
+
+    if (loading) return null; // หรือ <LoadingSpinner />
+    if (!currentUser) return null;
+
+    return (
+        <Box sx={{ p: 1 }}>
+            <UserPage/>
+        </Box>
+    );
 }
