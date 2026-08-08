@@ -23,7 +23,7 @@ import DataTeleCombined from '@/app/tele/components/TeleData';
 
 interface ReservoirNode {
   id: string; name: string; res_code: string; province: string;
-  x: number; y: number;
+  x: number; y: number; minvol: number; maxvol: number;
   volume: number; inflow: number; outflow: number; percent: number; datetime: string;
 }
 
@@ -75,8 +75,10 @@ const getFlowColor = (code: string, wl: number) => {
     'Y.64': { red: 38.0, orange: 37.3, yellow: 36.7 },
     'Y.51': { red: 42.0, orange: 40.4, yellow: 38.8 },
     'Y.17': { red: 41.8, orange: 40.6, yellow: 39.4 },
+    'wst': { red: 40.98, orange: 40.18, yellow: 39.38 },
+    'tng': { red: 44.00, orange: 42.55, yellow: 41.10 },
   };
-  const t = th[code] || { red: 40, orange: 38, yellow: 36 };
+  const t = th[code] || { red: 40, orange: 38, yellow: 36 };ำำ
   if (wl > t.red)    return 'red';
   if (wl > t.orange) return 'orange';
   if (wl > t.yellow) return '#FFD700';
@@ -179,7 +181,7 @@ const WaterSchematicSimple: React.FC = () => {
   const openDialogRef = useRef<(code: string, name: string, type: 'reservoir' | 'flow' | 'tele' | 'gate' ) => void>(() => {});
 
   // State
-  const [tabIndex,        setTabIndex]        = useState(0);
+  const [tabIndex,        setTabIndex]        = useState(1);
   const [reservoirs,      setReservoirs]      = useState<ReservoirNode[]>([]);
   const [flows,           setFlows]           = useState<FlowStationNode[]>([]);
   const [teles,           setTeles]           = useState<TeleStationNode[]>([]);
@@ -245,21 +247,18 @@ const WaterSchematicSimple: React.FC = () => {
       if (!res.ok) throw new Error('Failed to fetch reservoir');
       const json = await res.json();
       return (json.data || []).map((item: any) => {
-        let x: number | undefined, y: number | undefined;
-        if (item.res_code === 'srk') { x = 435; y = 140; }
-        if (item.res_code === 'pmp') { x = 40;  y = 295; }
-        if (x === undefined) return null;
-        return { id: item, name: item.res_name, res_code: item.res_code, province: item.province, x, y,
+        return { id: item, name: item.res_name, res_code: item.res_code, province: item.province,
+          maxvol: parseFloat(item.maxvol), minvol: parseFloat(item.minvol), 
           volume: parseFloat(item.volume), inflow: parseFloat(item.inflow),
           outflow: parseFloat(item.outflow), percent: parseFloat(item.p), datetime: item.datetime };
-      }).filter(Boolean) as ReservoirNode[];
-    };
+      }); 
+    }
 
     const fetchFlow = async () => {
       const res  = await fetch(`${API_URL}/api/daily/flow`);
       if (!res.ok) throw new Error('Failed to fetch flow');
       const json = await res.json();
-
+      console.log('=== RAW FLOW API ===', json.data);
       return (json.data || []).map((item: any) => {
         return {
           id: item.no.toString(),
@@ -377,20 +376,6 @@ const WaterSchematicSimple: React.FC = () => {
       const r = container.append('rect').attr('x', d.x).attr('y', d.y).attr('width', d.w).attr('height', d.h).attr('fill', d.fill);
       if (d.rotate !== undefined) r.attr('transform', `rotate(${d.rotate}, ${d.cx}, ${d.cy})`);
     });
-
-    // reservoir nodes
-    // const nodeGroup = container.selectAll<SVGGElement, ReservoirNode>('.reservoir-node')
-    //   .data(reservoirs).enter().append('g').attr('class', 'reservoir-node')
-    //   .attr('transform', d => `translate(${d.x},${d.y})`).style('cursor', 'pointer')
-    //   .on('click', (_, d) => openDialogRef.current(d.res_code, d.name, 'reservoir'));
-    // nodeGroup.append('title').text(d => `คลิกเพื่อดูรายละเอียด อ่างเก็บน้ำ${d.name}`);
-    // nodeGroup.append('text').attr('y', -32).attr('x', 25).attr('font-size', 8).attr('font-weight', 'bold').attr('fill', theme.palette.text.primary).text(d => d.name);
-    // nodeGroup.append('text').attr('y', -20).attr('font-size', 7).attr('fill', theme.palette.text.primary).text('ปริมาณน้ำ ');
-    // nodeGroup.append('text').attr('x', 40).attr('y', -20).attr('font-size', 7).attr('font-weight', 'bold').attr('fill', '#0066cc').text(d => `${d.volume} MCM (${d.percent.toFixed(2)}%)`);
-    // nodeGroup.append('text').attr('y', -10).attr('font-size', 7).attr('fill', theme.palette.text.primary).text('ไหลลงอ่างฯ ');
-    // nodeGroup.append('text').attr('x', 40).attr('y', -10).attr('font-size', 7).attr('font-weight', 'bold').attr('fill', '#0066cc').text(d => `${d.inflow.toFixed(3)} MCM`);
-    // nodeGroup.append('text').attr('y', 0).attr('font-size', 7).attr('fill', theme.palette.text.primary).text('ระบาย ');
-    // nodeGroup.append('text').attr('x', 40).attr('y', 0).attr('font-size', 7).attr('font-weight', 'bold').attr('fill', '#0066cc').text(d => `${d.outflow.toFixed(3)} MCM`);
 
     // flow nodes
     const tab1FlowPos: Record<string, { x: number; y: number; offsetX: number; offsetY: number }> = {
@@ -6984,7 +6969,17 @@ const WaterSchematicSimple: React.FC = () => {
       'Y.16': { x: 725, y: 1350, offsetX: -180, offsetY: -10 },
       'Y.64': { x: 756, y: 1459, offsetX: -180, offsetY: -10 },
       'Y.17': { x: 818, y: 1632, offsetX: -180, offsetY: -10 },
-      'Y.52': { x: 1061, y: 1745, offsetX: -163, offsetY: 15 },
+      'Y.52': { x: 1061, y: 1745, offsetX: -130, offsetY: 32 },
+      'N.2B': { x: 1365, y: 567, offsetX: 16, offsetY: 13 },
+      'N.60': { x: 1345, y: 690, offsetX: 16, offsetY: 13 },
+      'N.27A': { x: 1281, y: 1114, offsetX: 16, offsetY: 13 },
+      'N.24A': { x: 1800, y: 1517, offsetX: -85, offsetY: 13 },
+      'N.43A': { x: 1636, y: 1613.5, offsetX: -85, offsetY: 13 },
+      'N.5A': { x: 1246, y: 1343, offsetX: 16, offsetY: 13 },
+      'N.7A': { x: 1217, y: 1544, offsetX: 16, offsetY: 13 },
+      'N.8B': { x: 1199, y: 1660, offsetX: 16, offsetY: 13 },
+      'N.67': { x: 1178, y: 1849, offsetX: 19, offsetY: 13 },
+      'C.2': { x: 1178, y: 2000, offsetX: 19, offsetY: 13 },
     };
 
     const flowGroup = container.selectAll<SVGGElement, FlowStationNode>('.t2-flow-node')
@@ -6996,20 +6991,22 @@ const WaterSchematicSimple: React.FC = () => {
 
     flowGroup.append('circle').attr('r', 9).attr('fill', d => getFlowColor(d.sta_code, d.wl)).attr('stroke', '#fff').attr('stroke-width', 2);
 
-    const cardW = 160, cardH = 55;
+    const cardW = 160, cardH = 60;
     const cX2 = (d: FlowStationNode) => tab2Pos[d.sta_code].offsetX;
     const cY2 = (d: FlowStationNode) => tab2Pos[d.sta_code].offsetY;
 
     flowGroup.append('rect').attr('x', cX2).attr('y', cY2).attr('width', cardW).attr('height', cardH).attr('rx', 9).attr('ry', 9).attr('fill', theme.palette.background.paper).attr('stroke', theme.palette.divider).attr('stroke-width', 2);
-    flowGroup.append('text').attr('x', d => cX2(d) + cardW / 2).attr('y', d => cY2(d) + 16).attr('text-anchor', 'middle').attr('font-size', 12).attr('font-weight', 'bold').attr('fill', theme.palette.text.primary).text(d => `${d.sta_code}${d.name ? ` (${d.name})` : ''}`);
-    flowGroup.append('text').attr('x', d => cX2(d) + 15).attr('y', d => cY2(d) + 36).attr('font-size', 11).attr('fill', theme.palette.text.secondary).text('ระดับน้ำ:');
-    flowGroup.append('text').attr('x', d => cX2(d) + 80).attr('y', d => cY2(d) + 36).attr('font-size', 11).attr('font-weight', 'bold').attr('fill', '#0066cc').text(d => `${d.wl.toFixed(2)} ม.รทก.`);
-    flowGroup.append('text').attr('x', d => cX2(d) + 15).attr('y', d => cY2(d) + 48).attr('font-size', 11).attr('fill', theme.palette.text.secondary).text('อัตราไหล:');
-    flowGroup.append('text').attr('x', d => cX2(d) + 80).attr('y', d => cY2(d) + 48).attr('font-size', 11).attr('font-weight', 'bold').attr('fill', '#0066cc').text(d => `${d.discharge.toFixed(2)} ลบ.ม./วิ`);
-
+    flowGroup.append('text').attr('x', d => cX2(d) + cardW / 2).attr('y', d => cY2(d) + 20).attr('text-anchor', 'middle').attr('font-size', 19).attr('font-weight', '500').attr('fill', theme.palette.text.primary).text(d => `${d.sta_code}`);
+    flowGroup.append('text').attr('x', d => cX2(d) + 15).attr('y', d => cY2(d) + 38).attr('font-size', 11).attr('fill', theme.palette.text.secondary).text('ระดับน้ำ:');
+    flowGroup.append('text').attr('x', d => cX2(d) + 70).attr('y', d => cY2(d) + 38).attr('font-size', 11).attr('font-weight', '500').attr('fill', 'red').text(d => `${d.wl.toFixed(2)}`);
+    flowGroup.append('text').attr('x', d => cX2(d) + 115).attr('y', d => cY2(d) + 38).attr('font-size', 11).attr('font-weight', '500').attr('fill', '#0066cc').text(d => `ม.รทก.`);
+    flowGroup.append('text').attr('x', d => cX2(d) + 15).attr('y', d => cY2(d) + 50).attr('font-size', 11).attr('fill', theme.palette.text.secondary).text('อัตราไหล:');
+    flowGroup.append('text').attr('x', d => cX2(d) + 70).attr('y', d => cY2(d) + 50).attr('font-size', 11).attr('font-weight', '500').attr('fill', 'red').text(d => `${d.discharge.toFixed(2)}`);
+    flowGroup.append('text').attr('x', d => cX2(d) + 115).attr('y', d => cY2(d) + 50).attr('font-size', 11).attr('font-weight', '500').attr('fill', '#0066cc').text(d => `ลบ.ม./วิ`);
+    
     const tab2GatePos: Record<string, { x: number; y: number; offsetX: number; offsetY: number }> = {
-      'tng': { x: 708, y: 1297, offsetX: 35, offsetY: -15 },
-      'wst': { x: 693, y: 1247, offsetX: 35, offsetY: -40 },
+      'tng': { x: 709.5, y: 1297, offsetX: 35, offsetY: -15 },
+      'wst': { x: 693, y: 1239, offsetX: 35, offsetY: -40 },
       // 'kpk': { x: 1061, y: 1745, offsetX: -180, offsetY: -5 },
     };
 
@@ -7021,7 +7018,7 @@ const WaterSchematicSimple: React.FC = () => {
       .on('click', (_, d) => openDialogRef.current(d.sta_code, d.name, 'gate'));
       
 
-    const markerW = 46, markerH = 14;   
+    const markerW = 52, markerH = 15;   
     gateGroup.append('rect')
       .attr('x', -markerW / 2).attr('y', -markerH / 2) // จัดกึ่งกลางที่จุด origin เหมือน circle เดิม (r:9 = centered)
       .attr('width', markerW).attr('height', markerH)
@@ -7035,44 +7032,141 @@ const WaterSchematicSimple: React.FC = () => {
 
     // ✅ เปลี่ยนจาก rect มุมโค้ง (rx: 9) เป็นทรงแคปซูล (rx = gateCardH / 2)
     gateGroup.append('rect').attr('x', gCX2).attr('y', gCY2).attr('width', gCardW).attr('height', gCardH).attr('rx', 9).attr('ry', 9).attr('fill', theme.palette.background.paper).attr('stroke', theme.palette.divider).attr('stroke-width', 2);
-    gateGroup.append('text').attr('x', d => gCX2(d) + cardW / 2).attr('y', d => gCY2(d) + 16).attr('text-anchor', 'middle').attr('font-size', 12).attr('font-weight', 'bold').attr('fill', theme.palette.text.primary).text(d => `${d.sta_code}${d.name ? ` (${d.name})` : ''}`);
+    gateGroup.append('text').attr('x', d => gCX2(d) + cardW / 2).attr('y', d => gCY2(d) + 18).attr('text-anchor', 'middle').attr('font-size', 16).attr('font-weight', '500').attr('fill', theme.palette.text.primary).text(d => `${d.name ? ` ${d.name}` : ''}`);
 
     gateGroup.append('text')
       .attr('x', d => gCX2(d) + 15).attr('y', d => gCY2(d) + 36)
       .attr('font-size', 11).attr('fill', theme.palette.text.secondary)
       .text('ระดับน้ำเหนือ:');
     gateGroup.append('text')
-      .attr('x', d => gCX2(d) + 85).attr('y', d => gCY2(d) + 36)
-      .attr('font-size', 11).attr('font-weight', 'bold').attr('fill', '#0066cc')
-      .text(d => `${d.wl_upper.toFixed(2)} ม.รทก.`);
+      .attr('x', d => gCX2(d) + 80).attr('y', d => gCY2(d) + 36)
+      .attr('font-size', 11).attr('font-weight', '500').attr('fill', 'red')
+      .text(d => `${d.wl_upper.toFixed(2)}`);
+    gateGroup.append('text')
+      .attr('x', d => gCX2(d) + 120).attr('y', d => gCY2(d) + 36)
+      .attr('font-size', 11).attr('font-weight', '500').attr('fill', '#0066cc')
+      .text(`ม.รทก.`);
 
     gateGroup.append('text')
       .attr('x', d => gCX2(d) + 15).attr('y', d => gCY2(d) + 48)
       .attr('font-size', 11).attr('fill', theme.palette.text.secondary)
       .text('ระดับน้ำท้าย:');
     gateGroup.append('text')
-      .attr('x', d => gCX2(d) + 85).attr('y', d => gCY2(d) + 48)
-      .attr('font-size', 11).attr('font-weight', 'bold').attr('fill', '#0066cc')
-      .text(d => `${d.wl_lower.toFixed(2)} ม.รทก.`);
-
+      .attr('x', d => gCX2(d) + 80).attr('y', d => gCY2(d) + 48)
+      .attr('font-size', 11).attr('font-weight', '500').attr('fill', 'red')
+      .text(d => `${d.wl_lower.toFixed(2)}`);
+    gateGroup.append('text')
+      .attr('x', d => gCX2(d) + 120).attr('y', d => gCY2(d) + 48)
+      .attr('font-size', 11).attr('font-weight', '500').attr('fill', '#0066cc')
+      .text(`ม.รทก.`);
     gateGroup.append('text')
       .attr('x', d => gCX2(d) + 15).attr('y', d => gCY2(d) + 60)
       .attr('font-size', 11).attr('fill', theme.palette.text.secondary)
       .text('อัตราไหล:');
     gateGroup.append('text')
-      .attr('x', d => gCX2(d) + 85).attr('y', d => gCY2(d) + 60)
-      .attr('font-size', 11).attr('font-weight', 'bold').attr('fill', '#0066cc')
-      .text(d => `${d.discharge.toFixed(2)} ลบ.ม./วิ`);
+      .attr('x', d => gCX2(d) + 80).attr('y', d => gCY2(d) + 60)
+      .attr('font-size', 11).attr('font-weight', '500').attr('fill', 'red')
+      .text(d => `${d.discharge.toFixed(2)}`);
+    gateGroup.append('text')
+      .attr('x', d => gCX2(d) + 120).attr('y', d => gCY2(d) + 60)
+      .attr('font-size', 11).attr('font-weight', '500').attr('fill', '#0066cc')
+      .text(`ลบ.ม./วิ`);
+      
 
-    ////////////////////////////// arrows tab 2 — ตัวอย่างกำหนดองศาต่างกัน ////////////////////////////
+    // reservoir nodes
+
+    const tab2ReservoirPos: Record<string, { x: number; y: number; offsetX: number; offsetY: number }> = {
+      'srk': { x: 1420, y: 210, offsetX: 70, offsetY: -50 },
+      // 'pmp': { x: 693, y: 1239, offsetX: 35, offsetY: -40 },
+    };
+
+    const nodeGroup = container.selectAll<SVGGElement, ReservoirNode>('.reservoir-node')
+      .data(reservoirs.filter(r => tab2ReservoirPos[r.res_code]))
+      .enter().append('g').attr('class', 'reservoir-node')
+      .attr('transform', d => { const p = tab2ReservoirPos[d.res_code]; return `translate(${p.x},${p.y})`; })
+      .style('cursor', 'pointer')
+      .on('click', (_, d) => openDialogRef.current(d.res_code, d.name, 'reservoir'));
+
+
+    const cardWreser = 230, cardHreser = 95;
+    const cX = (d: ReservoirNode) => tab2ReservoirPos[d.res_code].offsetX;
+    const cY = (d: ReservoirNode) => tab2ReservoirPos[d.res_code].offsetY;
+
+    nodeGroup.append('rect').attr('x', cX).attr('y', cY).attr('width', cardWreser).attr('height', cardHreser).attr('rx', 9).attr('ry', 9).attr('fill', theme.palette.background.paper).attr('stroke', theme.palette.divider).attr('stroke-width', 1);
+    nodeGroup.append('text').attr('x', d => cX(d) + cardWreser / 2).attr('y', d => cY(d) + 27).attr('text-anchor', 'middle').attr('font-size', 22).attr('font-weight', '500').attr('fill', '#333').text(d => `${d.name ? ` ${d.name}` : ''}`);
+    // ปริมาณน้ำเก็บกัก
+    nodeGroup.append('text')
+      .attr('x', d => cX(d) + 15).attr('y', d => cY(d) + 43)
+      .attr('font-size', 11).attr('fill', theme.palette.text.secondary)
+      .text('ปริมาณน้ำเก็บกัก:');
+    nodeGroup.append('text')
+      .attr('x', d => cX(d) + 110).attr('y', d => cY(d) + 43)
+      .attr('font-size', 11).attr('font-weight', '500')
+      .attr('fill', 'red')
+      .text(d => d.volume.toFixed(2));                    // ← เฉพาะตัวเลข
+    nodeGroup.append('text')
+      .attr('x', d => cX(d) + 155).attr('y', d => cY(d) + 43)  // ปรับตำแหน่งตามความเหมาะสม
+      .attr('font-size', 11)
+      .attr('fill', theme.palette.text.secondary)
+      .text('ล้าน ลบ.ม.');
+
+    // ปริมาณน้ำใช้การ
+    nodeGroup.append('text')
+      .attr('x', d => cX(d) + 15).attr('y', d => cY(d) + 57)
+      .attr('font-size', 11).attr('fill', theme.palette.text.secondary)
+      .text('ปริมาณน้ำใช้การ');
+    nodeGroup.append('text')
+      .attr('x', d => cX(d) + 110).attr('y', d => cY(d) + 57)
+      .attr('font-size', 11).attr('font-weight', '500')
+      .attr('fill', 'red')
+      .text(d => (d.volume - d.minvol).toFixed(2));       // ← เฉพาะตัวเลข
+    nodeGroup.append('text')
+      .attr('x', d => cX(d) + 155).attr('y', d => cY(d) + 57)
+      .attr('font-size', 11)
+      .attr('fill', theme.palette.text.secondary)
+      .text('ล้าน ลบ.ม.');
+
+    // ไหลลงอ่างฯ
+    nodeGroup.append('text')
+      .attr('x', d => cX(d) + 15).attr('y', d => cY(d) + 71)
+      .attr('font-size', 11).attr('fill', theme.palette.text.secondary)
+      .text('ไหลลงอ่างฯ:');
+    nodeGroup.append('text')
+      .attr('x', d => cX(d) + 110).attr('y', d => cY(d) + 71)
+      .attr('font-size', 11).attr('font-weight', '500')
+      .attr('fill', 'red')
+      .text(d => d.inflow.toFixed(2));                    // ← เฉพาะตัวเลข
+    nodeGroup.append('text')
+      .attr('x', d => cX(d) + 155).attr('y', d => cY(d) + 71)
+      .attr('font-size', 11)
+      .attr('fill', theme.palette.text.secondary)
+      .text('ล้าน ลบ.ม./วัน');
+
+    // ระบาย
+    nodeGroup.append('text')
+      .attr('x', d => cX(d) + 15).attr('y', d => cY(d) + 85)
+      .attr('font-size', 11).attr('fill', theme.palette.text.secondary)
+      .text('ระบาย:');
+    nodeGroup.append('text')
+      .attr('x', d => cX(d) + 110).attr('y', d => cY(d) + 85)
+      .attr('font-size', 11).attr('font-weight', '500')
+      .attr('fill', 'red')
+      .text(d => d.outflow.toFixed(2));                   // ← เฉพาะตัวเลข
+    nodeGroup.append('text')
+      .attr('x', d => cX(d) + 155).attr('y', d => cY(d) + 85)
+      .attr('font-size', 11)
+      .attr('fill', theme.palette.text.secondary)
+      .text('ล้าน ลบ.ม./วัน');
+
+    ////////////////////////////// arrows tab 2 ////////////////////////////
     addArrowMarker(svg, 'arrow-t2', '#fff');
 
     const arrowsTab2: ArrowConfig[] = [
-      { startX: 455, startY: 400,  angle: 75  },
-      { startX: 475, startY: 470,  angle: 75  },
-      { startX: 495, startY: 540,  angle: 75  },
-      { startX: 515, startY: 610,  angle: 75  },
-      { startX: 535, startY: 680,  angle: 75  },
+      // { startX: 455, startY: 400,  angle: 75  },
+      // { startX: 475, startY: 470,  angle: 75  },
+      // { startX: 495, startY: 540,  angle: 75  },
+      // { startX: 515, startY: 610,  angle: 75  },
+      // { startX: 535, startY: 680,  angle: 75  },
 
       // ตัวอย่างองศาเอียง
       // { startX: 560, startY: 700,  angle: 135, length: 25 },  // 45° ลงขวา
@@ -7099,7 +7193,25 @@ const WaterSchematicSimple: React.FC = () => {
     setSelectedType(undefined);
   };
 
-  if (loading) return <CircularProgress />;
+  if (loading) {
+  return (
+    <Box
+      sx={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        bgcolor: 'background.default',
+      }}
+    >
+      <CircularProgress />
+    </Box>
+  );
+}
   if (error)   return <Typography color="error">Error: {error}</Typography>;
 
   // ─── Render ───────────────────────────────────────────────────

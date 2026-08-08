@@ -153,61 +153,6 @@ class ModelInputDataController extends ResourceController
                 }
             }
 
-            // ─────────────────────────────────────────
-            // 4. รวมสถานี wst = Y.15 + Y.16 (จาก flowData)
-            // ─────────────────────────────────────────
-            // if (!empty($flowData)) {
-            //     $gateGroups = [
-            //         'wst' => ['Y.15', 'Y.16'],
-            //     ];
-
-            //     // จัดกลุ่มตามวันที่
-            //     $flowByDate = [];
-            //     foreach ($flowData as $item) {
-            //         $date = $this->toDateOnly($item['date'] ?? null);
-            //         $sta  = (string) ($item['sta_code'] ?? '');
-            //         $val  = isset($item['discharge']) && is_numeric($item['discharge'])
-            //                 ? (float) $item['discharge']
-            //                 : 0;
-
-            //         if (!$date || !$sta) {
-            //             continue;
-            //         }
-
-            //         if (!isset($flowByDate[$date])) {
-            //             $flowByDate[$date] = [];
-            //         }
-            //         $flowByDate[$date][$sta] = $val;
-            //     }
-
-            //     foreach ($flowByDate as $date => $stations) {
-            //         foreach ($gateGroups as $newStaCode => $group) {
-            //             $sum = 0;
-            //             foreach ($group as $sta) {
-            //                 if (isset($stations[$sta]) && is_numeric($stations[$sta])) {
-            //                     $sum += (float) $stations[$sta];
-            //                 }
-            //             }
-
-            //             if ($sum > 0) {
-            //                 $record = [
-            //                     'sta_code'  => $newStaCode,
-            //                     'date'      => $date,
-            //                     'data_type' => 'flow',
-            //                     'value'     => $sum,
-            //                 ];
-
-            //                 if ($inputModel->upsertData($record, false)) {
-            //                     $successfulUpdates++;
-            //                 }
-            //             }
-            //         }
-            //     }
-            // }
-
-            // ─────────────────────────────────────────
-            // 5. ลบข้อมูลเก่ากว่า 30 วัน
-            // ─────────────────────────────────────────
             $dateThreshold = date('Y-m-d', strtotime('-30 days'));
             $inputModel->where('date <', $dateThreshold)->delete();
 

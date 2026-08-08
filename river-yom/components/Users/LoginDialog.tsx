@@ -40,8 +40,8 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose, onLoginSuccess
 
   // เลือก background ตาม theme (หรือ fallback ถ้าไม่มีรูป dark)
   const leftBg = isDarkMode 
-    ? "url('/images/bg_dialog.png') /* หรือสีทึบ theme.palette.background.default */" 
-    : "url('/images/bg_dialog.png')";
+    ? "url('/images/bg_dialog.jpg')"
+    : "url('/images/bg_dialog.jpg')";
 
   const handleLogin = async () => {
     try {

@@ -177,7 +177,7 @@ const RegisterDialog: React.FC<RegisterDialogProps> = ({ open, onClose }) => {
             flex={1}
             p={4}
             sx={{
-              backgroundImage: `url('/images/reservoir/ks.jpeg')`,
+              backgroundImage: `url('/images/flow_station/y.64.jpg')`,
               backgroundSize: "cover",
               backgroundPosition: "center",
             }}

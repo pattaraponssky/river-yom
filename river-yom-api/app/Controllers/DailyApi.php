@@ -20,12 +20,40 @@ class DailyApi extends ResourceController
     protected $format = 'json';
 
     // 🔧 helper: query ที่ตาราง datetime ให้ตรงเวลา 07:00 ของวันที่กำหนด
-    private function whereDateAt7($builder, $date)
+    protected function whereDateAt7($model, string $staCode, string $date, string $codeField = 'sta_code')
     {
-        return $builder
+        // 1. ลอง 07:00 เป๊ะ
+        $row = $model
+            ->where($codeField, $staCode)
             ->where('DATE(datetime)', $date)
-            ->where('HOUR(datetime)', 7)
-            ->where('MINUTE(datetime)', 0);
+            ->where("TIME(datetime) = '07:00:00'")
+            ->first();
+
+        if ($row) {
+            return $row;
+        }
+
+        // 2. ใกล้ 07:00 ที่สุดของวันนั้น
+        $row = $model
+            ->where($codeField, $staCode)
+            ->where('DATE(datetime)', $date)
+            ->orderBy('ABS(TIMESTAMPDIFF(MINUTE, TIME(datetime), "07:00:00"))', '', false)
+            ->orderBy('datetime', 'ASC')
+            ->first();
+
+        if ($row) {
+            return $row;
+        }
+
+        // 3. ถอยไปวันก่อนหน้า
+        $prevDate = date('Y-m-d', strtotime($date . ' -1 day'));
+
+        return $model
+            ->where($codeField, $staCode)
+            ->where('DATE(datetime)', $prevDate)
+            ->orderBy('ABS(TIMESTAMPDIFF(MINUTE, TIME(datetime), "07:00:00"))', '', false)
+            ->orderBy('datetime', 'ASC')
+            ->first();
     }
 
     // 🔧 helper: อ่านรหัสสถานีที่ต้องการกรอง จาก query string หรือ segment ที่ 2
@@ -69,15 +97,15 @@ class DailyApi extends ResourceController
         $no = 1;
 
         foreach ($reservoirs as $res) {
-            $query = $dataModel->where('res_code', $res['res_code']);
-            $daily = $this->whereDateAt7($query, $date)->first();
+            $daily = $this->whereDateAt7($dataModel, $res['res_code'], $date, 'res_code');
 
-            if (!$daily || floatval($daily['volume']) == 0) {
-                $query = $dataModel->where('res_code', $res['res_code']);
-                $daily = $this->whereDateAt7($query, $yesterday)->first();
+             if (!$daily) {
+                $yesterday = date('Y-m-d', strtotime($date . ' -1 day'));
+                $daily = $this->whereDateAt7($dataModel, $res['res_code'], $yesterday, 'res_code');   
             }
 
             if ($daily) {
+                
                 $p = $res['maxvol'] > 0 ? ($daily['volume'] / $res['maxvol']) * 100 : 0;
 
                 $result[] = [
@@ -88,6 +116,8 @@ class DailyApi extends ResourceController
                     'type' => $res['type'],
                     'long' => $res['long'],
                     'lat' => $res['lat'],
+                    'maxvol' => $res['maxvol'],
+                    'minvol' => $res['minvol'],
                     'date' => substr($daily['datetime'], 0, 10),
                     'datetime' => $daily['datetime'],
                     'volume' => round($daily['volume'], 3),
@@ -116,7 +146,10 @@ class DailyApi extends ResourceController
         $infoModel = new GateInfoModel();
         $dataModel = new GateModel();
 
-        $date = $date ?? date('Y-m-d');
+        if (!$date) {
+            $latest = $dataModel->selectMax('datetime')->first();
+            $date = $latest ? substr($latest['datetime'], 0, 10) : date('Y-m-d');
+        }
         $yearStart = date('Y', strtotime($date)) . '-01-01';
 
         // ✅ รองรับการเลือกสถานีเดียวด้วย sta_code (ต้องอยู่ในลิสต์ที่อนุญาตด้วย)
@@ -138,13 +171,11 @@ class DailyApi extends ResourceController
         $no = 1;
 
         foreach ($gates as $gate) {
-            $query = $dataModel->where('sta_code', $gate['sta_code']);
-            $daily = $this->whereDateAt7($query, $date)->first();
+            $daily = $this->whereDateAt7($dataModel, $gate['sta_code'], $date, 'sta_code');
 
             if (!$daily || (isset($daily['discharge']) && $daily['discharge'] == 0)) {
                 $yesterday = date('Y-m-d', strtotime($date . ' -1 day'));
-                $query = $dataModel->where('sta_code', $gate['sta_code']);
-                $daily = $this->whereDateAt7($query, $yesterday)->first();
+                $daily = $this->whereDateAt7($dataModel, $gate['sta_code'], $yesterday, 'sta_code');
             }
 
             $sumRain = $dataModel
@@ -214,8 +245,13 @@ class DailyApi extends ResourceController
         $no = 1;
 
         foreach ($flows as $flow) {
-            $query = $dataModel->where('sta_code', $flow['sta_code']);
-            $daily = $this->whereDateAt7($query, $date)->first();
+            $daily = $this->whereDateAt7($dataModel, $flow['sta_code'], $date, 'sta_code');
+
+            // ✅ เพิ่ม fallback ไปวันก่อนหน้า เหมือน gate()
+            if (!$daily) {
+                $yesterday = date('Y-m-d', strtotime($date . ' -1 day'));
+                $daily = $this->whereDateAt7($dataModel, $flow['sta_code'], $yesterday, 'sta_code');   
+            }
 
             if ($daily) {
                 $result[] = [
@@ -346,8 +382,7 @@ class DailyApi extends ResourceController
         $result = [];
 
         foreach ($stations as $st) {
-            $query = $dataModel->where('sta_code', $st['sta_code']);
-            $daily = $this->whereDateAt7($query, $date)->first();
+            $daily = $this->whereDateAt7($dataModel, $st['sta_code'], $date, 'sta_code');;
 
             $sumRain = $dataModel
                 ->selectSum('rain_mm', 'total_rain')

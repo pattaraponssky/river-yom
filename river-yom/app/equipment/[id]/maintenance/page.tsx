@@ -1,10 +1,11 @@
 // app/equipment/[id]/maintenance/page.tsx
+import { API_URL } from '@/lib/utility';
 import MaintenanceClient from './MaintenanceClient';
 
 // ⚠️ static export ต้องรู้ล่วงหน้าว่ามี id อะไรบ้าง
 export async function generateStaticParams() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/equipments`);
+    const res = await fetch(`${API_URL}/api/equipments`);
     const json = await res.json();
     const items = json.data || [];
     return items.map((item: any) => ({ id: String(item.id) }));

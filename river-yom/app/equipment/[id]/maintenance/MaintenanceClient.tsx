@@ -198,8 +198,395 @@ export default function MaintenanceClient({ id }: { id: string }) {
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
-      {/* ...JSX ทั้งหมดเหมือนเดิมทุกอย่าง ไม่ต้องแก้อะไรต่อจากนี้... */}
-      {/* คัดลอกส่วน return ทั้งหมดจากไฟล์เดิมมาวางต่อจากตรงนี้ */}
+      {/* ปุ่มย้อนกลับ + หัวข้อ */}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3, justifyContent: 'space-between' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
+
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Button variant="contained" color="primary" onClick={handleBack} startIcon={<ArrowBackIcon />}>
+              ย้อนกลับ
+            </Button>
+            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
+              <Button
+                variant="contained"
+                color="success"
+                startIcon={<AddIcon />}
+                onClick={handleOpenAdd}
+              >
+                เพิ่มประวัติการบำรุงรักษา
+              </Button>
+            </Box>
+            <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+              ประวัติการบำรุงรักษา - อุปกรณ์ ID: {id}
+              {records.length > 0 ? ` (${records.length} รายการ)` : ''}
+            </Typography>
+          </Box>
+
+        </Box>
+        {/* ช่องค้นหา */}
+
+        <TextField
+          placeholder="ค้นหาประวัติการบำรุงรักษา..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          size="small"
+          sx={{ width: { xs: '100%', sm: 320 } }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            ),
+          }}
+        />
+
+      </Box>
+      {error && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          {error}
+        </Alert>
+      )}
+
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
+          <CircularProgress size={60} />
+        </Box>
+      ) : filteredRecords.length === 0 ? (
+        <Box sx={{ textAlign: 'center', py: 8 }}>
+          <Typography variant="h6" color="text.secondary">
+            {searchTerm ? 'ไม่พบประวัติที่ตรงกับการค้นหา' : 'ยังไม่มีประวัติการบำรุงรักษาสำหรับอุปกรณ์นี้'}
+          </Typography>
+        </Box>
+      ) : (
+        <Box
+          sx={{
+            bgcolor: 'background.paper',
+            borderRadius: 2,
+            overflow: 'hidden',
+            boxShadow: 3,
+          }}
+        >
+          <TableContainer>
+            <Table>
+              <TableHead>
+                <TableRow sx={{ bgcolor: 'primary.main' }}>
+                  <TableCell sx={{ color: 'white', fontWeight: 'bold', textAlign: 'center' }}>
+                    การจัดการ
+                  </TableCell>
+                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>วันที่บำรุง</TableCell>
+                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>ประเภท</TableCell>
+                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>ช่างผู้รับผิดชอบ</TableCell>
+                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>ค่าใช้จ่าย</TableCell>
+                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>รายละเอียด</TableCell>
+                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>กำหนดครั้งถัดไป</TableCell>
+                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>สถานะ</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {filteredRecords.map((record, index) => (
+                  <TableRow key={record.id} sx={{ '&:hover': { bgcolor: 'action.hover' } }}>
+                    <TableCell align="center">
+                      <Tooltip title="แก้ไข">
+                        <IconButton
+                          color="primary"
+                          size="small"
+                          onClick={() => handleEdit(record)}
+                        >
+                          <EditIcon fontSize="medium" />
+                        </IconButton>
+                      </Tooltip>
+
+                      <Tooltip title="ลบ">
+                        <IconButton
+                          color="error"
+                          size="small"
+                          onClick={() => handleDeleteClick(record.id)}
+                        >
+                          <DeleteIcon fontSize="medium" />
+                        </IconButton>
+                      </Tooltip>
+                    </TableCell>
+                    <TableCell>{record.maintenance_date}</TableCell>
+                    <TableCell>{record.type}</TableCell>
+                    <TableCell>{record.technician_name || '-'}</TableCell>
+                    <TableCell>{record.cost ? record.cost.toLocaleString() + ' บาท' : '-'}</TableCell>
+                    <TableCell>{record.description || '-'}</TableCell>
+                    <TableCell>{record.next_due_date || '-'}</TableCell>
+                    <TableCell>
+                      <Box
+                        sx={{
+                          px: 1.5,
+                          py: 0.5,
+                          borderRadius: 12,
+                          bgcolor:
+                            record.status === 'completed' ? 'success.main' :
+                            record.status === 'pending' ? 'warning.main' :
+                            'error.main',
+                          color: 'white',
+                          fontSize: '0.85rem',
+                          fontWeight: 'bold',
+                          textAlign: 'center',
+                        }}
+                      >
+                        {record.status === 'completed' ? 'เสร็จสิ้น' :
+                         record.status === 'pending' ? 'รอดำเนินการ' : 'ล้มเหลว'}
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Box>
+      )}
+
+      {/* Dialog เพิ่มประวัติการบำรุงรักษา */}
+      <Dialog open={openAddDialog} onClose={handleCloseAdd} maxWidth="md" fullWidth>
+        <DialogTitle>เพิ่มประวัติการบำรุงรักษาใหม่</DialogTitle>
+        <DialogContent>
+          {submitError && <Alert severity="error" sx={{ mb: 2 }}>{submitError}</Alert>}
+
+          <Grid container spacing={2} sx={{ mt: 1 }}>
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <TextField
+                fullWidth
+                label="วันที่บำรุงรักษา"
+                type="date"
+                name="maintenance_date"
+                value={newRecord.maintenance_date || ''}
+                onChange={handleInputChange}
+                InputLabelProps={{ shrink: true }}
+                required
+              />
+            </Grid>
+
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <FormControl fullWidth required>
+                <InputLabel>ประเภทการบำรุงรักษา</InputLabel>
+                <Select
+                  name="type"
+                  value={newRecord.type || 'preventive'}
+                  label="ประเภทการบำรุงรักษา"
+                  onChange={handleSelectChange}
+                >
+                  <MenuItem value="preventive">ป้องกัน (Preventive)</MenuItem>
+                  <MenuItem value="corrective">แก้ไข (Corrective)</MenuItem>
+                  <MenuItem value="predictive">คาดการณ์ (Predictive)</MenuItem>
+                  <MenuItem value="other">อื่นๆ</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <TextField
+                fullWidth
+                label="ช่างผู้รับผิดชอบ"
+                name="technician_name"
+                value={newRecord.technician_name || ''}
+                onChange={handleInputChange}
+              />
+            </Grid>
+
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <TextField
+                fullWidth
+                label="ค่าใช้จ่าย (บาท)"
+                name="cost"
+                type="number"
+                value={newRecord.cost || ''}
+                onChange={handleInputChange}
+                InputProps={{ inputProps: { min: 0 } }}
+              />
+            </Grid>
+
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <TextField
+                fullWidth
+                label="รายละเอียด"
+                name="description"
+                multiline
+                rows={3}
+                value={newRecord.description || ''}
+                onChange={handleInputChange}
+              />
+            </Grid>
+
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <TextField
+                fullWidth
+                label="กำหนดครั้งถัดไป"
+                type="date"
+                name="next_due_date"
+                value={newRecord.next_due_date || ''}
+                onChange={handleInputChange}
+                InputLabelProps={{ shrink: true }}
+              />
+            </Grid>
+
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <FormControl fullWidth required>
+                <InputLabel>สถานะ</InputLabel>
+                <Select
+                  name="status"
+                  value={newRecord.status || 'completed'}
+                  label="สถานะ"
+                  onChange={handleSelectChange}
+                >
+                  <MenuItem value="completed">เสร็จสิ้น</MenuItem>
+                  <MenuItem value="pending">รอดำเนินการ</MenuItem>
+                  <MenuItem value="failed">ล้มเหลว</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+          </Grid>
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={handleCloseAdd} disabled={submitLoading}>
+            ยกเลิก
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleSubmit}
+            disabled={submitLoading}
+            startIcon={submitLoading ? <CircularProgress size={20} /> : null}
+          >
+            {submitLoading ? 'กำลังบันทึก...' : 'บันทึก'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog open={openEditDialog} onClose={() => setOpenEditDialog(false)} maxWidth="md" fullWidth>
+        <DialogTitle>แก้ไขประวัติการบำรุงรักษา</DialogTitle>
+        <DialogContent>
+          {editRecord && (
+            <Grid container spacing={2} sx={{ mt: 1 }}>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  fullWidth
+                  required
+                  label="วันที่บำรุงรักษา"
+                  type="date"
+                  name="maintenance_date"
+                  value={editRecord.maintenance_date || ''}
+                  onChange={(e) =>
+                    setEditRecord({ ...editRecord, maintenance_date: e.target.value })
+                  }
+                  InputLabelProps={{ shrink: true }}
+                />
+              </Grid>
+
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <FormControl fullWidth required>
+                  <InputLabel>ประเภทการบำรุงรักษา</InputLabel>
+                  <Select
+                    name="type"
+                    value={editRecord.type || 'preventive'}
+                    label="ประเภทการบำรุงรักษา"
+                    onChange={(e) =>
+                      setEditRecord({ ...editRecord, type: e.target.value as string })
+                    }
+                  >
+                    <MenuItem value="preventive">ป้องกัน (Preventive)</MenuItem>
+                    <MenuItem value="corrective">แก้ไข (Corrective)</MenuItem>
+                    <MenuItem value="predictive">คาดการณ์ (Predictive)</MenuItem>
+                    <MenuItem value="other">อื่นๆ</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  fullWidth
+                  label="ช่างผู้รับผิดชอบ"
+                  name="technician_name"
+                  value={editRecord.technician_name || ''}
+                  onChange={(e) =>
+                    setEditRecord({ ...editRecord, technician_name: e.target.value })
+                  }
+                />
+              </Grid>
+
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  fullWidth
+                  label="ค่าใช้จ่าย (บาท)"
+                  name="cost"
+                  type="number"
+                  value={editRecord.cost ?? ''}
+                  onChange={(e) =>
+                    setEditRecord({
+                      ...editRecord,
+                      cost: parseFloat(e.target.value) || 0,
+                    })
+                  }
+                  InputProps={{
+                    inputProps: { min: 0 },
+                    endAdornment: <InputAdornment position="end">บาท</InputAdornment>,
+                  }}
+                />
+              </Grid>
+
+              <Grid size={{ xs: 12 }}>
+                <TextField
+                  fullWidth
+                  label="รายละเอียด"
+                  name="description"
+                  multiline
+                  rows={3}
+                  value={editRecord.description || ''}
+                  onChange={(e) =>
+                    setEditRecord({ ...editRecord, description: e.target.value })
+                  }
+                />
+              </Grid>
+
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  fullWidth
+                  label="กำหนดครั้งถัดไป"
+                  type="date"
+                  name="next_due_date"
+                  value={editRecord.next_due_date || ''}
+                  onChange={(e) =>
+                    setEditRecord({ ...editRecord, next_due_date: e.target.value })
+                  }
+                  InputLabelProps={{ shrink: true }}
+                />
+              </Grid>
+
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <FormControl fullWidth required>
+                  <InputLabel>สถานะ</InputLabel>
+                  <Select
+                    name="status"
+                    value={editRecord.status || 'completed'}
+                    label="สถานะ"
+                    onChange={(e) =>
+                      setEditRecord({ ...editRecord, status: e.target.value as string })
+                    }
+                  >
+                    <MenuItem value="completed">เสร็จสิ้น</MenuItem>
+                    <MenuItem value="pending">รอดำเนินการ</MenuItem>
+                    <MenuItem value="failed">ล้มเหลว</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+            </Grid>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenEditDialog(false)}>ยกเลิก</Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleUpdate}
+            disabled={submitLoading}
+          >
+            บันทึกการแก้ไข
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 }
