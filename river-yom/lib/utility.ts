@@ -1,9 +1,8 @@
 
 ////// API PATHS //////
 // export const API_URL = process.env.NEXT_PUBLIC_API_URL;
-// if (!API_URL) throw new Error('NEXT_PUBLIC_API_URL is not set');
-// export const Path_URL = "./../"; // For Dev
 // export const Model_URL = process.env.NEXT_PUBLIC_MODEL_URL;
+// export const Path_URL = "./../"; // For Dev
 // export const Forecast_URL = "./../";
 //////////////////////////
 

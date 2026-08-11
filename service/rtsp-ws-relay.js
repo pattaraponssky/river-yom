@@ -37,7 +37,7 @@ const CAMERAS = {
 const FFMPEG_PATH   = 'ffmpeg';
 const WEBSOCAT_PATH = 'websocat';
 
-const wss = new WebSocketServer({ host: '127.0.0.1', port: 8080 });
+const wss = new WebSocketServer({ host: '127.0.0.1', port: 8088 });
 const rooms = new Map(); // camId -> { procs: ChildProcess[], clients: Set }
 
 // ── สร้าง pipeline ตาม type ของกล้อง ──
@@ -151,4 +151,4 @@ wss.on('connection', (ws, req) => {
   ws.on('error', (err) => console.error(`ws error cam ${camId}:`, err.message));
 });
 
-console.log('RTSP/WS → WS relay listening on ws://127.0.0.1:8080');
+console.log('RTSP/WS → WS relay listening on ws://127.0.0.1:8088');

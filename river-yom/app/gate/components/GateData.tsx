@@ -1,4 +1,6 @@
+'use client';
 
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Container,
   Box,
@@ -12,46 +14,57 @@ import {
   CardHeader,
   Divider,
   Typography,
-  SelectChangeEvent,
+  ToggleButton,
+  ToggleButtonGroup,
   Button,
   useTheme,
-} from "@mui/material";
-import GateChart from "@/components/Data/GateChartData";
-import GateExportTable from "@/components/Data/GateTableData";
-import CenteredLoading from "@/components/Layout/CenteredLoading";
-import { API_URL, Path_URL } from "@/lib/utility";
-import { titleStyle, textStyle, HeaderCellStyle } from "@/theme/style";
-import { fontInfo } from "@/theme/style";
-import { useState, useEffect, useMemo } from "react";
-interface DataGateProps {
-    propsSelectedStation?: string;
-  }
+  SelectChangeEvent,
+} from '@mui/material';
+import GateChart from '@/components/Data/GateChartData';
+import GateExportTable from '@/components/Data/GateTableData';
+import CenteredLoading from '@/components/Layout/CenteredLoading';
+import { API_URL, Path_URL } from '@/lib/utility';
+import { titleStyle, textStyle, HeaderCellStyle, fontInfo } from '@/theme/style';
 
-const DataGate: React.FC<DataGateProps> = ({propsSelectedStation}) => {
+interface DataGateProps {
+  propsSelectedStation?: string;
+}
+
+type DataMode = 'daily' | 'hourly';
+
+const MODE_LABELS: Record<DataMode, string> = {
+  hourly: 'รายชั่วโมง',
+  daily: 'รายวัน',
+};
+
+const DataGate: React.FC<DataGateProps> = ({ propsSelectedStation }) => {
   const queryParams = new URLSearchParams(location.search);
-  const stationFromURL = queryParams.get("station") || "tng";
+  const stationFromURL = queryParams.get('station') || 'tng';
   const theme = useTheme();
-  const isDark = theme.palette.mode === "dark";
-  const [stations, setStations] = useState<any[]>([]); // เก็บข้อมูลสถานี
-  const [selectedStation, setSelectedStation] = useState<string | null>('tng'); // สถานีที่เลือก
+  const isDark = theme.palette.mode === 'dark';
+
+  const [mode, setMode] = useState<DataMode>('daily');
+  const [stations, setStations] = useState<any[]>([]);
+  const [selectedStation, setSelectedStation] = useState<string | null>(null);
   const [availableYears, setAvailableYears] = useState<string[]>([]);
-  const [allAvailableYears, setAllAvailableYears] = useState<string[]>([]);
-  const [startYear, setStartYear] = useState<string>("");
-  const [endYear, setEndYear] = useState<string>("");
-  const [chartData1, setChartData1] = useState<any>(null); // สำหรับ chartOptions
-  const [chartData2, setChartData2] = useState<any>(null); // สำหรับ chartOptions2
-  const [chartData3, setChartData3] = useState<any>(null); // สำหรับ chartOptions2
-  const [, setLoading] = useState(false);
- 
+  const [startYear, setStartYear] = useState<string>('');
+  const [endYear, setEndYear] = useState<string>('');
+
+  const [chartData1, setChartData1] = useState<any>(null); // discharge
+  const [chartData2, setChartData2] = useState<any>(null); // wl_upper
+  const [chartData3, setChartData3] = useState<any>(null); // wl_lower
+
   const [wlUpperGroupedData, setWlUpperGroupedData] = useState<{ [year: string]: [number, number][] }>({});
   const [wlLowerGroupedData, setWlLowerGroupedData] = useState<{ [year: string]: [number, number][] }>({});
   const [dischargeGroupedData, setDischargeGroupedData] = useState<{ [year: string]: [number, number][] }>({});
 
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [yearError, setYearError] = useState<string>("");
-  
+  const [loading, setLoading] = useState(false);
+  const [yearError, setYearError] = useState<string>('');
   const [initialLoad, setInitialLoad] = useState(false);
+  const [allAvailableYears, setAllAvailableYears] = useState<string[]>([]);
 
+  // ตั้งค่าสถานีจาก props หรือ URL
   useEffect(() => {
     if (propsSelectedStation) {
       setSelectedStation(propsSelectedStation);
@@ -60,23 +73,23 @@ const DataGate: React.FC<DataGateProps> = ({propsSelectedStation}) => {
     }
   }, [propsSelectedStation, stationFromURL]);
 
-    useEffect(() => {
-      if (!initialLoad && selectedStation && startYear && endYear) {
-        fetchGateData(startYear, endYear);
-        setIsSubmitted(true);
-        setInitialLoad(true); // ป้องกันไม่ให้ทำซ้ำ
-      }
-    }, [selectedStation, startYear, endYear, initialLoad]);
-  
+  // โหลดข้อมูลครั้งแรกอัตโนมัติเมื่อมีสถานี + ปีครบ
+  useEffect(() => {
+    if (!initialLoad && selectedStation && startYear && endYear) {
+      fetchGateData(startYear, endYear);
+      setIsSubmitted(true);
+      setInitialLoad(true);
+    }
+  }, [selectedStation, startYear, endYear, initialLoad]);
 
-  // รีเซ็ตทุกอย่างเมื่อเปลี่ยนสถานี
+  // รีเซ็ตเมื่อเปลี่ยนสถานีหรือโหมด
   useEffect(() => {
     if (selectedStation) {
       setIsSubmitted(false);
-      setYearError("");
-      setStartYear("");
-      setEndYear("");
-      setAvailableYears([]);        // ล้างปี
+      setYearError('');
+      setStartYear('');
+      setEndYear('');
+      setAvailableYears([]);
       setAllAvailableYears([]);
       setChartData1(null);
       setChartData2(null);
@@ -86,48 +99,146 @@ const DataGate: React.FC<DataGateProps> = ({propsSelectedStation}) => {
       setDischargeGroupedData({});
       setInitialLoad(false);
     }
-  }, [selectedStation]);
+  }, [selectedStation, mode]);
 
-  // ดึงรายชื่อสถานี
+  // โหลดรายชื่อสถานี
   useEffect(() => {
     fetch(`${API_URL}/api/gate_info`)
-      .then((res) => res.json())
-      .then((data) => setStations(data.data))
-      .catch((err) => console.error(err));
+      .then((r) => r.json())
+      .then((d) => setStations(d.data || []))
+      .catch(console.error);
   }, []);
 
+  // โหลดปีที่มีข้อมูลของสถานี
   useEffect(() => {
-  if (selectedStation) {
+    if (!selectedStation) return;
+
     fetch(`${API_URL}/api/gate_years?sta_code=${selectedStation}`)
-      .then((res) => res.json())
-      .then((data) => {
-        const years = (data.data || []).sort((a: string, b: string) => +a - +b);
+      .then((r) => r.json())
+      .then((d) => {
+        const years = (d.data || []).sort((a: string, b: string) => +a - +b);
         setAvailableYears(years);
 
-        // ตั้งค่าเริ่มต้นเป็น 2 ปีล่าสุด (แต่ยังไม่โหลดข้อมูล)
         if (years.length > 0) {
           const end = years[years.length - 1];
           const start = years[years.length - 1] || end;
           setStartYear(start);
           setEndYear(end);
+          setInitialLoad(false);
         }
       })
-      .catch((err) => {
-        console.error("Error fetching years:", err);
-        setAvailableYears([]);
-      });
-  }
-}, [selectedStation]);
+      .catch(console.error);
+  }, [selectedStation, mode]);
 
-  // ฟังก์ชันหลัก: กดปุ่มแสดงผล → ถึงจะโหลดทุกอย่าง
-  const handleShowData = async () => {
-    if (!selectedStation) {
-      setYearError("กรุณาเลือกสถานี");
+  const fetchGateData = async (start: string, end: string) => {
+    const endpoint = mode === 'daily' ? 'gate_data' : 'gate_hourly_data'; // ปรับชื่อ endpoint ตามจริง
+    const res = await fetch(
+      `${API_URL}/api/${endpoint}/${selectedStation}?startYear=${start}&endYear=${end}`
+    );
+    const data = await res.json();
+
+    if (!data?.data?.length) {
+      setWlUpperGroupedData({});
+      setWlLowerGroupedData({});
+      setDischargeGroupedData({});
+      setChartData1(null);
+      setChartData2(null);
+      setChartData3(null);
       return;
     }
 
+    const BASE_YEAR = 2000;
+    const rawData = data.data;
+
+    const wlUpperTable: { [year: string]: [number, number][] } = {};
+    const wlLowerTable: { [year: string]: [number, number][] } = {};
+    const dischargeTable: { [year: string]: [number, number][] } = {};
+
+    const wlUpperSeriesMap = new Map<string, [number, number][]>();
+    const wlLowerSeriesMap = new Map<string, [number, number][]>();
+    const dischargeSeriesMap = new Map<string, [number, number][]>();
+
+    rawData.forEach((item: any) => {
+      const date = new Date(item.datetime);
+      if (isNaN(date.getTime())) return;
+
+      const originalYear = date.getFullYear().toString();
+      const month = date.getMonth();
+      const day = date.getDate();
+      const hours = date.getHours();
+      const minutes = date.getMinutes();
+      const seconds = mode === 'daily' ? Math.floor(Math.random() * 60) : date.getSeconds();
+
+      const chartTimestamp = new Date(BASE_YEAR, month, day, hours, minutes, seconds).getTime();
+
+      // wl_upper
+      if (item.wl_upper != null) {
+        const value = parseFloat(item.wl_upper);
+        if (!wlUpperTable[originalYear]) wlUpperTable[originalYear] = [];
+        wlUpperTable[originalYear].push([date.getTime(), value]);
+
+        if (!wlUpperSeriesMap.has(originalYear)) wlUpperSeriesMap.set(originalYear, []);
+        wlUpperSeriesMap.get(originalYear)!.push([chartTimestamp, value]);
+      }
+
+      // wl_lower
+      if (item.wl_lower != null) {
+        const value = parseFloat(item.wl_lower);
+        if (!wlLowerTable[originalYear]) wlLowerTable[originalYear] = [];
+        wlLowerTable[originalYear].push([date.getTime(), value]);
+
+        if (!wlLowerSeriesMap.has(originalYear)) wlLowerSeriesMap.set(originalYear, []);
+        wlLowerSeriesMap.get(originalYear)!.push([chartTimestamp, value]);
+      }
+
+      // discharge
+      if (item.discharge != null) {
+        const value = parseFloat(item.discharge);
+        if (!dischargeTable[originalYear]) dischargeTable[originalYear] = [];
+        dischargeTable[originalYear].push([date.getTime(), value]);
+
+        if (!dischargeSeriesMap.has(originalYear)) dischargeSeriesMap.set(originalYear, []);
+        dischargeSeriesMap.get(originalYear)!.push([chartTimestamp, value]);
+      }
+    });
+
+    setWlUpperGroupedData(wlUpperTable);
+    setWlLowerGroupedData(wlLowerTable);
+    setDischargeGroupedData(dischargeTable);
+
+    const years = Array.from(
+      new Set([
+        ...wlUpperSeriesMap.keys(),
+        ...wlLowerSeriesMap.keys(),
+        ...dischargeSeriesMap.keys(),
+      ])
+    ).sort();
+
+    const createSeries = (map: Map<string, [number, number][]>, prefix: string) =>
+      years
+        .filter((year) => map.has(year))
+        .map((year) => ({
+          name: `${prefix}ปี ${Number(year) + 543}`,
+          type: 'line' as const,
+          data: map.get(year)!.sort((a, b) => a[0] - b[0]),
+          marker: { enabled: false },
+          lineWidth: 1.5,
+        }));
+
+    setChartData2({ series: createSeries(wlUpperSeriesMap, 'ระดับน้ำตอนบน ') });
+    setChartData3({ series: createSeries(wlLowerSeriesMap, 'ระดับน้ำตอนล่าง ') });
+    setChartData1({ series: createSeries(dischargeSeriesMap, 'อัตราการไหล ') });
+
+    setAllAvailableYears(years);
+  };
+
+  const handleShowData = async () => {
+    if (!selectedStation) {
+      setYearError('กรุณาเลือกสถานี');
+      return;
+    }
     if (!startYear || !endYear) {
-      setYearError("กรุณาเลือกปีเริ่มต้นและปีสิ้นสุด");
+      setYearError('กรุณาเลือกปีเริ่มต้นและปีสิ้นสุด');
       return;
     }
 
@@ -135,119 +246,49 @@ const DataGate: React.FC<DataGateProps> = ({propsSelectedStation}) => {
     const end = parseInt(endYear);
 
     if (start > end) {
-      setYearError("ปีสิ้นสุดต้องไม่น้อยกว่าปีเริ่มต้น");
+      setYearError('ปีสิ้นสุดต้องไม่น้อยกว่าปีเริ่มต้น');
       return;
     }
-
     if (end - start > 5) {
-      setYearError("เลือกได้สูงสุด 5 ปีเท่านั้น");
+      setYearError('เลือกได้สูงสุด 5 ปีเท่านั้น');
       return;
     }
 
-    setYearError("");
+    setYearError('');
     setLoading(true);
 
     try {
       await fetchGateData(startYear, endYear);
       setIsSubmitted(true);
     } catch (err) {
-      setYearError("เกิดข้อผิดพลาดในการโหลดข้อมูล");
+      setYearError('เกิดข้อผิดพลาดในการโหลดข้อมูล');
     } finally {
       setLoading(false);
     }
   };
 
-  // ฟังก์ชันดึงข้อมูลกราฟ (แยกออกมาเพื่อ reuse)
-  const fetchGateData = async (start: string, end: string) => {
-    const apiUrl = `${API_URL}/api/gate_data/${selectedStation}?startYear=${start}&endYear=${end}`;
-    const res = await fetch(apiUrl);
-    const data = await res.json();
-
-    if (!data || !Array.isArray(data.data)) return;
-
-    const BASE_YEAR = 2000;
-    const rawData = data.data;
-
-    const groupByYear = (key: 'wl_upper' | 'wl_lower' | 'discharge') => {
-      const grouped: { [year: string]: [number, number][] } = {};
-      rawData.forEach((item: any) => {
-        if (item[key] === null) return;
-        const datetime = new Date(item.datetime);
-        const year = datetime.getFullYear();
-        const value = parseFloat(item[key]);
-        const randomSeconds = Math.floor(Math.random() * 60);
-        const newTimestamp = (datetime.getTime() - datetime.getSeconds() * 1000) + randomSeconds * 1000;
-
-        if (!grouped[year]) grouped[year] = [];
-        grouped[year].push([newTimestamp, value]);
-      });
-      return grouped;
-    };
-
-    const wlUpperGrouped = groupByYear('wl_upper');
-    const wlLowerGrouped = groupByYear('wl_lower');
-    const dischargeGrouped = groupByYear('discharge');
-
-    setWlUpperGroupedData(wlUpperGrouped);
-    setWlLowerGroupedData(wlLowerGrouped);
-    setDischargeGroupedData(dischargeGrouped);
-
-    const convertDate = (datetime: number) => {
-      const d = new Date(datetime);
-      const randomSeconds = Math.floor(Math.random() * 60);
-      return new Date(BASE_YEAR, d.getMonth(), d.getDate(), d.getHours(), d.getMinutes(), randomSeconds).getTime();
-    };
-
-    const createSeries = (grouped: any, prefix: string) =>
-      Object.entries(grouped).map(([year, points]: [string, any]) => ({
-        name: `${prefix}ปี ${year}`,
-        type: 'line',
-        data: (points as [number, number][]).map(([t, v]) => [convertDate(t), v]).sort((a, b) => a[0] - b[0]),
-      }));
-
-    setChartData1({ series: createSeries(dischargeGrouped, "อัตราการไหลปี ") });
-    setChartData2({ series: createSeries(wlUpperGrouped, "ระดับน้ำตอนบน ปี ") });
-    setChartData3({ series: createSeries(wlLowerGrouped, "ระดับน้ำตอนล่าง ปี ") });
-
-    const actualYears = Object.keys(dischargeGrouped).sort();
-    setAllAvailableYears(actualYears);
-  };
-
   const availableYearsTable = useMemo(() => {
-        if (!allAvailableYears.length || !startYear || !endYear) return ["ทั้งหมด"];
-      
-        const filtered = allAvailableYears.filter(
-          (y) => Number(y) >= Number(startYear) && Number(y) <= Number(endYear)
-        );
-        
-        return ["ทั้งหมด", ...filtered];
-      }, [allAvailableYears, startYear, endYear]);
+    if (!allAvailableYears.length || !startYear || !endYear) return ['ทั้งหมด'];
 
+    const filtered = allAvailableYears.filter(
+      (y) => Number(y) >= Number(startYear) && Number(y) <= Number(endYear)
+    );
 
-  const handleStationSelect = (event: SelectChangeEvent<string>) => {
-    console.log(event);  // เช็ค event ว่ามีหรือไม่
-    setSelectedStation(event.target.value as string);
-  };
-  
-  const handleStartYearChange = (event: SelectChangeEvent<string>) => {
-    setStartYear(event.target.value);
-  };
-  
-  const handleEndYearChange = (event: SelectChangeEvent<string>) => {
-    setEndYear(event.target.value);
-  };
-  
+    return ['ทั้งหมด', ...filtered];
+  }, [allAvailableYears, startYear, endYear]);
 
   if (!stations.length) return <CenteredLoading />;
 
-  // เลือกสถานีที่ผู้ใช้เลือกจาก dropdown
-  const station = selectedStation ? stations.find((s) => s.sta_code === selectedStation) : null;
+  const station = selectedStation
+    ? stations.find((s) => s.sta_code === selectedStation)
+    : null;
+
   return (
-    <Container component="main" sx={{ minWidth: "100%" }}>
-      <Grid container spacing={2}>
-        {/* ซ้าย: รูปภาพของสถานี */}
-        <Grid size={{ xs: 12, md: 4, sm: 12 }}>
-          <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
+    <Container component="main" sx={{ minWidth: '100%', py: 2 }}>
+      <Grid container spacing={3}>
+        {/* รูปสถานี */}
+        <Grid size={{ xs: 12, md: 5 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
             <img
               src={
                 station
@@ -256,27 +297,63 @@ const DataGate: React.FC<DataGateProps> = ({propsSelectedStation}) => {
               }
               alt="Station"
               style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-                borderRadius: "10px",
-                boxShadow: "0px 3px 6px rgba(0, 0, 0, 0.56)"
-                }}
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                borderRadius: '10px',
+                boxShadow: '0px 3px 6px rgba(0, 0, 0, 0.56)',
+              }}
               onError={(e) => (e.currentTarget.src = `${Path_URL}images/default_img.png`)}
             />
-          
           </Box>
         </Grid>
-  
-        {/* ขวา: รายละเอียดข้อมูลสถานีและกราฟ */}
-        <Grid size={{ xs: 12, md: 8, sm: 12 }}>
-          <Grid container spacing={3}>
-            {/* Dropdown สถานี */}
-            <Grid size={{xs:12,md:4.5}}>
+
+        {/* ตัวเลือก */}
+        <Grid size={{ xs: 12, md: 7 }}>
+          <Grid container spacing={2} alignItems="center">
+            {/* โหมดข้อมูล */}
+            <Grid size={{ xs: 12 }}>
+              <Typography sx={{ ...textStyle, mb: 0.5, color: 'text.secondary' }}>
+                รูปแบบข้อมูล
+              </Typography>
+              <ToggleButtonGroup
+                value={mode}
+                exclusive
+                onChange={(_, v) => v && setMode(v as DataMode)}
+                size="medium"
+                sx={{ flexWrap: 'wrap', gap: 0.5 }}
+              >
+                {(Object.keys(MODE_LABELS) as DataMode[]).map((m) => (
+                  <ToggleButton
+                    key={m}
+                    value={m}
+                    sx={{
+                      fontFamily: 'Prompt',
+                      px: 2,
+                      '&.Mui-selected': {
+                        bgcolor: 'primary.main',
+                        color: 'white',
+                        '&:hover': { bgcolor: 'primary.dark' },
+                      },
+                    }}
+                  >
+                    {MODE_LABELS[m]}
+                  </ToggleButton>
+                ))}
+              </ToggleButtonGroup>
+            </Grid>
+
+            {/* เลือกสถานี */}
+            <Grid size={{ xs: 12, md: 5 }}>
               <FormControl fullWidth>
-                <InputLabel sx={{ fontFamily: "Prompt" }}>เลือกประตูระบายน้ำ</InputLabel>
-                <Select value={selectedStation || ""} label="เลือกประตูระบายน้ำ" onChange={handleStationSelect} sx={fontInfo}>
-                  {stations.map((s: any) => (
+                <InputLabel sx={{ fontFamily: 'Prompt' }}>เลือกประตูระบายน้ำ</InputLabel>
+                <Select
+                  value={selectedStation || ''}
+                  label="เลือกประตูระบายน้ำ"
+                  onChange={(e) => setSelectedStation(e.target.value)}
+                  sx={fontInfo}
+                >
+                  {stations.map((s) => (
                     <MenuItem key={s.sta_code} value={s.sta_code}>
                       {s.sta_name} ({s.sta_code})
                     </MenuItem>
@@ -286,104 +363,156 @@ const DataGate: React.FC<DataGateProps> = ({propsSelectedStation}) => {
             </Grid>
 
             {/* ปีเริ่มต้น */}
-            <Grid size={{xs:12,md:2.5}}>
+            <Grid size={{ xs: 12, md: 2 }}>
               <FormControl fullWidth>
-                <InputLabel sx={{ fontFamily: "Prompt" }}>ปีเริ่มต้น</InputLabel>
-                <Select value={startYear} label="ปีเริ่มต้น" onChange={handleStartYearChange} sx={fontInfo}>
+                <InputLabel sx={{ fontFamily: 'Prompt' }}>ปีเริ่มต้น</InputLabel>
+                <Select
+                  value={startYear}
+                  label="ปีเริ่มต้น"
+                  onChange={(e) => setStartYear(e.target.value)}
+                  sx={fontInfo}
+                >
                   {availableYears
-                    .filter(y => !endYear || parseInt(y) >= parseInt(endYear) - 5)
-                    .map(y => (
-                      <MenuItem key={y} value={y}>{+y + 543}</MenuItem>
+                    .filter(
+                      (y) =>
+                        !endYear ||
+                        (parseInt(y) <= parseInt(endYear) &&
+                          parseInt(endYear) - parseInt(y) <= 5)
+                    )
+                    .map((y) => (
+                      <MenuItem key={y} value={y}>
+                        {+y + 543}
+                      </MenuItem>
                     ))}
                 </Select>
               </FormControl>
             </Grid>
 
             {/* ปีสิ้นสุด */}
-            <Grid size={{xs:12,md:2.5}}>
+            <Grid size={{ xs: 12, md: 2 }}>
               <FormControl fullWidth>
-                <InputLabel sx={{ fontFamily: "Prompt" }}>ปีสิ้นสุด</InputLabel>
-                <Select value={endYear} label="ปีสิ้นสุด" onChange={handleEndYearChange} sx={fontInfo}>
+                <InputLabel sx={{ fontFamily: 'Prompt' }}>ปีสิ้นสุด</InputLabel>
+                <Select
+                  value={endYear}
+                  label="ปีสิ้นสุด"
+                  onChange={(e) => setEndYear(e.target.value)}
+                  sx={fontInfo}
+                >
                   {availableYears
-                    .filter((y) => {
-                      if (!startYear) return true;
-                      const start = parseInt(startYear);
-                      const end = parseInt(y);
-                      return end >= start && end - start <= 5;   // ต้องไม่เกิน 5 ปี และ end >= start
-                    })
+                    .filter(
+                      (y) =>
+                        !startYear ||
+                        (parseInt(y) >= parseInt(startYear) &&
+                          parseInt(y) - parseInt(startYear) <= 5)
+                    )
                     .map((y) => (
-                      <MenuItem key={y} value={y}>{+y + 543}</MenuItem>
+                      <MenuItem key={y} value={y}>
+                        {+y + 543}
+                      </MenuItem>
                     ))}
                 </Select>
               </FormControl>
             </Grid>
 
             {/* ปุ่มแสดงผล */}
-            <Grid size={{xs:12,md:2.5}}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <Button
                 variant="contained"
                 color="primary"
                 fullWidth
-                sx={{ height: "56px",...titleStyle }}
+                sx={{ height: '56px', ...titleStyle }}
                 onClick={handleShowData}
+                disabled={loading}
               >
-                แสดงผล
+                {loading ? 'กำลังโหลด...' : 'แสดงผล'}
               </Button>
             </Grid>
-            
+          </Grid>
 
-
-          {/* แสดงข้อผิดพลาด */}
           {yearError && (
-            <Typography color="error" sx={{ width:"100%",textAlign:"center",mt: 2, ...textStyle }}>
+            <Typography color="error" sx={{ mt: 2, ...textStyle, ml: 2 }}>
               {yearError}
             </Typography>
           )}
-  
-            {/* ข้อมูลสถานี */}
-            {station && (
-              <Grid size={{ xs: 12 }}>
-                <Card sx={{ marginTop: 2 }}>
-                  <CardHeader
-                    sx={HeaderCellStyle}
-                    title={
-                      <Typography sx={{ fontWeight: "bold", ...titleStyle }}>
-                         {station.sta_name} ({station.sta_code})
+
+          {/* ข้อมูลสถานี */}
+          {station && (
+            <Grid size={{ xs: 12 }} sx={{ mt: 3 }}>
+              <Card>
+                <CardHeader
+                  sx={HeaderCellStyle}
+                  title={`${station.sta_name} (${station.sta_code})`}
+                />
+                <Divider />
+                <CardContent>
+                  <Grid container spacing={2}>
+                    <Grid size={{ xs: 6, sm: 4 }}>
+                      <Typography sx={fontInfo}>
+                        <strong>ตำบล:</strong> {station.tambon}
                       </Typography>
-                    }
-                  />
-                  <Divider />
-                  <CardContent>
-                    <Grid container spacing={2}>
-                      <Grid size={{xs:6, sm:4}}><Typography sx={fontInfo}><strong>ตำบล:</strong> {station.tambon}</Typography></Grid>
-                      <Grid size={{xs:6, sm:4}}><Typography sx={fontInfo}><strong>อำเภอ:</strong> {station.district}</Typography></Grid>
-                      <Grid size={{xs:6, sm:4}}><Typography sx={fontInfo}><strong>จังหวัด:</strong> {station.province}</Typography></Grid>
-                      <Grid size={{xs:6, sm:4}}><Typography sx={fontInfo}><strong>Latitude:</strong> {Number(station.lat).toFixed(3)}</Typography></Grid>
-                      <Grid size={{xs:6, sm:4}}><Typography sx={fontInfo}><strong>Longitude:</strong> {Number(station.long).toFixed(3)}</Typography></Grid>
                     </Grid>
-                  </CardContent>
-                </Card>
-              </Grid>
-            )}
-          </Grid>
+                    <Grid size={{ xs: 6, sm: 4 }}>
+                      <Typography sx={fontInfo}>
+                        <strong>อำเภอ:</strong> {station.district}
+                      </Typography>
+                    </Grid>
+                    <Grid size={{ xs: 6, sm: 4 }}>
+                      <Typography sx={fontInfo}>
+                        <strong>จังหวัด:</strong> {station.province}
+                      </Typography>
+                    </Grid>
+                    <Grid size={{ xs: 6, sm: 4 }}>
+                      <Typography sx={fontInfo}>
+                        <strong>Lat:</strong> {Number(station.lat).toFixed(3)}
+                      </Typography>
+                    </Grid>
+                    <Grid size={{ xs: 6, sm: 4 }}>
+                      <Typography sx={fontInfo}>
+                        <strong>Lon:</strong> {Number(station.long).toFixed(3)}
+                      </Typography>
+                    </Grid>
+                  </Grid>
+                </CardContent>
+              </Card>
+            </Grid>
+          )}
         </Grid>
       </Grid>
 
-      <Divider sx={{ my: 3 }} />
-      {/* แสดงผลเฉพาะเมื่อกดปุ่ม "แสดงผล" และไม่มี error */}
+      <Divider sx={{ my: 4 }} />
+
+      {/* แสดงผลเมื่อกดแสดงผล */}
       {isSubmitted && !yearError && chartData1 && chartData2 && chartData3 && (
-        <Box sx={{ marginTop: 4 }}>
-          <Typography sx={{ fontWeight: "bold", ...titleStyle, mb: 3 }}>
-            กราฟแสดงสถิติข้อมูลของสถานี{" "}
-            <span style={{ color: "red" }}>{station?.sta_code}</span>
-            {" "}ปี พ.ศ. {parseInt(startYear) + 543} - {parseInt(endYear) + 543}
+        <Box sx={{ mt: 4 }}>
+          <Typography sx={{ fontWeight: 'bold', ...titleStyle, mb: 3 }}>
+            กราฟข้อมูลประตูน้ำ ({mode === 'daily' ? 'รายวัน' : 'รายชั่วโมง'}) สถานี{' '}
+            <span style={{ color: 'red' }}>{station?.sta_code}</span>
+            {' '}ปี พ.ศ. {parseInt(startYear) + 543} - {parseInt(endYear) + 543}
           </Typography>
 
-          <GateChart data={chartData2} isDark={isDark} type="wl_upper" sta_code={selectedStation ?? ''} />
-          <GateChart data={chartData3} isDark={isDark} type="wl_lower" sta_code={selectedStation ?? ''} />
-          <GateChart data={chartData1} isDark={isDark} type="discharge" />
+          <GateChart
+            data={chartData2}
+            isDark={isDark}
+            mode={mode}
+            type="wl_upper"
+            sta_code={selectedStation ?? ''}
+          />
+          <GateChart
+            data={chartData3}
+            isDark={isDark}
+            mode={mode}
+            type="wl_lower"
+            sta_code={selectedStation ?? ''}
+          />
+          <GateChart
+            data={chartData1}
+            isDark={isDark}
+            mode={mode}
+            type="discharge"
+          />
 
           <GateExportTable
+            mode={mode}
             dischargeGroupedData={dischargeGroupedData}
             wlUpperGroupedData={wlUpperGroupedData}
             wlLowerGroupedData={wlLowerGroupedData}
@@ -392,16 +521,16 @@ const DataGate: React.FC<DataGateProps> = ({propsSelectedStation}) => {
         </Box>
       )}
 
-      {/* ข้อความเมื่อยังไม่กดแสดงผล */}
       {!isSubmitted && selectedStation && (
-        <Box sx={{ textAlign: "center", mt: 10 }}>
-          <Typography sx={{ fontFamily: "Prompt", fontSize: "1.3rem", color: "#555" }}>
-            กรุณาเลือกสถานี ช่วงปี และกดปุ่ม <strong style={{ color: "#01579b" }}>"แสดงผล"</strong>
+        <Box sx={{ textAlign: 'center', mt: 10 }}>
+          <Typography sx={{ fontFamily: 'Prompt', fontSize: '1.3rem', color: '#555' }}>
+            กรุณาเลือกสถานี ช่วงปี และกดปุ่ม{' '}
+            <strong style={{ color: '#01579b' }}>"แสดงผล"</strong>
           </Typography>
         </Box>
       )}
     </Container>
   );
-}
-  
+};
+
 export default DataGate;

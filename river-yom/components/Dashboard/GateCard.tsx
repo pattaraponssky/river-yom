@@ -106,7 +106,7 @@ const GateCard: React.FC = () => {
                       sx={{ ml: 1 }}
                       onClick={() =>
                         window.open(
-                          'https://rid3a.itthirit.io/',
+                          'http://wms-rio3.rid.go.th/thanangngam/',
                           '_blank'
                         )
                       }

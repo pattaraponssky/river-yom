@@ -60,6 +60,7 @@ class RainModel extends Model
 
         return $this->select('*')
                     ->where('datetime >=', $fourteenDaysAgo) 
+                    ->where("TIME(datetime) = '07:00:00'")
                     ->orderBy('datetime', 'DESC')             
                     ->findAll();
     }

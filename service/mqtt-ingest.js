@@ -9,8 +9,6 @@ const MQTT_CONFIG = {
   port: Number(process.env.MQTT_PORT || 1883),
   username: process.env.MQTT_USERNAME || 'river_yom',
   password: process.env.MQTT_PASSWORD || 'rid!@#123',
-  // ⚠️ Client ID ของ "ตัว service ที่ subscribe" ต้องไม่ซ้ำกับ client id
-  // ของอุปกรณ์ RTU (YR01-RTU..YR06-RTU) เอง ไม่งั้น broker จะเตะ connection เก่าทิ้ง
   clientId: process.env.MQTT_CLIENT_ID || `yom-right-ingest-${Math.random().toString(16).slice(2, 8)}`,
   topic: process.env.MQTT_TOPIC || '/irrigation/yom-right/#',
 };
@@ -19,8 +17,8 @@ const MQTT_CONFIG = {
 const DB_CONFIG = {
   host: process.env.DB_HOST || '127.0.0.1',
   port: Number(process.env.DB_PORT || 3306),
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
+  user: process.env.DB_USER || 'admin',
+  password: process.env.DB_PASSWORD || 'admin1234',
   database: process.env.DB_NAME || 'river_yom',
   waitForConnections: true,
   connectionLimit: 5,

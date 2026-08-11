@@ -18,6 +18,7 @@ class GateModel extends Model
     {
         return $this->db->table('gate_data')
             ->where('sta_code', $sta_code)
+            ->where("TIME(datetime) =", '07:00:00')
             ->get()
             ->getResultArray();
     }
@@ -36,6 +37,26 @@ class GateModel extends Model
         return $this->db->table('gate_data')
             ->where('sta_code', $sta_code)
             ->where("YEAR(datetime) >=", $startYear) 
+            ->where("YEAR(datetime) <=", $endYear)   
+            ->where("TIME(datetime) =", '07:00:00') 
+            ->orderBy('datetime', 'ASC')              
+            ->get()
+            ->getResultArray();
+    }
+
+    public function getGateHourlyDataByCode($sta_code)
+    {
+        return $this->db->table('gate_data')
+            ->where('sta_code', $sta_code)
+            ->get()
+            ->getResultArray();
+    }
+
+    public function getGateHourlyDataByCodeAndYearRange($sta_code, $startYear, $endYear)
+    {
+        return $this->db->table('gate_data')
+            ->where('sta_code', $sta_code)
+            ->where("YEAR(datetime) >=", $startYear) 
             ->where("YEAR(datetime) <=", $endYear)    
             ->orderBy('datetime', 'ASC')              
             ->get()
@@ -48,6 +69,7 @@ class GateModel extends Model
 
         return $this->select('*')
                     ->where('datetime >=', $sevenDaysAgo) 
+                    ->where("TIME(datetime) = '07:00:00'")
                     ->orderBy('datetime', 'DESC')          
                     ->findAll();
     }
@@ -58,6 +80,7 @@ class GateModel extends Model
 
         return $this->select('*')
                     ->where('datetime >=', $fourteenDaysAgo) 
+                    ->where("TIME(datetime) = '07:00:00'")
                     ->orderBy('datetime', 'DESC')             
                     ->findAll();
     }

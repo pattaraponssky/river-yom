@@ -37,7 +37,7 @@ const MODE_LABELS: Record<DataMode, string> = {
 const DataFlow: React.FC<{ propsSelectedStation?: string }> = ({ propsSelectedStation }) => {
   
   const queryParams = new URLSearchParams(location.search);
-  const stationFromURL = queryParams.get("station") || "Y.16";
+  const stationFromURL = queryParams.get("station") || "Y.15";
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
   const [mode, setMode] = useState<DataMode>("daily");
@@ -59,7 +59,6 @@ const DataFlow: React.FC<{ propsSelectedStation?: string }> = ({ propsSelectedSt
 
   const [initialLoad, setInitialLoad] = useState(false);
 
-  const cameras = selectedStation ? (STATION_CAMERAS[selectedStation] ?? []) : [];
 
   useEffect(() => {
       if (propsSelectedStation) {

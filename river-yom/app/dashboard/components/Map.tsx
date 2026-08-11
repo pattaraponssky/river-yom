@@ -22,13 +22,12 @@ const HydroMap: React.FC<HydroMapProps> = ({ mapKey, JsonPaths, height }) => {
   const hydroData = useHydroData();
   const { jsonDataList } = useGeoJsonLoader(JsonPaths); // ← เอา jsonDataList มาใช้ตรงนี้
 
-  // ส่ง jsonDataList (ข้อมูล GeoJSON ที่โหลดแล้ว) เข้า renderer
   useGeoJsonRenderer(map, jsonDataList); // ← แก้จาก JsonPaths เป็น jsonDataList
 
   const [showFlow, setShowFlow] = useState(false);
-  const [showGate, setShowGate] = useState(false);
+  const [showGate, setShowGate] = useState(true);
   const [showRain, setShowRain] = useState(false);
-  const [showTele, setShowTele] = useState(false);
+  const [showTele, setShowTele] = useState(true);
 
   // ตั้งค่า window.renderChart
   useEffect(() => {
@@ -54,6 +53,19 @@ const HydroMap: React.FC<HydroMapProps> = ({ mapKey, JsonPaths, height }) => {
     map.zoom(11, true);
     map.Ui.Mouse.enableWheel(false);
     map.zoomRange({ min: 8, max: 17 });
+
+    setTimeout(() => {
+    document.querySelectorAll('.ldmap_button').forEach((btn) => {
+      const text = btn.textContent || '';
+      if (
+        text.includes('ประตูระบายน้ำ') ||
+        text.includes('สถานีติดตั้งโครงการ')
+      ) {
+        btn.classList.add('ldmap_button_active');
+      }
+    });
+  }, 80);
+
   }, [isReady, map]);
 
   // Markers

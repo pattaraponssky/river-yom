@@ -19,12 +19,13 @@ interface DataChartProps {
   height?: number;
   sta_code?: string;
   isDark: boolean;
+  mode?: 'daily' | 'hourly';
   sta_name?: string;
 }
 
 const BASE_YEAR = 2000;
 
-const GateChart: React.FC<DataChartProps> = ({ data, type , height = 350 ,sta_code, sta_name, isDark}) => {
+const GateChart: React.FC<DataChartProps> = ({ data, type , height = 350 ,sta_code, sta_name,mode = 'daily', isDark}) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const bgColor = isDark ? "#1e2533" : "#f8fafc"; 
@@ -234,6 +235,21 @@ const GateChart: React.FC<DataChartProps> = ({ data, type , height = 350 ,sta_co
     ...baseOptions,
     ...(annotations && { annotations }),
     ...(yaxis && { yaxis }),
+       tooltip: {
+      shared: true,
+      intersect: false,
+      x: {
+        format: mode === 'hourly' 
+          ? 'dd MMM HH:mm' 
+          : 'dd MMM'
+      },
+      y: {
+        formatter: (val: number) => 
+          type === 'wl' 
+            ? `${val.toFixed(2)} ม.รทก.` 
+            : `${val.toFixed(1)} ลบ.ม./วินาที`
+      }
+    },
     
     // responsive: [{
     //         breakpoint: 768, 

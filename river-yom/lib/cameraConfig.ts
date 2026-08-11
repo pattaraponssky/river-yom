@@ -11,7 +11,7 @@ export interface CameraConfig {
 }
 
 // ── กล้อง wms-rio3.rid.go.th ────────────────────────────────────────────
-const RIO3_WS_BASE = 'ws://127.0.0.1:8080/camera'; 
+const RIO3_WS_BASE = 'ws://127.0.0.1:8088/camera'; 
 
 const tngCameras: CameraConfig[] = [
   { id: 'rio3a-14', label: 'ภาพรวม 1',  type: 'wss', streamUrl: `${RIO3_WS_BASE}/tng_1` },
@@ -70,7 +70,7 @@ export const STATION_CAMERAS: Record<string, CameraConfig[]> = {
   //     id: 'y15-cam2',
   //     label: 'กล้อง 2 - มุมหน้าสถานี',
   //     type: 'hls',
-  //     streamUrl: 'http://125.25.183.165:1935/UpperKLP/myStream/UpperKLP/playlist.m3u8',
+  //     streamUrl: 'http://125.25.183.165:1935/Up1perKLP/myStream/UpperKLP/playlist.m3u8',
   //   },
   // ],
 

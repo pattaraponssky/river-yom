@@ -98,6 +98,7 @@ class TeleModel extends Model
 
         return $this->select('*')
                     ->where('datetime >=', $sevenDaysAgo) 
+                    ->where("TIME(datetime) = '07:00:00'")
                     ->orderBy('datetime', 'DESC')          
                     ->findAll();
     }
@@ -108,6 +109,7 @@ class TeleModel extends Model
 
         return $this->select('*')
                     ->where('datetime >=', $fourteenDaysAgo) 
+                    ->where("TIME(datetime) = '07:00:00'")
                     ->orderBy('datetime', 'DESC')             
                     ->findAll();
     }

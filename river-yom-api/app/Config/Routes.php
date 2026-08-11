@@ -56,14 +56,13 @@ $routes->post('/api/flow_preview_update', 'API::previewUpdate');
 $routes->put('/api/flow_update_data', 'FlowAPI::updateData');
 $routes->get('/api/flow_info', 'FlowAPI::flow_info'); 
 $routes->get('/api/flow_data/(:segment)', 'FlowAPI::flowData/$1'); 
+$routes->get('/api/flow_hourly_data_last_7_days', 'FlowAPI::flowHourlyDataLast7Days');
+$routes->get('/api/flow_hourly_years', 'FlowAPI::flowHourly_years'); 
+$routes->get('/api/flow_hourly_data/(:segment)', 'FlowAPI::flowHourlyData/$1'); 
 $routes->get('/api/flow_years', 'FlowAPI::flow_years'); 
 $routes->get('/api/flow_data_last_7_days', 'FlowAPI::flowDataLast7Days');
 $routes->get('/api/flow_data_last_14_days', 'FlowAPI::flowDataLast14Days');
 $routes->get('/api/flow_today', 'FlowAPI::flowDataTodayByStations');
-
-$routes->get('/api/flow_hourly_data_last_7_days', 'FlowAPI::flowHourlyDataLast7Days');
-$routes->get('/api/flow_hourly_years', 'FlowAPI::flowHourly_years'); 
-$routes->get('/api/flow_hourly_data/(:segment)', 'FlowAPI::flowHourlyData/$1'); 
 
 $routes->get('jobs/flow_forecast/import_forecast', 'FlowForecast::importFromRasCsv');
 $routes->get('api/flow_forecast/(:segment)', 'FlowForecast::flowForecastData/$1'); 
@@ -107,7 +106,8 @@ $routes->delete('api/gate_info/(:segment)', 'GateInfo::delete/$1');
 $routes->post('/api/gate_preview_update', 'API::previewUpdate');
 $routes->put('/api/gate_update_data', 'GateAPI::updateData');
 $routes->get('/api/gate_info', 'GateAPI::gate_info'); 
-$routes->get('/api/gate_data/(:segment)', 'GateAPI::gateData/$1'); 
+$routes->get('/api/gate_data/(:segment)', 'GateAPI::gateData/$1');
+$routes->get('/api/gate_hourly_data/(:segment)', 'GateAPI::gateHourlyData/$1'); 
 $routes->get('/api/gate_years', 'GateAPI::gate_years'); 
 $routes->get('/api/gate_data_last_7_days', 'GateAPI::gateDataLast7Days');
 $routes->get('/api/gate_data_last_14_days', 'GateAPI::gateDataLast14Days');

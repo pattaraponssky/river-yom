@@ -3,7 +3,6 @@ namespace App\Controllers;
 use CodeIgniter\Controller;
 use Config\Database;
 use App\Models\FlowModel;
-use App\Models\FlowHourlyModel;
 
 class FlowAPI extends Controller
 {
@@ -74,8 +73,6 @@ class FlowAPI extends Controller
             ]);
         }
     }
-
-
 
     public function flow_years()
     {
@@ -243,7 +240,7 @@ class FlowAPI extends Controller
    public function flowHourlyDataLast7Days()
     {
         try {
-            $model = new FlowHourlyModel();
+            $model = new FlowModel();
             $db = \Config\Database::connect();
 
             $now = new \DateTime();
@@ -287,7 +284,7 @@ class FlowAPI extends Controller
             $startYear = $this->request->getGet('startYear'); // ?startYear=2022
             $endYear = $this->request->getGet('endYear');     // ?endYear=2024
 
-            $model = new FlowHourlyModel();
+            $model = new FlowModel();
 
             if ($startYear && $endYear) {
                 $data = $model->getFlowHourlyDataByCodeAndYearRange($sta_code, $startYear, $endYear);
@@ -314,8 +311,6 @@ class FlowAPI extends Controller
             ]);
         }
     }
-
-
 
     public function flowHourly_years()
     {

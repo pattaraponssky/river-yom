@@ -51,7 +51,7 @@ const DashboardCards: React.FC<DashboardCardsProps> = ({ data, loading = false, 
         {
           title: 'สถานีวัดน้ำฝน',
           subTitle: 'ฝนเฉลี่ยวันนี้',
-          value: '8',
+          value: '7',
           unit: 'สถานี',
           value_data: 8.23,
           // value_data: data.avg_rain_mm ?? '—',

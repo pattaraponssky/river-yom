@@ -288,7 +288,7 @@ const FlowChart: React.FC<DataChartProps> = ({ data, type, height = 350 ,sta_cod
       x: {
         format: mode === 'hourly' 
           ? 'dd MMM HH:mm' 
-          : 'dd MMM'  // รายวัน → ไม่แสดงเวลาเลย
+          : 'dd MMM'
       },
       y: {
         formatter: (val: number) => 

@@ -2,16 +2,30 @@
 import { API_URL } from '@/lib/utility';
 import MaintenanceClient from './MaintenanceClient';
 
-// ⚠️ static export ต้องรู้ล่วงหน้าว่ามี id อะไรบ้าง
 export async function generateStaticParams() {
   try {
-    const res = await fetch(`${API_URL}/api/equipments`);
+    const res = await fetch(`${API_URL}/api/equipments`, {
+      cache: 'no-store',
+    });
+
+    if (!res.ok) {
+      console.warn('generateStaticParams: API not ok', res.status);
+      return [{ id: '1' }];
+    }
+
     const json = await res.json();
     const items = json.data || [];
-    return items.map((item: any) => ({ id: String(item.id) }));
+
+    if (!items.length) {
+      return [{ id: '1' }];
+    }
+
+    return items.map((item: any) => ({
+      id: String(item.id),
+    }));
   } catch (e) {
     console.error('generateStaticParams failed:', e);
-    return []; // build ผ่านได้แม้ fetch พลาด แต่จะไม่มีหน้า id ไหน pre-render เลย
+    return [{ id: '1' }];
   }
 }
 

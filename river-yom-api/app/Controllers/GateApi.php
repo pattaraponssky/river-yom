@@ -74,6 +74,40 @@ class GateAPI extends Controller
         }
     }
 
+    public function gateHourlyData($sta_code)
+    {
+        try {
+            $startYear = $this->request->getGet('startYear'); // ?startYear=2022
+            $endYear = $this->request->getGet('endYear');     // ?endYear=2024
+
+            $model = new GateModel();
+
+            if ($startYear && $endYear) {
+                $data = $model->getGateHourlyDataByCodeAndYearRange($sta_code, $startYear, $endYear);
+            } else {
+                $data = $model->getGateHourlyDataByCode($sta_code);
+            }
+
+            if (!empty($data)) {
+                return $this->response->setJSON([
+                    'status' => 'success',
+                    'data' => $data
+                ]);
+            } else {
+                return $this->response->setJSON([
+                    'status' => 'error',
+                    'message' => 'ไม่พบข้อมูลสถานีที่ระบุ'
+                ]);
+            }
+
+        } catch (\Exception $e) {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => '❌ Database Query Failed: ' . $e->getMessage()
+            ]);
+        }
+    }
+
     public function gate_years()
     {
         try {

@@ -31,6 +31,7 @@ interface Props {
   wlUpperGroupedData?: GroupedData;
   wlLowerGroupedData?: GroupedData;
   availableYears: string[];
+  mode: "daily" | "hourly";
   sta_name?: string;
   sta_code?: string;
 }
@@ -40,6 +41,7 @@ const GateExportTable: React.FC<Props> = ({
   wlUpperGroupedData = {},
   wlLowerGroupedData = {},
   availableYears,
+  mode,
   sta_code,
   sta_name,
 }) => {
@@ -88,18 +90,29 @@ const GateExportTable: React.FC<Props> = ({
   }, [dischargeGroupedData, wlUpperGroupedData, wlLowerGroupedData, selectedYear]);
 
   // Format วันที่ไทย
-  const formatThaiDate = (timestamp: number) => {
-    return new Date(timestamp).toLocaleDateString('th-TH', {
+  const formatThaiDateTime = (timestamp: number) => {
+    const date = new Date(timestamp);
+    if (mode === "hourly") {
+      return date.toLocaleString('th-TH', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    }
+    return date.toLocaleDateString('th-TH', {
       day: '2-digit',
       month: 'short',
       year: 'numeric',
     });
   };
 
+
   // Export Functions
   const exportToXLSX = () => {
     const data = allDataRows.map(r => ({
-      วันที่: formatThaiDate(r.timestamp),
+      วันที่: formatThaiDateTime(r.timestamp),
       'อัตราการไหล (ลบ.ม./วินาที)': r.discharge !== null ? r.discharge.toFixed(3) : '',
       'ระดับน้ำเหนือ ปตร. (ม.รทก.)': r.wlUpper !== null ? r.wlUpper.toFixed(3) : '',
       'ระดับน้ำท้าย ปตร. (ม.รทก.)': r.wlLower !== null ? r.wlLower.toFixed(3) : '',
@@ -113,9 +126,11 @@ const GateExportTable: React.FC<Props> = ({
   };
 
   const exportToCSV = () => {
-    const headers = ['วันที่', 'อัตราการไหล (ลบ.ม./วินาที)', 'ระดับน้ำเหนือ ปตร. (ม.รทก.)', 'ระดับน้ำท้าย ปตร. (ม.รทก.)'];
+    const headers = mode === "hourly"
+      ? ['วันที่/เวลา', 'อัตราการไหล (ลบ.ม./วินาที)', 'ระดับน้ำเหนือ ปตร. (ม.รทก.)', 'ระดับน้ำท้าย ปตร. (ม.รทก.)']
+      : ['วันที่', 'อัตราการไหล (ลบ.ม./วินาที)', 'ระดับน้ำเหนือ ปตร. (ม.รทก.)', 'ระดับน้ำท้าย ปตร. (ม.รทก.)'];
     const rows = allDataRows.map(r => [
-      formatThaiDate(r.timestamp),
+      formatThaiDateTime(r.timestamp),
       r.discharge !== null ? r.discharge.toFixed(3) : '',
       r.wlUpper !== null ? r.wlUpper.toFixed(3) : '',
       r.wlLower !== null ? r.wlLower.toFixed(3) : '',
@@ -126,9 +141,11 @@ const GateExportTable: React.FC<Props> = ({
   };
 
   const exportToTXT = () => {
-    const headers = ['วันที่', 'อัตราการไหล (ลบ.ม./วินาที)', 'ระดับน้ำเหนือ ปตร. (ม.รทก.)', 'ระดับน้ำท้าย ปตร. (ม.รทก.)'];
+    const headers = mode === "hourly"
+      ? ['วันที่/เวลา', 'อัตราการไหล (ลบ.ม./วินาที)', 'ระดับน้ำเหนือ ปตร. (ม.รทก.)', 'ระดับน้ำท้าย ปตร. (ม.รทก.)']
+      : ['วันที่', 'อัตราการไหล (ลบ.ม./วินาที)', 'ระดับน้ำเหนือ ปตร. (ม.รทก.)', 'ระดับน้ำท้าย ปตร. (ม.รทก.)'];
     const rows = allDataRows.map(r => [
-      formatThaiDate(r.timestamp),
+      formatThaiDateTime(r.timestamp),
       r.discharge !== null ? r.discharge.toFixed(3) : '-',
       r.wlUpper !== null ? r.wlUpper.toFixed(3) : '-',
       r.wlLower !== null ? r.wlLower.toFixed(3) : '-',
@@ -184,7 +201,7 @@ const GateExportTable: React.FC<Props> = ({
         <Table size="small" stickyHeader>
           <TableHead>
             <TableRow>
-              <TableCell sx={HeaderCellStyle(theme)}>วันที่</TableCell>
+              <TableCell sx={HeaderCellStyle}>{mode === "hourly" ? "วันที่/เวลา" : "วันที่"}</TableCell>
               <TableCell sx={HeaderCellStyle(theme)}>อัตราการไหล (ลบ.ม./วินาที)</TableCell>
               <TableCell sx={HeaderCellStyle(theme)}>ระดับน้ำเหนือ ปตร. (ม.รทก.)</TableCell>
               <TableCell sx={HeaderCellStyle(theme)}>ระดับน้ำท้าย ปตร. (ม.รทก.)</TableCell>
@@ -200,7 +217,7 @@ const GateExportTable: React.FC<Props> = ({
             ) : (
               allDataRows.map((row, idx) => (
                 <TableRow key={row.timestamp}>
-                  <TableCell sx={getCellStyle(idx)}>{formatThaiDate(row.timestamp)}</TableCell>
+                  <TableCell sx={getCellStyle(idx)}>{formatThaiDateTime(row.timestamp)}</TableCell>
                   <TableCell sx={getCellStyle(idx)}>
                     {row.discharge !== null ? row.discharge.toFixed(3) : '-'}
                   </TableCell>

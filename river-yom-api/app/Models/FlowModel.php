@@ -40,11 +40,33 @@ class FlowModel extends Model
     {
         return $this->db->table('flow_data')
             ->where('sta_code', $sta_code)
+            ->where("TIME(datetime) =", '07:00:00')
             ->get()
             ->getResultArray();
     }
 
     public function getFlowDataByCodeAndYearRange($sta_code, $startYear, $endYear)
+    {
+        return $this->db->table('flow_data')
+            ->where('sta_code', $sta_code)
+            ->where("YEAR(datetime) >=", $startYear) // ✅ เปลี่ยนเป็น datetime
+            ->where("YEAR(datetime) <=", $endYear)    // ✅ เปลี่ยนเป็น datetime
+            ->where("TIME(datetime) =", '07:00:00')
+            ->orderBy('datetime', 'ASC')              // ✅ เปลี่ยนเป็น datetime
+            ->get()
+            ->getResultArray();
+    }
+
+
+    public function getFlowHourlyDataByCode($sta_code)
+    {
+        return $this->db->table('flow_data')
+            ->where('sta_code', $sta_code)
+            ->get()
+            ->getResultArray();
+    }
+
+    public function getFlowHourlyDataByCodeAndYearRange($sta_code, $startYear, $endYear)
     {
         return $this->db->table('flow_data')
             ->where('sta_code', $sta_code)
@@ -61,6 +83,7 @@ class FlowModel extends Model
 
         return $this->select('*')
                     ->where('datetime >=', $sevenDaysAgo) // ✅ เปลี่ยนเป็น datetime
+                    ->where("TIME(datetime) = '07:00:00'")
                     ->orderBy('datetime', 'DESC')          // ✅ เปลี่ยนเป็น datetime
                     ->findAll();
     }
@@ -92,6 +115,7 @@ class FlowModel extends Model
 
         return $this->select('*')
                     ->where('datetime >=', $fourteenDaysAgo) // ✅ เปลี่ยนเป็น datetime
+                    ->where("TIME(datetime) = '07:00:00'")
                     ->orderBy('datetime', 'DESC')             // ✅ เปลี่ยนเป็น datetime
                     ->findAll();
     }

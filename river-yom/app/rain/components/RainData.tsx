@@ -11,14 +11,15 @@ import CenteredLoading from "@/components/Layout/CenteredLoading";
 import { API_URL, Path_URL } from "@/lib/utility";
 import { fontInfo, titleStyle, textStyle, HeaderCellStyle } from "@/theme/style";
 
-type DataMode = "hourly" | "daily" | "monthly" | "yearly";
+// type DataMode = "hourly" | "daily" | "monthly" | "yearly";
+type DataMode =  "daily" | "monthly" | "yearly";
 
 interface DataRainStationProps {
   propsSelectedStation?: string;
 }
 
 const MODE_LABELS: Record<DataMode, string> = {
-  hourly:  "รายชั่วโมง",
+  // hourly:  "รายชั่วโมง",
   daily:   "รายวัน",
   monthly: "รายเดือน",
   yearly:  "รายปี",
@@ -120,9 +121,17 @@ const DataRainStation: React.FC<DataRainStationProps> = ({ propsSelectedStation 
     try {
       let url = "";
 
-      if (mode === "hourly") {
-        url = `${API_URL}/api/rain_hourly_data/${selectedStation}?startYear=${start}&endYear=${end}`;
-      } else if (mode === "daily") {
+      // if (mode === "hourly") {
+      //   url = `${API_URL}/api/rain_hourly_data/${selectedStation}?startYear=${start}&endYear=${end}`;
+      // } else if (mode === "daily") {
+      //   url = `${API_URL}/api/rain_data/${selectedStation}?startYear=${start}&endYear=${end}`;
+      // } else if (mode === "monthly") {
+      //   url = `${API_URL}/api/rain_monthly/${selectedStation}?startYear=${start}&endYear=${end}`;
+      // } else {
+      //   url = `${API_URL}/api/rain_yearly/${selectedStation}?startYear=${start}&endYear=${end}`;
+      // }
+
+      if (mode === "daily") {
         url = `${API_URL}/api/rain_data/${selectedStation}?startYear=${start}&endYear=${end}`;
       } else if (mode === "monthly") {
         url = `${API_URL}/api/rain_monthly/${selectedStation}?startYear=${start}&endYear=${end}`;
@@ -158,7 +167,8 @@ const DataRainStation: React.FC<DataRainStationProps> = ({ propsSelectedStation 
   // ─── Transform: รายวัน / รายชั่วโมง ──────────────────────────
   const transformDailyOrHourly = (rawData: any[], m: DataMode) => {
     const BASE_YEAR  = 2000;
-    const dateField  = m === "hourly" ? "datetime" : "datetime";
+    // const dateField  = m === "hourly" ? "datetime" : "datetime";
+    const dateField  = "datetime";
     const grouped: { [year: string]: [number, number][] } = {};
     const groupedDataTable: { [year: string]: [number, number][] } = {};
   

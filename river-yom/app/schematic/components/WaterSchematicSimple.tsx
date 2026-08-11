@@ -78,7 +78,7 @@ const getFlowColor = (code: string, wl: number) => {
     'wst': { red: 40.98, orange: 40.18, yellow: 39.38 },
     'tng': { red: 44.00, orange: 42.55, yellow: 41.10 },
   };
-  const t = th[code] || { red: 40, orange: 38, yellow: 36 };ำำ
+  const t = th[code] || { red: 40, orange: 38, yellow: 36 };
   if (wl > t.red)    return 'red';
   if (wl > t.orange) return 'orange';
   if (wl > t.yellow) return '#FFD700';
@@ -181,7 +181,7 @@ const WaterSchematicSimple: React.FC = () => {
   const openDialogRef = useRef<(code: string, name: string, type: 'reservoir' | 'flow' | 'tele' | 'gate' ) => void>(() => {});
 
   // State
-  const [tabIndex,        setTabIndex]        = useState(1);
+  const [tabIndex,        setTabIndex]        = useState(0);
   const [reservoirs,      setReservoirs]      = useState<ReservoirNode[]>([]);
   const [flows,           setFlows]           = useState<FlowStationNode[]>([]);
   const [teles,           setTeles]           = useState<TeleStationNode[]>([]);
@@ -358,19 +358,22 @@ const WaterSchematicSimple: React.FC = () => {
       // { x: 278.139, y: 427.912, w: 62.498,  h: 12, rotate: -126, cx: 278.139, cy: 427.912, fill: '#B7F1FF' },
       // { x: 293.281, y: 485.599, w: 66.768,  h: 12, rotate: -105, cx: 293.281, cy: 485.599, fill: '#B7F1FF' },
 
-      { x: 391, y: 164, w: 15,  h: 585, fill: '#66E0FF' },
-      { x: 361,  y: 372, w: 30, h: 8,  fill: '#66E0FF' },
-      { x: 361,  y: 350, w: 40, h: 7,  rotate: -135, cx: 367, cy: 365, fill: '#66E0FF' },
-      { x: 361,  y: 350, w: 40, h: 7,  rotate: 135, cx: 357, cy: 365, fill: '#66E0FF' },
-      { x: 60,  y: 347, w: 277, h: 8,  fill: '#66E0FF' },
-      { x: 60,  y: 398, w: 277, h: 8,  fill: '#66E0FF' },
-      { x: 150,  y: 400, w: 110, h: 8,   rotate: 45, cx: 150, cy: 400, fill: '#66E0FF' },
+      { x: 361,  y: 372, w: 30, h: 8,  fill: '#B7F1FF' },
+      { x: 361,  y: 350, w: 40, h: 7,  rotate: -135, cx: 367, cy: 365, fill: '#B7F1FF' },
+      { x: 361,  y: 350, w: 40, h: 7,  rotate: 135, cx: 357, cy: 365, fill: '#B7F1FF' },
+      { x: 60,  y: 347, w: 277, h: 8,  fill: '#B7F1FF' },
+      { x: 250,  y: 347, w: 20, h: 5,   rotate: 90, cx: 250, cy: 347, fill: '#B7F1FF' },
+      { x: 150,  y: 365, w: 100, h: 5,  fill: '#B7F1FF' },
+      { x: 60,  y: 398, w: 277, h: 8,  fill: '#B7F1FF' },
 
-      { x: 222,  y: 475, w: 170, h: 8,   fill: '#66E0FF' },
-      { x: 280,  y: 480, w: 50, h: 8,   rotate: 90, cx: 280, cy: 480, fill: '#66E0FF' },
-      { x: 332,  y: 595, w: 65, h: 8,   fill: '#66E0FF' },
-      { x: 340,  y: 530, w: 70, h: 8,   rotate: 90, cx: 340, cy: 530, fill: '#66E0FF' },
-      { x: 140,  y: 530, w: 195, h: 8,  fill: '#66E0FF' },
+      { x: 150,  y: 400, w: 110, h: 8,   rotate: 45, cx: 150, cy: 400, fill: '#B7F1FF' },
+      { x: 280,  y: 480, w: 47.6, h: 8,   rotate: 90, cx: 280, cy: 482.6, fill: '#B7F1FF' },
+      { x: 402,  y: 458, w: 90, h: 9,   fill: '#B7F1FF' },
+      { x: 222,  y: 475, w: 170, h: 8,   fill: '#B7F1FF' },
+      { x: 332,  y: 595, w: 65, h: 8,   fill: '#B7F1FF' },
+      { x: 340,  y: 530, w: 70, h: 8,   rotate: 90, cx: 340, cy: 530, fill: '#B7F1FF' },
+      { x: 140,  y: 530, w: 195, h: 8,  fill: '#B7F1FF' },
+      { x: 391, y: 164, w: 15,  h: 585, fill: '#66E0FF' },
     ];
     rectData.forEach(d => {
       const r = container.append('rect').attr('x', d.x).attr('y', d.y).attr('width', d.w).attr('height', d.h).attr('fill', d.fill);
@@ -421,8 +424,8 @@ const WaterSchematicSimple: React.FC = () => {
     teleGroup.append('text').attr('x', d => cX1(d) + CW1 / 2).attr('y', d => cY1(d) + 10).attr('text-anchor', 'middle').attr('font-size', 6).attr('font-weight', 'bold').attr('fill', theme.palette.text.primary).text(d => `${d.sta_code}${d.name ? ` (${d.name})` : ''}`);
     teleGroup.append('text').attr('x', d => cX1(d) + 10).attr('y', d => cY1(d) + 20).attr('font-size', 5).attr('fill', theme.palette.text.primary).text('ระดับน้ำ: ');
     teleGroup.append('text').attr('x', d => cX1(d) + 32).attr('y', d => cY1(d) + 20).attr('font-size', 5).attr('font-weight', 'bold').attr('fill', '#0066cc').text(d => `${d.wl.toFixed(2)} ม.รทก.`);
-    teleGroup.append('text').attr('x', d => cX1(d) + 10).attr('y', d => cY1(d) + 30).attr('font-size', 5).attr('fill', theme.palette.text.primary).text('อัตราไหล: ');
-    teleGroup.append('text').attr('x', d => cX1(d) + 32).attr('y', d => cY1(d) + 30).attr('font-size', 5).attr('font-weight', 'bold').attr('fill', '#0066cc').text(d => `${d.discharge.toFixed(2)} ลบ.ม./วินาที`);
+    teleGroup.append('text').attr('x', d => cX1(d) + 10).attr('y', d => cY1(d) + 28).attr('font-size', 5).attr('fill', theme.palette.text.primary).text('อัตราไหล: ');
+    teleGroup.append('text').attr('x', d => cX1(d) + 32).attr('y', d => cY1(d) + 28).attr('font-size', 5).attr('font-weight', 'bold').attr('fill', '#0066cc').text(d => `${d.discharge.toFixed(2)} ลบ.ม./วินาที`);
 
     const tab1GatePos: Record<string, { x: number; y: number; offsetX: number; offsetY: number }> = {
       'wst': { x: 398, y: 270, offsetX: 15, offsetY: -25 },
@@ -519,12 +522,20 @@ const WaterSchematicSimple: React.FC = () => {
       { text: 'ส่วนบริหารจัดการน้ำและบำรุงรักษา', x: 120, y: 55,  o: 'h', fs: 20, fill: theme.palette.text.secondary, fw: 'bold' },
       // { text: 'หมายเหตุ',                          x: 55,  y: 145, o: 'h', fs: 14, fill: '#fe0000', fw: 'bold' },
       { text: 'สัญลักษณ์เกณฑ์เตือนภัยระดับน้ำ',   x: 75, y: 125, o: 'h', fs: 11, fill: '#fe0000', fw: 'bold' },
-      // { text: 'จ.น่าน',        x: 385, y: 100, o: 'h', fs: 11, fill: theme.palette.text.primary, fw: 'bold' },
-      // { text: 'จ.อตรดิตถ์',    x: 275, y: 200, o: 'h', fs: 11, fill: theme.palette.text.primary, fw: 'bold' },
-      // { text: 'จ.สุโขทัย',     x: 190, y: 360, o: 'h', fs: 11, fill: theme.palette.text.primary, fw: 'bold' },
-      // { text: 'แม่น้ำยม',      x: 160, y: 200, o: 'v', fs: 10, fill: theme.palette.text.secondary, fw: 'bold' },
-      // { text: 'แม่น้ำยม',      x: 275, y: 610, o: 'h', fs: 8,  fill: theme.palette.text.secondary, fw: 'bold' },
-      // { text: 'แม่น้ำน่าน',    x: 385, y: 230, o: 'v', fs: 10, fill: theme.palette.text.secondary, fw: 'bold' },
+      { text: 'อ.เมืองสุโขทัย',        x: 375, y: 125, o: 'h', fs: 8, fill: theme.palette.text.primary, fw: 'bold' },
+      { text: 'อ.เมืองพิษณุโลก',    x: 545, y: 430, o: 'h', fs: 8, fill: theme.palette.text.primary, fw: 'bold' },
+      { text: 'อ.ท่านางงาม',    x: 460, y: 350, o: 'h', fs: 8, fill: theme.palette.text.primary, fw: 'bold' },
+      { text: 'จ.กำแพงเพชร',     x: 20, y: 430, o: 'h', fs: 9, fill: theme.palette.text.primary, fw: 'bold' },
+      { text: 'อ.บางระกำ',     x: 180, y: 380, o: 'h', fs: 8, fill: theme.palette.text.primary, fw: 'bold' },
+      { text: 'จ.พิจิตร',     x: 375, y: 780, o: 'h', fs: 9, fill: theme.palette.text.primary, fw: 'bold' },
+
+      { text: 'แม่น้ำยม',      x: 399, y: 345, o: 'v', fs: 8, fill: theme.palette.text.secondary, fw: 'bold' },
+      { text: 'แม่น้ำยม',      x: 399, y: 620, o: 'v', fs: 8, fill: theme.palette.text.secondary, fw: 'bold' },
+      { text: 'คลองหนองอ้อ',      x: 170, y: 352, o: 'h', fs: 6,  fill: theme.palette.text.secondary, fw: 'bold' },
+      { text: 'คลองกรุงกรัก',      x: 300, y: 402, o: 'h', fs: 6,  fill: theme.palette.text.secondary, fw: 'bold' },
+      { text: 'คลองพระพาย',      x: 170, y: 402, o: 'h', fs: 6,  fill: theme.palette.text.secondary, fw: 'bold' },
+      { text: 'คลองแม่สะดึง',      x: 343, y: 599, o: 'h', fs: 6,  fill: theme.palette.text.secondary, fw: 'bold' },
+      { text: 'คลองไร่',      x: 285, y: 480, o: 'h', fs: 6,  fill: theme.palette.text.secondary, fw: 'bold' },
     ].forEach(lbl => {
       const t = container.append('text').attr('x', lbl.x).attr('y', lbl.y).attr('font-size', lbl.fs).attr('fill', lbl.fill)
         .attr('font-weight', lbl.fw ?? 'normal').attr('text-anchor', lbl.o === 'v' ? 'middle' : 'start')
