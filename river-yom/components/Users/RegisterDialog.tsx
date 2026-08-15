@@ -5,7 +5,7 @@ import {
   TextField, Button, Box, Typography, Stack,
   useMediaQuery, useTheme, Snackbar, Alert
 } from "@mui/material";
-import { API_URL } from '../../lib/utility';
+import { API_URL, Path_URL } from '../../lib/utility';
 import { textStyle } from '../../theme/style';
 
 interface RegisterDialogProps {
@@ -21,6 +21,8 @@ const RegisterDialog: React.FC<RegisterDialogProps> = ({ open, onClose }) => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const bgUrl = `${Path_URL}/images/bg_dialog.jpg`;
+
   const [snackbar, setSnackbar] = useState<{ open: boolean, message: string, severity: "success" | "error" }>({
     open: false,
     message: '',
@@ -29,6 +31,7 @@ const RegisterDialog: React.FC<RegisterDialogProps> = ({ open, onClose }) => {
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isDarkMode = theme.palette.mode === "dark";
 
   const handleCloseSnackbar = () => {
     setSnackbar({ ...snackbar, open: false });
@@ -66,10 +69,9 @@ const RegisterDialog: React.FC<RegisterDialogProps> = ({ open, onClose }) => {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.messages?.error || result.message || "เกิดข้อผิดพลาดในการสมัครสมาชิก"); // handle message from CI backend
+        throw new Error(result.messages?.error || result.message || "เกิดข้อผิดพลาดในการสมัครสมาชิก");
       }
 
-      // เปลี่ยนข้อความแจ้งเตือนหลังสมัครสำเร็จ
       setSnackbar({ open: true, message: "สมัครสมาชิกสำเร็จ! กรุณาตรวจสอบอีเมลของคุณเพื่อยืนยันบัญชี", severity: "success" });
       onClose();
       setUsername("");
@@ -94,7 +96,14 @@ const RegisterDialog: React.FC<RegisterDialogProps> = ({ open, onClose }) => {
         PaperProps={{ sx: { borderRadius: "1.5rem", overflow: "hidden" } }}
       >
         <Box display="flex" flexDirection={isMobile ? "column" : "row"} height={isMobile ? "auto" : 600}>
-          <Box flex={1} p={2} display="flex" flexDirection="column" justifyContent="center" sx={{ backgroundColor: "#fff" }}>
+          <Box
+            flex={1}
+            p={2}
+            display="flex"
+            flexDirection="column"
+            justifyContent="center"
+            sx={{ bgcolor: "background.paper", color: "text.primary" }}
+          >
             <Box sx={{ textAlign: "center", pb: 2 }}>
               <DialogTitle sx={{ fontWeight: "bold", fontSize: "1.6rem", fontFamily: "Prompt" }}>
                 สมัครสมาชิก
@@ -173,13 +182,27 @@ const RegisterDialog: React.FC<RegisterDialogProps> = ({ open, onClose }) => {
             </DialogActions>
           </Box>
 
+          {/* ฝั่งรูปพื้นหลัง */}
           <Box
             flex={1}
             p={4}
             sx={{
-              backgroundImage: `url('/images/flow_station/y.64.jpg')`,
+              // แก้บั๊ก: ต้องห่อด้วย url() ไม่งั้น CSS ไม่แสดงรูป
+              backgroundImage: `url("${bgUrl}")`,
               backgroundSize: "cover",
               backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
+              display: { xs: "none", sm: "block" }, // ซ่อนตอนจอมือถือแคบ กันฟอร์มถูกดันลงล่าง
+              ...(isDarkMode && {
+                position: "relative",
+                "&:after": {
+                  content: '""',
+                  position: "absolute",
+                  inset: 0,
+                  background: "rgba(0,0,0,0.45)",
+                  pointerEvents: "none",
+                },
+              }),
             }}
           />
         </Box>

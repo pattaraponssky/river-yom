@@ -401,7 +401,7 @@ export default function TeleDashboard() {
         
          {/* ───────────────── Middle Row ───────────────── */}
             <Grid container spacing={2.5} sx={{ mt: 2 }}>
-              <Grid size={{ xs: 12, md: 4 }}>
+              <Grid size={{ xs: 12, md: 5.5 }}>
                  <StationCoordinates
                   staCode={selectedInfo.sta_code}
                   lat={selectedInfo.lat}
@@ -409,7 +409,7 @@ export default function TeleDashboard() {
                   staName={selectedInfo.sta_name}
                 />
                 </Grid>
-              <Grid size={{ xs: 12, md: 8 }}>
+              <Grid size={{ xs: 12, md: 6.5 }}>
                   <Paper sx={{borderRadius: 2 }}>
                       {cameras.length > 0 && (
                           <CameraViewer cameras={cameras} staCode={selectedCode ?? ''} />

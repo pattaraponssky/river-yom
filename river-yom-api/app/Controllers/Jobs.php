@@ -1320,4 +1320,111 @@ use ResponseTrait;
         ]);
     }
 
+    public function updateDailyReportFiles()
+    {
+        $destDir = FCPATH . 'report_rid03/';
+
+        if (!is_dir($destDir)) {
+            mkdir($destDir, 0755, true);
+        }
+
+        $baseUrl = 'http://irrigation.rid.go.th/rid3/water';
+
+        $staticFiles = [
+            '/images/3dams.jpg'       => '3dams.jpg',
+            '/images/onepages.jpg'    => 'onepages.jpg',
+            '/images/dailyreport.jpg' => 'dailyreport.jpg',
+            '/report.pdf'             => 'report.pdf',
+        ];
+
+        $results = [];
+
+        foreach ($staticFiles as $remotePath => $localName) {
+            $ok = $this->downloadFile($baseUrl . $remotePath, $destDir . $localName);
+            $results[] = [
+                'file'   => $localName,
+                'status' => $ok ? 'success' : 'fail',
+            ];
+        }
+
+        // ✅ วนลูปย้อนหลังทีละวัน เริ่มจากเมื่อวาน จนกว่าจะเจอไฟล์ที่ดาวน์โหลดสำเร็จ
+        $maxLookbackDays = 7; // เพดานกันวนลูปไม่รู้จบ ถ้าต้นทางไม่มีไฟล์เลยหลายวันติด
+        $ok = false;
+        $rptFileName = null;
+        $daysBack = 0;
+
+        for ($i = 1; $i <= $maxLookbackDays; $i++) {
+            $tryDate = (new \DateTime())->modify("-{$i} day");
+
+            $thaiDay   = $tryDate->format('d');
+            $thaiMonth = $tryDate->format('m');
+            $thaiYear2 = substr((string)($tryDate->format('Y') + 543), -2);
+
+            $tryFileName = "rpt{$thaiDay}{$thaiMonth}{$thaiYear2}.pdf";
+            $tryUrl = $baseUrl . '/' . $tryFileName;
+
+            $ok = $this->downloadFile($tryUrl, $destDir . 'rpt.pdf');
+
+            if ($ok) {
+                $rptFileName = $tryFileName;
+                $daysBack = $i;
+                break; // ✅ เจอแล้ว หยุดลูปทันที
+            }
+
+            log_message('info', "ไม่พบไฟล์ {$tryFileName} ({$i} วันก่อน) ลองวันก่อนหน้าต่อไป");
+        }
+
+        $results[] = [
+            'file'        => 'rpt.pdf',
+            'source_name' => $rptFileName,
+            'days_back'   => $daysBack,
+            'status'      => $ok ? 'success' : 'fail',
+            'message'     => $ok ? null : "ไม่พบไฟล์ rpt ย้อนหลังถึง {$maxLookbackDays} วัน",
+        ];
+
+        return $this->response->setJSON([
+            'status'  => 'success',
+            'message' => 'ดาวน์โหลดไฟล์รายงานประจำวันสำเร็จ',
+            'details' => $results,
+        ]);
+    }
+
+    /**
+     * ดาวน์โหลดไฟล์จาก URL แล้วบันทึกลง path ปลายทาง
+     * ถ้าดาวน์โหลดไม่สำเร็จ จะไม่ลบไฟล์เดิม (กันกรณีไฟล์ต้นทางล่ม แต่ยังอยากให้มีไฟล์เก่าแสดงไว้ก่อน)
+     */
+    private function downloadFile(string $url, string $destPath): bool
+    {
+        try {
+            $ch = curl_init($url);
+            curl_setopt_array($ch, [
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_TIMEOUT        => 30,
+                CURLOPT_SSL_VERIFYPEER => false,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_USERAGENT      => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            ]);
+
+            $content = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+
+            if (!$content || $httpCode !== 200) {
+                log_message('error', "Failed to download {$url} | HTTP: {$httpCode}");
+                return false; // ✅ ไม่เขียนทับไฟล์เดิม ถ้าดาวน์โหลดไม่สำเร็จ
+            }
+
+            // ✅ เขียนลง temp file ก่อน แล้วค่อย rename เข้าที่จริง (atomic write กันไฟล์เสียหายครึ่งเดียว)
+            $tmpPath = $destPath . '.tmp';
+            file_put_contents($tmpPath, $content);
+            rename($tmpPath, $destPath);
+
+            return true;
+
+        } catch (\Exception $e) {
+            log_message('error', "Exception downloading {$url}: " . $e->getMessage());
+            return false;
+        }
+    }
+
 }

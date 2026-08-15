@@ -12,11 +12,15 @@ interface ClientLayoutProps {
   children: React.ReactNode;
 }
 
+
+const DRAWER_WIDTH_OPEN = '268px';
+const DRAWER_WIDTH_COLLAPSED = '68px';
+
 export default function ClientLayout({ children }: ClientLayoutProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (
-    <div >
+    <div>
       <CssBaseline />
       <AppHeader
         title="ระบบติดตามสถานการณ์น้ำระยะไกลอัตโนมัติ พื้นที่ฝั่งขวาแม่น้ำยม"
@@ -25,19 +29,30 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
       />
       <DrawerComponent open={drawerOpen} setOpen={setDrawerOpen} />
 
+      {/* รวม main + footer ไว้ใน Box เดียวกัน ให้ margin-left sync กันแน่นอน ไม่หลุดอีก */}
       <Box
-        component="main"
         sx={{
-          mt: { xs: '64px', md: '72px' },
-          ml: { md: drawerOpen ? '290px' : '72px' },
+          ml: { xs: 0, md: drawerOpen ? DRAWER_WIDTH_OPEN : DRAWER_WIDTH_COLLAPSED },
           transition: 'margin-left 0.3s',
-          minHeight: 'calc(100vh - 200px)',
-          backgroundColor: 'background.default',
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: '100vh',
         }}
       >
-        {children}
+        <Box
+          component="main"
+          sx={{
+            mt: { xs: '64px', md: '72px' },
+            minHeight: 'calc(100vh - 200px)',
+            backgroundColor: 'background.default',
+            flex: 1,
+          }}
+        >
+          {children}
+        </Box>
+
+        <Footer />
       </Box>
-        <Footer/>
     </div>
   );
 }

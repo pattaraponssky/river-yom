@@ -1,3 +1,5 @@
+import { Padding } from "@mui/icons-material";
+
 export const textStyle = {
   fontFamily: "Prompt",
   fontSize: { md: "1rem", xs: "0.75rem" },
@@ -35,20 +37,19 @@ export const fontInfo = {
 export const HeaderCellStyle = (theme: any) => ({
   whiteSpace: "nowrap",
   border: `1px solid ${theme.palette.divider}`,
+  paddingY:"10px",
   fontWeight: "bold",
   textAlign: "center",
   backgroundColor: theme.palette.mode === 'dark' ? '#01579B' : 'rgb(1, 87, 155)',
   color: theme.palette.mode === 'dark' ? '#e0e7ff' : 'white',
   fontSize: { xs: "0.8rem", sm: "0.9rem", md: "0.95rem" },
   fontFamily: "Prompt",
-
 });
-
 
 export const getCellStyle = (index: number) => (theme: any) => ({
   whiteSpace: "nowrap",
-  border: `1px solid ${theme.palette.divider}`,
-  padding: "5px",
+  borderRadius: "5px",
+  paddingY:"10px",
   backgroundColor: index % 2 === 0
     ? (theme.palette.mode === 'dark' ? '#1e293b' : '#FAFAFA')
     : (theme.palette.mode === 'dark' ? '#111827' : '#FFF'),
@@ -59,7 +60,6 @@ export const getCellStyle = (index: number) => (theme: any) => ({
 });
 
 export const getCellDiffStyle = (index: number,fontColor:any) => (theme: any) => ({
-
     border: `1px solid ${theme.palette.divider}`,
     backgroundColor: index % 2 === 0
         ? (theme.palette.mode === 'dark' ? '#1e293b' : '#FAFAFA')

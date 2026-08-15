@@ -532,7 +532,7 @@ const WaterSchematicSimple: React.FC = () => {
       { text: 'แม่น้ำยม',      x: 399, y: 345, o: 'v', fs: 8, fill: theme.palette.text.secondary, fw: 'bold' },
       { text: 'แม่น้ำยม',      x: 399, y: 620, o: 'v', fs: 8, fill: theme.palette.text.secondary, fw: 'bold' },
       { text: 'คลองหนองอ้อ',      x: 170, y: 352, o: 'h', fs: 6,  fill: theme.palette.text.secondary, fw: 'bold' },
-      { text: 'คลองกรุงกรัก',      x: 300, y: 402, o: 'h', fs: 6,  fill: theme.palette.text.secondary, fw: 'bold' },
+      // { text: 'คลองกรุงกรัก',      x: 300, y: 402, o: 'h', fs: 6,  fill: theme.palette.text.secondary, fw: 'bold' },
       { text: 'คลองพระพาย',      x: 170, y: 402, o: 'h', fs: 6,  fill: theme.palette.text.secondary, fw: 'bold' },
       { text: 'คลองแม่สะดึง',      x: 343, y: 599, o: 'h', fs: 6,  fill: theme.palette.text.secondary, fw: 'bold' },
       { text: 'คลองไร่',      x: 285, y: 480, o: 'h', fs: 6,  fill: theme.palette.text.secondary, fw: 'bold' },

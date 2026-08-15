@@ -20,7 +20,6 @@ import AssessmentIcon from '@mui/icons-material/Assessment';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 
 // ─── Menu definitions ──────────────────────────────────────────
-
 const BIG_CARDS = [
   {
     href:        '/dashboard',

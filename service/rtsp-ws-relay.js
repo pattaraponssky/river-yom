@@ -13,6 +13,7 @@ const CAMERAS = {
   'tng_gate3': { type: 'ws', url: 'ws://wms-rio3.rid.go.th/cctv-a/camera/11' },
   'tng_gate4': { type: 'ws', url: 'ws://wms-rio3.rid.go.th/cctv-a/camera/12' },
   'tng_gate5': { type: 'ws', url: 'ws://wms-rio3.rid.go.th/cctv-a/camera/13' },
+
   'wst_1': { type: 'ws', url: 'ws://wms-rio3.rid.go.th/cctv-b/camera/18' },
   'wst_2': { type: 'ws', url: 'ws://wms-rio3.rid.go.th/cctv-b/camera/19' },
   'wst_gate1': { type: 'ws', url: 'ws://wms-rio3.rid.go.th/cctv-b/camera/11' },
@@ -22,6 +23,7 @@ const CAMERAS = {
   'wst_gate5': { type: 'ws', url: 'ws://wms-rio3.rid.go.th/cctv-b/camera/15' },
   'wst_gate6': { type: 'ws', url: 'ws://wms-rio3.rid.go.th/cctv-b/camera/16' },
   'wst_gate7': { type: 'ws', url: 'ws://wms-rio3.rid.go.th/cctv-b/camera/17' },
+  
   'kpk_1': { type: 'ws', url: 'ws://wms-rio3.rid.go.th/cctv-b/camera/24' },
   'kpk_2': { type: 'ws', url: 'ws://wms-rio3.rid.go.th/cctv-b/camera/23' },
   'kpk_gate1': { type: 'ws', url: 'ws://wms-rio3.rid.go.th/cctv-b/camera/36' },
@@ -34,8 +36,10 @@ const CAMERAS = {
   'YR.06': { type: 'rtsp', url: 'rtsp://oper:itthirit2568@10.147.17.10:11012/Streaming/Channels/402' },
 };
 
-const FFMPEG_PATH   = 'ffmpeg';
-const WEBSOCAT_PATH = 'websocat';
+// const FFMPEG_PATH   = 'ffmpeg';
+// const WEBSOCAT_PATH = 'websocat';
+const WEBSOCAT_PATH = 'C:/xampp/websocat.exe';
+const FFMPEG_PATH   = 'C:/xampp/ffmpeg/bin/ffmpeg.exe';
 
 const wss = new WebSocketServer({ host: '127.0.0.1', port: 8088 });
 const rooms = new Map(); // camId -> { procs: ChildProcess[], clients: Set }
@@ -53,14 +57,14 @@ function buildPipeline(camId) {
       '-f', 'mpegts',
       '-flush_packets', '1',
       'pipe:1',
-    ]);
+    ], { windowsHide: true });
     proc.stderr.on('data', (d) => console.error(`[ffmpeg ${camId}]`, d.toString()));
     return { procs: [proc], output: proc.stdout };
   }
 
   if (cam.type === 'ws') {
     // ต้นทาง WS เป็น mpeg2video → ต้อง transcode เป็น H.264 ก่อน browser ถึงเล่นได้
-    const wsIn = spawn(WEBSOCAT_PATH, ['-b', cam.url]);
+    const wsIn = spawn(WEBSOCAT_PATH, ['-b', cam.url], { windowsHide: true });   // ← เพิ่ม
     const proc = spawn(FFMPEG_PATH, [
         '-f', 'mpegts',
         '-i', 'pipe:0',
@@ -80,7 +84,7 @@ function buildPipeline(camId) {
         '-f', 'mpegts',
         '-flush_packets', '1',
         'pipe:1',
-        ]);
+            ], { windowsHide: true });
     wsIn.stdout.pipe(proc.stdin);
     wsIn.stderr.on('data', (d) => console.error(`[websocat ${camId}]`, d.toString()));
     proc.stderr.on('data', (d) => console.error(`[ffmpeg ${camId}]`, d.toString()));

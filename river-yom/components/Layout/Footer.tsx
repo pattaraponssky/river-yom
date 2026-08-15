@@ -55,9 +55,6 @@ const Footer: React.FC = () => {
           {/* Right Section - Contact */}
           <Grid size={{xs:12, md:6}}>
             {/* Header with Icon */}
-            {/* <Typography variant="h6" sx={{ ...textStyle, fontWeight: "600" }} gutterBottom>
-              <Web sx={{ verticalAlign: "middle", marginRight: "8px" }} /> ช่องทางติดต่อ
-            </Typography> */}
 
             <Typography variant="body1" sx={textStyle}>
               <Link

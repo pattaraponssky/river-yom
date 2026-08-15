@@ -517,7 +517,7 @@ const DrawerComponent: React.FC<DrawerProps> = ({ open, setOpen }) => {
                           primary={item.text}
                           primaryTypographyProps={{ sx: { fontFamily: 'Prompt', fontSize: '1rem', fontWeight: pathname === item.path ? 600 : 600 } }}
                         />
-                        <Chip label="admin" size="small" sx={{ fontSize: '0.6rem', height: 18, fontFamily: 'Prompt', bgcolor: 'rgba(21,101,192,0.1)', color: 'primary.main' }} />
+                        <Chip label="ผู้ดูแลระบบ" size="small" sx={{ fontSize: '0.7rem', height: 18, fontFamily: 'Prompt', bgcolor: 'rgba(21,101,192,0.1)', color: 'primary.main' }} />
                       </>
                     )}
                   </ListItem>

@@ -11,7 +11,7 @@ export interface CameraConfig {
 }
 
 // ── กล้อง wms-rio3.rid.go.th ────────────────────────────────────────────
-const RIO3_WS_BASE = 'ws://127.0.0.1:8088/camera'; 
+const RIO3_WS_BASE = 'wss://wms-yom-right.rid.go.th/cctv-relay/camera'; 
 
 const tngCameras: CameraConfig[] = [
   { id: 'rio3a-14', label: 'ภาพรวม 1',  type: 'wss', streamUrl: `${RIO3_WS_BASE}/tng_1` },
@@ -41,6 +41,18 @@ const kpkCameras: CameraConfig[] = [
   { id: 'rio3b-36', label: 'บานประตู 1', type: 'wss', streamUrl: `${RIO3_WS_BASE}/kpk_gate1` },
 ];
 
+const YR01Cameras: CameraConfig[] = [
+  { id: 'YR01', label: 'ภาพรวม 1',  type: 'wss', streamUrl: `${RIO3_WS_BASE}/YR.01` },
+];
+
+const YR02Cameras: CameraConfig[] = [
+  { id: 'YR02', label: 'ภาพรวม 1',  type: 'wss', streamUrl: `${RIO3_WS_BASE}/YR.02` },
+];
+
+const YR03Cameras: CameraConfig[] = [
+  { id: 'YR03', label: 'ภาพรวม 1',  type: 'wss', streamUrl: `${RIO3_WS_BASE}/YR.03` },
+];
+
 // ── Map สถานี ───────────────────────────────────────────────────────────────
 export const STATION_CAMERAS: Record<string, CameraConfig[]> = {
 
@@ -50,12 +62,12 @@ export const STATION_CAMERAS: Record<string, CameraConfig[]> = {
   'kpk': kpkCameras, 
 
     // ── สถานีติดตั้งโครงการ ──────────────────────────────────────────────
-  'YR.01': tngCameras, 
-  'YR.02': wstCameras, 
-  'YR.03': kpkCameras, 
-  'YR.04': tngCameras, 
-  'YR.05': wstCameras, 
-  'YR.06': kpkCameras, 
+  'YR.01': YR01Cameras, 
+  'YR.02': YR02Cameras, 
+  'YR.03': YR03Cameras, 
+  'YR.04': YR01Cameras, 
+  'YR.05': YR01Cameras, 
+  'YR.06': YR01Cameras, 
 
   // ── Y.15 ─────────────────────────────────────────────────────────────────
   // 'Y.15': [

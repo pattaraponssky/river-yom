@@ -5,7 +5,7 @@ use CodeIgniter\Config\BaseConfig;
 class Cors extends BaseConfig
 {
     public array $default = [
-        'allowedOrigins' => ['http://localhost:5173', 'http://localhost:3000'],
+        'allowedOrigins' => ['http://localhost:5173', 'http://localhost:3000', 'https://wms-yom-right.rid.go.th', 'http://wms-rio3.rid.go.th', 'https://wms-rio3.rid.go.th'],
         // 'allowedOriginsPatterns' => ['.*'], // อนุญาตทุก Origin โดยใช้ Regex
         'allowedOriginsPatterns' => [],
         'supportsCredentials' => true,

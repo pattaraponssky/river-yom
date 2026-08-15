@@ -63,19 +63,23 @@ export default function Dashboard() {
   }, [today]);
 
   // ─── แปลงข้อมูลสำหรับ LongProfile (forecast วันนี้เท่านั้น) ──
-  const forecastLongProfile = useMemo(() => {
-    if (!today) return [];
-    const now      = new Date();
-    const today9am = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 9, 0, 0);
+ const forecastLongProfile = useMemo(() => {
+  if (!today) return [];
 
-    return today.points
-      // .filter(p => new Date(p.time) >= today9am)
-      .map(p => ({
-        CrossSection: p.crossSection,
-        Date:         p.time.replace('T', ' '),
-        WaterLevel:   p.elevation,
-      }));
-  }, [today]);
+  return today.points
+    // กรองเฉพาะแม่น้ำยม (Yom River)
+    .filter(p => {
+      // รองรับกรณีมีช่องว่างท้ายชื่อ เช่น "Yom River       "
+      const river = (p.river ?? '').toString().trim();
+      return river === 'Yom River';
+    })
+    .map(p => ({
+      CrossSection: p.crossSection,
+      River:        (p.river ?? '').toString().trim(),
+      Date:         p.time.replace('T', ' '),
+      WaterLevel:   p.elevation,
+    }));
+}, [today]);
 
   // ─── แปลงข้อมูลสำหรับ WaterLevelChart ───────────────────────
   const waterLevelChartData = useMemo(() => {

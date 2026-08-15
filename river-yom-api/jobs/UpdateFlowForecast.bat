@@ -2,14 +2,14 @@
 echo ===============================
 echo เริ่มอัพเดท Flow Forecast Data...
 echo ===============================
-curl -s https://swocthachin.rid.go.th/swoc-api/api/flow_forecast/import_forecast
+curl -s https://wms-yom-right.rid.go.th/river-yom-api/api/flow_forecast/import_forecast
 echo.
 
 @echo off
 echo ===============================
 echo เก็บผล Flow Forecast Data...
 echo ===============================
-curl -s https://swocthachin.rid.go.th/swoc-api/snapshot/run/SwocThachinForecastSnapshot2025
+curl -s https://wms-yom-right.rid.go.th/river-yom-api/snapshot/run/SwocThachinForecastSnapshot2025
 echo.
 
 

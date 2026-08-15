@@ -1,18 +1,17 @@
 
 ////// API PATHS //////
-// export const API_URL = process.env.NEXT_PUBLIC_API_URL;
-// export const Model_URL = process.env.NEXT_PUBLIC_MODEL_URL;
-// export const Path_URL = "./../"; // For Dev
-// export const Forecast_URL = "./../";
-//////////////////////////
-
-////// API PATHS DEV //////
-export const API_URL = "http://localhost:8080";
+export const API_URL = process.env.NEXT_PUBLIC_API_URL;
+export const Model_URL = process.env.NEXT_PUBLIC_MODEL_URL;
 export const Path_URL = "./../"; // For Dev
-export const Model_URL = "http://localhost:8080";
 export const Forecast_URL = "./../";
 //////////////////////////
 
+////// API PATHS DEV //////
+// export const API_URL = "http://localhost:8080";
+// export const Path_URL = "./../"; // For Dev
+// export const Model_URL = "http://localhost:8080";
+// export const Forecast_URL = "./../";
+//////////////////////////
 
 export const nowThaiDate = () => {
   const daysOfWeek = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"];
@@ -23,7 +22,6 @@ export const nowThaiDate = () => {
   const month = monthsOfYear[today.getMonth()];
   const year = today.getFullYear() + 543; // เพิ่ม 543 สำหรับปีพุทธศักราช
   
-
   return `${dayOfWeek}ที่ ${dayOfMonth} ${month} ${year}`;
 };
 
@@ -41,6 +39,7 @@ export const nowThaiDate = () => {
     "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.",
     "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."
   ];
+
 
   const month = monthNamesThai[date.getMonth()];
   const day = date.getDate().toString().padStart(2, '0');

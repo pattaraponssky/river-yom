@@ -15,8 +15,8 @@ export const TELE_WARN_LEVELS: Record<string, WarnLevel> = {
 
 // ─── Gate (ประตูระบายน้ำ) ─────────────────────────────────────
 export const GATE_WARN_LEVELS: Record<string, WarnLevel> = {
-  kpk: { normal: 38.86, watch: 40.86, alert: 41.93, crisis: 43.00 },
-  wst: { normal: 37.38, watch: 39.38, alert: 40.18, crisis: 40.98 },
+  kpk: { normal: 39.86, watch: 40.86, alert: 41.93, crisis: 43.00 },
+  wst: { normal: 38.38, watch: 39.38, alert: 40.18, crisis: 40.98 },
   tng: { normal: 39.10, watch: 41.10, alert: 42.55, crisis: 44.00 },
 };
 
@@ -25,8 +25,7 @@ export const FLOW_WARN_LEVELS: Record<string, WarnLevel> = {
   "Y.4":  { normal: 47.87, watch: 49.87, alert: 50.68, crisis: 51.48 },
   "Y.15": { normal: 41.89, watch: 43.89, alert: 44.97, crisis: 46.05 },
   "Y.50": { normal: 37.56, watch: 39.56, alert: 40.17, crisis: 40.78 },
-  // "Y.16": { normal: 2.00, watch: 2.16, alert: 2.28, crisis: 2.40 },
-  // "Y.64": { normal: 1.10, watch: 1.20, alert: 1.35, crisis: 1.50 },
+
 };
 
 

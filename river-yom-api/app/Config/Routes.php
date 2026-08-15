@@ -7,6 +7,8 @@ use CodeIgniter\Router\RouteCollection;
  */
 $routes->get('/', 'Home::index');
 
+$routes->get('proxy/file', 'Proxy::file');
+
 $routes->get('api/filterRas', 'API::getFilteredRasOutput');
 $routes->get('api/dailySummary', 'API::dailySummary');
 
@@ -187,6 +189,7 @@ $routes->group('jobs', function($routes) {
     $routes->get('updateFlowFillData/(:any)/(:any)', 'Jobs::updateFlowFillData/$1/$2');
     $routes->get('updateFlowHourlyFillData/(:any)/(:any)', 'Jobs::updateFlowHourlyFillData/$1/$2');
     $routes->get('updateGateFillData/(:any)/(:any)', 'Jobs::updateGateFillData/$1/$2');
+    $routes->get('updateDailyReportFiles', 'Jobs::updateDailyReportFiles');
 
     // Cron job endpoint (trigger หลัง run HEC-RAS)
     $routes->get('importForecast', 'FlowForecastController::importFromCsv');

@@ -7,7 +7,7 @@ import FloatingMenu from '@/components/Dashboard/FloatingMenu';
 import ImageComponent from '../../components/Image';
 import PdfViewer from '../../components/PdfViewer';
 import { reportMenus } from '@/lib/menuFloating';
-import { formatThaiDay } from '@/lib/utility';
+import { API_URL, formatThaiDay } from '@/lib/utility';
 
 export default function Report() {
     return (
@@ -19,23 +19,23 @@ export default function Report() {
         <Box sx={BoxStyle} id="dams-report">
         <Grid container spacing={1}>
             <Grid size={{xs:12, md:6}}>
-                <ImageComponent src="http://irrigation.rid.go.th/rid3/water/images/3dams.jpg" alt="สภาพน้ำเขื่อนภูมิพล เขื่อนสิริกิต์ และเขื่อแควน้อยฯ" title={'สภาพน้ำในเขื่อนประจำวัน'} />
+                <ImageComponent src={`${API_URL}/report_rid03/3dams.jpg`} alt="สภาพน้ำเขื่อนภูมิพล เขื่อนสิริกิต์ และเขื่อแควน้อยฯ" title={'สภาพน้ำในเขื่อนประจำวัน'} />
             </Grid>
             <Grid size={{xs:12, md:6}} id="rid3-report">
-                <ImageComponent src="http://irrigation.rid.go.th/rid3/water/images/onepages.jpg" alt="สถานการณ์น้ำ สำนักงานชลประทานที่ 3" title={'สถานการณ์น้ำ สำนักงานชลประทานที่ 3'} />
+                <ImageComponent src={`${API_URL}/report_rid03/onepages.jpg`} alt="สถานการณ์น้ำ สำนักงานชลประทานที่ 3" title={'สถานการณ์น้ำ สำนักงานชลประทานที่ 3'} />
             </Grid>
             </Grid>
             <Grid container spacing={1}>
             <Grid size={{xs:12, md:12}}>
-                <ImageComponent src="http://irrigation.rid.go.th/rid3/water/images/dailyreport.jpg" alt="สรุปสถานการณ์น้ำและการเฝ้าระวัง" title={'สรุปสถานการณ์น้ำและการเฝ้าระวัง'} />
+                <ImageComponent src={`${API_URL}/report_rid03/dailyreport.jpg`} alt="สรุปสถานการณ์น้ำและการเฝ้าระวัง" title={'สรุปสถานการณ์น้ำและการเฝ้าระวัง'} />
             </Grid>
             </Grid>
         </Box>
             <Box sx={BoxStyle} id="diagrams-report">
-                <PdfViewer src="http://irrigation.rid.go.th/rid3/water/report.pdf" title="รายงานสถานการณ์น้ำประจำวัน สำนักงานชลประทานที่ 3" />
+                <PdfViewer src={`${API_URL}/report_rid03/report.pdf`} title="รายงานสถานการณ์น้ำประจำวัน สำนักงานชลประทานที่ 3" />
             </Box>
             <Box sx={BoxStyle}>
-                <PdfViewer src="http://irrigation.rid.go.th/rid3/water/rpt050269.pdf" title="รายงานสถานการณ์น้ำประจำวัน สำนักงานชลประทานที่ 3" />
+                <PdfViewer src={`${API_URL}/report_rid03/rpt.pdf`} title="รายงานสถานการณ์น้ำประจำวัน สำนักงานชลประทานที่ 3" />
             </Box>
         <FloatingMenu menus={reportMenus} />
         </Container>

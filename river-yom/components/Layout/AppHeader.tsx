@@ -59,7 +59,7 @@ const Header: React.FC<HeaderProps> = ({ title, open, setOpen }) => {
 
   const appBarBg = isDark
     ? 'linear-gradient(135deg, #1a237e 0%, #283593 50%, #303f9f 100%)'
-    : 'linear-gradient(135deg, #0d47a1 0%, #1565c0 50%, #1976d2 100%)';
+    : 'linear-gradient(135deg, #283593 0%, #0d47a1 50%, #1976d2 100%)';
 
   const glassStyle = {
     background: 'rgba(255,255,255,0.12)',

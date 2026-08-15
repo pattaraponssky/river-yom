@@ -38,13 +38,15 @@ interface ThresholdData {
 }
 
 const THRESHOLDS: ThresholdData[] = [
-  { staCode:'Y.15', location:'วัดพระรูป',           tambon:'ต.ในเมือง อ.เมือง จ.พิษณุโลก',  watch:2.90, alert:3.20, crisis:3.50, maxY:3.5 },
-  { staCode:'Y.16', location:'บ้านบางการ้อง',        tambon:'ต.บางการ้อง อ.เมือง จ.พิษณุโลก', watch:2.16, alert:2.28, crisis:2.40, maxY:2.4 },
-  { staCode:'Y.4',  location:'บ้านบางไทรป่า',        tambon:'ต.บางไทรป่า อ.บางระกำ จ.พิษณุโลก', watch:1.60, alert:1.70, crisis:1.80, maxY:1.8 },
-  { staCode:'Y.50', location:'ที่ว่าการอำเภอ',       tambon:'ต.บางระกำ อ.บางระกำ จ.พิษณุโลก',  watch:1.25, alert:1.38, crisis:1.50, maxY:1.5 },
-  { staCode:'Y.64', location:'ตลาดสามพราน',          tambon:'ต.บางระกำ อ.บางระกำ จ.พิษณุโลก',  watch:1.20, alert:1.35, crisis:1.50, maxY:1.5 },
-  { staCode:'01', location:'สะพานชุมแสงสงคราม',          tambon:'ต.ชุมแสงสงคราม อ.บางระกำ จ.พิษณุโลก',  watch:1.20, alert:1.35, crisis:1.50, maxY:1.5 },
+  { staCode:'Y.15', location:'วัดพระรูป',tambon:'ต.ในเมือง อ.เมือง จ.พิษณุโลก',  watch: 43.89, alert: 44.97, crisis: 46.05, maxY:47 },
+  { staCode:'Y.4',  location:'บ้านบางไทรป่า',tambon:'ต.บางไทรป่า อ.บางระกำ จ.พิษณุโลก', watch: 49.87, alert: 50.68, crisis: 51.48, maxY:52 },
+  { staCode:'Y.50', location:'ที่ว่าการอำเภอ',tambon:'ต.บางระกำ อ.บางระกำ จ.พิษณุโลก',  watch: 39.56, alert: 40.17, crisis: 40.78, maxY:41 },
+  { staCode:'Y.01', location:'สะพานชุมแสงสงคราม',tambon:'ต.ชุมแสงสงคราม อ.บางระกำ จ.พิษณุโลก',  watch: 41.10, alert: 42.55, crisis: 44.00, maxY:44 },
+  { staCode:'Y.02', location:'สะพานบ้านห้วงกระได',tambon:'ต.บางระกำ อ.บางระกำ จ.พิษณุโลก',  watch: 41.10, alert: 42.55, crisis: 44.00, maxY:44 },
+  { staCode:'Y.03', location:'สะพานวัดทุ่งอ้ายโห้',tambon:'ต.ชุมแสงสงคราม อ.บางระกำ จ.พิษณุโลก',  watch: 41.10, alert: 42.55, crisis: 44.00, maxY:44 },
+  { staCode:'Y.04', location:'สะพานข้ามคลองกรุงกรัก',tambon:'ต.บางระกำ อ.บางระกำ จ.พิษณุโลก',  watch: 41.10, alert: 42.55, crisis: 44.00, maxY:44 },
 ];
+
 const THRESHOLD_MAP = new Map(THRESHOLDS.map(t => [t.staCode, t]));
 
 // const ARCHIVE_COLORS = [

@@ -6,6 +6,7 @@ import { Path_URL } from '@/lib/utility';
 // ─── Types ────────────────────────────────────────────────────
 
 export interface WaterLevelPoint {
+  river: string;
   time:         string;   // ISO string
   station:      string;
   elevation:    number;
@@ -27,12 +28,12 @@ export interface RasData {
 
 // ─── Station mapping ──────────────────────────────────────────
 export const STATION_MAPPING: Record<string, number> = {
-  'Y.15':           170764,
-  'Y.16':           195165,
-  'Y.4':            125488,
-  'Y.50':            134639,
-  'Y.64':            142824,
-  '01':              153963,
+  'Y.4': 95005,
+  'Y.15': 87572,
+  'Y.01': 79973,
+  'Y.02': 54142,
+  'Y.03': 45324,
+  'Y.04': 30189,
   // '02':              195165,
     //   'ปตร.พลเทพ':      321863,
     //   'ปตร.ท่าโบสถ์':   293361,
@@ -73,6 +74,7 @@ function parseCsv(csvText: string): WaterLevelPoint[] {
       const time         = parseDateString(row['Date']);
       const crossSection = Number(row['Cross Section']?.trim());
       const elevation    = parseFloat(row['Water_Elevation']?.trim());
+      const river        = (row['River'] ?? '').trim();
 
       // ทิ้งเฉพาะ row ที่ข้อมูลพื้นฐานไม่ครบ
       if (!time || isNaN(crossSection) || isNaN(elevation)) return null;
@@ -82,7 +84,13 @@ function parseCsv(csvText: string): WaterLevelPoint[] {
       // → chart/warning ที่ต้องการ station จะ filter เอาเฉพาะที่มีค่าอยู่แล้ว
       const station = CROSS_TO_STATION.get(crossSection) ?? '';
 
-      return { time, station, elevation, crossSection };
+      return {
+        time,
+        station,
+        elevation,
+        crossSection,
+        river,
+      };
     })
     .filter((p): p is WaterLevelPoint => p !== null);
 }

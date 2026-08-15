@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import RegisterDialog from "./RegisterDialog";
 import ForgotPasswordDialog from "./ForgotPasswordDialog";
-import { API_URL } from '../../lib/utility';
+import { API_URL, Path_URL } from '../../lib/utility';
 import { textStyle } from '../../theme/style';
 
 interface LoginDialogProps {
@@ -34,18 +34,14 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose, onLoginSuccess
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  
-  // ตรวจสอบ dark mode
   const isDarkMode = theme.palette.mode === "dark";
 
-  // เลือก background ตาม theme (หรือ fallback ถ้าไม่มีรูป dark)
-  const leftBg = isDarkMode 
-    ? "url('/images/bg_dialog.jpg')"
-    : "url('/images/bg_dialog.jpg')";
+  // path รูปพื้นหลังฝั่งซ้าย (ตอนนี้ใช้รูปเดียวกันทั้ง light/dark)
+  const leftBgUrl = `${Path_URL}/images/bg_dialog.jpg`;
 
   const handleLogin = async () => {
     try {
-      const response = await fetch(`${API_URL}/user/login`, {
+      const response = await fetch(`${Path_URL}/user/login`, {
         method: "POST",
         credentials: "include",
         headers: {
@@ -77,7 +73,6 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose, onLoginSuccess
     }
   };
 
-
   return (
     <>
       <Dialog
@@ -89,7 +84,6 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose, onLoginSuccess
           sx: { 
             borderRadius: "1.5rem", 
             overflow: "hidden",
-            // ไม่ต้อง set background ตรงนี้ เพราะ Paper จะใช้ theme.palette.background.paper อัตโนมัติ
           },
         }}
       >
@@ -97,26 +91,27 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose, onLoginSuccess
           display="flex"
           flexDirection={isMobile ? "column" : "row"}
           height={isMobile ? "auto" : 600}
-          // ให้ Dialog container เคารพ theme มากขึ้น
-          sx={{ bgcolor: "background.default" }} // เพิ่มเผื่อกรณีมี gap
+          sx={{ bgcolor: "background.default" }}
         >
           {/* ส่วนซ้าย - รูปภาพ / พื้นหลัง */}
           <Box
             flex={1}
             p={4}
             sx={{
-              backgroundImage: leftBg,
+              // แก้บั๊ก: ต้องห่อ path ด้วย url() ไม่งั้น CSS จะไม่แสดงรูปเลย
+              backgroundImage: `url("${leftBgUrl}")`,
               backgroundSize: "cover",
               backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
               minHeight: "30vh",
-              // เพิ่ม overlay เบา ๆ ใน dark mode ถ้าต้องการให้ข้อความชัดขึ้น
+              display: { xs: "none", sm: "block" }, // ซ่อนบน mobile จอเล็กมากถ้าพื้นที่ไม่พอ (ปรับได้ตามต้องการ)
               ...(isDarkMode && {
                 position: "relative",
                 "&:after": {
                   content: '""',
                   position: "absolute",
                   inset: 0,
-                  background: "rgba(0,0,0,0.45)", // overlay มืดช่วยให้ readable
+                  background: "rgba(0,0,0,0.45)",
                   pointerEvents: "none",
                 },
               }),
@@ -130,10 +125,9 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose, onLoginSuccess
             display="flex"
             flexDirection="column"
             justifyContent="center"
-            // ใช้สีพื้นหลังจาก theme อัตโนมัติ (paper)
             sx={{ 
               bgcolor: "background.paper",
-              color: "text.primary", // ให้ข้อความหลักตาม theme
+              color: "text.primary",
             }}
           >
             <Typography
@@ -153,8 +147,6 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose, onLoginSuccess
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               sx={{ mb: 2.5 }}
-              // MUI v5+ TextField ปรับตาม theme อัตโนมัติดีมากแล้ว
-              // แต่ถ้าอยาก control หนักกว่านี้ก็ใช้ InputProps ได้
             />
 
             <TextField
@@ -172,17 +164,15 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose, onLoginSuccess
               fullWidth
               onClick={handleLogin}
               sx={{
-                // ใช้ gradient จาก primary ถ้าต้องการ หรือปล่อย default ตาม theme
-                // ถ้าอยากคง gradient เดิม แต่ปรับ opacity ใน dark mode
                 background: isDarkMode
-                  ? "linear-gradient(to right, #1976D2cc, #42A5F5cc)" // เพิ่มความโปร่งแสงนิดหน่อย
+                  ? "linear-gradient(to right, #1976D2cc, #42A5F5cc)"
                   : "linear-gradient(to right, #1976D2, #42A5F5)",
                 fontWeight: "bold",
                 borderRadius: 999,
                 py: 1.2,
                 letterSpacing: 1,
                 mb: 2.5,
-                boxShadow: isDarkMode ? 4 : 2, // shadow เบา ๆ ใน dark mode
+                boxShadow: isDarkMode ? 4 : 2,
               }}
             >
               LOGIN
@@ -216,7 +206,7 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose, onLoginSuccess
             >
               <Button
                 variant="text"
-                color="primary" // เปลี่ยนจาก secondary เป็น primary ให้ดูกลมกลืนกว่า
+                color="primary"
                 onClick={() => {
                   onClose();
                   setForgotOpen(true);

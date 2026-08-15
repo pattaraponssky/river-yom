@@ -25,12 +25,12 @@ interface WaterLevelData {
 }
 
 const stationMapping: Record<string, number> = {
-  "Y.4": 181772,
-  "Y.15": 14042,
-  "kpk": 14042,
-  "wst": 162247,
-  "Y.50": 179013,
-  "tng": 130029,
+  "Y.4": 95005,
+  "Y.15": 87572,
+  "kpk": 79973,
+  "wst": 79973,
+  "Y.50": 54142,
+  "tng": 54142,
 };
 
 interface Props {

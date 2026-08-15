@@ -189,7 +189,7 @@ const StationCrossSectionChart: React.FC<Props> = ({
       },
     },
     tooltip: {
-      x: { formatter: (v: number) => `เมตรที่ ${v*5}` },
+      x: { formatter: (v: number) => `เมตรที่ ${v}` },
       y: { formatter: (v: any) => `${(Number(v) - shiftValue).toFixed(2)} ม.รทก.` },
     },
     stroke:  { width: [2, 2], curve: 'straight' },
