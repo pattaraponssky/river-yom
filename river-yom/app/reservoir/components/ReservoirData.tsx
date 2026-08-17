@@ -18,8 +18,8 @@ import {
   Button,
   useTheme,
 } from "@mui/material";
-import ReservoirChart from "@/components/Data/ReservoirChartData";
-import ReservoirExportTable from "@/components/Data/ReservoirTableData";
+import ReservoirChart from "@/app/reservoir/components/ReservoirChartData";
+import ReservoirExportTable from "@/app/reservoir/components/ReservoirTableData";
 import CenteredLoading from "@/components/Layout/CenteredLoading";
 import { API_URL, Path_URL } from "@/lib/utility";
 import { fontInfo, titleStyle, textStyle, HeaderCellStyle } from "@/theme/style";

@@ -5,8 +5,8 @@ import {
   Card, CardContent, CardHeader, Divider, Typography, Button, useTheme,
   ToggleButton, ToggleButtonGroup,
 } from "@mui/material";
-import RainChart from "@/components/Data/RainChartData";
-import RainExportTable from "@/components/Data/RainTableData";
+import RainChart from "@/app/rain/components/RainChartData";
+import RainExportTable from "@/app/rain/components/RainTableData";
 import CenteredLoading from "@/components/Layout/CenteredLoading";
 import { API_URL, Path_URL } from "@/lib/utility";
 import { fontInfo, titleStyle, textStyle, HeaderCellStyle } from "@/theme/style";

@@ -14,7 +14,7 @@ import { useTheme, alpha } from '@mui/material';
 import CameraViewer from '@/components/Data/CameraViewer';
 import { STATION_CAMERAS } from '@/lib/cameraConfig';
 import { GATE_STATION_CONFIGS } from '@/lib/gateConfig';
-import GateOpeningDisplay from '@/components/Data/GateOpeningDisplay';
+import GateOpeningDisplay from '@/app/gate/components/GateOpeningDisplay';
 import StationCrossSectionChart from '@/components/Data/StationCrossSectionChart';
 import StationCoordinates from '@/components/Data/Stationcoordinates';
 import { GATE_WARN_LEVELS } from '../../../lib/warnLevels';
@@ -28,6 +28,8 @@ interface GateInfo {
   tambon: string;
   district: string;
   province: string;
+  gate_no: string;
+  gate_height: string;
   river?: string;
   lat: string;
   long: string;
@@ -305,8 +307,8 @@ export default function GateDashboard() {
                       { label: 'ตำบล', value: selectedInfo.tambon || '-' },
                       { label: 'อำเภอ', value: selectedInfo.district || '-' },
                       { label: 'จังหวัด', value: selectedInfo.province || '-' },
-                      { label: 'จำนวนบาน', value: selectedInfo.province || '-' },
-                      { label: 'ขนาดบาน', value: selectedInfo.province || '-' },
+                      { label: 'จำนวนบาน3', value: selectedInfo.gate_no || '-' },
+                      { label: 'ความสูงบาน (เมตร)', value: selectedInfo.gate_height || '-' },
                       {
                         label: 'พิกัด',
                         value:

@@ -17,8 +17,8 @@ import {
   Button,
   useTheme,
 } from "@mui/material";
-import TeleChart from "@/components/Data/TeleChartData";
-import TeleExportTable from "@/components/Data/TeleTableData";
+import TeleChart from "@/app/tele/components/TeleChartData";
+import TeleExportTable from "@/app/tele/components/TeleTableData";
 import CenteredLoading from "@/components/Layout/CenteredLoading";
 import { API_URL, Path_URL } from "@/lib/utility";
 import { titleStyle, textStyle, fontInfo } from "@/theme/style";

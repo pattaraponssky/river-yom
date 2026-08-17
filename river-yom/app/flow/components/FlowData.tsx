@@ -18,8 +18,8 @@ import {
   Button,
   useTheme,
 } from "@mui/material";
-import FlowChart from "@/components/Data/FlowChartData";
-import FlowExportTable from "@/components/Data/FlowTableData";
+import FlowChart from "@/app/flow/components/FlowChartData";
+import FlowExportTable from "@/app/flow/components/FlowTableData";
 import CenteredLoading from "@/components/Layout/CenteredLoading";
 import { API_URL, Path_URL } from "@/lib/utility";
 import { titleStyle, textStyle, fontInfo } from "@/theme/style";

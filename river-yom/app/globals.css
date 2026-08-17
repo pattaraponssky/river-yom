@@ -76,11 +76,20 @@ html, body {
   color: #000;
 }
 
-.ldmap_placeholder .ldmap_topright {
-  top: 0px !important;
-  display: flex !important;
-  flex-wrap: wrap !important;
-  align-items: center !important;
+@media (max-width: 899.95px) {
+  .ldmap_placeholder .ldmap_topright {
+    line-height: 30px !important;
+  }
+}
+
+/* ── md ขึ้นไป (desktop) ── */
+@media (min-width: 900px) {
+  .ldmap_placeholder .ldmap_topright {
+    top: 0px !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+  }
 }
 
 .ldmap_placeholder .ldmap_topleft {

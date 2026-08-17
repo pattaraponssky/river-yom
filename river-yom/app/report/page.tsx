@@ -13,7 +13,7 @@ export default function Report() {
     return (
     <>
         <Container maxWidth="xl" sx={{ py: 2 }}>
-      <Typography variant="h5" id="card-daily" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+      <Typography id="card-daily" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main',textAlign:{md:"left",xs:"center"},fontSize:{ md:24 , xs:19 }}}>
         รายงานสถานการณ์น้ำจากสำนักงานชลประทานที่ 3 วันที่ {formatThaiDay(Date())}
       </Typography>
         <Box sx={BoxStyle} id="dams-report">

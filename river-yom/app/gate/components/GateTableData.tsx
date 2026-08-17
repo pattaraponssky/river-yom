@@ -19,7 +19,7 @@ import TextSnippetIcon from '@mui/icons-material/TextSnippet';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-import { getCellStyle, HeaderCellStyle, textStyle } from '../../theme/style';
+import { getCellStyle, HeaderCellStyle, textStyle } from '../../../theme/style';
 import { useTheme } from '@mui/material';
 
 interface GroupedData {

@@ -4,7 +4,7 @@ import { Box } from '@mui/material';
 import dynamic from 'next/dynamic';
 
 const GateStation = dynamic(
-  () => import('./components/GateStation'),
+  () => import('./GateStation'),
   { ssr: false }   // ปิด SSR สำหรับ component นี้
 );
 

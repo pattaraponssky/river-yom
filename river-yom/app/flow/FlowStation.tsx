@@ -1,16 +1,18 @@
-// src/app/tele/page.tsx
+// src/app/flow/page.tsx
+'use client';
 
 import React, { useEffect, useState } from "react";
-import { Box, Tabs, Tab, Typography } from "@mui/material";
+import { Box } from "@mui/material";
 import { useSearchParams, useRouter } from "next/navigation"; // ใช้แทน useLocation
 import PlaceIcon from "@mui/icons-material/Place";
-import MapIcon from "@mui/icons-material/Map"; // เปลี่ยนจาก Map เป็น MapIcon
-import { Path_URL } from "@/lib/utility";
-import { BoxStyle, fontTitle } from "@/theme/style";
-import TeleMap from "./TeleMap";
-import DataTeleCombined from "./TeleData";
+import MapIcon from "@mui/icons-material/Map";
 import BarChartIcon from '@mui/icons-material/BarChart';
-import TeleDashboard from "./TeleDashboard";
+import { Path_URL } from "@/lib/utility";
+import { BoxStyle } from "@/theme/style";
+import SegmentedTabs, { SegmentedTabItem } from "@/components/Data/SegmentedTabs";
+import FlowDashboard from "./components/FlowDashboard";
+import FlowMap from "./components/FlowMap";
+import DataFlowCombined from '@/app/flow/components/FlowData';
 
 
 const mapKey = process.env.NEXT_PUBLIC_LONGDO_MAP_KEY!;
@@ -19,7 +21,13 @@ const JsonPaths = [
   `${Path_URL}data/ProjectArea.geojson`,
 ];
 
-export default function TelePage() {
+const FLOW_TAB_ITEMS: SegmentedTabItem[] = [
+  { label: 'สถานีวัดน้ำท่า', shortLabel: 'สถานีน้ำท่า', icon: <PlaceIcon /> },
+  { label: 'ข้อมูลย้อนหลัง', shortLabel: 'ย้อนหลัง', icon: <BarChartIcon /> },
+  { label: 'แผนที่แสดงตำแหน่งสถานี', shortLabel: 'แผนที่', icon: <MapIcon /> },
+];
+
+export default function FlowPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -40,64 +48,33 @@ export default function TelePage() {
     // อัปเดต URL โดยคง station ไว้ถ้ามี
     const params = new URLSearchParams(searchParams.toString());
     params.set("tab", newValue.toString());
-    router.push(`/tele?${params.toString()}`);
+    router.push(`/flow?${params.toString()}`);
   };
 
   return (
     <Box sx={{ ...BoxStyle }}>
       {/* Main Tabs */}
-        <Tabs
-          value={mainTab}
-          onChange={handleMainTabChange}
-          aria-label="main category"
-          sx={{
-            marginBottom: "10px",
-            overgateX: "auto", // เพิ่มการเลื่อนในแกน X
-            whiteSpace: "nowrap", // ไม่ให้ text ตัด
-          }}
-          variant="scrollable" // ใช้ scrollable tab
-          scrollButtons="auto" // เพิ่มปุ่มเลื่อนอัตโนมัติ
-        >
-        <Tab
-          sx={{ ...fontTitle }}
-          icon={<PlaceIcon />}
-          iconPosition="start"
-          label="ข้อมูลสถานีวัดน้ำท่า"
-        />
-        <Tab
-          sx={{ ...fontTitle }}
-          icon={<BarChartIcon />}
-          iconPosition="start"
-          label="ข้อมูลย้อนหลัง"
-        />
-        <Tab
-          sx={{ ...fontTitle }}
-          icon={<MapIcon />}
-          iconPosition="start"
-          label="แผนที่แสดงตำแหน่งสถานี"
-        />
-      </Tabs>
+      <SegmentedTabs items={FLOW_TAB_ITEMS} value={mainTab} onChange={handleMainTabChange} />
 
       {/* Content Display */}
       <Box>
         {mainTab === 0 && (
           <Box>
-            {/* ถ้ามี component แสดงข้อมูลสถานี */}
-            <TeleDashboard />
-          </Box>
-        )}
-        {mainTab === 1 && (
-          <Box>
-            {/* ถ้ามี component แสดงข้อมูลสถานี */}
-            <DataTeleCombined />
+            <FlowDashboard />
           </Box>
         )}
 
+        {mainTab === 1 && (
+          <Box>
+            {/* ถ้ามี component แสดงข้อมูลสถานี */}
+            <DataFlowCombined propsSelectedStation={selectedStationFromURL} />
+          </Box>
+        )}
         {mainTab === 2 && (
           <Box>
-            <TeleMap
+            <FlowMap
               id="longdo-map"
-              stationType="tele"
+              stationType="flow"
               mapKey={mapKey}
               JsonPaths={JsonPaths}
               height="75vh"

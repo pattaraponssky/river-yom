@@ -20,8 +20,8 @@ import TextSnippetIcon from '@mui/icons-material/TextSnippet';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-import { textStyle } from '../../theme/style';
-import { getCellStyle, HeaderCellStyle } from '../../theme/style';
+import { textStyle } from '../../../theme/style';
+import { getCellStyle, HeaderCellStyle } from '../../../theme/style';
 interface GroupedData {
   [year: string]: [number, number | null][]; // รองรับ null
 }

@@ -1,16 +1,16 @@
 
 ////// API PATHS //////
-export const API_URL = process.env.NEXT_PUBLIC_API_URL;
-export const Model_URL = process.env.NEXT_PUBLIC_MODEL_URL;
-export const Path_URL = "./../"; // For Dev
-export const Forecast_URL = "./../";
+// export const API_URL = process.env.NEXT_PUBLIC_API_URL;
+// export const Model_URL = process.env.NEXT_PUBLIC_MODEL_URL;
+// export const Path_URL = "./../"; // For Dev
+// export const Forecast_URL = "./../";
 //////////////////////////
 
 ////// API PATHS DEV //////
-// export const API_URL = "http://localhost:8080";
-// export const Path_URL = "./../"; // For Dev
-// export const Model_URL = "http://localhost:8080";
-// export const Forecast_URL = "./../";
+export const API_URL = "http://localhost:8080";
+export const Path_URL = "./../"; // For Dev
+export const Model_URL = "http://localhost:8080";
+export const Forecast_URL = "./../";
 //////////////////////////
 
 export const nowThaiDate = () => {

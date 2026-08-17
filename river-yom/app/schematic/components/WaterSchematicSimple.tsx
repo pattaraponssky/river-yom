@@ -7237,11 +7237,11 @@ const WaterSchematicSimple: React.FC = () => {
 
   return (
     <Box sx={{ p: 2, bgcolor: 'background.default', minHeight: '100vh' }}>
-      <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+      <Typography id="card-daily" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main',textAlign:{md:"left",xs:"center"},fontSize:{ md:24 , xs:19 }}}>
         แผนผังสถานการณ์น้ำประจำวันที่ {formatThaiDay(teles[0]?.datetime) || 'ล่าสุด'}
       </Typography>
 
-      <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
+      <Box sx={{ display: 'flex',flexDirection:{md:"row",xs:"column"}, alignItems:{ md:'flex-start' ,xs:'center'}, justifyContent: 'space-between', mb: 1 }}>
         <Box sx={{ display: 'inline-flex', mb: 2.5, border: '0.5px solid', borderColor: 'divider', borderRadius: 2, overflow: 'hidden' }}>
           {[
             { label: 'แผนผังลุ่มน้ำพื้นที่โครงการ',      icon: <MapIcon   sx={{ fontSize: 18 }} />, index: 0 },

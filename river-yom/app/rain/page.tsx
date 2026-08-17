@@ -5,7 +5,7 @@ import { Box } from '@mui/material';
 import dynamic from 'next/dynamic';
 
 const RainStation = dynamic(
-  () => import('./components/RainStation'),
+  () => import('./RainStation'),
   { ssr: false } 
 );
 

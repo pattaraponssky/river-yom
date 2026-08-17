@@ -5,7 +5,7 @@ import { Box } from '@mui/material';
 import dynamic from 'next/dynamic';
 
 const ReservoirStation = dynamic(
-  () => import('./components/ReservoirStation'),
+  () => import('./ReservoirStation'),
   { ssr: false }   // ปิด SSR สำหรับ component นี้
 );
 export default function ReservoirPage() {

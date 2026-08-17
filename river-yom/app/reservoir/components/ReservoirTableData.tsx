@@ -7,8 +7,8 @@ import TableChartIcon from '@mui/icons-material/TableChart';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-import { textStyle, fontInfo } from '../../theme/style';
-import { getCellStyle, HeaderCellStyle } from '../../theme/style';
+import { textStyle, fontInfo } from '../../../theme/style';
+import { getCellStyle, HeaderCellStyle } from '../../../theme/style';
 
 interface GroupedData {
   [year: string]: [number, number | null][]; 

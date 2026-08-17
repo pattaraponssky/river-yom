@@ -3,7 +3,7 @@ import { Box } from '@mui/material';
 import dynamic from 'next/dynamic';
 
 const FlowStation = dynamic(
-  () => import('./components/FlowStation'),
+  () => import('./FlowStation'),
   { ssr: false }   // ปิด SSR สำหรับ component นี้
 );
 

@@ -1,4 +1,4 @@
-// src/components/TeleExportTable.tsx
+// src/components/FlowExportTable.tsx
 'use client';
 
 import React, { useState, useMemo, useEffect } from "react";
@@ -23,7 +23,7 @@ import TableChartIcon from "@mui/icons-material/TableChart";
 import TextSnippetIcon from "@mui/icons-material/TextSnippet";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
-import { HeaderCellStyle, getCellStyle } from '../../theme/style';
+import { HeaderCellStyle, getCellStyle } from '../../../theme/style';
 
 interface GroupedData {
   [year: string]: [number, number | null][];
@@ -32,17 +32,15 @@ interface GroupedData {
 interface Props {
   dischargeGroupedData?: GroupedData;
   wlGroupedData?: GroupedData;
-  rain_mmGroupedData?: GroupedData;
   availableYears?: string[];
   mode: "daily" | "hourly";
   sta_name?: string;
   sta_code?: string;
 }
 
-const TeleExportTable: React.FC<Props> = ({
+const FlowExportTable: React.FC<Props> = ({
   dischargeGroupedData = {},
   wlGroupedData = {},
-  rain_mmGroupedData = {},
   mode,
   sta_name,
   sta_code,
@@ -53,14 +51,13 @@ const TeleExportTable: React.FC<Props> = ({
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedYear, setSelectedYear] = useState("ทั้งหมด");
 
-  // ดึงปีจากข้อมูลทั้ง 3 ชุด
+  // ดึงปีจากข้อมูลทั้ง 2 ชุด
   const yearsFromData = useMemo(() => {
     const years = new Set<string>();
     Object.keys(dischargeGroupedData).forEach(y => years.add(y));
     Object.keys(wlGroupedData).forEach(y => years.add(y));
-    Object.keys(rain_mmGroupedData).forEach(y => years.add(y));
     return ['ทั้งหมด', ...Array.from(years).sort((a, b) => +a - +b)];
-  }, [dischargeGroupedData, wlGroupedData, rain_mmGroupedData]);
+  }, [dischargeGroupedData, wlGroupedData]);
 
   // รีเซ็ตปีเมื่อข้อมูลเปลี่ยน
   useEffect(() => {
@@ -94,22 +91,16 @@ const TeleExportTable: React.FC<Props> = ({
     });
   };
 
-  // รวมข้อมูลทั้งหมด + เติม null + เรียงตามเวลา + คำนวณฝนสะสมแยกปี
+  // รวมข้อมูลทั้งหมด + เติม null + เรียงตามเวลา
   const rows = useMemo(() => {
     const map = new Map<number, {
       timestamp: number;
       datetime: string;
       discharge: number | null;
       wl: number | null;
-      rain_mm: number | null;
-      rain_cumulative: number | null;
     }>();
 
-    const processYear = (
-      year: string,
-      data: GroupedData | undefined,
-      key: 'discharge' | 'wl' | 'rain_mm'
-    ) => {
+    const processYear = (year: string, data: GroupedData | undefined, key: 'discharge' | 'wl') => {
       if (!data || !data[year]) return;
       data[year].forEach(([ts, value]) => {
         if (!map.has(ts)) {
@@ -118,8 +109,6 @@ const TeleExportTable: React.FC<Props> = ({
             datetime: formatThaiDateTime(ts),
             discharge: null,
             wl: null,
-            rain_mm: null,
-            rain_cumulative: null,
           });
         }
         const row = map.get(ts)!;
@@ -128,32 +117,16 @@ const TeleExportTable: React.FC<Props> = ({
     };
 
     const yearsToProcess = selectedYear === 'ทั้งหมด'
-      ? Object.keys({ ...dischargeGroupedData, ...wlGroupedData, ...rain_mmGroupedData })
+      ? Object.keys({ ...dischargeGroupedData, ...wlGroupedData })
       : [selectedYear];
 
     yearsToProcess.forEach(year => {
       processYear(year, dischargeGroupedData, 'discharge');
       processYear(year, wlGroupedData, 'wl');
-      processYear(year, rain_mmGroupedData, 'rain_mm');
     });
 
-    const sortedRows = Array.from(map.values()).sort((a, b) => a.timestamp - b.timestamp);
-
-    // คำนวณฝนสะสม โดย reset ทุกครั้งที่ขึ้นปีใหม่ (นับจากต้นปีตาม timestamp จริง)
-    const cumulativeByYear: Record<string, number> = {};
-    sortedRows.forEach(row => {
-      const yearKey = new Date(row.timestamp).getFullYear().toString();
-      if (!(yearKey in cumulativeByYear)) {
-        cumulativeByYear[yearKey] = 0;
-      }
-      if (row.rain_mm !== null) {
-        cumulativeByYear[yearKey] += row.rain_mm;
-      }
-      row.rain_cumulative = Number(cumulativeByYear[yearKey].toFixed(2));
-    });
-
-    return sortedRows;
-  }, [dischargeGroupedData, wlGroupedData, rain_mmGroupedData, selectedYear, mode]);
+    return Array.from(map.values()).sort((a, b) => a.timestamp - b.timestamp);
+  }, [dischargeGroupedData, wlGroupedData, selectedYear, mode]);
 
   // Export Functions
   const exportToXLSX = () => {
@@ -161,57 +134,48 @@ const TeleExportTable: React.FC<Props> = ({
       [mode === "hourly" ? "วันที่/เวลา" : "วันที่"]: r.datetime,
       "อัตราการไหล (ลบ.ม./วินาที)": r.discharge !== null ? r.discharge : '',
       "ระดับน้ำ (ม.รทก.)": r.wl !== null ? r.wl : '',
-      "ปริมาณน้ำฝน (มม.)": r.rain_mm !== null ? r.rain_mm : '',
-      "ปริมาณน้ำฝนสะสม (มม.)": r.rain_cumulative !== null ? r.rain_cumulative : '',
     }));
 
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Tele Data");
+    XLSX.utils.book_append_sheet(wb, ws, "Flow Data");
     const buf = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-    saveAs(new Blob([buf]), `tele_data_${mode}_${sta_code}_${sta_name}.xlsx`);
+    saveAs(new Blob([buf]), `flow_data_${mode}_${sta_code}_${sta_name}.xlsx`);
   };
 
   const exportToCSV = () => {
     const headers = mode === "hourly"
-      ? ['วันที่/เวลา', 'อัตราการไหล (ลบ.ม./วินาที)', 'ระดับน้ำ (ม.รทก.)', 'ปริมาณน้ำฝน (มม.)', 'ปริมาณน้ำฝนสะสม (มม.)']
-      : ['วันที่', 'อัตราการไหล (ลบ.ม./วินาที)', 'ระดับน้ำ (ม.รทก.)', 'ปริมาณน้ำฝน (มม.)', 'ปริมาณน้ำฝนสะสม (มม.)'];
+      ? ['วันที่/เวลา', 'อัตราการไหล (ลบ.ม./วินาที)', 'ระดับน้ำ (ม.รทก.)']
+      : ['วันที่', 'อัตราการไหล (ลบ.ม./วินาที)', 'ระดับน้ำ (ม.รทก.)'];
 
     const csvRows = rows.map(r => [
       `"${r.datetime}"`,
       r.discharge !== null ? r.discharge : '',
       r.wl !== null ? r.wl : '',
-      r.rain_mm !== null ? r.rain_mm : '',
-      r.rain_cumulative !== null ? r.rain_cumulative : '',
     ]);
 
     const content = '\uFEFF' + headers.join(',') + '\n' + csvRows.map(r => r.join(',')).join('\n');
-    saveAs(new Blob([content], { type: 'text/csv;charset=utf-8' }), `tele_data_${mode}_${sta_code}_${sta_name}.csv`);
+    saveAs(new Blob([content], { type: 'text/csv;charset=utf-8' }), `flow_data_${mode}_${sta_code}_${sta_name}.csv`);
   };
 
   const exportToTXT = () => {
     const headers = mode === "hourly"
-      ? ['วันที่/เวลา', 'อัตราการไหล (ลบ.ม./วินาที)', 'ระดับน้ำ (ม.รทก.)', 'ปริมาณน้ำฝน (มม.)', 'ปริมาณน้ำฝนสะสม (มม.)']
-      : ['วันที่', 'อัตราการไหล (ลบ.ม./วินาที)', 'ระดับน้ำ (ม.รทก.)', 'ปริมาณน้ำฝน (มม.)', 'ปริมาณน้ำฝนสะสม (มม.)'];
+      ? ['วันที่/เวลา', 'อัตราการไหล (ลบ.ม./วินาที)', 'ระดับน้ำ (ม.รทก.)']
+      : ['วันที่', 'อัตราการไหล (ลบ.ม./วินาที)', 'ระดับน้ำ (ม.รทก.)'];
 
     const txtRows = rows.map(r => [
       r.datetime,
       r.discharge !== null ? r.discharge.toFixed(3) : '-',
       r.wl !== null ? r.wl.toFixed(3) : '-',
-      r.rain_mm !== null ? r.rain_mm.toFixed(2) : '-',
-      r.rain_cumulative !== null ? r.rain_cumulative.toFixed(2) : '-',
     ]);
 
     const content = '\uFEFF' + headers.join('\t') + '\n' + txtRows.map(r => r.join('\t')).join('\n');
-    saveAs(new Blob([content], { type: 'text/plain;charset=utf-8' }), `tele_data_${mode}_${sta_code}_${sta_name}.txt`);
+    saveAs(new Blob([content], { type: 'text/plain;charset=utf-8' }), `flow_data_${mode}_${sta_code}_${sta_name}.txt`);
   };
 
   // ตรวจสอบว่ามีข้อมูลประเภทไหนบ้าง
   const hasDischarge = Object.keys(dischargeGroupedData).length > 0;
   const hasWL = Object.keys(wlGroupedData).length > 0;
-  const hasRain = Object.keys(rain_mmGroupedData).length > 0;
-
-  const totalColumns = 1 + [hasDischarge, hasWL, hasRain, hasRain].filter(Boolean).length;
 
   return (
     <Box>
@@ -298,7 +262,7 @@ const TeleExportTable: React.FC<Props> = ({
       {/* ตารางข้อมูล */}
       <Box sx={{ 
         maxHeight: '70vh', 
-        overteleY: 'auto', 
+        overflowY: 'auto', 
         border: `1px solid ${theme.palette.divider}`, 
         borderRadius: 2,
         backgroundColor: theme.palette.background.paper,
@@ -320,19 +284,13 @@ const TeleExportTable: React.FC<Props> = ({
                   ระดับน้ำ (ม.รทก.)
                 </TableCell>
               )}
-              {hasRain && (
-                <>
-                  <TableCell sx={HeaderCellStyle}>ปริมาณน้ำฝน (มม.)</TableCell>
-                  <TableCell sx={HeaderCellStyle}>ปริมาณน้ำฝนสะสม (มม.)</TableCell>
-                </>
-              )}
             </TableRow>
           </TableHead>
           <TableBody>
             {rows.length === 0 ? (
               <TableRow>
                 <TableCell 
-                  colSpan={totalColumns} 
+                  colSpan={hasDischarge && hasWL ? 3 : 2} 
                   sx={{ 
                     py: 6, 
                     textAlign: 'center', 
@@ -369,16 +327,6 @@ const TeleExportTable: React.FC<Props> = ({
                       {row.wl !== null ? row.wl.toFixed(3) : '-'}
                     </TableCell>
                   )}
-                  {hasRain && (
-                    <>
-                      <TableCell sx={getCellStyle(idx)}>
-                        {row.rain_mm !== null ? row.rain_mm.toFixed(2) : '-'}
-                      </TableCell>
-                      <TableCell sx={getCellStyle(idx)}>
-                        {row.rain_cumulative !== null ? row.rain_cumulative.toFixed(2) : '-'}
-                      </TableCell>
-                    </>
-                  )}
                 </TableRow>
               ))
             )}
@@ -389,4 +337,4 @@ const TeleExportTable: React.FC<Props> = ({
   );
 };
 
-export default TeleExportTable;
+export default FlowExportTable;

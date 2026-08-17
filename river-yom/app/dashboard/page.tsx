@@ -36,10 +36,12 @@ export default function Dashboard() {
   return (
   <>
     <Container maxWidth="xl" sx={{ py: 2 }}>
-      <Typography variant="h5" id="card-daily" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+      <Typography id="card-daily" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main',textAlign:{md:"left",xs:"center"},fontSize:{ md:24 ,xs:19 }}}>
         ภาพรวมสถานการณ์น้ำ วันที่ {formatThaiDay(Date())}
       </Typography>
-        <DashboardCards data={dailySummary}/>
+        <Box sx={{ minHeight: { xs: 180, md: 120 } }}>
+          <DashboardCards data={dailySummary} />
+        </Box>
       <Grid size={{xs:12, md:6}}>
         <Box id="map" sx={{
               display:"flex",

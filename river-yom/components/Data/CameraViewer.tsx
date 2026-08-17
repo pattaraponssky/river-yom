@@ -53,29 +53,6 @@ const SnapshotCamera: React.FC<{
         </Box>
       )}
 
-      {/* {error ? (
-        <Box sx={{
-          height: 200, display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center', bgcolor: '#1a1a1a',
-        }}>
-          <VideocamOffIcon sx={{ fontSize: 48, color: 'grey.600', mb: 1 }} />
-          <Typography sx={{ color: 'grey.500', fontFamily: 'Prompt', fontSize: '0.85rem' }}>
-            ไม่สามารถเชื่อมต่อกล้องได้
-          </Typography>
-          <IconButton onClick={refresh} sx={{ color: 'grey.400', mt: 1 }} size="small">
-            <RefreshIcon fontSize="small" />
-          </IconButton>
-        </Box>
-      ) : (
-        <img
-          src={src}
-          alt={config.label}
-          style={{ width: '100%', height: 'auto', display: loading ? 'none' : 'block' }}
-          onLoad={() => { setLoading(false); setLastUpdate(new Date()); }}
-          onError={() => { setLoading(false); setError(true); }}
-        />
-      )} */}
-
       {lastUpdate && !error && (
         <Box sx={{
           position: 'absolute', bottom: 6, right: 8,
@@ -161,7 +138,16 @@ const CameraViewer: React.FC<CameraViewerProps> = ({ cameras, staCode, defaultCa
   );
   const [fullscreen, setFullscreen]   = useState(false);
   const [refreshKey, setRefreshKey]   = useState(0);
-  
+
+  // ─── สำคัญ: useState ด้านบนคำนวณค่าเริ่มต้นแค่ตอน mount เท่านั้น ───────
+  useEffect(() => {
+    const nextCam =
+      defaultCameraId && cameras.some(c => c.id === defaultCameraId)
+        ? defaultCameraId
+        : (cameras[0]?.id ?? '');
+    setActiveCam(nextCam);
+    setRefreshKey(k => k + 1); // reset stream เมื่อสลับสถานี
+  }, [staCode, defaultCameraId]);
 
   const currentCam = cameras.find(c => c.id === activeCam) ?? cameras[0];
 

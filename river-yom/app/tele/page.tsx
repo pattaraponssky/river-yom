@@ -3,7 +3,7 @@ import { Box } from '@mui/material';
 import dynamic from 'next/dynamic';
 
 const TeleStation = dynamic(
-  () => import('./components/TeleStation'),
+  () => import('./TeleStation'),
   { ssr: false }   // ปิด SSR สำหรับ component นี้
 );
 

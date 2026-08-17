@@ -98,7 +98,7 @@ export default function Dashboard() {
 
   return (
     <Container maxWidth="xl" sx={{ py: 2 }}>
-      <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+      <Typography id="card-daily" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main',textAlign:{md:"left",xs:"center"},fontSize:{ md:24 , xs:19 }}}>
         ผลพยากรณ์น้ำโดยแบบจำลองโมเดลลุ่มน้ำ วันที่ {formatThaiDay(Date())}
       </Typography>
 

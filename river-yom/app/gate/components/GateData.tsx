@@ -20,8 +20,8 @@ import {
   useTheme,
   SelectChangeEvent,
 } from '@mui/material';
-import GateChart from '@/components/Data/GateChartData';
-import GateExportTable from '@/components/Data/GateTableData';
+import GateChart from '@/app/gate/components/GateChartData';
+import GateExportTable from '@/app/gate/components/GateTableData';
 import CenteredLoading from '@/components/Layout/CenteredLoading';
 import { API_URL, Path_URL } from '@/lib/utility';
 import { titleStyle, textStyle, HeaderCellStyle, fontInfo } from '@/theme/style';
