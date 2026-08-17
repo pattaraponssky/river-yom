@@ -9,8 +9,12 @@ export interface WarnLevel {
 
 // ─── Tele (สถานีโทรมาตร) ──────────────────────────────────────
 export const TELE_WARN_LEVELS: Record<string, WarnLevel> = {
-  "YR.01": { normal: 41.0, watch: 43.0, alert: 45.0, crisis: 47.0 },
-  "YR.02": { normal: 42.0, watch: 44.0, alert: 46.0, crisis: 48.0 },
+  "YR.01": { normal: 38.07, watch: 38.96, alert: 39.82, crisis: 40.67 },
+  "YR.02": { normal: 40.55, watch: 40.89, alert: 41.23, crisis: 41.57 },
+  "YR.03": { normal: 43.21, watch: 43.60, alert: 43.98, crisis: 44.37 },
+  "YR.04": { normal: 41.13, watch: 41.71, alert: 42.28, crisis: 42.86 },
+  "YR.05": { normal: 37.78, watch: 38.62, alert: 39.46, crisis: 40.30 },
+  "YR.06": { normal: 37.99, watch: 38.48, alert: 39.02, crisis: 39.55 },
 };
 
 // ─── Gate (ประตูระบายน้ำ) ─────────────────────────────────────
@@ -28,15 +32,10 @@ export const FLOW_WARN_LEVELS: Record<string, WarnLevel> = {
 
 };
 
-
 // ─── Rain (ฝน) ────────────────────────────────────────────────
 export const RAIN_WARN_LEVELS: Record<string, WarnLevel> = {
   default: { normal: 0, watch: 35, alert: 60, crisis: 90 },
 };
-
-// ─── Helper: ดึงค่า warn level พร้อม fallback ────────────────
-// ถ้าไม่มี sta_code ใน record จะคืน undefined
-// ใช้ ?? เพื่อ fallback ไปที่ default ได้
 
 export function getWarnLevel(
   levels: Record<string, WarnLevel>,

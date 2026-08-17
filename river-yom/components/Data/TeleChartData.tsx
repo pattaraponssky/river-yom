@@ -183,7 +183,7 @@ const FlowChart: React.FC<DataChartProps> = ({ data, type, height = 350 ,sta_cod
         type: 'datetime',
         min: new Date(`${BASE_YEAR}-01-01`).getTime(),
         max: new Date(`${BASE_YEAR}-12-31`).getTime(),
-        labels: { datetimeUTC: false, format: 'dd MMM HH:mm', style: { colors: textColor } },
+        labels: { datetimeUTC: false, format: 'dd MMM', style: { colors: textColor } },
         axisBorder: { show: false },
         axisTicks: { color: gridColor },
       },
@@ -257,11 +257,130 @@ const FlowChart: React.FC<DataChartProps> = ({ data, type, height = 350 ,sta_cod
         ],
       tooltip: { intersect: false, x: { format: 'dd MMM HH:mm' } },
       colors: ['#3366FF','#FF0033','#00FF33','#CD853F','#FF9900','#66CCFF','#9933FF','#FFD700','#000000','orange'],
-    }
+    },
+    rain_sum: {
+      chart: {
+        id: 'rain-data',
+        zoom: { enabled: true },
+        background: bgColor,
+        fontFamily: "Prompt",
+        foreColor: textColor,
+        stacked: false,
+      },
+      title: {
+        text: 'ปริมาณฝนสะสม',
+        align: "center" as const,
+        style: {
+          fontSize: '18px',
+          color: textColor,
+          fontFamily: 'Prompt',
+        },
+      },
+      stroke: {
+          width: [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4], 
+        dashArray: [0, 0, 0, 0, 0, 0,0, 0, 0, 0, 0, 0, 0, 0,0, 0, 0], 
+        curve: 'smooth' as const,
+      },  
+      xaxis: {
+        type: 'datetime',
+        min: new Date(`${BASE_YEAR}-01-01`).getTime(),
+        max: new Date(`${BASE_YEAR}-12-31`).getTime(),
+        labels: { datetimeUTC: false, format: 'dd MMM', style: { colors: textColor }},
+        axisBorder: { show: false },
+        axisTicks: { color: gridColor },
+      },
+      yaxis: [
+        
+          {
+            seriesName: 'ปริมาณน้ำฝนสะสม (มม.)',
+            labels: {
+              formatter: (val: number) => val.toFixed(2),
+              style: { fontSize: '12px', color: textColor },
+            },
+            title: {
+              text: 'ปริมาณน้ำฝนสะสม (มม.)',
+              style: { fontSize: '16px', color: textColor },
+            },
+          },
+        ],
+    
+        tooltip: {
+          shared: true,        // แสดง tooltip หลาย series พร้อมกัน
+          intersect: false,    // ไม่จำเป็นต้องชี้ตรงจุดพอดี
+          x: { format: 'dd MMM' },
+          y: {
+            formatter: (val: number) => `${val.toFixed(2).toLocaleString()} มม.`,
+          },
+        },
+      colors: ['#3366FF','#FF0033','#00FF33','#CD853F','#FF9900','#66CCFF','#9933FF','#009966','#000000','#333399'],
+    },
+    rain: {
+      chart: {
+        id: 'rain-rain',
+        zoom: { enabled: true },
+        toolbar: { show: true },
+        background: bgColor,
+      fontFamily: "Prompt",
+      foreColor: textColor,
+  
+      },
+      markers: {
+        size: 0,
+        strokeWidth: 0,
+        hover: {
+          sizeOffset: 0,
+        },
+      },
+      
+      title: {
+        text: 'ปริมาณฝนรายวัน',
+        align: "center" as const,
+        style: {
+          fontSize: '18px',
+          color: textColor,
+          fontFamily: 'Prompt',
+        },
+      },
+      stroke: {
+        width: Array(20).fill(2),
+        dashArray:  Array(20).fill(0),
+        curve: 'smooth' as const,
+      },
+      xaxis: {
+        type: 'datetime',
+        min: new Date(`${BASE_YEAR}-01-01`).getTime(),
+        max: new Date(`${BASE_YEAR}-12-31`).getTime(),
+        labels: { datetimeUTC: false, format: 'dd MMM', style: { colors: textColor }},
+        axisBorder: { show: false },
+        axisTicks: { color: gridColor },
+      },
+      yaxis: [
+          {
+            seriesName: 'ปริมาณน้ำฝน (มม.)',
+            labels: {
+              formatter: (val: number) => val.toFixed(2),
+              style: { fontSize: '12px', color: textColor },
+            },
+            title: {
+              text: 'ปริมาณน้ำฝน (มม.)',
+              style: { fontSize: '16px', color: textColor },
+            },
+          }
+        ],
+        tooltip: {
+          shared: true,        // แสดง tooltip หลาย series พร้อมกัน
+          intersect: false,    // ไม่จำเป็นต้องชี้ตรงจุดพอดี
+          x: { format: 'dd MMM' },
+          y: {
+            formatter: (val: number) => `${val.toFixed(2).toLocaleString()} มม.`,
+          },
+        },
+      colors: ['#3366FF','#FF0033','#00FF33','#CD853F','#FF9900','#66CCFF','#9933FF','#009966','#000000','#333399'],
+    },
   };
 
   // เลือก options ตาม type
-  const baseOptions = chartOptionsMap[type as 'wl' | 'discharge'] as ApexCharts.ApexOptions;
+  const baseOptions = chartOptionsMap[type as 'wl' | 'discharge' | 'rain_sum' | 'rain'] as ApexCharts.ApexOptions;
   let annotations: ApexAnnotations | undefined;
   if (type === 'wl') {
     annotations = sta_code ? flowAnnotations[sta_code] || { yaxis: [] } : undefined;

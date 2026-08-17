@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import {
   Container,
@@ -49,9 +48,12 @@ const DataTele: React.FC<{ propsSelectedStation?: string }> = ({ propsSelectedSt
 
   const [chartDataWL, setChartDataWL] = useState<any>(null);
   const [chartDataDischarge, setChartDataDischarge] = useState<any>(null);
+  const [chartDataRain, setChartDataRain]   = useState<any>(null); // ฝนรายช่วง
+  const [chartDataRainSum, setChartDataRainSum]   = useState<any>(null); // ฝนสะสม
 
   const [wlGroupedData, setWlGroupedData] = useState<{ [year: string]: [number, number][] }>({});
   const [dischargeGroupedData, setDischargeGroupedData] = useState<{ [year: string]: [number, number][] }>({});
+  const [rainGroupedData, setRainGroupedData] = useState<{ [year: string]: [number, number][] }>({});
 
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -86,8 +88,11 @@ const DataTele: React.FC<{ propsSelectedStation?: string }> = ({ propsSelectedSt
       setAvailableYears([]);
       setChartDataWL(null);
       setChartDataDischarge(null);
+      setChartDataRain(null);
+      setChartDataRainSum(null);
       setWlGroupedData({});
       setDischargeGroupedData({});
+      setRainGroupedData({});
       setInitialLoad(false);
     }
   }, [selectedStation, mode]);
@@ -122,7 +127,7 @@ const DataTele: React.FC<{ propsSelectedStation?: string }> = ({ propsSelectedSt
 
   const fetchTeleData = async (start: string, end: string) => {
     const endpoint = mode === "daily" ? "tele_data" : "tele_hourly_data";
-    const dateField = mode === "daily" ? "datetime" : "datetime";
+    const dateField = mode === "daily" ? "date" : "datetime";
 
     const res = await fetch(`${API_URL}/api/${endpoint}/${selectedStation}?startYear=${start}&endYear=${end}`);
     const data = await res.json();
@@ -130,8 +135,11 @@ const DataTele: React.FC<{ propsSelectedStation?: string }> = ({ propsSelectedSt
     if (!data?.data?.length) {
       setWlGroupedData({});
       setDischargeGroupedData({});
+      setRainGroupedData({});
       setChartDataWL(null);
       setChartDataDischarge(null);
+      setChartDataRain(null);
+      setChartDataRainSum(null);
       return;
     }
 
@@ -141,9 +149,11 @@ const DataTele: React.FC<{ propsSelectedStation?: string }> = ({ propsSelectedSt
     // สำหรับตาราง (ใช้ timestamp จริง)
     const wlTable: { [year: string]: [number, number][] } = {};
     const dischargeTable: { [year: string]: [number, number][] } = {};
+    const rainTable: { [year: string]: [number, number][] } = {};
 
     const wlSeriesMap = new Map<string, [number, number][]>();
     const dischargeSeriesMap = new Map<string, [number, number][]>();
+    const rainSeriesMap = new Map<string, [number, number][]>();
 
     rawData.forEach((item: any) => {
       const datetime = new Date(item[dateField]);
@@ -180,14 +190,30 @@ const DataTele: React.FC<{ propsSelectedStation?: string }> = ({ propsSelectedSt
         if (!dischargeSeriesMap.has(originalYear)) dischargeSeriesMap.set(originalYear, []);
         dischargeSeriesMap.get(originalYear)!.push([chartTimestamp, value]);
       }
+
+      // ปริมาณน้ำฝน
+      if (item.rain_mm != null) {
+        const value = parseFloat(item.rain_mm);
+
+        if (!rainTable[originalYear]) rainTable[originalYear] = [];
+        rainTable[originalYear].push([datetime.getTime(), value]);
+
+        if (!rainSeriesMap.has(originalYear)) rainSeriesMap.set(originalYear, []);
+        rainSeriesMap.get(originalYear)!.push([chartTimestamp, value]);
+      }
     });
 
     // อัปเดตตาราง
     setWlGroupedData(wlTable);
     setDischargeGroupedData(dischargeTable);
+    setRainGroupedData(rainTable);
 
     // ดึงปีทั้งหมด
-    const years = Array.from(new Set([...wlSeriesMap.keys(), ...dischargeSeriesMap.keys()])).sort();
+    const years = Array.from(new Set([
+      ...wlSeriesMap.keys(),
+      ...dischargeSeriesMap.keys(),
+      ...rainSeriesMap.keys(),
+    ])).sort();
 
     // ฟังก์ชันสร้าง series สำหรับกราฟ
     const createSeries = (map: Map<string, [number, number][]>, prefix: string) =>
@@ -207,6 +233,35 @@ const DataTele: React.FC<{ propsSelectedStation?: string }> = ({ propsSelectedSt
 
     const dischargeSeries = createSeries(dischargeSeriesMap, "อัตราการไหล ");
     setChartDataDischarge(dischargeSeries.length > 0 ? { series: dischargeSeries } : null);
+
+    // กราฟปริมาณน้ำฝนรายช่วง (แท่ง) แยกตามปี
+    const rainSeries = years
+      .filter(year => rainSeriesMap.has(year))
+      .map(year => ({
+        name: `ปริมาณฝน ปี ${Number(year) + 543}`,
+        type: "bar" as const,
+        data: rainSeriesMap.get(year)!.sort((a, b) => a[0] - b[0]),
+      }));
+    setChartDataRain(rainSeries.length > 0 ? { series: rainSeries } : null);
+
+    // กราฟปริมาณน้ำฝนสะสม (เส้น) สะสมแยกตามปี รีเซ็ตทุกต้นปี
+    const rainSumSeries = years
+      .filter(year => rainSeriesMap.has(year))
+      .map(year => {
+        let sum = 0;
+        const sorted = [...rainSeriesMap.get(year)!].sort((a, b) => a[0] - b[0]);
+        return {
+          name: `ฝนสะสม ปี ${Number(year) + 543}`,
+          type: "line" as const,
+          data: sorted.map(([ts, v]) => {
+            sum += v;
+            return [ts, +sum.toFixed(2)] as [number, number];
+          }),
+          marker: { enabled: false },
+          lineWidth: 1.5,
+        };
+      });
+    setChartDataRainSum(rainSumSeries.length > 0 ? { series: rainSumSeries } : null);
   };
 
   // ปุ่มแสดงผล
@@ -312,21 +367,6 @@ const DataTele: React.FC<{ propsSelectedStation?: string }> = ({ propsSelectedSt
               </ToggleButtonGroup>
             </Grid>
 
-            {/* <Grid size={{ xs: 12, md: 2.5 }}>
-              <FormControl fullWidth>
-                <InputLabel sx={{ fontFamily: "Prompt" }}>รูปแบบข้อมูล</InputLabel>
-                <Select
-                  value={mode}
-                  label="รูปแบบข้อมูล"
-                  onChange={(e) => setMode(e.target.value as DataMode)}
-                  sx={fontInfo}
-                >
-                  <MenuItem value="daily">รายวัน</MenuItem>
-                  <MenuItem value="hourly">รายชั่วโมง</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid> */}
-
             <Grid size={{xs:12,md:5}}>
               <FormControl fullWidth>
                 <InputLabel sx={{ fontFamily: "Prompt" }}>เลือกสถานี</InputLabel>
@@ -425,10 +465,17 @@ const DataTele: React.FC<{ propsSelectedStation?: string }> = ({ propsSelectedSt
           {chartDataDischarge && (
             <TeleChart data={chartDataDischarge} type="discharge" sta_code={selectedStation ?? ""} sta_name={station.sta_name} mode={mode} />
           )}
+          {chartDataRain && (
+            <TeleChart data={chartDataRain} type="rain" sta_code={selectedStation ?? ""} sta_name={station.sta_name} mode={mode} isDark={isDark} />
+          )}
+          {chartDataRainSum && (
+            <TeleChart data={chartDataRainSum} type="rain_sum" sta_code={selectedStation ?? ""} sta_name={station.sta_name} mode={mode} isDark={isDark} />
+          )}
 
           <TeleExportTable
             wlGroupedData={wlGroupedData}
             dischargeGroupedData={dischargeGroupedData}
+            rain_mmGroupedData={rainGroupedData}
             mode={mode}
             sta_name={station.sta_name}
             sta_code={station.sta_code}

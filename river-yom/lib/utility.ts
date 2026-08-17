@@ -40,7 +40,6 @@ export const nowThaiDate = () => {
     "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."
   ];
 
-
   const month = monthNamesThai[date.getMonth()];
   const day = date.getDate().toString().padStart(2, '0');
 

@@ -88,10 +88,10 @@ const StationCrossSectionChart: React.FC<Props> = ({
     // เกณฑ์เตือนภัย
     if (warnLevels) {
       [
-        { val: warnLevels.normal, color: '#388E3C', label: `ปกติ ${warnLevels.normal.toFixed(2)} ม.รทก.`,       tc: '#fff' ,offsetX: -10 },
-        { val: warnLevels.watch,  color: '#FFD700', label: `เฝ้าระวัง ${warnLevels.watch.toFixed(2)} ม.รทก.`,   tc: '#333' ,offsetX: -60 },
-        { val: warnLevels.alert,  color: '#F57C00', label: `เตือนภัย ${warnLevels.alert.toFixed(2)} ม.รทก.`,    tc: '#fff' ,offsetX: -110 },
-        { val: warnLevels.crisis, color: '#D32F2F', label: `วิกฤต ${warnLevels.crisis.toFixed(2)} ม.รทก.`,      tc: '#fff' ,offsetX: -160 },
+        { val: warnLevels.normal, color: '#388E3C', label: `ปกติ ${warnLevels.normal.toFixed(2)} ม.รทก.`,       tc: '#fff' ,offsetX: -120 },
+        { val: warnLevels.watch,  color: '#FFD700', label: `เฝ้าระวัง ${warnLevels.watch.toFixed(2)} ม.รทก.`,   tc: '#333' ,offsetX: -170 },
+        { val: warnLevels.alert,  color: '#F57C00', label: `เตือนภัย ${warnLevels.alert.toFixed(2)} ม.รทก.`,    tc: '#fff' ,offsetX: -220 },
+        { val: warnLevels.crisis, color: '#D32F2F', label: `วิกฤต ${warnLevels.crisis.toFixed(2)} ม.รทก.`,      tc: '#fff' ,offsetX: -270 },
       ].forEach(l => result.push({
         y: l.val + shiftValue,
         borderColor: l.color, borderWidth: 1.5, strokeDashArray: 4,
@@ -189,7 +189,7 @@ const StationCrossSectionChart: React.FC<Props> = ({
       },
     },
     tooltip: {
-      x: { formatter: (v: number) => `เมตรที่ ${v}` },
+      x: { formatter: (v: number) => `เมตรที่ ${v*5}` },
       y: { formatter: (v: any) => `${(Number(v) - shiftValue).toFixed(2)} ม.รทก.` },
     },
     stroke:  { width: [2, 2], curve: 'straight' },

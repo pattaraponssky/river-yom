@@ -751,10 +751,10 @@ use ResponseTrait;
     }
 
     private $stationMapping = [
-        'LKBU' => '120142', 
-        'YOM008' => '390022', 
-        'YOM007' => '590042', 
-        'KRMT' => '590082',
+        'LKBU' => 'LKBU', 
+        'YOM008' => 'YOM008', 
+        'YOM007' => 'YOM007', 
+        'KRMT' => 'KRMT',
     ];
 
     /**
@@ -827,7 +827,7 @@ use ResponseTrait;
             $utokIds = [2];
             $filteredData = [];
             $stationsAllowed = [
-                '120161', '380012', '390220'
+                '120160', '380012', '390220'
             ];
 
             // กำหนดวันที่เมื่อวาน (ใช้เก็บในฐานข้อมูล)
@@ -952,15 +952,15 @@ use ResponseTrait;
         $model = new \App\Models\RainModel();
 
         // รหัสสถานีจาก RID (กรมชลฯ)
-        $stationsRID = ['120161', '380012', '390220'];
+        $stationsRID = ['120160', '380012', '390220'];
         $utokIds = [2];
 
         $stationsThaiwater = ['664', '622', '645', '642'];
         $thaiwaterMapping = [
-            '622' => '120142', 
-            '664' => '390022', 
-            '645' => '590042', 
-            '642' => '590082', 
+            '622' => 'LKBU', 
+            '664' => 'YOM008', 
+            '645' => 'YOM007', 
+            '642' => 'KRMT', 
         ];
 
         $start = strtotime($startDate);
