@@ -226,6 +226,9 @@ $routes->get('api/stations', 'Stations::index');
 $routes->get('api/stations/(:segment)', 'Equipment::byStation/$1');
 $routes->get('api/stations/(:segment)', 'Stations::show/$1');
 
+$routes->post('api/report/upload', 'Report::upload');
+$routes->get('api/report/files', 'Report::listFiles');
+
 $routes->group('aboutus', function($routes) {
     $routes->get('/', 'AboutUs::index');
     $routes->put('update/(:num)', 'AboutUs::update/$1');

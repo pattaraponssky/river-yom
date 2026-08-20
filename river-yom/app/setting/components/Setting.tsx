@@ -22,6 +22,7 @@ import InfoSeaStation from "@/components/Setting/Info/SeaStaion";
 import { BoxStyle, fontTitle, titleStyle } from "@/theme/style";
 import { useAuth } from "@/contexts/AuthContext";
 import EquipmentPage from "@/app/equipment/page";
+import ReportUploadForm from "@/components/Setting/Data/ReportUpload";
 
 
 
@@ -83,18 +84,18 @@ const Setting: React.FC = () => {
             iconPosition="start"
             label="อัปเดตข้อมูลย้อนหลัง"
           />
-          {/* <Tab
-            sx={{ ...fontTitle}}
-            icon={<HomeRepairService />} // ไอคอนลิงค์เพิ่มเติม
-            iconPosition="start"
-            label="ประวัติการทำงาน"
-          /> */}
           <Tab
             sx={{ ...fontTitle}}
             icon={<Info />} // ไอคอนเกี่ยวกับเรา
             iconPosition="start"
             label="ข้อมูลเว็บไซต์"
-          />
+            />
+          <Tab
+              sx={{ ...fontTitle}}
+              icon={<HomeRepairService />} // ไอคอนลิงค์เพิ่มเติม
+              iconPosition="start"
+              label="อัปโหลดรายงานประจำวัน"
+            />
         </Tabs>
 
         {/* Sub Tabs - Show only when 'ข้อมูลสถานี' is selected */}
@@ -117,13 +118,6 @@ const Setting: React.FC = () => {
 
         {/* Content Display */}
         <Box sx={{ paddingTop: "20px" }}>
-
-          {/* {mainTab === 0 && (
-            <Typography sx={{ marginBottom: "1rem", fontWeight: 600, ...titleStyle, color: "#28378B" }}>
-              ⚙️ หน้าการตั้งค่าระบบ 
-            </Typography>
-          )}
-           */}
             {/* {mainTab === 0 && subTab === 0 && <InfoDamStation />} */}
             {mainTab === 0 && subTab === 0 && <InfoRainStation />}
             {mainTab === 0 && subTab === 1 && <InfoFlowStation />}
@@ -172,18 +166,17 @@ const Setting: React.FC = () => {
                 <Grid size={{ xs: 12, sm: 4 }}>
                     <ManualUpdateGate />
                 </Grid>
+                
               </Grid>
               </Paper>
             </Box>
           )}
-
-          {/* {mainTab === 2 && (
-            <Typography sx={{ marginBottom: "1rem", fontWeight: 600, ...titleStyle, color: "#28378B" }}>
-            </Typography>
-          )} */}
-
           {mainTab === 2 && (
-              <EditAboutUs/>
+            <EditAboutUs/>
+          )}
+
+           {mainTab === 3 && (
+            <ReportUploadForm/>
           )}
         </Box>
       </Box>

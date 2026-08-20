@@ -71,6 +71,19 @@ const SnapshotCamera: React.FC<{
 const MjpegCamera: React.FC<{ config: CameraConfig }> = ({ config }) => {
   const [error, setError]     = useState(false);
   const [loading, setLoading] = useState(true);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (loading) {
+      timerRef.current = setTimeout(() => setLoading(true), 1000); 
+    } else {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      setLoading(false);
+    }
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [loading]);
 
   return (
     <Box sx={{ position: 'relative', width: '100%', bgcolor: '#000', borderRadius: 1, overflow: 'hidden' }}>

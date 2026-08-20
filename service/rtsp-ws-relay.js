@@ -28,13 +28,14 @@ const CAMERAS = {
   'kpk_2': { type: 'ws', url: 'ws://wms-rio3.rid.go.th/cctv-b/camera/23' },
   'kpk_gate1': { type: 'ws', url: 'ws://wms-rio3.rid.go.th/cctv-b/camera/36' },
 
-  'YR.01': { type: 'rtsp', url: 'rtsp://oper:itthirit2568@10.147.17.10:11012/Streaming/Channels/402' },
-  'YR.02': { type: 'rtsp', url: 'rtsp://oper:itthirit2568@10.147.17.10:11012/Streaming/Channels/402' },
-  'YR.03': { type: 'rtsp', url: 'rtsp://oper:itthirit2568@10.147.17.10:11012/Streaming/Channels/402' },
-  'YR.04': { type: 'rtsp', url: 'rtsp://oper:itthirit2568@10.147.17.10:11012/Streaming/Channels/402' },
-  'YR.05': { type: 'rtsp', url: 'rtsp://oper:itthirit2568@10.147.17.10:11012/Streaming/Channels/402' },
-  'YR.06': { type: 'rtsp', url: 'rtsp://oper:itthirit2568@10.147.17.10:11012/Streaming/Channels/402' },
+  'YR.01': { type: 'rtsp', url: 'rtsp://admin:P@ssw0rd2026@10.147.17.129:554/Streaming/Channels/101' },
+  'YR.02': { type: 'rtsp', url: 'rtsp://admin:P@ssw0rd2026@10.147.17.217:554/Streaming/Channels/101' },
+  'YR.03': { type: 'rtsp', url: 'rtsp://admin:P@ssw0rd2026@10.147.17.171:554/Streaming/Channels/101' },
+  'YR.04': { type: 'rtsp', url: 'rtsp://admin:P@ssw0rd2026@10.147.17.237:554/Streaming/Channels/101' },
+  'YR.05': { type: 'rtsp', url: 'rtsp://admin:P@ssw0rd2026@10.147.17.97:554/Streaming/Channels/101' },
+  'YR.06': { type: 'rtsp', url: 'rtsp://admin:P@ssw0rd2026@10.147.17.232:554/Streaming/Channels/101' },
 };
+
 
 // const FFMPEG_PATH   = 'ffmpeg';
 // const WEBSOCAT_PATH = 'websocat';
@@ -51,16 +52,37 @@ function buildPipeline(camId) {
 
   if (cam.type === 'rtsp') {
     const proc = spawn(FFMPEG_PATH, [
-      '-rtsp_transport', 'tcp',
-      '-i', cam.url,
-      '-c', 'copy',
-      '-f', 'mpegts',
-      '-flush_packets', '1',
-      'pipe:1',
+        '-rtsp_transport', 'tcp',
+        '-rtsp_flags', 'prefer_tcp',
+        '-timeout', '5000000',
+        '-i', cam.url,
+        '-c:v', 'libx264',
+        '-preset', 'ultrafast',
+        '-tune', 'zerolatency',
+        '-profile:v', 'baseline',
+        '-pix_fmt', 'yuv420p',
+        '-g', '15',
+        '-bf', '0',
+        '-b:v', '1500k',
+        '-maxrate', '1500k',
+        '-bufsize', '3000k',
+        '-fflags', '+genpts+igndts+nobuffer+discardcorrupt',
+        '-flags', 'low_delay',
+        '-avoid_negative_ts', 'make_zero',
+        '-f', 'mpegts',
+        '-flush_packets', '1',
+        'pipe:1',
     ], { windowsHide: true });
-    proc.stderr.on('data', (d) => console.error(`[ffmpeg ${camId}]`, d.toString()));
+
+    proc.stderr.on('data', (d) => {
+        const msg = d.toString();
+        if (msg.includes('error') || msg.includes('Error') || msg.includes('failed') || msg.includes('Connection')) {
+        console.error(`[ffmpeg ${camId}]`, msg.trim());
+        }
+    });
+
     return { procs: [proc], output: proc.stdout };
-  }
+    }
 
   if (cam.type === 'ws') {
     // ต้นทาง WS เป็น mpeg2video → ต้อง transcode เป็น H.264 ก่อน browser ถึงเล่นได้

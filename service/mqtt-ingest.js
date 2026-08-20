@@ -26,9 +26,6 @@ const DB_CONFIG = {
 
 const pool = mysql.createPool(DB_CONFIG);
 
-// ── แปลง raw_value → ค่าที่จะเก็บจริง ──────────────────
-// ⚠️ ใส่สูตรคำนวณจริงตรงนี้ (ตอนนี้เป็น placeholder ผ่านตรงๆ ก่อน)
-// เช่นถ้า raw_value เป็นค่า pulse/ADC ที่ต้องแปลงเป็นหน่วยจริง ให้แก้สูตรตรงนี้
 function computeFromRaw(rawValue, tipCount) {
   // ตัวอย่าง: ถ้าใช้ tipping bucket แบบ tip_count * mm ต่อ tip
   // return tipCount * 0.5; // 0.5mm ต่อ 1 tip
@@ -47,14 +44,16 @@ function validatePayload(payload) {
 
 // ── insert/update ลง tele_data ──────────────────────────
 async function saveToTeleData(payload) {
-  const computedValue = computeFromRaw(payload.raw_value, payload.tip_count);
+  const waterLevel = payload.water_level !== undefined
+    ? payload.water_level
+    : payload.raw_value;
 
   const sql = `
     INSERT INTO tele_data
-      (sta_code, datetime, raw_value, rain_mm, tip_count, status, quality, error_message, created_at)
+      (sta_code, datetime, water_level, rain_mm, tip_count, status, quality, error_message, created_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
     ON DUPLICATE KEY UPDATE
-      raw_value = VALUES(raw_value),
+      water_level = VALUES(water_level),
       rain_mm = VALUES(rain_mm),
       tip_count = VALUES(tip_count),
       status = VALUES(status),
@@ -64,9 +63,9 @@ async function saveToTeleData(payload) {
 
   const params = [
     payload.station_id,
-    payload.timestamp,       // 'YYYY-MM-DD HH:mm:ss' ตรงกับ MySQL DATETIME อยู่แล้ว
-    computedValue,
-    payload.rainfall,
+    payload.timestamp,
+    waterLevel,
+    payload.rainfall ?? null,
     payload.tip_count ?? null,
     payload.status,
     payload.quality ?? null,
@@ -108,11 +107,21 @@ client.on('message', async (topic, messageBuf) => {
     return;
   }
 
-  const invalidReason = validatePayload(payload);
-  if (invalidReason) {
-    console.warn(`[MQTT] skip ${topic} (${payload.station_id ?? '?'}): ${invalidReason}`);
-    return;
-  }
+  function validatePayload(payload) {
+    const required = ['station_id', 'timestamp', 'status'];
+    for (const key of required) {
+        if (payload[key] === undefined || payload[key] === null) {
+        return `missing field: ${key}`;
+        }
+    }
+
+    // ต้องมีอย่างน้อย water_level หรือ raw_value อย่างใดอย่างหนึ่ง
+    if (payload.water_level === undefined && payload.raw_value === undefined) {
+        return 'missing water_level or raw_value';
+    }
+
+    return null;
+    }
 
   try {
     await saveToTeleData(payload);
