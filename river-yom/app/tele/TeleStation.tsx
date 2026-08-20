@@ -4,7 +4,7 @@
 import React, { useEffect, useState } from "react";
 import { Box } from "@mui/material";
 import { useSearchParams, useRouter } from "next/navigation"; // ใช้แทน useLocation
-import PlaceIcon from "@mui/icons-material/Place";
+
 import MapIcon from "@mui/icons-material/Map";
 import BarChartIcon from '@mui/icons-material/BarChart';
 import { Path_URL } from "@/lib/utility";
@@ -13,16 +13,17 @@ import SegmentedTabs, { SegmentedTabItem } from "@/components/Data/SegmentedTabs
 import TeleDashboard from "./components/TeleDashboard";
 import TeleMap from "./components/TeleMap";
 import DataTeleCombined from '@/app/tele/components/TeleData';
+import WaterDamageIcon from '@mui/icons-material/WaterDamage';
 
 
 const mapKey = process.env.NEXT_PUBLIC_LONGDO_MAP_KEY!;
 const JsonPaths = [
-  `${Path_URL}data/River.geojson`,
-  `${Path_URL}data/ProjectArea.geojson`,
+  `${Path_URL}/data/River.geojson`,
+  `${Path_URL}/data/ProjectArea.geojson`,
 ];
 
 const TELE_TAB_ITEMS: SegmentedTabItem[] = [
-  { label: 'ข้อมูลสถานีวัดน้ำท่า', shortLabel: 'สถานีน้ำท่า', icon: <PlaceIcon /> },
+  { label: 'ข้อมูลสถานีติดตั้งโครงการ', shortLabel: 'สถานีโครงการ', icon: <WaterDamageIcon /> },
   { label: 'ข้อมูลย้อนหลัง', shortLabel: 'ย้อนหลัง', icon: <BarChartIcon /> },
   { label: 'แผนที่แสดงตำแหน่งสถานี', shortLabel: 'แผนที่', icon: <MapIcon /> },
 ];

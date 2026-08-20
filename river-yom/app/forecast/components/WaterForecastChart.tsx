@@ -12,7 +12,7 @@ import dynamic from 'next/dynamic';
 import CenteredLoading from '@/components/Layout/CenteredLoading';
 import { titleStyle } from '@/theme/style';
 import { ForecastSnapshot, STATION_MAPPING } from '@/components/hooks/useRasData';
-
+import { TELE_WARN_LEVELS, getWarnLevel } from '@/lib/warnLevels';
 
 const ReactApexChart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
@@ -24,9 +24,21 @@ interface Props {
 }
 
 type ViewMode = 'all' | 'single';
+interface StationMetaData {
+  staCode:  string;
+  location: string;
+  tambon:   string;
+  maxY:     number;
+}
 
-// ─── Threshold config ─────────────────────────────────────────
-
+const STATION_META: StationMetaData[] = [
+  { staCode: 'YR.01', location: 'สะพานชุมแสงสงคราม',    tambon: 'ต.ชุมแสงสงคราม อ.บางระกำ จ.พิษณุโลก', maxY: 41 },
+  { staCode: 'YR.02', location: 'สะพานบ้านห้วงกระได',    tambon: 'ต.บางระกำ อ.บางระกำ จ.พิษณุโลก',      maxY: 42 },
+  { staCode: 'YR.03', location: 'สะพานวัดทุ่งอ้ายโห้',    tambon: 'ต.ชุมแสงสงคราม อ.บางระกำ จ.พิษณุโลก', maxY: 45 },
+  { staCode: 'YR.04', location: 'สะพานข้ามคลองกรุงกรัก', tambon: 'ต.บางระกำ อ.บางระกำ จ.พิษณุโลก',      maxY: 43 },
+  { staCode: 'YR.05', location: 'สะพานท่านางงาม',        tambon: 'ต.ท่านางงาม อ.บางระกำ จ.พิษณุโลก',    maxY: 41 },
+  { staCode: 'YR.06', location: 'สะพานข้ามคลองคด',       tambon: 'ต.บ่อทอง อ.บางระกำ จ.พิษณุโลก',       maxY: 40 },
+];
 interface ThresholdData {
   staCode:  string;
   location: string;
@@ -37,27 +49,34 @@ interface ThresholdData {
   maxY:     number;
 }
 
-const THRESHOLDS: ThresholdData[] = [
-  { staCode:'Y.15', location:'วัดพระรูป',tambon:'ต.ในเมือง อ.เมือง จ.พิษณุโลก',  watch: 43.89, alert: 44.97, crisis: 46.05, maxY:47 },
-  { staCode:'Y.4',  location:'บ้านบางไทรป่า',tambon:'ต.บางไทรป่า อ.บางระกำ จ.พิษณุโลก', watch: 49.87, alert: 50.68, crisis: 51.48, maxY:52 },
-  { staCode:'Y.50', location:'ที่ว่าการอำเภอ',tambon:'ต.บางระกำ อ.บางระกำ จ.พิษณุโลก',  watch: 39.56, alert: 40.17, crisis: 40.78, maxY:41 },
-  { staCode:'Y.01', location:'สะพานชุมแสงสงคราม',tambon:'ต.ชุมแสงสงคราม อ.บางระกำ จ.พิษณุโลก',  watch: 41.10, alert: 42.55, crisis: 44.00, maxY:44 },
-  { staCode:'Y.02', location:'สะพานบ้านห้วงกระได',tambon:'ต.บางระกำ อ.บางระกำ จ.พิษณุโลก',  watch: 41.10, alert: 42.55, crisis: 44.00, maxY:44 },
-  { staCode:'Y.03', location:'สะพานวัดทุ่งอ้ายโห้',tambon:'ต.ชุมแสงสงคราม อ.บางระกำ จ.พิษณุโลก',  watch: 41.10, alert: 42.55, crisis: 44.00, maxY:44 },
-  { staCode:'Y.04', location:'สะพานข้ามคลองกรุงกรัก',tambon:'ต.บางระกำ อ.บางระกำ จ.พิษณุโลก',  watch: 41.10, alert: 42.55, crisis: 44.00, maxY:44 },
-];
+function buildThresholdMap(): Map<string, ThresholdData> {
+  const map = new Map<string, ThresholdData>();
 
-const THRESHOLD_MAP = new Map(THRESHOLDS.map(t => [t.staCode, t]));
+  STATION_META.forEach(meta => {
+    const level = getWarnLevel(TELE_WARN_LEVELS, meta.staCode);
 
-// const ARCHIVE_COLORS = [
-//   '#C62828', // red 800
-//   '#F44336', // red 500
-//   '#E57373', // red 300
-//   '#E53935', // red 600
-//   '#EF9A9A', // red 200
-//   '#EF5350', // red 400
-//   '#FFCDD2', // red 100
-// ];
+    if (!level) {
+      console.warn(
+        `[WaterForecastChart] ไม่พบเกณฑ์เตือนภัยของสถานี "${meta.staCode}" ใน warnLevels.ts (TELE_WARN_LEVELS) — จะไม่แสดงเส้น threshold ของสถานีนี้`
+      );
+      return;
+    }
+
+    map.set(meta.staCode, {
+      staCode: meta.staCode,
+      location: meta.location,
+      tambon: meta.tambon,
+      watch: level.watch,
+      alert: level.alert,
+      crisis: level.crisis,
+      maxY: meta.maxY,
+    });
+  });
+
+  return map;
+}
+
+const THRESHOLD_MAP = buildThresholdMap();
 
 const ARCHIVE_COLORS = ['#CFD8DC', '#90A4AE', '#607D8B'];
 
@@ -127,8 +146,6 @@ function buildOptions(
       align: 'center',
       style: { fontSize: '16px', fontWeight: 700 },
     },
-    // stroke width/dashArray ถูกกำหนดต่อ series ใน series array แต่ ApexCharts ต้องการ
-    // array ที่มีขนาดเท่ากับ series → จัดการตอน pass series
     stroke: { width: [3, 3, 2, 2, 2], curve: 'smooth', dashArray: [0, 8, 6, 6, 6] },
     xaxis:  { type: 'datetime', labels: { format: 'dd MMM' } },
     yaxis: {
@@ -160,23 +177,16 @@ const WaterForecastChart: React.FC<Props> = ({ today, archive }) => {
   const isDark = theme.palette.mode === 'dark';
 
   const [viewMode,         setViewMode]         = useState<ViewMode>('all');
-  const [selectedStation,  setSelectedStation]  = useState<string>('Y.15');
+  const [selectedStation,  setSelectedStation]  = useState<string>('YR.05');
 
   const tofTs = useMemo(today9amTs, []);
 
-  const stations = Object.keys(STATION_MAPPING);
-
+  // const stations = Object.keys(STATION_MAPPING);
+  const stations = STATION_META.map(m => m.staCode);
   // ─── Series builder ──────────────────────────────────────────
 
-  /**
-   * สร้าง series สำหรับสถานีหนึ่ง:
-   *   [0] ค่าตรวจวัดจริง (solid)    ← จาก today ช่วงก่อน TOF
-   *   [1] ค่าพยากรณ์วันนี้ (dashed) ← จาก today ช่วงหลัง TOF
-   *   [2..] ค่าพยากรณ์ archive แต่ละวัน (dashed อ่อนกว่า)
-   */
   function buildSeries(station: string) {
 
-    // today: แยก observed vs forecast
     const todayAll = (today?.points ?? [])
       .filter(p => p.station === station)
       .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime())
@@ -185,7 +195,6 @@ const WaterForecastChart: React.FC<Props> = ({ today, archive }) => {
     const observed = todayAll.filter(d => new Date(d.x).getTime() <  tofTs);
     const forecast = todayAll.filter(d => new Date(d.x).getTime() >= tofTs);
 
-    // archive series
     const archiveSeries = archive.map((snap, i) => ({
       name:  `พยากรณ์ ${snap.date}`,
       data:  snapshotPoints(snap, station),
@@ -199,7 +208,6 @@ const WaterForecastChart: React.FC<Props> = ({ today, archive }) => {
     ];
   }
 
-  // stroke arrays ขึ้นอยู่กับจำนวน series
   function buildStrokeOptions(seriesCount: number): ApexOptions['stroke'] {
     return {
       width:     [5, 5, ...Array(seriesCount - 2).fill(2.5)],
@@ -222,7 +230,7 @@ const WaterForecastChart: React.FC<Props> = ({ today, archive }) => {
 
   return (
     <Box>
-      
+
       {/* Header */}
       <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: 'center', justifyContent: { xs: 'center', md: 'space-between' }, flexWrap: 'wrap', gap: 2, mb: 2 }}>
         <Typography sx={{ fontWeight: 'bold', ...titleStyle, color: '#28378B' }}>

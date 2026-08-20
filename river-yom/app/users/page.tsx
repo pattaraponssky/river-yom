@@ -21,7 +21,7 @@ export default function UsersPage() {
     if (!currentUser) return null;
 
     return (
-        <Box sx={{ p: 1 }}>
+        <Box sx={{ p: 1, maxWidth: 'xl', mx: 'auto', width: '100%'}}>
             <UserPage/>
         </Box>
     );

@@ -16,9 +16,9 @@ export const metadata: Metadata = {
   title: 'RID03 ระบบสนับสนุนการตัดสินใจ',
   description: 'ระบบสนับสนุนการตัดสินใจในการบริหารจัดการน้ำแม่ยมฝั่งขวา กรมชลประทาน',
   icons: {
-    icon: 'logo_rid.png',          
-    shortcut: 'logo_rid.png',
-    apple: 'logo_rid.png',
+    icon: '/logo_rid.png',          
+    shortcut: '/logo_rid.png',
+    apple: '/logo_rid.png',
   },
 };
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Box, Button, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography, useMediaQuery, useTheme } from "@mui/material";
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
@@ -8,9 +8,25 @@ import { API_URL } from "@/lib/utility";
 import { getCellDiffStyle, getCellStyle, HeaderCellStyle, fontTitle } from "@/theme/style";
 import { useThemeMode } from '@/contexts/ThemeContext';
 import SourceIcon from '@mui/icons-material/Source';
+import { TELE_WARN_LEVELS, FLOW_WARN_LEVELS, getWarnLevel, WarnLevel } from "@/lib/warnLevels";
 
-const warningData = [
-   {
+const COMBINED_WARN_LEVELS: Record<string, WarnLevel> = {
+  ...TELE_WARN_LEVELS,
+  ...FLOW_WARN_LEVELS,
+};
+
+interface StationMeta {
+  id: number;
+  staCode: string;
+  location: string;
+  subdistrict: string;
+  district: string;
+  province: string;
+  bank: number | null; // ← เป็น null ได้ ถ้ายังไม่มีข้อมูลระดับตลิ่ง
+}
+
+const warningData: StationMeta[] = [
+  {
     id: 1,
     staCode: 'Y.4',
     location: '',
@@ -18,13 +34,6 @@ const warningData = [
     district: 'เมืองสุโขทัย',
     province: 'สุโขทัย',
     bank: 51.59,
-    depth: 8.15,
-    // leftBank: 3.53,
-    // rightBank: 2.71,
-    // canalBottom: -5.91,
-    watch: 49.6,
-    alert: 50.5,
-    crisis: 51.4,
   },
   {
     id: 2,
@@ -34,93 +43,65 @@ const warningData = [
     district: 'กงไกรลาศ',
     province: 'สุโขทัย',
     bank: 45.64,
-    depth: 10.32,
-    // leftBank: 6.32,
-    // rightBank: 6.34,
-    // canalBottom: -2.24,
-    watch: 43.5,
-    alert: 44.7,
-    crisis: 46.0,
-  },
-    {
-    id: 3,
-    staCode: 'Y.50',
-    location: '',
-    subdistrict: 'บ้านท่านางงาม',
-    district: 'บางระกำ',
-    province: 'พิษณุโลก',
-    bank: 40.76,
-    depth: 6.10,
-    // leftBank: 2.00,
-    // rightBank: 2.85,
-    // canalBottom: -9.65,
-    watch: 39.5,
-    alert: 40.5,
-    crisis: 41.5,
-  },
-  {  
-    id: 4,
-    staCode: 'Y.16',
-    location: '',
-    subdistrict: 'บางระกำ',
-    district: 'บางระกำ',
-    province: 'พิษณุโลก',
-    bank: 38.93,
-    depth: 7.30,
-    // leftBank: 2.98,
-    // rightBank: 2.69,
-    // canalBottom: -3.98,
-    watch: 37.6,
-    alert: 38.4,
-    crisis: 39.3,
   },
   {
-    id: 5,
-    staCode: 'Y.64',
+    id: 3,
+    staCode: 'YR.01',
+    location: '',
+    subdistrict: 'ชุมแสงสงคราม',
+    district: 'บางระกำ',
+    province: 'พิษณุโลก',
+    bank: 40.67,
+  },
+  // TODO: เติมข้อมูล ตำบล/อำเภอ/จังหวัด/ระดับตลิ่ง จริงของ YR.02
+  {
+    id: 4,
+    staCode: 'YR.02',
     location: '',
     subdistrict: 'บางระกำ',
     district: 'บางระกำ',
     province: 'พิษณุโลก',
-    bank: 38.91,
-    depth: 6.40,
-    // leftBank: 2.02,
-    // rightBank: 1.81,
-    // canalBottom: -8.80,
-    watch: 36.7,
-    alert: 37.3,
-    crisis: 38.0,
+    bank: 41.57,
   },
-    {
-    id: 6,
-    staCode: 'Y.51',
+  // TODO: เติมข้อมูล ตำบล/อำเภอ/จังหวัด/ระดับตลิ่ง จริงของ YR.03
+  {
+    id: 5,
+    staCode: 'YR.03',
     location: '',
-    subdistrict: 'บ้านท่าแห',
+    subdistrict: 'ชุมแสงสงคราม',
     district: 'บางระกำ',
     province: 'พิษณุโลก',
-    bank: 42.72,
-    depth: 13.69,
-    // leftBank: 2.02,
-    // rightBank: 1.81,
-    // canalBottom: -8.80,
-    watch: 38.8,
-    alert: 40.4,
-    crisis: 42.0,
+    bank: 44.37,
   },
-    {
-    id: 7,
-    staCode: 'Y.17',
+  // TODO: เติมข้อมูล ตำบล/อำเภอ/จังหวัด/ระดับตลิ่ง จริงของ YR.04
+  {
+    id: 6,
+    staCode: 'YR.04',
     location: '',
-    subdistrict: 'สามง่าม',
-    district: 'สามง่าม',
-    province: 'พิจิตร',
-    bank: 38.25,
-    depth: 6.76,
-    // leftBank: 2.02,
-    // rightBank: 1.81,
-    // canalBottom: -8.80,
-    watch: 39.4,
-    alert: 40.6,
-    crisis: 41.8,
+    subdistrict: 'บางระกำ',
+    district: 'บางระกำ',
+    province: 'พิษณุโลก',
+    bank: 42.86,
+  },
+  // TODO: เติมข้อมูล ตำบล/อำเภอ/จังหวัด/ระดับตลิ่ง จริงของ YR.05
+  {
+    id: 7,
+    staCode: 'YR.05',
+    location: '',
+    subdistrict: 'ท่านางงาม',
+    district: 'บางระกำ',
+    province: 'พิษณุโลก',
+    bank: 40.30,
+  },
+  // TODO: เติมข้อมูล ตำบล/อำเภอ/จังหวัด/ระดับตลิ่ง จริงของ YR.06
+  {
+    id: 8,
+    staCode: 'YR.06',
+    location: '',
+    subdistrict: 'บ่อทอง',
+    district: 'บางระกำ',
+    province: 'พิษณุโลก',
+    bank: 39.55,
   },
 ];
 
@@ -131,61 +112,94 @@ interface PeakData {
 
 interface FloodWarningTableProps {
   maxLevels: Record<string, number>;
-  waterTrends: Record<string, string>; // เพิ่ม prop สำหรับค่าแนวโน้ม
+  waterTrends: Record<string, string>;
   waterPeaks: Record<string, PeakData>;
 }
-
 
 const FloodWarningTable: React.FC<FloodWarningTableProps> = ({ maxLevels, waterTrends, waterPeaks }) => {
   const isSmallScreen = useMediaQuery("(max-width: 600px)");
   const isMediumScreen = useMediaQuery("(max-width: 900px)");
   const [flowLevels, setFlowLevels] = useState<Record<string, number>>({});
-  const theme = useTheme();
-  const primary = theme.palette.primary.main;
-  
-  // โหลดข้อมูลจาก API
-  useEffect(() => {
-    const fetchFlowData = async () => {
+
+ useEffect(() => {
+    const fetchCurrentLevels = async () => {
       try {
-        const res = await fetch(`${API_URL}/api/flow_today`);
-        const json = await res.json();
-        if (json.status === "success") {
-          const wlMap: Record<string, number> = {};
-          json.data.forEach((item: any) => {
-            wlMap[item.sta_code] = parseFloat(item.wl);
+        const [flowRes, teleRes] = await Promise.all([
+          fetch(`${API_URL}/api/flow_today`),
+          fetch(`${API_URL}/api/tele_today`),
+        ]);
+
+        const [flowJson, teleJson] = await Promise.all([
+          flowRes.json(),
+          teleRes.json(),
+        ]);
+
+        const wlMap: Record<string, number> = {};
+
+        if (flowJson.status === "success" && Array.isArray(flowJson.data)) {
+          flowJson.data.forEach((item: any) => {
+            if (item.sta_code != null && item.wl != null) {
+              wlMap[item.sta_code] = parseFloat(item.wl);
+            }
           });
-          setFlowLevels(wlMap);
         }
+
+        if (teleJson.status === "success" && Array.isArray(teleJson.data)) {
+          teleJson.data.forEach((item: any) => {
+            const val = item.wl ?? item.water_level ?? item.wl_upper;
+            if (item.sta_code != null && val != null) {
+              wlMap[item.sta_code] = parseFloat(val);
+            }
+          });
+        }
+
+        setFlowLevels(wlMap);
       } catch (err) {
-        console.error("โหลดข้อมูล flow_today ไม่สำเร็จ:", err);
+        console.error("โหลดข้อมูลระดับน้ำปัจจุบันไม่สำเร็จ:", err);
       }
     };
 
-    fetchFlowData();
+    fetchCurrentLevels();
   }, []);
 
-  // ฟังก์ชันช่วยในการกำหนดสีพื้นหลังตามระดับน้ำ
-   const getLevelColor = (
+  // ── รวมข้อมูลตำแหน่งสถานีเข้ากับเกณฑ์เตือนภัยจาก warnLevels.ts ──
+  const stationsWithLevels = useMemo(() => {
+    return warningData.map((item) => {
+      const level = getWarnLevel(COMBINED_WARN_LEVELS, item.staCode);
+
+      if (!level) {
+        console.warn(
+          `[FloodWarningTable] ไม่พบเกณฑ์เตือนภัยของสถานี "${item.staCode}" ใน warnLevels.ts`
+        );
+      }
+
+      return {
+        ...item,
+        watch: level?.watch ?? null,
+        alert: level?.alert ?? null,
+        crisis: level?.crisis ?? null,
+      };
+    });
+  }, []);
+
+  const getLevelColor = (
     currentLevel: number,
     watch: number,
     alert: number,
     crisis: number
-    ) => {
-      if (currentLevel >= crisis) return "#ff0008ff"; // วิกฤต
-      if (currentLevel >= alert) return "#a7a700ff"; // เตือนภัย
-      if (currentLevel >= watch) return "#69fc00ff"; // เฝ้าระวัง
-      return "#00a2ffff";
-    };
+  ) => {
+    if (currentLevel >= crisis) return "#ff0008ff";
+    if (currentLevel >= alert) return "#a7a700ff";
+    if (currentLevel >= watch) return "#69fc00ff";
+    return "#00a2ffff";
+  };
 
-    const getDiffColor = (
-    diff: number,
-    ) => {
-      if (diff >= 0) return "red"; // สูงกว่า/เท่ากับตลิ่ง
-      if (diff < 0) return "green"; // ต่ำกว่าตลิ่ง
-      return "#00a2ffff";
-    };
+  const getDiffColor = (diff: number) => {
+    if (diff >= 0) return "red";
+    if (diff < 0) return "green";
+    return "#00a2ffff";
+  };
 
-  // ฟังก์ชันช่วยในการแสดงไอคอนตามแนวโน้ม
   const getTrendIcon = (trend: string) => {
     switch (trend) {
       case 'เพิ่มขึ้น':
@@ -204,7 +218,7 @@ const FloodWarningTable: React.FC<FloodWarningTableProps> = ({ maxLevels, waterT
     try {
       const date = new Date(isoTime);
       if (isNaN(date.getTime())) return 'ข้อมูลเวลาไม่ถูกต้อง';
-      
+
       const formatter = new Intl.DateTimeFormat('th-TH', {
         day: 'numeric',
         month: 'short',
@@ -216,81 +230,72 @@ const FloodWarningTable: React.FC<FloodWarningTableProps> = ({ maxLevels, waterT
     }
   };
 
-    const exportToCsv = () => {
-      // 1. Define headers to match the displayed table structure
-      const headers = [
-        "ตำแหน่งเตือนภัย (รหัส)",
-        "ตำแหน่งเตือนภัย (บ้าน)",
-        "ตำบล", 
-        "อำเภอ",
-        "จังหวัด",
-        "ระดับตลิ่ง (ม.รทก.)",
-        "ระดับน้ำปัจจุบัน (ม.รทก.)",
-        "สูง/ต่ำ (ม.) ระดับตลิ่ง",
-        "ระดับน้ำสูงสุด 7 วัน (ม.รทก.)",
-        "เริ่มสูงกว่าตลิ่ง / วันที่น้ำสูงสุด 7 วัน",
-        "แนวโน้ม",
+  const exportToCsv = () => {
+    const headers = [
+      "ตำแหน่งเตือนภัย (รหัส)",
+      "ตำแหน่งเตือนภัย (บ้าน)",
+      "ตำบล",
+      "อำเภอ",
+      "จังหวัด",
+      "ระดับตลิ่ง (ม.รทก.)",
+      "ระดับน้ำปัจจุบัน (ม.รทก.)",
+      "สูง/ต่ำ (ม.) ระดับตลิ่ง",
+      "ระดับน้ำสูงสุด 7 วัน (ม.รทก.)",
+      "เริ่มสูงกว่าตลิ่ง / วันที่น้ำสูงสุด 7 วัน",
+      "แนวโน้ม",
+    ];
+
+    const rows = stationsWithLevels.map(item => {
+      const wl = flowLevels[item.staCode];
+      const currentLevelStr = wl != null ? wl.toFixed(2) : "-";
+
+      const diff = wl != null && item.bank != null ? (wl - item.bank) : null;
+      const diffStr = diff != null ? diff.toFixed(2) : "-";
+
+      const currentMaxLevel = maxLevels[item.staCode];
+      const maxLevelStr = currentMaxLevel != null ? currentMaxLevel.toFixed(2) : "-";
+
+      const currentTrend = waterTrends[item.staCode] || '-';
+      const trendStr = currentTrend === 'ไม่มีข้อมูลเพียงพอ' ? '-' : currentTrend;
+
+      let peakStatusStr: string;
+      if (item.crisis != null && wl != null && wl > item.crisis) {
+        peakStatusStr = "สูงกว่าตลิ่ง (ปัจจุบัน)";
+      } else if (item.crisis != null && waterPeaks[item.staCode]?.elevation != null && waterPeaks[item.staCode].elevation > item.crisis) {
+        peakStatusStr = formatPeakTime(waterPeaks[item.staCode].time);
+      } else {
+        peakStatusStr = "-";
+      }
+
+      return [
+        item.staCode,
+        item.location,
+        item.subdistrict,
+        item.district,
+        item.province,
+        item.bank != null ? item.bank.toFixed(2) : "-",
+        currentLevelStr,
+        diffStr,
+        maxLevelStr,
+        peakStatusStr,
+        trendStr,
       ];
+    });
 
-      // 2. Create rows using your existing data and calculated values
-      const rows = warningData.map(item => {
-        // Current Level
-        const wl = flowLevels[item.staCode];
-        const currentLevelStr = wl != null ? wl.toFixed(2) : "-";
-        
-        // Diff from Bank
-        const diff = wl != null ? (wl - item.bank) : null;
-        const diffStr = diff != null ? diff.toFixed(2) : "-";
-        
-        // Max Level (7 Days)
-        const currentMaxLevel = maxLevels[item.staCode];
-        const maxLevelStr = currentMaxLevel != null ? currentMaxLevel.toFixed(2) : "-";
-        
-        // Trend
-        const currentTrend = waterTrends[item.staCode] || '-';
-        const trendStr = currentTrend === 'ไม่มีข้อมูลเพียงพอ' ? '-' : currentTrend;
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(","))
+    ].join("\n");
 
-        // Peak Time / Over Bank Status (Logic from the table cell)
-        let peakStatusStr: string;
-        if (wl != null && wl > item.crisis) {
-          peakStatusStr = "สูงกว่าตลิ่ง (ปัจจุบัน)";
-        } else if (waterPeaks[item.staCode]?.elevation != null && waterPeaks[item.staCode].elevation > item.crisis) {
-          peakStatusStr = formatPeakTime(waterPeaks[item.staCode].time);
-        } else {
-          peakStatusStr = "-";
-        }
-
-        return [
-          item.staCode,
-          item.location,
-          item.subdistrict,
-          item.district,
-          item.province,
-          item.bank.toFixed(2),
-          currentLevelStr,
-          diffStr,
-          maxLevelStr,
-          peakStatusStr, 
-          trendStr,
-        ];
-      });
-
-      // 3. Construct and download the CSV
-   
-      const csvContent = [
-        headers.join(","),
-        ...rows.map(row => row.map(cell => `"${cell}"`).join(",")) // ใช้ map เพื่อใส่ quote ครอบข้อมูลแต่ละ cell
-      ].join("\n");
-
-      const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csvContent], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", "flood_warning_thachin.csv");
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+    const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "flood_warning_thachin.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -302,90 +307,74 @@ const FloodWarningTable: React.FC<FloodWarningTableProps> = ({ maxLevels, waterT
         paddingBottom: 2,
       }}
     >
-       <Box sx={{ display: "flex", flexDirection: {md:"row",xs:"column"}, justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-        <Typography
-          sx={fontTitle}
-        >
+      <Box sx={{ display: "flex", flexDirection: { md: "row", xs: "column" }, justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+        <Typography sx={fontTitle}>
           เกณฑ์การเฝ้าระวังและเตือนภัยในพื้นที่ศึกษาโครงการ
-          <Typography component="span" sx={{ fontWeight: "bold", fontSize: { md: "1.1rem", xs: "0.85rem" }, fontFamily:"Prompt", color: "text.secondary", ml: 1 }}>
-                    (ข้อมูล ณ เวลา 07:00 น. ของทุกวัน)
-                    <Tooltip title="แหล่งที่มาของข้อมูล">
-                      <IconButton
-                        size="medium"
-                        sx={{ ml: 1 }}
-                        onClick={() =>
-                          window.open(
-                            'http://hydro-2.rid.go.th/',
-                            '_blank'
-                          )
-                        }
-                      >
-                        <SourceIcon fontSize="medium" />
-                      </IconButton>
-                    </Tooltip>
-                  </Typography>
+          <Typography component="span" sx={{ fontWeight: "bold", fontSize: { md: "1.1rem", xs: "0.85rem" }, fontFamily: "Prompt", color: "text.secondary", ml: 1 }}>
+            (ข้อมูล ณ เวลา 07:00 น. ของทุกวัน)
+            <Tooltip title="แหล่งที่มาของข้อมูล">
+              <IconButton
+                size="medium"
+                sx={{ ml: 1 }}
+                onClick={() =>
+                  window.open(
+                    'https://rid.go.th/',
+                    '_blank'
+                  )
+                }
+              >
+                <SourceIcon fontSize="medium" />
+              </IconButton>
+            </Tooltip>
+          </Typography>
         </Typography>
 
         <Button
-            variant="contained"
-            onClick={exportToCsv}
-            startIcon={<CloudDownloadIcon />}
-            sx={(theme) => ({
-                fontFamily: 'Prompt, sans-serif',
-                fontWeight: 600,
-                textTransform: 'none',
-                borderRadius: '10px',
-                whiteSpace: 'nowrap',
-                minWidth: 'auto',
-
-                /* สีหลัก */
-                backgroundColor: '#2e7d32', // เขียวสุภาพ
-                color: '#fff',
-
-                /* Hover / Active */
-                '&:hover': {
-                backgroundColor: '#1b5e20',
-                boxShadow: theme.shadows[4],
-                },
-                '&:active': {
-                backgroundColor: '#144d1a',
-                boxShadow: theme.shadows[2],
-                },
-
-                /* Responsive */
-                display: { md: 'inline-flex', sm: 'none', xs: 'none' },
-                px: { xs: 1, sm: 2 },
-                py: { xs: 0.75, sm: 1 },
-
-                /* Icon spacing */
-                '& .MuiButton-startIcon': {
-                marginRight: { xs: 0.5, sm: 1 },
-                marginLeft: { xs: 0, sm: 0 },
-                },
-
-                ...(theme.palette.mode === 'dark' && {
-                backgroundColor: '#388e3c',
-                '&:hover': {
-                    backgroundColor: '#2e7d32',
-                },
-                }),
-            })}
-            >
-            ส่งออก CSV
-            </Button>
-
+          variant="contained"
+          onClick={exportToCsv}
+          startIcon={<CloudDownloadIcon />}
+          sx={(theme) => ({
+            fontFamily: 'Prompt, sans-serif',
+            fontWeight: 600,
+            textTransform: 'none',
+            borderRadius: '10px',
+            whiteSpace: 'nowrap',
+            minWidth: 'auto',
+            backgroundColor: '#2e7d32',
+            color: '#fff',
+            '&:hover': {
+              backgroundColor: '#1b5e20',
+              boxShadow: theme.shadows[4],
+            },
+            '&:active': {
+              backgroundColor: '#144d1a',
+              boxShadow: theme.shadows[2],
+            },
+            display: { md: 'inline-flex', sm: 'none', xs: 'none' },
+            px: { xs: 1, sm: 2 },
+            py: { xs: 0.75, sm: 1 },
+            '& .MuiButton-startIcon': {
+              marginRight: { xs: 0.5, sm: 1 },
+              marginLeft: { xs: 0, sm: 0 },
+            },
+            ...(theme.palette.mode === 'dark' && {
+              backgroundColor: '#388e3c',
+              '&:hover': {
+                backgroundColor: '#2e7d32',
+              },
+            }),
+          })}
+        >
+          ส่งออก CSV
+        </Button>
       </Box>
-      <Table sx={{ minWidth: isSmallScreen ? 333 : 1000, tableLayout: "auto" }}>
 
-        {/* หัวตาราง */}
+      <Table sx={{ minWidth: isSmallScreen ? 333 : 1000, tableLayout: "auto" }}>
         <TableHead sx={{ clipPath: "none" }}>
-           <TableRow>
+          <TableRow>
             <TableCell sx={HeaderCellStyle} rowSpan={2}>
               ตำแหน่งเตือนภัย
             </TableCell>
-            {/* <TableCell sx={HeaderCellStyle} rowSpan={2}>
-              บ้าน
-            </TableCell> */}
             {!isSmallScreen && !isMediumScreen && <TableCell sx={HeaderCellStyle} rowSpan={2}>ตำบล</TableCell>}
             {!isSmallScreen && !isMediumScreen && <TableCell sx={HeaderCellStyle} rowSpan={2}>อำเภอ</TableCell>}
             {!isSmallScreen && !isMediumScreen && <TableCell sx={HeaderCellStyle} rowSpan={2}>จังหวัด</TableCell>}
@@ -394,7 +383,7 @@ const FloodWarningTable: React.FC<FloodWarningTableProps> = ({ maxLevels, waterT
               ระดับน้ำ<br />(ม.รทก.)
             </TableCell>
             <TableCell sx={HeaderCellStyle} rowSpan={2}>
-              <span style={{color:"red"}}>สูง</span>/<span style={{color:"green"}}>ต่ำ</span> (ม.)<br/>ระดับตลิ่ง
+              <span style={{ color: "red" }}>สูง</span>/<span style={{ color: "green" }}>ต่ำ</span> (ม.)<br />ระดับตลิ่ง
             </TableCell>
             <TableCell sx={HeaderCellStyle} colSpan={3}>
               ระดับน้ำสูงสุด 7 วัน<br />(ม.รทก.)
@@ -411,40 +400,37 @@ const FloodWarningTable: React.FC<FloodWarningTableProps> = ({ maxLevels, waterT
             <TableCell sx={HeaderCellStyle}>
               แนวโน้ม
             </TableCell>
-
           </TableRow>
         </TableHead>
 
-        {/* ข้อมูลในตาราง */}
         <TableBody>
-          {warningData.map((item, index) => {
+          {stationsWithLevels.map((item, index) => {
             const currentMaxLevel = maxLevels[item.staCode];
-            const wl = flowLevels[item.staCode]; // ดึงค่าจาก API
+            const wl = flowLevels[item.staCode];
             const diff =
-              wl != null 
-              ? (wl - item.bank).toFixed(2)
-              : "-"; // คำนวณผลต่าง
+              wl != null && item.bank != null
+                ? (wl - item.bank).toFixed(2)
+                : "-";
             const diffColor =
-              wl != null 
-              ? getDiffColor(wl - item.bank)
-              : undefined; // คำนวณผลต่าง
-            const currentTrend = waterTrends[item.staCode]; // รับค่าแนวโน้มสำหรับแต่ละสถานี
-            const maxLevelColor = currentMaxLevel != null 
+              wl != null && item.bank != null
+                ? getDiffColor(wl - item.bank)
+                : undefined;
+            const currentTrend = waterTrends[item.staCode];
+            const maxLevelColor = currentMaxLevel != null && item.watch != null && item.alert != null && item.crisis != null
               ? getLevelColor(currentMaxLevel, item.watch, item.alert, item.crisis)
-              : undefined; 
-              
-            
+              : undefined;
+
+            const isCrisis = item.crisis != null && wl != null && wl > item.crisis;
+            const isPeakOverCrisis = item.crisis != null && waterPeaks[item.staCode]?.elevation != null && waterPeaks[item.staCode].elevation > item.crisis;
+
             return (
               <TableRow key={item.id}>
                 <TableCell sx={getCellStyle(index)}>{item.staCode}</TableCell>
-                {/* <TableCell sx={getCellStyle(index)}>{item.location}</TableCell> */}
-                {!isSmallScreen && !isMediumScreen && <TableCell sx={getCellStyle(index)}>{item.subdistrict}</TableCell>} 
-                {!isSmallScreen && !isMediumScreen && <TableCell sx={getCellStyle(index)}>{item.district}</TableCell>} 
+                {!isSmallScreen && !isMediumScreen && <TableCell sx={getCellStyle(index)}>{item.subdistrict}</TableCell>}
+                {!isSmallScreen && !isMediumScreen && <TableCell sx={getCellStyle(index)}>{item.district}</TableCell>}
                 {!isSmallScreen && !isMediumScreen && <TableCell sx={getCellStyle(index)}>{item.province}</TableCell>}
-                <TableCell sx={getCellStyle(index)}>{item.bank.toFixed(2)}</TableCell>
-                <TableCell
-                  sx={getCellDiffStyle(index, "#00a2ffff")}
-                >
+                <TableCell sx={getCellStyle(index)}>{item.bank != null ? item.bank.toFixed(2) : "-"}</TableCell>
+                <TableCell sx={getCellDiffStyle(index, "#00a2ffff")}>
                   {wl != null ? wl.toFixed(2) : "-"}
                 </TableCell>
                 <TableCell sx={getCellDiffStyle(index, diffColor)}>{diff}</TableCell>
@@ -452,20 +438,19 @@ const FloodWarningTable: React.FC<FloodWarningTableProps> = ({ maxLevels, waterT
                   {currentMaxLevel != null ? currentMaxLevel.toFixed(2) : "-"}
                 </TableCell>
                 <TableCell sx={getCellStyle(index)}>
-                  {  wl != null && wl > item.crisis
+                  {isCrisis
                     ? "สูงกว่าตลิ่ง"
-                    : waterPeaks[item.staCode]?.elevation != null && waterPeaks[item.staCode].elevation > item.crisis
+                    : isPeakOverCrisis
                       ? formatPeakTime(waterPeaks[item.staCode].time)
                       : "-"}
                 </TableCell>
-
                 <TableCell sx={getCellStyle(index)}>
-                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                       {getTrendIcon(currentTrend)}
-                       <Typography sx={{ ml: 1, fontSize: 'inherit',fontFamily: "Prompt", }}>
-                         {currentTrend === 'ไม่มีข้อมูลเพียงพอ' ? '-' : currentTrend}
-                       </Typography>
-                   </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {getTrendIcon(currentTrend)}
+                    <Typography sx={{ ml: 1, fontSize: 'inherit', fontFamily: "Prompt" }}>
+                      {currentTrend === 'ไม่มีข้อมูลเพียงพอ' ? '-' : currentTrend}
+                    </Typography>
+                  </Box>
                 </TableCell>
               </TableRow>
             );

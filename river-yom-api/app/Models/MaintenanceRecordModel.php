@@ -9,7 +9,7 @@ class MaintenanceRecordModel extends Model
     protected $table            = 'maintenance_records';
     protected $primaryKey       = 'id';
     protected $allowedFields    = [
-        'equipment_id', 'type', 'maintenance_date', 'technician_name', 'cost',
+        'equipment_id',  'maintenance_date', 'type', 'technician_name', 'cost',
         'description', 'next_due_date', 'status'
     ];
     protected $useTimestamps    = true;

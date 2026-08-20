@@ -14,6 +14,7 @@ import AddIcon from '@mui/icons-material/Add';
 import HistoryIcon from '@mui/icons-material/History';
 import SearchIcon from '@mui/icons-material/Search';
 import FilterListIcon from '@mui/icons-material/FilterList';
+import PlaceIcon from '@mui/icons-material/Place';
 import { API_URL } from '@/lib/utility';
 import { titleStyle } from '@/theme/style';
 import { useRouter } from 'next/navigation';
@@ -21,21 +22,29 @@ import { useAuth } from '@/contexts/AuthContext';
 import EquipmentDialog from '@/components/Equipment/EquipmentDialog';
 import { apiRequest } from '@/lib/api';
 
+// ─── ต้องตรงกับตาราง equipment ใหม่ (ผูกกับ tele_info ผ่าน sta_code) ──────────
 interface Equipment {
   id?: string;
+  sta_code: string;
   name: string;
-  type: string;
-  location: string;
-  latitude?: string | null;
-  longitude?: string | null;
+  type: 'radar_sensor' | 'rain_gauge' | 'camera' | 'solar_panel' | 'battery' | 'datalogger' | 'gate_actuator' | 'network' | 'other';
+  serial_number: string | null;
+  brand_model: string | null;
   purchase_date: string | null;
   warranty_expiry: string | null;
+  photo: string | null;
+  location: string | null;
   status: 'active' | 'maintenance' | 'broken' | 'retired';
   created_at: string;
   updated_at: string;
 }
 
-type SortField = 'id' | 'name' | 'type' | 'location' | 'status' | 'updated_at' | 'created_at';
+interface StationOption {
+  sta_code: string;
+  sta_name: string;
+}
+
+type SortField = 'id' | 'sta_code' | 'name' | 'type' | 'status' | 'updated_at' | 'created_at';
 type SortOrder = 'asc' | 'desc';
 
 const STATUS_OPTIONS = [
@@ -60,17 +69,31 @@ const STATUS_LABEL: Record<string, string> = {
   retired:     'ปลดระวาง',
 };
 
+const TYPE_LABEL: Record<string, string> = {
+  radar_sensor:  'เรดาร์วัดระดับน้ำ',
+  rain_gauge:    'สถานีวัดน้ำฝน',
+  camera:        'กล้อง CCTV',
+  solar_panel:   'ระบบไฟฟ้า/โซล่าเซลล์',
+  battery:       'แบตเตอรี่',
+  datalogger:    'Data Logger',
+  gate_actuator: 'ระบบควบคุมประตูน้ำ',
+  network:       'ระบบเครือข่าย',
+  other:         'อื่นๆ',
+};
+
 export default function EquipmentPage() {
   const router = useRouter();
   const { currentUser, loading: authLoading, hasPermission } = useAuth();
 
   const [equipments, setEquipments]         = useState<Equipment[]>([]);
+  const [stations, setStations]             = useState<StationOption[]>([]);
   const [error, setError]                   = useState<string | null>(null);
   const [searchTerm, setSearchTerm]         = useState('');
   const [page, setPage]                     = useState(1);
   const [sortField, setSortField]           = useState<SortField>('updated_at');
   const [sortOrder, setSortOrder]           = useState<SortOrder>('desc');
   const [filterStatus, setFilterStatus]     = useState('');
+  const [filterStaCode, setFilterStaCode]   = useState('');
   const [openDialog, setOpenDialog]         = useState(false);
   const [equipmentToEdit, setEquipmentToEdit] = useState<Equipment | null>(null);
   const [openDeleteConfirm, setOpenDeleteConfirm] = useState(false);
@@ -83,15 +106,35 @@ export default function EquipmentPage() {
       const res = await fetch(`${API_URL}/api/equipments`, { credentials: 'include' });
       if (!res.ok) throw new Error('ดึงข้อมูลล้มเหลว');
       const json = await res.json();
-      setEquipments(json.data || []);
+      setEquipments(Array.isArray(json.data) ? json.data : []);
     } catch (err: any) {
       setError(err.message);
     }
   };
 
+  const fetchStations = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/stations`, { credentials: 'include' });
+      if (!res.ok) return;
+      const json = await res.json();
+      setStations(Array.isArray(json.data) ? json.data : []);
+    } catch {
+      // ไม่ critical — แค่ใช้สำหรับตัวกรอง/แสดงชื่อสถานี ถ้าดึงไม่ได้ก็แสดงแค่ sta_code แทน
+    }
+  };
+
   useEffect(() => {
-    if (!authLoading && currentUser && hasPermission(1)) fetchEquipments();
+    if (!authLoading && currentUser && hasPermission(1)) {
+      fetchEquipments();
+      fetchStations();
+    }
   }, [authLoading, currentUser]);
+
+  const staNameByCode = useMemo(() => {
+    const map: Record<string, string> = {};
+    stations.forEach(s => { map[s.sta_code] = s.sta_name; });
+    return map;
+  }, [stations]);
 
   // ─── Sort handler ─────────────────────────────────────────────
   const handleSort = (field: SortField) => {
@@ -108,46 +151,44 @@ export default function EquipmentPage() {
   const processedData = useMemo(() => {
     let data = [...equipments];
 
-    // 1. filter by search
     if (searchTerm) {
       const q = searchTerm.toLowerCase();
       data = data.filter(row =>
-        [row.name, row.type, row.location, row.status, String(row.id)]
-          .some(v => (v ?? '').toLowerCase().includes(q))
+        [row.name, row.type, row.sta_code, row.serial_number, row.brand_model, row.status, String(row.id)]
+          .some(v => (v ?? '').toString().toLowerCase().includes(q))
       );
     }
 
-    // 2. filter by status
     if (filterStatus) {
       data = data.filter(row => row.status === filterStatus);
     }
 
-    // 3. sort
+    if (filterStaCode) {
+      data = data.filter(row => row.sta_code === filterStaCode);
+    }
+
     data.sort((a, b) => {
       const aVal = a[sortField] ?? '';
       const bVal = b[sortField] ?? '';
 
-      // numeric id
       if (sortField === 'id') {
         return sortOrder === 'asc'
           ? Number(a.id) - Number(b.id)
           : Number(b.id) - Number(a.id);
       }
 
-      // date fields
       if (sortField === 'updated_at' || sortField === 'created_at') {
         const aTime = new Date(aVal).getTime();
         const bTime = new Date(bVal).getTime();
         return sortOrder === 'asc' ? aTime - bTime : bTime - aTime;
       }
 
-      // string fields
       const cmp = String(aVal).localeCompare(String(bVal), 'th');
       return sortOrder === 'asc' ? cmp : -cmp;
     });
 
     return data;
-  }, [equipments, searchTerm, filterStatus, sortField, sortOrder]);
+  }, [equipments, searchTerm, filterStatus, filterStaCode, sortField, sortOrder]);
 
   const paginatedData = useMemo(() => {
     const start = (page - 1) * rowsPerPage;
@@ -203,27 +244,52 @@ export default function EquipmentPage() {
     <Container maxWidth="xl" sx={{ py: 4 }}>
 
       {/* ─── Header ──────────────────────────────────────────── */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
-        <Typography variant="h4" sx={{ ...titleStyle, fontWeight: 'bold' }}>
-          รายการอุปกรณ์
-        </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1, flexWrap: 'wrap', gap: 2 }}>
+        <Box>
+          <Typography variant="h4" sx={{ ...titleStyle, fontWeight: 'bold' }}>
+            รายการอุปกรณ์ (ทุกสถานี)
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ fontFamily: 'Prompt' }}>
+            มุมมองรวมสำหรับแอดมิน — ถ้าจะดูอุปกรณ์แยกตามสถานี ไปที่หน้า{' '}
+            <Box component="span" sx={{ color: 'primary.main', cursor: 'pointer', textDecoration: 'underline' }} onClick={() => router.push('/stations')}>
+              รายการสถานี
+            </Box>
+          </Typography>
+        </Box>
         <Button variant="contained" color="primary" startIcon={<AddIcon />} onClick={() => { setEquipmentToEdit(null); setOpenDialog(true); }}>
           เพิ่มอุปกรณ์ใหม่
         </Button>
       </Box>
 
       {/* ─── Filter Bar ──────────────────────────────────────── */}
-      <Paper sx={{ p: 2, mb: 2, borderRadius: 2, display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
+      <Paper sx={{ p: 2, mb: 2, mt: 2, borderRadius: 2, display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
         <FilterListIcon color="action" />
 
         <TextField
-          placeholder="ค้นหาชื่อ / ประเภท / สถานที่..."
+          placeholder="ค้นหาชื่อ / ประเภท / สถานี / S/N..."
           value={searchTerm}
           onChange={e => { setSearchTerm(e.target.value); setPage(1); }}
           size="small"
           sx={{ minWidth: 260 }}
           InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon /></InputAdornment> }}
         />
+
+        <FormControl size="small" sx={{ minWidth: 160 }}>
+          <InputLabel sx={{ fontFamily: 'Prompt' }}>สถานี</InputLabel>
+          <Select
+            value={filterStaCode}
+            label="สถานี"
+            onChange={e => { setFilterStaCode(e.target.value); setPage(1); }}
+            sx={{ fontFamily: 'Prompt' }}
+          >
+            <MenuItem value="" sx={{ fontFamily: 'Prompt' }}>ทั้งหมด</MenuItem>
+            {stations.map(s => (
+              <MenuItem key={s.sta_code} value={s.sta_code} sx={{ fontFamily: 'Prompt' }}>
+                {s.sta_code} — {s.sta_name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
 
         <FormControl size="small" sx={{ minWidth: 150 }}>
           <InputLabel sx={{ fontFamily: 'Prompt' }}>สถานะ</InputLabel>
@@ -239,8 +305,10 @@ export default function EquipmentPage() {
           </Select>
         </FormControl>
 
-        {/* active filters badge */}
         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', ml: 'auto', alignItems: 'center' }}>
+          {filterStaCode && (
+            <Chip size="small" label={`สถานี: ${filterStaCode}`} onDelete={() => setFilterStaCode('')} />
+          )}
           {filterStatus && (
             <Chip
               size="small"
@@ -262,18 +330,15 @@ export default function EquipmentPage() {
 
       {/* ─── Table ───────────────────────────────────────────── */}
       <TableContainer component={Paper} sx={{ borderRadius: 2, overflowX: 'auto', boxShadow: 3 }}>
-        <Table sx={{ minWidth: 800 }}>
+        <Table sx={{ minWidth: 900 }}>
           <TableHead>
             <TableRow sx={{ bgcolor: 'primary.main' }}>
-              {/* คอลัมน์ที่ไม่ sort */}
               <TableCell sx={{ color: 'white', fontWeight: 'bold', textAlign: 'center' }}>ประวัติ</TableCell>
               <TableCell sx={{ color: 'white', fontWeight: 'bold', textAlign: 'center' }}>จัดการ</TableCell>
 
-              {/* คอลัมน์ที่ sort ได้ */}
-              <SortCell field="id"         label="ID" />
+              <SortCell field="sta_code"   label="สถานี" />
               <SortCell field="name"       label="ชื่ออุปกรณ์" />
               <SortCell field="type"       label="ประเภท" />
-              <SortCell field="location"   label="สถานที่" />
               <SortCell field="status"     label="สถานะ" align="center" />
               <SortCell field="updated_at" label="แก้ไขล่าสุด" />
               <SortCell field="created_at" label="วันที่เพิ่ม" />
@@ -283,7 +348,7 @@ export default function EquipmentPage() {
           <TableBody>
             {paginatedData.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={9} align="center" sx={{ py: 6, fontFamily: 'Prompt', color: 'text.secondary' }}>
+                <TableCell colSpan={8} align="center" sx={{ py: 6, fontFamily: 'Prompt', color: 'text.secondary' }}>
                   ไม่พบรายการที่ตรงกับเงื่อนไข
                 </TableCell>
               </TableRow>
@@ -315,10 +380,35 @@ export default function EquipmentPage() {
                     </Tooltip>
                   </TableCell>
 
-                  <TableCell sx={{ fontFamily: 'Prompt' }}>{row.id}</TableCell>
-                  <TableCell sx={{ fontFamily: 'Prompt', fontWeight: 500 }}>{row.name}</TableCell>
-                  <TableCell sx={{ fontFamily: 'Prompt' }}>{row.type}</TableCell>
-                  <TableCell sx={{ fontFamily: 'Prompt' }}>{row.location || '-'}</TableCell>
+                  <TableCell sx={{ fontFamily: 'Prompt' }}>
+                    <Box
+                      sx={{ display: 'flex', alignItems: 'center', gap: 0.5, cursor: 'pointer', color: 'primary.main' }}
+                      onClick={() => router.push(`/stations/${encodeURIComponent(row.sta_code)}`)}
+                    >
+                      <PlaceIcon fontSize="small" />
+                      <Box>
+                        <Typography component="span" sx={{ fontWeight: 600, fontFamily: 'Prompt', display: 'block', lineHeight: 1.2 }}>
+                          {row.sta_code}
+                        </Typography>
+                        {staNameByCode[row.sta_code] && (
+                          <Typography component="span" variant="caption" color="text.secondary" sx={{ fontFamily: 'Prompt' }}>
+                            {staNameByCode[row.sta_code]}
+                          </Typography>
+                        )}
+                      </Box>
+                    </Box>
+                  </TableCell>
+
+                  <TableCell sx={{ fontFamily: 'Prompt', fontWeight: 500 }}>
+                    {row.name}
+                    {row.serial_number && (
+                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontFamily: 'Prompt' }}>
+                        S/N: {row.serial_number}
+                      </Typography>
+                    )}
+                  </TableCell>
+
+                  <TableCell sx={{ fontFamily: 'Prompt' }}>{TYPE_LABEL[row.type] ?? row.type}</TableCell>
 
                   <TableCell align="center">
                     <Chip
@@ -357,12 +447,13 @@ export default function EquipmentPage() {
       )}
 
       {/* ─── Dialogs ─────────────────────────────────────────── */}
-      <EquipmentDialog
+      {/* <EquipmentDialog
         open={openDialog}
         onClose={() => { setOpenDialog(false); setEquipmentToEdit(null); }}
         onSuccess={() => { fetchEquipments(); setOpenDialog(false); setEquipmentToEdit(null); }}
         equipmentToEdit={equipmentToEdit}
-      />
+        stationOptions={stations}
+      /> */}
 
       <Dialog open={openDeleteConfirm} onClose={() => setOpenDeleteConfirm(false)}>
         <DialogTitle>ยืนยันการลบ</DialogTitle>

@@ -550,7 +550,7 @@
     
       if (position.lat && position.lon) {
          const marker = new longdo.Marker(position, {
-          title: `<img src="${Path_URL}images/icons/reservoir_icon.png" style="width:25px; height:2res_name5px; vertical-align:middle; margin-right:5px" /> 
+          title: `<img src="${Path_URL}/images/icons/reservoir_icon.png" style="width:25px; height:2res_name5px; vertical-align:middle; margin-right:5px" /> 
             <span style="font-size:1.1rem; font-weight:bold; vertical-align:middle;">อ่างเก็บน้ำ${res_name} อ.${district} จ.${province}</span>`,
           detail: `
             <div style="font-size: 1rem;">
@@ -594,7 +594,7 @@
           `,
           icon: {
             html: `<div style="text-align:center;">
-              <img src="${Path_URL}images/icons/reservoir_icon.png" style="width:24px; height:24px;" />
+              <img src="${Path_URL}/images/icons/reservoir_icon.png" style="width:24px; height:24px;" />
               <div style="background-color: rgba(255, 255, 255, 0.4); padding:2px; border-radius:5px; font-size: 12px; margin-top: 2px;width:80px;">
                 อ่าง${res_name}
               </div>
@@ -624,7 +624,7 @@
     let detail = "";
     let icon = "";
 
-      title = `<img src="${Path_URL}images/icons/reservoir_icon.png" style="width:25px; height:25px; vertical-align:middle; margin-right:5px" />
+      title = `<img src="${Path_URL}/images/icons/reservoir_icon.png" style="width:25px; height:25px; vertical-align:middle; margin-right:5px" />
         <span style="font-size:1.1rem; font-weight:bold; vertical-align:middle;">อ่างเก็บน้ำ ${item.res_name} อ.${item.district} จ.${item.province}</span>`;
 
       detail = `
@@ -674,7 +674,7 @@
         <div id="chart-outflow-${item.res_code}" style="display:none;"></div>
         <div id="chart-volume-${item.res_code}" style="display:none;"></div>
       `;
-      icon = `${Path_URL}images/icons/reservoir_icon.png`;
+      icon = `${Path_URL}/images/icons/reservoir_icon.png`;
       
     const marker = new longdo.Popup(position, {
       title,
@@ -743,7 +743,7 @@
                   }
                 >
                   <ListItemAvatar sx={{ marginInline: "10px" }}>
-                    <Avatar src={`${Path_URL}images/icons/reservoir_icon.png`} />
+                    <Avatar src={`${Path_URL}/images/icons/reservoir_icon.png`} />
                   </ListItemAvatar>
                   <ListItemText>
                    

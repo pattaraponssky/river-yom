@@ -17,15 +17,36 @@ class TeleModel extends Model
 
     public function getTodayTeleDataByStationCodes(array $staCodes): array
     {
-        // ดึงข้อมูลทั้งหมดจากตาราง tele_data เท่านั้น (SELECT *)
-        // กรองตามรหัสสถานีและวันที่ปัจจุบัน (ไม่มี JOIN กับ tele_info)
-        $data = $this->db->table($this->table)
-            ->whereIn('sta_code', $staCodes) // กรองตามรหัสสถานี
-            ->where('DATE(datetime)', date('Y-m-d')) // กรองเฉพาะวันที่ปัจจุบัน
-            ->get()
-            ->getResultArray();
+        $today = date('Y-m-d');
+        $result = [];
 
-        return $data;
+        foreach ($staCodes as $staCode) {
+
+            // 1. ลองดึงข้อมูลเวลา 07:00 ของวันนี้ก่อน
+            $data = $this->db->table($this->table)
+                ->where('sta_code', $staCode)
+                ->where('datetime', $today . ' 07:00:00')
+                ->get()
+                ->getRowArray();
+
+            // 2. ถ้าไม่มีข้อมูล 07:00 ให้ดึงข้อมูลล่าสุดแทน
+            if (empty($data)) {
+                $data = $this->db->table($this->table)
+                    ->where('sta_code', $staCode)
+                    ->where('datetime <=', date('Y-m-d H:i:s'))
+                    ->orderBy('datetime', 'DESC')
+                    ->limit(1)
+                    ->get()
+                    ->getRowArray();
+            }
+
+            // 3. ถ้ามีข้อมูล ให้เพิ่มเข้า result
+            if (!empty($data)) {
+                $result[] = $data;
+            }
+        }
+
+        return $result;
     }
 
     // เมธอดสำหรับดึงข้อมูลจาก tele_data โดยใช้ sta_code

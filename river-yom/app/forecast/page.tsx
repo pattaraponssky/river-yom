@@ -19,7 +19,7 @@ import { useRasData } from '@/components/hooks/useRasData';
 
 // ─── Station ที่ใช้คำนวณ warning table ───────────────────────
 
-const WARNING_STATIONS = ['Y.15', 'Y.16', 'Y.4', 'Y.50', 'Y.64'];
+const WARNING_STATIONS = ['Y.15', 'Y.16', 'Y.4', 'Y.50', 'Y.64', 'YR.01', 'YR.02', 'YR.03', 'YR.04', 'YR.05', 'YR.06'];
 
 export default function Dashboard() {
   const { today, archive, loading, error } = useRasData(3); // archive ย้อนหลัง 3 วัน
@@ -67,9 +67,7 @@ export default function Dashboard() {
   if (!today) return [];
 
   return today.points
-    // กรองเฉพาะแม่น้ำยม (Yom River)
     .filter(p => {
-      // รองรับกรณีมีช่องว่างท้ายชื่อ เช่น "Yom River       "
       const river = (p.river ?? '').toString().trim();
       return river === 'Yom River';
     })
@@ -85,9 +83,6 @@ export default function Dashboard() {
   const waterLevelChartData = useMemo(() => {
     if (!today) return [];
     return today.points.map(p => ({
-      // CrossSection: p.crossSection,
-      // Date:         p.time.replace('T', ' '),
-      // WaterLevel:   p.elevation,
       station:   p.station,
       time:      p.time,
       elevation: p.elevation,

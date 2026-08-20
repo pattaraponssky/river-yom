@@ -28,17 +28,15 @@ export interface RasData {
 
 // ─── Station mapping ──────────────────────────────────────────
 export const STATION_MAPPING: Record<string, number> = {
-  'Y.4': 95005,
-  'Y.15': 87572,
-  'Y.01': 79973,
-  'Y.02': 54142,
-  'Y.03': 45324,
-  'Y.04': 30189,
-  // '02':              195165,
-    //   'ปตร.พลเทพ':      321863,
-    //   'ปตร.ท่าโบสถ์':   293361,
-    //   'ปตร.ชลมาร์คพิจารณ์': 241714,
-    //   'ปตร.โพธิ์พระยา': 204540,
+ "YR.01": 13590,
+  "YR.02": 33751,
+  "YR.03": 51151,
+  "YR.04": 39509,
+  "YR.05": 2611,
+  "YR.06": 889,
+  "Y.4": 94522,
+  "Y.15": 41446,
+  "Y.50": 54142,
 };
 
 const CROSS_TO_STATION = new Map<number, string>(
@@ -142,9 +140,9 @@ export function useRasData(archiveDays = 3): RasData {
 
         // โหลดทุกไฟล์พร้อมกัน
         const [todayPoints, ...archiveResults] = await Promise.all([
-          fetchCsv(`${Path_URL}ras-output/output_ras.csv`),
+          fetchCsv(`${Path_URL}/ras-output/output_ras.csv`),
           ...pastDates(archiveDays).map(date =>
-            fetchCsv(`${Path_URL}ras-output/archive/output_ras_${date}.csv`)
+            fetchCsv(`${Path_URL}/ras-output/archive/output_ras_${date}.csv`)
               .then(points => ({ date, points }))
           ),
         ]);

@@ -11,8 +11,8 @@ import RainDashboard from "./components/RainDashboard";
 
 const mapKey = process.env.NEXT_PUBLIC_LONGDO_MAP_KEY!;
 const JsonPaths = [
-  `${Path_URL}data/River.geojson`,
-  `${Path_URL}data/ProjectArea.geojson`,
+  `${Path_URL}/data/River.geojson`,
+  `${Path_URL}/data/ProjectArea.geojson`,
 ];
 
 const TAB_ITEMS = [

@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
     unoptimized: true,        
   },
   trailingSlash: true,       
-  basePath: '/river-yom',  // ← ใส่ถ้าจะวางเว็บไว้ใต้ subfolder เช่น http://localhost/river-yom/
+  basePath: '/river-yom',  
 };
 
 export default nextConfig;

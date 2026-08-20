@@ -17,11 +17,18 @@ class Equipment extends ResourceController
 
     /**
      * GET /api/equipments
-     * ดึงรายการอุปกรณ์ทั้งหมด
+     * GET /api/equipments?sta_code=YR.01   <-- ใช้ในหน้ารายละเอียดสถานี
+     * ดึงรายการอุปกรณ์ทั้งหมด หรือกรองตามสถานี
      */
     public function index()
     {
-        $equipments = $this->model->findAll();
+        $staCode = $this->request->getGet('sta_code');
+
+        if (!empty($staCode)) {
+            $equipments = $this->model->findByStation($staCode);
+        } else {
+            $equipments = $this->model->findAll();
+        }
 
         return $this->respond([
             'status'  => 'success',
@@ -32,8 +39,28 @@ class Equipment extends ResourceController
     }
 
     /**
+     * GET /api/equipments/station/{sta_code}
+     * เช่น GET /api/equipments/station/YR.01
+     */
+    public function byStation($staCode = null)
+    {
+        if (empty($staCode)) {
+            return $this->fail('กรุณาระบุรหัสสถานี (sta_code)');
+        }
+
+        $equipments = $this->model->findByStation($staCode);
+
+        return $this->respond([
+            'status'   => 'success',
+            'message'  => 'ดึงข้อมูลอุปกรณ์ของสถานีสำเร็จ',
+            'sta_code' => $staCode,
+            'data'     => $equipments,
+            'count'    => count($equipments),
+        ]);
+    }
+
+    /**
      * GET /api/equipments/{id}
-     * ดึงข้อมูลอุปกรณ์เดี่ยว
      */
     public function show($id = null)
     {
@@ -52,7 +79,8 @@ class Equipment extends ResourceController
 
     /**
      * POST /api/equipments
-     * เพิ่มอุปกรณ์ใหม่
+     * body: { sta_code, name, type, serial_number?, brand_model?, purchase_date?,
+     *         warranty_expiry?, photo?, status? }
      */
     public function create()
     {
@@ -68,12 +96,12 @@ class Equipment extends ResourceController
             'status'  => 'success',
             'message' => 'เพิ่มอุปกรณ์สำเร็จ',
             'id'      => $newId,
+            'data'    => $this->model->find($newId),
         ]);
     }
 
     /**
-     * PUT /api/equipments/{id}
-     * แก้ไขอุปกรณ์
+     * POST /api/equipments/update/{id}  (ตาม route เดิมที่ใช้ POST แทน PUT)
      */
     public function update($id = null)
     {
@@ -91,12 +119,12 @@ class Equipment extends ResourceController
             'status'  => 'success',
             'message' => 'แก้ไขอุปกรณ์สำเร็จ',
             'id'      => $id,
+            'data'    => $this->model->find($id),
         ]);
     }
 
     /**
-     * DELETE /api/equipments/{id}
-     * ลบอุปกรณ์
+     * POST /api/equipments/delete/{id}
      */
     public function delete($id = null)
     {
@@ -114,7 +142,6 @@ class Equipment extends ResourceController
 
     /**
      * GET /api/equipments/{id}/logs
-     * ดึงประวัติการทำงานของอุปกรณ์
      */
     public function logs($equipmentId = null)
     {
@@ -138,21 +165,18 @@ class Equipment extends ResourceController
 
     /**
      * GET /api/equipments/{id}/maintenance
-     * ดึงประวัติการบำรุงรักษาของอุปกรณ์
      */
     public function maintenance($equipmentId = null)
     {
         $maintenanceModel = new MaintenanceRecordModel();
 
-        // ตรวจสอบว่าอุปกรณ์มีอยู่จริงหรือไม่
         if (!$this->model->find($equipmentId)) {
             return $this->failNotFound('ไม่พบอุปกรณ์');
         }
 
-        // ดึงข้อมูลการบำรุงรักษาทั้งหมดของอุปกรณ์นี้
         $records = $maintenanceModel
             ->where('equipment_id', $equipmentId)
-            ->orderBy('maintenance_date', 'DESC') // เรียงจากล่าสุดไปเก่าที่สุด
+            ->orderBy('maintenance_date', 'DESC')
             ->findAll();
 
         return $this->respond([
@@ -168,22 +192,18 @@ class Equipment extends ResourceController
     {
         $maintenanceModel = new MaintenanceRecordModel();
 
-        // ตรวจสอบอุปกรณ์มีอยู่จริง
         if (!$this->model->find($equipmentId)) {
             return $this->failNotFound('ไม่พบอุปกรณ์');
         }
 
         $data = $this->request->getJSON(true);
 
-        // Validate ข้อมูลที่จำเป็น
         if (empty($data['maintenance_date']) || empty($data['type']) || empty($data['status'])) {
             return $this->failValidationErrors('กรุณาระบุวันที่บำรุงรักษา, ประเภท และสถานะ');
         }
 
-        // เติม equipment_id
         $data['equipment_id'] = $equipmentId;
 
-        // แปลงวันที่ให้ถูกต้อง (ถ้าจำเป็น)
         if (!empty($data['maintenance_date'])) {
             $data['maintenance_date'] = date('Y-m-d', strtotime($data['maintenance_date']));
         }
@@ -191,14 +211,12 @@ class Equipment extends ResourceController
             $data['next_due_date'] = date('Y-m-d', strtotime($data['next_due_date']));
         }
 
-        // บันทึก
         $insertedId = $maintenanceModel->insert($data);
 
         if (!$insertedId) {
             return $this->failValidationErrors($maintenanceModel->errors());
         }
 
-        // ดึงข้อมูล record ที่เพิ่งสร้างเพื่อส่งกลับ
         $newRecord = $maintenanceModel->find($insertedId);
 
         return $this->respondCreated([
@@ -223,7 +241,6 @@ class Equipment extends ResourceController
 
         $data = $this->request->getJSON(true);
 
-        // จัดรูปแบบวันที่
         if (!empty($data['maintenance_date'])) {
             $data['maintenance_date'] = date('Y-m-d', strtotime($data['maintenance_date']));
         }
@@ -244,9 +261,6 @@ class Equipment extends ResourceController
         ]);
     }
 
-    /**
-     * DELETE /api/equipments/{equipmentId}/maintenance/{recordId}
-     */
     public function deleteMaintenance($equipmentId = null, $recordId = null)
     {
         $maintenanceModel = new MaintenanceRecordModel();

@@ -47,7 +47,7 @@ const publicMenuItems = [
 
 const advancedMenuItems = [
   { icon: <DataUsageIcon fontSize="small" />, text: "แบบจำลอง", path: "/model" },
-  { icon: <Handyman fontSize="small" />, text: "รายการอุปกรณ์", path: "/equipment" },
+  { icon: <Handyman fontSize="small" />, text: "รายการอุปกรณ์", path: "/stations" },
 ];
 
 const adminMenuItems = [
@@ -207,7 +207,7 @@ const DrawerComponent: React.FC<DrawerProps> = ({ open, setOpen }) => {
                 }}
               >
                 <img
-                  src={`${Path_URL}images/logo_rid.png`}
+                  src={`${Path_URL}/images/logo_rid.png`}
                   alt="RID Logo"
                   style={{ height: isMobile ? 38 : 46, objectFit: 'contain' }}
                 />
@@ -540,7 +540,7 @@ const DrawerComponent: React.FC<DrawerProps> = ({ open, setOpen }) => {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: open ? 1.2 : 0, justifyContent: open ? 'flex-start' : 'center' }}>
               <Tooltip title={!open ? currentUser.username : ''} placement="right">
                 <Avatar
-                  src={`${Path_URL}images/icons/user_icon.png`}
+                  src={`${Path_URL}/images/icons/user_icon.png`}
                   alt={currentUser.username}
                   sx={{
                     width: 34, height: 34, flexShrink: 0,

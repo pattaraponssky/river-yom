@@ -14,7 +14,8 @@ import CenteredLoading from "@/components/Layout/CenteredLoading";
 import { Path_URL, formatThaiDay } from "@/lib/utility";
 import { titleStyle } from "@/theme/style";
 import dynamic from "next/dynamic";
-import { FLOW_WARN_LEVELS } from '../../../lib/warnLevels';
+import { FLOW_WARN_LEVELS, TELE_WARN_LEVELS, getWarnLevel } from '../../../lib/warnLevels';
+import { STATION_MAPPING } from '@/components/hooks/useRasData';
 
 const ApexChart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
@@ -24,29 +25,32 @@ interface WaterLevelData {
   elevation: number;
 }
 
-const stationMapping: Record<string, number> = {
-  "Y.4": 95005,
-  "Y.15": 87572,
-  "kpk": 79973,
-  "wst": 79973,
-  "Y.50": 54142,
-  "tng": 54142,
+// รวมเกณฑ์เตือนภัยจากทุกแหล่งที่อาจมีรหัสสถานีของ STATION_MAPPING อยู่
+const COMBINED_WARN_LEVELS = {
+  ...TELE_WARN_LEVELS,
+  ...FLOW_WARN_LEVELS,
 };
 
 interface Props {
   data: WaterLevelData[];
   chartHeight?: number;
 }
+
 const WaterLevelChart: React.FC<Props> = ({ data, chartHeight = 550 }) => {
   const [secondData, setSecondData] = useState<WaterLevelData[]>([]);
-  const [selectedStation, setSelectedStation] = useState<string>("Y.15");
+  const [selectedStation, setSelectedStation] = useState<string>("YR.03");
   const [shiftValue, setShiftValue] = useState<number>(0);
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedTime, setSelectedTime] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const Levels = useMemo(() => FLOW_WARN_LEVELS[selectedStation], [selectedStation]);
+  // ดึงเกณฑ์เตือนภัยจาก warnLevels.ts (รวมทั้ง tele + flow) แทนการอ้าง FLOW_WARN_LEVELS ตรงๆ
+  // ซึ่งไม่มีรหัส YR.01-YR.06 อยู่ ทำให้เส้นเตือนภัยหายไปเงียบๆ เมื่อเลือกสถานีกลุ่มนั้น
+  const Levels = useMemo(
+    () => getWarnLevel(COMBINED_WARN_LEVELS, selectedStation),
+    [selectedStation]
+  );
 
   const clean = (val: string | undefined): number => {
     if (!val) return NaN;
@@ -56,7 +60,7 @@ const WaterLevelChart: React.FC<Props> = ({ data, chartHeight = 550 }) => {
   };
 
   useEffect(() => {
-    fetch(`${Path_URL}data/ground_station.csv`)
+    fetch(`${Path_URL}/data/ground_station.csv`)
       .then((response) => response.text())
       .then((csvText) => {
         Papa.parse(csvText, {
@@ -69,7 +73,7 @@ const WaterLevelChart: React.FC<Props> = ({ data, chartHeight = 550 }) => {
             const parsedData: WaterLevelData[] = rawData
               .flatMap((row, index) => {
                 const time = (index + 1).toString();
-                return Object.keys(stationMapping).map((station) => ({
+                return Object.keys(STATION_MAPPING).map((station) => ({
                   station,
                   elevation: clean(row[station]),
                   time,
@@ -104,12 +108,12 @@ const WaterLevelChart: React.FC<Props> = ({ data, chartHeight = 550 }) => {
     }, {} as Record<string, WaterLevelData[]>);
   }, [stationData]);
 
-  const availableDates = useMemo(() => {/////////////////////////////////////////////////////////
-  const today = new Date().toISOString().split("T")[0]; // รูปแบบ YYYY-MM-DD
-  return Object.keys(groupedByDate)
-    .filter(date => date >= today) // กรองเอาเฉพาะวันที่ >= วันนี้
-    .sort();
-}, [groupedByDate]);
+  const availableDates = useMemo(() => {
+    const today = new Date().toISOString().split("T")[0];
+    return Object.keys(groupedByDate)
+      .filter(date => date >= today)
+      .sort();
+  }, [groupedByDate]);
 
   const currentSelectedData = useMemo(() => {
     const targetTime = `${selectedDate}T${selectedTime}`;
@@ -117,17 +121,17 @@ const WaterLevelChart: React.FC<Props> = ({ data, chartHeight = 550 }) => {
   }, [stationData, selectedDate, selectedTime]);
 
   useEffect(() => {
-  if (availableDates.length > 0 && !selectedDate) {
-    setSelectedDate(availableDates[0]);
-  }
-}, [availableDates, selectedDate]);
+    if (availableDates.length > 0 && !selectedDate) {
+      setSelectedDate(availableDates[0]);
+    }
+  }, [availableDates, selectedDate]);
 
   const handlePlay = () => {
     setIsPlaying(prev => !prev);
   };
 
   useEffect(() => {
-  if (!isPlaying) return;
+    if (!isPlaying) return;
 
     const interval = setInterval(() => {
       const times = (groupedByDate[selectedDate] || []).map((item) => item.time.split("T")[1]);
@@ -145,13 +149,12 @@ const WaterLevelChart: React.FC<Props> = ({ data, chartHeight = 550 }) => {
           const newTimes = (groupedByDate[nextDate] || []).map((item) => item.time.split("T")[1]);
           setSelectedTime(newTimes[0]);
         } else {
-          // ถ้าสุดท้ายแล้ว ให้หยุดเล่น
           setIsPlaying(false);
         }
       }
-    }, 400); 
+    }, 400);
 
-    return () => clearInterval(interval); // ล้าง interval เมื่อหยุด
+    return () => clearInterval(interval);
   }, [isPlaying, selectedTime, selectedDate, groupedByDate, availableDates]);
 
   useEffect(() => {
@@ -175,11 +178,10 @@ const WaterLevelChart: React.FC<Props> = ({ data, chartHeight = 550 }) => {
   const categories = useMemo(() => filteredSecondData.map((item) => item.time || ""), [filteredSecondData]);
 
   const elevationValue = currentSelectedData?.elevation ?? 0;
-  
-  // Filter out the annotations if Levels is not found for the selected station
+
   const chartAnnotations = useMemo(() => {
     if (!Levels) return [];
-    
+
     return [
       {
         y: Levels.normal + shiftValue,
@@ -217,7 +219,7 @@ const WaterLevelChart: React.FC<Props> = ({ data, chartHeight = 550 }) => {
           },
         },
       },
-       {
+      {
         y: Levels.crisis + shiftValue,
         borderWidth: 2,
         strokeDashArray: 0,
@@ -253,11 +255,8 @@ const WaterLevelChart: React.FC<Props> = ({ data, chartHeight = 550 }) => {
           },
         },
       },
-
-     
     ];
   }, [Levels, shiftValue]);
-
 
   const chartOptions = {
     chart: {
@@ -282,27 +281,27 @@ const WaterLevelChart: React.FC<Props> = ({ data, chartHeight = 550 }) => {
           },
         },
         {
-        y: elevationValue + shiftValue,
-        borderWidth: 0,
-        label: {
-          position: "right",
-          offsetX: -10,
-          offsetY: -10,
-          text: `ตลิ่งขวา`,
-          style: { fontSize: "0.8rem", fontWeight: "bold" },
+          y: elevationValue + shiftValue,
+          borderWidth: 0,
+          label: {
+            position: "right",
+            offsetX: -10,
+            offsetY: -10,
+            text: `ตลิ่งขวา`,
+            style: { fontSize: "0.8rem", fontWeight: "bold" },
+          },
         },
-      },
-      {
-        y: elevationValue + shiftValue,
-        borderWidth: 0,
-        label: {
-          position: "left",
-          offsetX: 55,
-          offsetY: -10,
-          text: `ตลิ่งซ้าย`,
-          style: { fontSize: "0.8rem", fontWeight: "bold" },
+        {
+          y: elevationValue + shiftValue,
+          borderWidth: 0,
+          label: {
+            position: "left",
+            offsetX: 55,
+            offsetY: -10,
+            text: `ตลิ่งซ้าย`,
+            style: { fontSize: "0.8rem", fontWeight: "bold" },
+          },
         },
-      },
       ],
     },
     xaxis: {
@@ -363,27 +362,26 @@ const WaterLevelChart: React.FC<Props> = ({ data, chartHeight = 550 }) => {
   ];
 
   if (loading) return <CenteredLoading />;
-  
 
   return (
-    <Box >
+    <Box>
       <Typography gutterBottom sx={{ ...titleStyle, fontWeight: "bold" }}>
         ระดับน้ำรายชั่วโมง สถานี <Box component="span" sx={{ color: "red" }}>{selectedStation}</Box>
       </Typography>
 
-      <Box sx={{ display: "flex", justifyContent: "center", gap: 1, mb: {xs:1,sm:2}, flexWrap: "wrap", alignItems: "center" }}>
+      <Box sx={{ display: "flex", justifyContent: "center", gap: 1, mb: { xs: 1, sm: 2 }, flexWrap: "wrap", alignItems: "center" }}>
         <Button
-              sx={{
-              display:{xs:"none",sm:"block"},
-              fontFamily: "Prompt",
-              fontSize: { xs: "0.8rem", sm: "1rem" },
-              bgcolor: "#1976d2",
-              "&:hover": { bgcolor: "#115293" },
-              borderRadius: "20px",
-              paddingX: { xs: "8px", sm: "16px" },
-              width: { xs: "30%", sm: "auto" }, // ให้ปุ่มเต็มหน้าจอในขนาดเล็ก
-              mb: { xs: 2, sm: 0 }, // เพิ่ม margin-bottom ในขนาดหน้าจอเล็ก
-            }}
+          sx={{
+            display: { xs: "none", sm: "block" },
+            fontFamily: "Prompt",
+            fontSize: { xs: "0.8rem", sm: "1rem" },
+            bgcolor: "#1976d2",
+            "&:hover": { bgcolor: "#115293" },
+            borderRadius: "20px",
+            paddingX: { xs: "8px", sm: "16px" },
+            width: { xs: "30%", sm: "auto" },
+            mb: { xs: 2, sm: 0 },
+          }}
           variant="contained"
           onClick={() => setSelectedDate(availableDates[Math.max(0, availableDates.indexOf(selectedDate) - 1)])}
           disabled={availableDates.indexOf(selectedDate) === 0}
@@ -392,38 +390,38 @@ const WaterLevelChart: React.FC<Props> = ({ data, chartHeight = 550 }) => {
         </Button>
 
         <Select sx={{ fontFamily: "Prompt", width: { xs: "97%", sm: "auto" }, mb: { xs: 0, sm: 0 } }} value={selectedStation} onChange={(e) => setSelectedStation(e.target.value)}>
-          {Object.keys(stationMapping).map((station) => (
-            <MenuItem sx={{fontFamily: "Prompt"}} key={station} value={station}>{station}</MenuItem>
+          {Object.keys(STATION_MAPPING).map((station) => (
+            <MenuItem sx={{ fontFamily: "Prompt" }} key={station} value={station}>{station}</MenuItem>
           ))}
         </Select>
 
-        <Select sx={{ fontFamily: "Prompt", width: { xs: "55%", sm: "auto" },fontSize:{xs:"0.9rem"} }} value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)}>
+        <Select sx={{ fontFamily: "Prompt", width: { xs: "55%", sm: "auto" }, fontSize: { xs: "0.9rem" } }} value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)}>
           {availableDates.map((date) => (
-            <MenuItem sx={{fontFamily: "Prompt"}}  key={date} value={date}>{formatThaiDay(date)}</MenuItem>
+            <MenuItem sx={{ fontFamily: "Prompt" }} key={date} value={date}>{formatThaiDay(date)}</MenuItem>
           ))}
         </Select>
 
         {selectedDate && (
-          <Select sx={{ fontFamily: "Prompt", width: { xs: "40%", sm: "auto" },fontSize:{xs:"0.9rem"} }} value={selectedTime} onChange={(e) => setSelectedTime(e.target.value)}>
+          <Select sx={{ fontFamily: "Prompt", width: { xs: "40%", sm: "auto" }, fontSize: { xs: "0.9rem" } }} value={selectedTime} onChange={(e) => setSelectedTime(e.target.value)}>
             {(groupedByDate[selectedDate] || []).map((item) => {
               const timeOnly = item.time.split("T")[1];
-              return <MenuItem sx={{fontFamily: "Prompt"}}  key={item.time} value={timeOnly}>{timeOnly}</MenuItem>;
+              return <MenuItem sx={{ fontFamily: "Prompt" }} key={item.time} value={timeOnly}>{timeOnly}</MenuItem>;
             })}
           </Select>
         )}
 
-           <Button
-              sx={{
-              display:{xs:"block",sm:"none"},
-              fontFamily: "Prompt",
-              fontSize: { xs: "0.8rem", sm: "1rem" },
-              bgcolor: "#1976d2",
-              "&:hover": { bgcolor: "#115293" },
-              borderRadius: "20px",
-              paddingX: { xs: "8px", sm: "16px" },
-              width: { xs: "30%", sm: "auto" }, // ให้ปุ่มเต็มหน้าจอในขนาดเล็ก
-              mb: { xs: 2, sm: 0 }, // เพิ่ม margin-bottom ในขนาดหน้าจอเล็ก
-            }}
+        <Button
+          sx={{
+            display: { xs: "block", sm: "none" },
+            fontFamily: "Prompt",
+            fontSize: { xs: "0.8rem", sm: "1rem" },
+            bgcolor: "#1976d2",
+            "&:hover": { bgcolor: "#115293" },
+            borderRadius: "20px",
+            paddingX: { xs: "8px", sm: "16px" },
+            width: { xs: "30%", sm: "auto" },
+            mb: { xs: 2, sm: 0 },
+          }}
           variant="contained"
           onClick={() => setSelectedDate(availableDates[Math.max(0, availableDates.indexOf(selectedDate) - 1)])}
           disabled={availableDates.indexOf(selectedDate) === 0}
@@ -463,7 +461,7 @@ const WaterLevelChart: React.FC<Props> = ({ data, chartHeight = 550 }) => {
         <ApexChart options={chartOptions} series={chartSeries} type="line" height={chartHeight} />
       </Box>
 
-      <Typography sx={{ mt: 2,...titleStyle,textAlign:"center", color: "blue", fontWeight: "bold" }}>
+      <Typography sx={{ mt: 2, ...titleStyle, textAlign: "center", color: "blue", fontWeight: "bold" }}>
         ระดับน้ำปัจจุบัน: {elevationValue.toFixed(2)} ม.รทก.
       </Typography>
     </Box>

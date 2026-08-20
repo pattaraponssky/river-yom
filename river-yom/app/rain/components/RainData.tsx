@@ -365,10 +365,10 @@ const DataRainStation: React.FC<DataRainStationProps> = ({ propsSelectedStation 
         <Grid size={{ xs: 12, sm: 12, md: 4 }}>
           <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
             <img
-              src={station ? `${Path_URL}images/rain_station/${station.sta_code}.jpg` : `${Path_URL}images/default_img.png`}
+              src={station ? `${Path_URL}/images/rain_station/${station.sta_code}.jpg` : `${Path_URL}/images/default_img.png`}
               alt="Station"
               style={{ width: "100%", objectFit: "cover", borderRadius: "10px", boxShadow: "0px 3px 6px rgba(0,0,0,0.56)" }}
-              onError={e => (e.currentTarget.src = `${Path_URL}images/default_img.png`)}
+              onError={e => (e.currentTarget.src = `${Path_URL}/images/default_img.png`)}
             />
           </Box>
         </Grid>

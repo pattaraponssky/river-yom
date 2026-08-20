@@ -318,7 +318,7 @@ const DataTele: React.FC<{ propsSelectedStation?: string }> = ({ propsSelectedSt
 
           <Box sx={{ display: "flex", justifyContent: "center" }}>
             <img
-              src={station ? `${Path_URL}images/tele/${station.sta_code}.jpg` : `${Path_URL}images/images/default_img.png`}
+              src={station ? `${Path_URL}/images/tele/${station.sta_code}.jpg` : `${Path_URL}/images/images/default_img.png`}
               alt="Station"
               style={{
                 width: "100%",
@@ -327,7 +327,7 @@ const DataTele: React.FC<{ propsSelectedStation?: string }> = ({ propsSelectedSt
                 borderRadius: "10px",
                 boxShadow: "0px 3px 6px rgba(0, 0, 0, 0.56)"
               }}
-              onError={(e) => (e.currentTarget.src = `${Path_URL}images/default_img.png`)}
+              onError={(e) => (e.currentTarget.src = `${Path_URL}/images/default_img.png`)}
             />
           </Box>
         </Grid>

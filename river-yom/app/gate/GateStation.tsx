@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { Box } from "@mui/material";
 import { Map } from "@mui/icons-material";
-import PlaceIcon from "@mui/icons-material/Place";
+
 import BarChartIcon from '@mui/icons-material/BarChart';
 import { Path_URL } from "@/lib/utility";
 import { BoxStyle } from "@/theme/style";
@@ -11,16 +11,17 @@ import SegmentedTabs, { SegmentedTabItem } from "@/components/Data/SegmentedTabs
 import GateDashboard from "./components/GateDashboard";
 import GateMap from "./components/GateMap";
 import DataGateStation from '@/app/gate/components/GateData';
+import OpacityIcon from '@mui/icons-material/Opacity';
 
 
 const mapKey = process.env.NEXT_PUBLIC_LONGDO_MAP_KEY!;
 const JsonPaths = [
-  `${Path_URL}data/River.geojson`,
-  `${Path_URL}data/ProjectArea.geojson`,
+  `${Path_URL}/data/River.geojson`,
+  `${Path_URL}/data/ProjectArea.geojson`,
 ];
 
 const GATE_TAB_ITEMS: SegmentedTabItem[] = [
-  { label: 'ข้อมูลประตูระบายน้ำ', shortLabel: 'ประตูน้ำ', icon: <PlaceIcon /> },
+  { label: 'ข้อมูลประตูระบายน้ำ', shortLabel: 'ประตูน้ำ', icon: <OpacityIcon /> },
   { label: 'ข้อมูลย้อนหลัง', shortLabel: 'ย้อนหลัง', icon: <BarChartIcon /> },
   { label: 'แผนที่แสดงตำแหน่งประตูระบายน้ำ', shortLabel: 'แผนที่', icon: <Map /> },
 ];

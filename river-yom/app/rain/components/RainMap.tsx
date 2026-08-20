@@ -543,7 +543,7 @@ const RainMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,heig
       : "-";
       if (position.lat && position.lon) {
         const marker = new longdo.Marker(position, {
-          title: `<img src="${Path_URL}images/icons/rain_station_icon.png" style="width:25px; height:25px; vertical-align:middle; margin-right:5px" /> 
+          title: `<img src="${Path_URL}/images/icons/rain_station_icon.png" style="width:25px; height:25px; vertical-align:middle; margin-right:5px" /> 
             <span style="font-family: Prompt; font-size:1.1rem; font-weight:bold; vertical-align:middle;">${name} อ.${district} จ.${province}</span>`,
           detail: `
             <div style="font-size: 1rem;font-family: Prompt;">
@@ -582,7 +582,7 @@ const RainMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,heig
           `,
           icon: {
             html: `<div style="text-align:center;">
-              <img src="${Path_URL}images/icons/${parseFloat(data.rain_mm) > 0 ? 'rain_station_icon.png' : 'sun_station_icon.png'}" style="width:24px; height:24px;" />
+              <img src="${Path_URL}/images/icons/${parseFloat(data.rain_mm) > 0 ? 'rain_station_icon.png' : 'sun_station_icon.png'}" style="width:24px; height:24px;" />
               <div style="background-color: rgba(255, 255, 255, 0.4); padding:2px; border-radius:5px; font-size: 12px; margin-top: 2px;width:80px;">
                 ${data.sta_code}
               </div>
@@ -611,7 +611,7 @@ const RainMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,heig
     let detail = "";
     let icon = "";
   
-      title = `<img src="${Path_URL}images/icons/rain_station_icon.png" style="width:25px; height:25px; vertical-align:middle; margin-right:5px" />
+      title = `<img src="${Path_URL}/images/icons/rain_station_icon.png" style="width:25px; height:25px; vertical-align:middle; margin-right:5px" />
         <span style="font-size:1.1rem; font-family: Prompt; font-weight:bold; vertical-align:middle; padding:5px">${item.name} อ.${item.district} จ.${item.province}</span>`;
   
       detail = `
@@ -648,7 +648,7 @@ const RainMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,heig
             <div id="chart-rain_mm-${item.sta_code}" style="display:none;"></div>
             <div id="chart-rain_series-${item.sta_code}" style="display:none;"></div>
       `;
-      icon = `${Path_URL}images/icons/${parseFloat(item.rain_mm) > 0 ? 'rain_station_icon.png' : 'sun_station_icon.png'}`;
+      icon = `${Path_URL}/images/icons/${parseFloat(item.rain_mm) > 0 ? 'rain_station_icon.png' : 'sun_station_icon.png'}`;
       
     const marker = new longdo.Popup(position, {
       title,
@@ -707,7 +707,7 @@ const RainMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,heig
                   onClick={() => handleListItemClick({...item,rain_mm}, "rain")}
                 > 
                   <ListItemAvatar sx={{ marginInline: "10px" }}>
-                    <Avatar src={`${Path_URL}images/icons/${parseFloat(rain_mm) > 0 ? 'rain_station_icon.png' : 'sun_station_icon.png'}`} />
+                    <Avatar src={`${Path_URL}/images/icons/${parseFloat(rain_mm) > 0 ? 'rain_station_icon.png' : 'sun_station_icon.png'}`} />
                   </ListItemAvatar>
                       <Box>
                         <Typography sx={{ fontFamily:"Prompt", fontWeight: "bold", color: "text.primary" }}>

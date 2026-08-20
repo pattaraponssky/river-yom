@@ -210,7 +210,7 @@ class TeleAPI extends Controller
     {
         try {
             // กำหนดรหัสสถานีที่ต้องการดึงข้อมูล
-            $staCodes = ['Y.15', 'Y.16', 'Y.4', 'Y.50', 'Y.64', 'Y.51', 'Y.17'];
+            $staCodes = ['YR.01', 'YR.02', 'YR.03', 'YR.04', 'YR.05', 'YR.06'];
 
             $model = new TeleModel();
             

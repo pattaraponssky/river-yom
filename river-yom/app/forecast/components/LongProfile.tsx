@@ -44,7 +44,7 @@ const LongProfileChart: React.FC<Props> = ({ waterData, chartHeight = 500, isDar
 
   // โหลด longProfile.csv
   useEffect(() => {
-    fetch(`${Path_URL}data/longProfile.csv`)
+    fetch(`${Path_URL}/data/longProfile.csv`)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to load longProfile.csv");
         return res.text();
@@ -311,7 +311,7 @@ const LongProfileChart: React.FC<Props> = ({ waterData, chartHeight = 500, isDar
     yaxis: {
       labels: {
         formatter: function (val: any) {
-          return val.toFixed(2).toLocaleString(); // แสดงค่าจริง
+          return val.toLocaleString(); // แสดงค่าจริง
         },
         style: {
           fontSize: "1.6vh",
@@ -330,7 +330,7 @@ const LongProfileChart: React.FC<Props> = ({ waterData, chartHeight = 500, isDar
       shared: true,
       y: {
         formatter: function (val: number) {
-          return val.toFixed(2).toLocaleString() + " ม.รทก.";
+          return val.toLocaleString() + " ม.รทก.";
         },
       },
       x: {
@@ -346,7 +346,7 @@ const LongProfileChart: React.FC<Props> = ({ waterData, chartHeight = 500, isDar
           } else {
             province = "นอกเขตที่กำหนด";
           }
-          return `ระยะทาง: ${val.toFixed(2)} กม. (${province})`;
+          return `ระยะทาง: ${val} กม. (${province})`;
         },
       },
     },

@@ -6,7 +6,20 @@ const WaterSchematicSimple = dynamic(
   () => import('@/app/schematic/components/WaterSchematicSimple'),
   {
     ssr: false,
-    loading: () => <div>Loading...</div>,
+    loading: () => (
+      <div
+        style={{
+          minHeight: '100vh',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          fontFamily: 'Prompt, sans-serif',
+          fontSize: '1rem',
+        }}
+      >
+        Loading...
+      </div>
+    ),
   }
 );
 

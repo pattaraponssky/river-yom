@@ -48,7 +48,7 @@ const StationCrossSectionChart: React.FC<Props> = ({
 
   // ─── โหลด ground profile ────────────────────────────────────
   useEffect(() => {
-    fetch(`${Path_URL}data/ground_station.csv`)
+    fetch(`${Path_URL}/data/ground_station.csv`)
       .then(r => r.text())
       .then(csv => {
         Papa.parse(csv, {

@@ -282,10 +282,17 @@ class DailyApi extends ResourceController
         $infoModel = new TeleInfoModel();
         $dataModel = new TeleModel();
 
+        // เหมือน flow(): ถ้าไม่มี date → ใช้วันล่าสุดที่มีข้อมูล
+        if (!$date) {
+            $latest = (new TeleModel())->selectMax('datetime')->first();
+            $date = $latest ? substr($latest['datetime'], 0, 10) : date('Y-m-d');
+        }
+
         $yearStart = date('Y', strtotime($date)) . '-01-01';
 
-        // ✅ รองรับการเลือกสถานีเดียวด้วย sta_code
-        $staCode = $this->getCodeFilter('sta_code', $codeSegment);
+        // รองรับการเลือกสถานีเดียวด้วย sta_code
+        $staCode = $this->getCodeFilter('sta_code', $codeSegment)
+            ?? $this->request->getGet('sta_code');
 
         $infoQuery = $infoModel;
         if ($staCode) {
@@ -301,11 +308,12 @@ class DailyApi extends ResourceController
         $no = 1;
 
         foreach ($flows as $flow) {
-            $builder = $dataModel->where('sta_code', $flow['sta_code']);
+            $code = $flow['sta_code'];
 
-              $sumRain = $dataModel
+            // ── ผลรวมฝน (แยก Model ใหม่ กัน state ปน) ──
+            $sumRain = (new TeleModel())
                 ->selectSum('rain_mm', 'total_rain')
-                ->where('sta_code', $flow['sta_code'])
+                ->where('sta_code', $code)
                 ->where('datetime >=', $yearStart . ' 07:00:00')
                 ->where('datetime <=', $date . ' 07:00:00')
                 ->first();
@@ -314,16 +322,13 @@ class DailyApi extends ResourceController
                 ? floatval($sumRain['total_rain'])
                 : null;
 
-            if ($date) {
-                $daily = $builder
-                            ->where('DATE(datetime)', $date)
-                            ->where('HOUR(datetime)', 7)
-                            ->where('MINUTE(datetime)', 0)
-                            ->first();
-            } else {
-                $daily = $builder
-                            ->orderBy('datetime', 'DESC')
-                            ->first();
+            // ── ข้อมูลรายวัน เวลา 07:00 (ใช้ helper เหมือน flow) ──
+            $daily = $this->whereDateAt7(new TeleModel(), $code, $date, 'sta_code');
+
+            // fallback ไปวันก่อนหน้า เหมือน flow()
+            if (!$daily) {
+                $yesterday = date('Y-m-d', strtotime($date . ' -1 day'));
+                $daily = $this->whereDateAt7(new TeleModel(), $code, $yesterday, 'sta_code');
             }
 
             if ($daily) {
@@ -334,14 +339,14 @@ class DailyApi extends ResourceController
                     'province'  => $flow['province'],
                     'lat'       => $flow['lat'],
                     'long'      => $flow['long'],
+                    'date'      => substr($daily['datetime'], 0, 10),
                     'datetime'  => $daily['datetime'],
-                    'date'      => $date ?? substr($daily['datetime'], 0, 10),
-                    'wl'        => round($daily['wl'] ?? 0, 2),
-                    'discharge' => round($daily['discharge'] ?? 0, 2),
-                    'rain_mm' => isset($daily['rain_mm']) && $daily['rain_mm'] !== null && $daily['rain_mm'] !== ''
-                        ? round($daily['rain_mm'], 2)
+                    'wl'        => isset($daily['wl']) ? round((float) $daily['wl'], 2) : null,
+                    'discharge' => isset($daily['discharge']) ? round((float) $daily['discharge'], 2) : null,
+                    'rain_mm'   => isset($daily['rain_mm']) && $daily['rain_mm'] !== null && $daily['rain_mm'] !== ''
+                        ? round((float) $daily['rain_mm'], 2)
                         : null,
-                    'rain_sum' => $rainSum !== null ? round($rainSum, 2) : null
+                    'rain_sum'  => $rainSum !== null ? round($rainSum, 2) : null,
                 ];
             }
         }

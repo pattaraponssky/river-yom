@@ -130,7 +130,7 @@ const Header: React.FC<HeaderProps> = ({ title, open, setOpen }) => {
               }}
             >
               <img
-                src={`${Path_URL}images/logo_rid.png`}
+                src={`${Path_URL}/images/logo_rid.png`}
                 alt="RID Logo"
                 style={{ height: isMobile ? 38 : 46, objectFit: 'contain' }}
               />
@@ -288,7 +288,7 @@ const Header: React.FC<HeaderProps> = ({ title, open, setOpen }) => {
                   }}
                 >
                   <Avatar
-                    src={`${Path_URL}images/icons/user_icon.png`}
+                    src={`${Path_URL}/images/icons/user_icon.png`}
                     sx={{ width: 30, height: 30, boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}
                   />
                   {!isMobile && currentUser.username}

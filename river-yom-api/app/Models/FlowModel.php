@@ -24,17 +24,39 @@ class FlowModel extends Model
     }
 
     public function getTodayFlowDataByStationCodes(array $staCodes): array
-    {
-        $today7am = date('Y-m-d') . ' 07:00:00'; // ✅ ระบุเวลา 07:00 ตรงๆ
+      {
+        $today = date('Y-m-d');
+        $result = [];
 
-        $data = $this->db->table($this->table)
-            ->whereIn('sta_code', $staCodes)
-            ->where('datetime', $today7am)
-            ->get()
-            ->getResultArray();
+        foreach ($staCodes as $staCode) {
 
-        return $data;
+            // 1. ลองดึงข้อมูลเวลา 07:00 ของวันนี้ก่อน
+            $data = $this->db->table($this->table)
+                ->where('sta_code', $staCode)
+                ->where('datetime', $today . ' 07:00:00')
+                ->get()
+                ->getRowArray();
+
+            // 2. ถ้าไม่มีข้อมูล 07:00 ให้ดึงข้อมูลล่าสุดแทน
+            if (empty($data)) {
+                $data = $this->db->table($this->table)
+                    ->where('sta_code', $staCode)
+                    ->where('datetime <=', date('Y-m-d H:i:s'))
+                    ->orderBy('datetime', 'DESC')
+                    ->limit(1)
+                    ->get()
+                    ->getRowArray();
+            }
+
+            // 3. ถ้ามีข้อมูล ให้เพิ่มเข้า result
+            if (!empty($data)) {
+                $result[] = $data;
+            }
+        }
+
+        return $result;
     }
+
 
     public function getFlowDataByCode($sta_code)
     {
@@ -153,15 +175,32 @@ class FlowModel extends Model
         $updatedCount = 0;
 
         foreach ($dataArray as $data) {
-            if (!isset($data['sta_code']) || !isset($data['date'])) {
+            $rawDate = $data['datetime'] ?? $data['date'] ?? null;
+
+            if (!isset($data['sta_code']) || $rawDate === null) {
                 continue;
             }
 
             $sta_code = $data['sta_code'];
-            $datetime = $this->convertDateFormat($data['date']); // ✅ คืนค่าเป็น datetime พร้อมเวลา
+            $datetime = $this->convertDateFormat($rawDate); 
+
+            if (!$datetime) {
+                continue;
+            }
 
             $updateData = $data;
-            unset($updateData['sta_code'], $updateData['date']);
+            unset($updateData['sta_code'], $updateData['date'], $updateData['datetime']);
+
+            // ✅ แปลง "NULL" string ให้เป็น null จริง และ trim ค่าที่เหลือ
+            foreach ($updateData as $key => $value) {
+                if ($value === null) continue;
+                $trimmed = is_string($value) ? trim($value) : $value;
+                if ($trimmed === '' || strtoupper((string)$trimmed) === 'NULL') {
+                    $updateData[$key] = null;
+                } else {
+                    $updateData[$key] = $trimmed;
+                }
+            }
 
             if (empty($updateData)) {
                 continue;
@@ -170,18 +209,18 @@ class FlowModel extends Model
             $builder = $this->db->table($this->table);
 
             $exists = $builder->where('sta_code', $sta_code)
-                            ->where('datetime', $datetime) // ✅ เปลี่ยนเป็น datetime
+                            ->where('datetime', $datetime)
                             ->get()
                             ->getRow();
 
             $fullData = array_merge($updateData, [
                 'sta_code' => $sta_code,
-                'datetime' => $datetime // ✅ เปลี่ยนเป็น datetime
+                'datetime' => $datetime
             ]);
 
             if ($exists) {
                 $updated = $builder->where('sta_code', $sta_code)
-                                ->where('datetime', $datetime) // ✅ เปลี่ยนเป็น datetime
+                                ->where('datetime', $datetime)
                                 ->update($updateData);
             } else {
                 $updated = $builder->insert($fullData);

@@ -441,7 +441,7 @@ const WaterSchematicSimple: React.FC = () => {
 
     // reservoir icons
     [{ x: 390, y: 170 }, { x: 390, y: 790 }, { x: 65, y: 350 }].forEach(pos => {
-      container.append('image').attr('xlink:href', `${Path_URL}images/icons/dam.png`)
+      container.append('image').attr('xlink:href', `${Path_URL}/images/icons/dam.png`)
         .attr('x', pos.x - 25).attr('y', pos.y - 60).attr('width', 75).attr('height', 75).style('pointer-events', 'none');
     });
     

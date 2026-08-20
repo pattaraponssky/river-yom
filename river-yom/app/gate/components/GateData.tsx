@@ -292,8 +292,8 @@ const DataGate: React.FC<DataGateProps> = ({ propsSelectedStation }) => {
             <img
               src={
                 station
-                  ? `${Path_URL}images/gate/${station.sta_code}.jpg`
-                  : `${Path_URL}images/default_img.png`
+                  ? `${Path_URL}/images/gate/${station.sta_code}.jpg`
+                  : `${Path_URL}/images/default_img.png`
               }
               alt="Station"
               style={{
@@ -303,7 +303,7 @@ const DataGate: React.FC<DataGateProps> = ({ propsSelectedStation }) => {
                 borderRadius: '10px',
                 boxShadow: '0px 3px 6px rgba(0, 0, 0, 0.56)',
               }}
-              onError={(e) => (e.currentTarget.src = `${Path_URL}images/default_img.png`)}
+              onError={(e) => (e.currentTarget.src = `${Path_URL}/images/default_img.png`)}
             />
           </Box>
         </Grid>

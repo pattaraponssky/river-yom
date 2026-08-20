@@ -202,10 +202,10 @@ export default function GateDashboard() {
                 >
                   <Box
                     component="img"
-                    src={`${Path_URL}images/gate/${selectedInfo.sta_code}.jpg`}
+                    src={`${Path_URL}/images/gate/${selectedInfo.sta_code}.jpg`}
                     alt={selectedInfo.sta_name}
                     onError={(e: any) => {
-                      e.target.src = `${Path_URL}images/default_img.png`;
+                      e.target.src = `${Path_URL}/images/default_img.png`;
                     }}
                     sx={{
                       width: '100%',

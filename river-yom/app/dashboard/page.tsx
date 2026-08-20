@@ -29,8 +29,8 @@ export default function Dashboard() {
   }, []);
     
   const JsonPaths = [
-    `${Path_URL}data/River.geojson`,
-    `${Path_URL}data/ProjectArea.geojson`,
+    `${Path_URL}/data/River.geojson`,
+    `${Path_URL}/data/ProjectArea.geojson`,
   ];
 
   return (

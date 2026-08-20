@@ -556,7 +556,7 @@ const prepareChartDataForGate = (rawData: any[], targetStaCode: string) => {
 
       if (position.lat && position.lon) {
         const marker = new longdo.Marker(position, {
-          title: `<img src="${Path_URL}images/icons/gate_icon.png" style="width:25px; height:25px; vertical-align:middle; margin-right:5px" /> 
+          title: `<img src="${Path_URL}/images/icons/gate_icon.png" style="width:25px; height:25px; vertical-align:middle; margin-right:5px" /> 
             <span style="font-family: 'Prompt', sans-serif; font-size:1.1rem; font-weight:bold; vertical-align:middle;">${sta_name} อ.${district} จ.${province}</span>`,
           detail: `
             <div style="font-family: 'Prompt', sans-serif; font-size: 1rem;">
@@ -604,7 +604,7 @@ const prepareChartDataForGate = (rawData: any[], targetStaCode: string) => {
             <div id="chart-wl_lower_${sta_code.replace(/\./g, '_')}" style="display:none;"></div>
           `,
           icon: { html: `<div style="text-align:center;">
-                <img src="${Path_URL}images/icons/gate_icon.png" style="width:24px; height:24px;" />
+                <img src="${Path_URL}/images/icons/gate_icon.png" style="width:24px; height:24px;" />
                 <div style="background-color: rgba(255, 255, 255, 0.4); padding:2px; border-radius:5px; font-size: 12px; margin-top: 2px;width:30px;">
                 ${sta_code}</div></div>`
                 },
@@ -631,7 +631,7 @@ const prepareChartDataForGate = (rawData: any[], targetStaCode: string) => {
     let detail = "";
     let icon = "";
   
-      title = `<img src="${Path_URL}images/icons/gate_icon.png" style="width:25px; height:25px; vertical-align:middle; margin-right:5px" />
+      title = `<img src="${Path_URL}/images/icons/gate_icon.png" style="width:25px; height:25px; vertical-align:middle; margin-right:5px" />
         <span style="font-family: 'Prompt', sans-serif; font-size:1.1rem; font-weight:bold; vertical-align:middle;">${item.sta_name} อ.${item.district} จ.${item.province}</span>`;
       detail = `
            <div style="font-family: 'Prompt', sans-serif; font-size: 1rem;">
@@ -679,7 +679,7 @@ const prepareChartDataForGate = (rawData: any[], targetStaCode: string) => {
             <div id="chart-wl_upper-${item.sta_code.replace(/\./g, '_')}" style="display:none;"></div>
             <div id="chart-wl_lower-${item.sta_code.replace(/\./g, '_')}" style="display:none;"></div>
       `;
-      icon = `${Path_URL}images/icons/gate_icon.png`;
+      icon = `${Path_URL}/images/icons/gate_icon.png`;
       
     const marker = new longdo.Popup(position, {
       title,
@@ -747,7 +747,7 @@ const prepareChartDataForGate = (rawData: any[], targetStaCode: string) => {
                   onClick={() => handleListItemClick({...item,discharge,wl_upper,wl_lower}, "gate")}
                 >
                   <ListItemAvatar sx={{ marginInline: "10px" }}>
-                    <Avatar src={`${Path_URL}images/icons/gate_icon.png`} />
+                    <Avatar src={`${Path_URL}/images/icons/gate_icon.png`} />
                   </ListItemAvatar>
                   <ListItemText>
                         <Typography sx={{ fontFamily:"Prompt", fontWeight: "bold", color: "text.secondary" }}>

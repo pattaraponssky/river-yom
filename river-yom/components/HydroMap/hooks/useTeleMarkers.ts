@@ -50,22 +50,22 @@ const addTeleMarkers = (
 
     const getWaterLevelIcon = (wl: number | null) => {
       if (wl == null || isNaN(wl)) {
-        return `${Path_URL}images/icons/tele_station_icon_green.png`;
+        return `${Path_URL}/images/icons/tele_station_icon_green.png`;
       }
 
       if (wl >= 10) {
-        return `${Path_URL}images/icons/tele_station_icon_red.png`;
+        return `${Path_URL}/images/icons/tele_station_icon_red.png`;
       }
 
       if (wl >= 8) {
-        return `${Path_URL}images/icons/tele_station_icon_orange.png`;
+        return `${Path_URL}/images/icons/tele_station_icon_orange.png`;
       }
 
       if (wl >= 6) {
-        return `${Path_URL}images/icons/tele_station_icon_yellow.png`;
+        return `${Path_URL}/images/icons/tele_station_icon_yellow.png`;
       }
 
-      return `${Path_URL}images/icons/tele_station_icon_green.png`;
+      return `${Path_URL}/images/icons/tele_station_icon_green.png`;
     };
 
 

@@ -249,8 +249,8 @@ const DataReservoirStation: React.FC<DataReservoirStationProps> = ({ propsSelect
             <img
               src={
                 station
-                  ? `${Path_URL}images/reservoir/${station.res_code}.jpg`
-                  : `${Path_URL}images/default_img.png`
+                  ? `${Path_URL}/images/reservoir/${station.res_code}.jpg`
+                  : `${Path_URL}/images/default_img.png`
               }
               alt="Station"
               style={{
@@ -260,7 +260,7 @@ const DataReservoirStation: React.FC<DataReservoirStationProps> = ({ propsSelect
                 borderRadius: "10px",
                 boxShadow: "0px 3px 6px rgba(0, 0, 0, 0.56)"
               }}
-              onError={(e) => (e.currentTarget.src = `${Path_URL}images/default_img.png`)}
+              onError={(e) => (e.currentTarget.src = `${Path_URL}/images/default_img.png`)}
             />
           </Box>
           

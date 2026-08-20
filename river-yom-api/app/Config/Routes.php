@@ -205,7 +205,7 @@ $routes->group('/api/forecast', function ($routes) {
 
 // $routes->group('/api/equipment', ['filter' => 'jwt'], function ($routes) {
 $routes->group('/api/equipments',  function ($routes) {
-    $routes->get('/', 'Equipment::index');                  // หน้ารายการอุปกรณ์
+    $routes->get('/', 'Equipment::index');                
     $routes->post('/', 'Equipment::create');
     $routes->get('edit/(:num)', 'Equipment::edit/$1');     // ฟอร์มแก้ไข
     $routes->post('update/(:num)', 'Equipment::update/$1'); // บันทึกแก้ไข
@@ -219,10 +219,12 @@ $routes->group('/api/equipments',  function ($routes) {
     $routes->post('(:num)/maintenance', 'Equipment::createMaintenance/$1');
     $routes->put('(:num)/maintenance/(:num)', 'Equipment::updateMaintenance/$1/$2');
     $routes->delete('(:num)/maintenance/(:num)', 'Equipment::deleteMaintenance/$1/$2');
-
-    // รายงาน
     $routes->get('report', 'Equipment::report');
 });
+
+$routes->get('api/stations', 'Stations::index'); 
+$routes->get('api/stations/(:segment)', 'Equipment::byStation/$1');
+$routes->get('api/stations/(:segment)', 'Stations::show/$1');
 
 $routes->group('aboutus', function($routes) {
     $routes->get('/', 'AboutUs::index');
