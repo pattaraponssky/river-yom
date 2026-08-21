@@ -207,10 +207,13 @@ $routes->group('/api/forecast', function ($routes) {
 $routes->group('/api/equipments',  function ($routes) {
     $routes->get('/', 'Equipment::index');                
     $routes->post('/', 'Equipment::create');
+    $routes->get('(:num)', 'Equipment::show/$1'); 
     $routes->get('edit/(:num)', 'Equipment::edit/$1');     // ฟอร์มแก้ไข
     $routes->post('update/(:num)', 'Equipment::update/$1'); // บันทึกแก้ไข
     $routes->post('delete/(:num)', 'Equipment::delete/$1'); // ลบ
 
+    
+    $routes->get('station/(:segment)', 'Equipment::byStation/$1');
     // ประวัติการทำงาน + บำรุงรักษา
     $routes->get('(:num)/logs', 'Equipment::logs/$1');     // ประวัติการทำงาน
     $routes->post('(:num)/log/store', 'Equipment::storeLog/$1');

@@ -7,8 +7,8 @@ const mysql = require('mysql2/promise');
 const MQTT_CONFIG = {
   host: process.env.MQTT_HOST || 'broker.emqx.io',
   port: Number(process.env.MQTT_PORT || 1883),
-  username: process.env.MQTT_USERNAME || 'river_yom',
-  password: process.env.MQTT_PASSWORD || 'rid!@#123',
+  username: process.env.MQTT_USERNAME || 'itthirit',
+  password: process.env.MQTT_PASSWORD || 'P@ssw0rd',
   clientId: process.env.MQTT_CLIENT_ID || `yom-right-ingest-${Math.random().toString(16).slice(2, 8)}`,
   topic: process.env.MQTT_TOPIC || '/irrigation/yom-right/#',
 };
@@ -26,50 +26,89 @@ const DB_CONFIG = {
 
 const pool = mysql.createPool(DB_CONFIG);
 
-function computeFromRaw(rawValue, tipCount) {
-  // ตัวอย่าง: ถ้าใช้ tipping bucket แบบ tip_count * mm ต่อ tip
-  // return tipCount * 0.5; // 0.5mm ต่อ 1 tip
-  return rawValue; // TODO: ใส่สูตรจริงตามสเปกอุปกรณ์
+// ── ค่าชดเชยระดับน้ำ (wl offset) แยกรายสถานี ────────────
+const STATION_WL_OFFSET = {
+  YR01: 32.534,
+  YR02: 38.388,
+  YR03: 40.890,
+  YR04: 37.082,
+  YR05: 31.928,
+  YR06: 34.690,
+};
+
+function getWlOffset(staCode) {
+  return STATION_WL_OFFSET[staCode] ?? 0;
+}
+
+// คำนวณ wl ที่จะเก็บจริง = wl ดิบ (หรือ raw_value ถ้าไม่มี water_level) + offset ของสถานีนั้น
+function computeAdjustedWl(payload) {
+  const rawWl = payload.water_level !== undefined
+    ? payload.water_level
+    : payload.raw_value;
+
+  if (rawWl === undefined || rawWl === null) return { rawWl: null, offset: 0, adjWl: null };
+
+  const offset = getWlOffset(payload.station_id);
+  return { rawWl, offset, adjWl: rawWl + offset };
 }
 
 // ── validate payload ก่อนเขียนลง DB ────────────────────
 function validatePayload(payload) {
-  const required = ['station_id', 'timestamp', 'raw_value', 'rainfall', 'status'];
+  const required = ['station_id', 'timestamp', 'status'];
   for (const key of required) {
-    if (payload[key] === undefined) return `missing field: ${key}`;
+    if (payload[key] === undefined || payload[key] === null) {
+      return `missing field: ${key}`;
+    }
   }
-  if (payload.quality && payload.quality !== 'GOOD') return `quality not GOOD: ${payload.quality}`;
+  if (payload.water_level === undefined && payload.raw_value === undefined) {
+    return 'missing water_level or raw_value';
+  }
   return null;
 }
 
-// ── insert/update ลง tele_data ──────────────────────────
-async function saveToTeleData(payload) {
-  const waterLevel = payload.water_level !== undefined
-    ? payload.water_level
-    : payload.raw_value;
-
+async function saveToTeleData(payload, adjWl) {
   const sql = `
     INSERT INTO tele_data
-      (sta_code, datetime, water_level, rain_mm, tip_count, status, quality, error_message, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
-    ON DUPLICATE KEY UPDATE
-      water_level = VALUES(water_level),
-      rain_mm = VALUES(rain_mm),
-      tip_count = VALUES(tip_count),
-      status = VALUES(status),
-      quality = VALUES(quality),
-      error_message = VALUES(error_message)
+      (sta_code, datetime, wl, discharge, rain_mm)
+    VALUES (?, ?, ?, ?, ?)
   `;
 
   const params = [
     payload.station_id,
     payload.timestamp,
-    waterLevel,
+    adjWl,
+    payload.discharge ?? null,
+    payload.rainfall ?? null,
+  ];
+
+  await pool.execute(sql, params);
+}
+
+// ── insert ลง tele_data_raw (เก็บทุกค่าดิบ ทุกครั้งที่รับ message) ──
+async function saveToTeleDataRaw(payload, topic, rawWl, offset, adjWl) {
+  const sql = `
+    INSERT INTO tele_data_raw
+      (sta_code, datetime, raw_value, water_level, water_level_adj, wl_offset,
+       discharge, rainfall, tip_count, status, quality, error_message,
+       mqtt_topic, payload_json)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+
+  const params = [
+    payload.station_id,
+    payload.timestamp,
+    payload.raw_value ?? null,
+    rawWl,
+    adjWl,
+    offset,
+    payload.discharge ?? null,
     payload.rainfall ?? null,
     payload.tip_count ?? null,
-    payload.status,
+    payload.status ?? null,
     payload.quality ?? null,
     payload.error_message ?? null,
+    topic,
+    JSON.stringify(payload),
   ];
 
   await pool.execute(sql, params);
@@ -82,7 +121,7 @@ const client = mqtt.connect({
   username: MQTT_CONFIG.username,
   password: MQTT_CONFIG.password,
   clientId: MQTT_CONFIG.clientId,
-  reconnectPeriod: 3000, // reconnect อัตโนมัติทุก 3 วิถ้าหลุด
+  reconnectPeriod: 3000,
   clean: true,
 });
 
@@ -107,25 +146,22 @@ client.on('message', async (topic, messageBuf) => {
     return;
   }
 
-  function validatePayload(payload) {
-    const required = ['station_id', 'timestamp', 'status'];
-    for (const key of required) {
-        if (payload[key] === undefined || payload[key] === null) {
-        return `missing field: ${key}`;
-        }
-    }
+  const err = validatePayload(payload);
+  if (err) {
+    console.warn(`[MQTT] payload rejected on ${topic}: ${err}`);
+    return;
+  }
 
-    // ต้องมีอย่างน้อย water_level หรือ raw_value อย่างใดอย่างหนึ่ง
-    if (payload.water_level === undefined && payload.raw_value === undefined) {
-        return 'missing water_level or raw_value';
-    }
-
-    return null;
-    }
+  const { rawWl, offset, adjWl } = computeAdjustedWl(payload);
 
   try {
-    await saveToTeleData(payload);
-    console.log(`[DB] saved ${payload.station_id} @ ${payload.timestamp} | rain=${payload.rainfall}mm | raw=${payload.raw_value}`);
+    await saveToTeleDataRaw(payload, topic, rawWl, offset, adjWl);
+    await saveToTeleData(payload, adjWl);
+
+    console.log(
+      `[DB] saved ${payload.station_id} @ ${payload.timestamp} | ` +
+      `wl_raw=${rawWl} + offset=${offset} = wl=${adjWl} | rain=${payload.rainfall}mm`
+    );
   } catch (e) {
     console.error(`[DB] insert failed for ${payload.station_id}:`, e.message);
   }

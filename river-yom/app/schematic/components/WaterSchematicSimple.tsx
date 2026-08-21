@@ -77,6 +77,12 @@ const getFlowColor = (code: string, wl: number) => {
     'Y.17': { red: 41.8, orange: 40.6, yellow: 39.4 },
     'wst': { red: 40.98, orange: 40.18, yellow: 39.38 },
     'tng': { red: 44.00, orange: 42.55, yellow: 41.10 },
+    'YR.01': { yellow: 38.96, orange: 39.82, red: 40.67 },
+    'YR.02': { yellow: 40.89, orange: 41.23, red: 41.57 },
+    'YR.03': { yellow: 43.60, orange: 43.98, red: 44.37 },
+    'YR.04': { yellow: 41.71, orange: 42.28, red: 42.86 },
+    'YR.05': { yellow: 38.62, orange: 39.46, red: 40.30 },
+    'YR.06': { yellow: 38.48, orange: 39.02, red: 39.55 },
   };
   const t = th[code] || { red: 40, orange: 38, yellow: 36 };
   if (wl > t.red)    return 'red';

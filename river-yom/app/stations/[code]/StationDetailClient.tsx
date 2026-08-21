@@ -131,7 +131,7 @@ export default function StationDetailClient({ staCode }: { staCode: string }) {
   const handleDeleteEquipment = async (equipmentId: number) => {
     if (!confirm('ยืนยันการลบอุปกรณ์ชิ้นนี้หรือไม่? ประวัติการบำรุงรักษาที่ผูกไว้จะถูกลบด้วย')) return;
     try {
-      const res = await apiRequest(`${API_URL}/api/equipment/${equipmentId}/delete`, { method: 'POST', credentials: 'include' });
+      const res = await apiRequest(`${API_URL}/api/equipments/delete/${equipmentId}`, { method: 'POST', credentials: 'include' });
       if (!res.ok) throw new Error('ลบอุปกรณ์ล้มเหลว');
       setEquipmentList(prev => prev.filter(e => e.id !== equipmentId));
     } catch (err: any) {

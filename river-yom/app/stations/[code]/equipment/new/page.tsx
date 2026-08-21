@@ -2,7 +2,6 @@
 import { API_URL } from '@/lib/utility';
 import EquipmentFormClient from '@/components/Equipment/EquipmentFormClient';
 
-// จำเป็นเพราะ output: 'export' — ต้อง pre-render ทุก sta_code ที่มีจริง
 export async function generateStaticParams() {
   try {
     const res = await fetch(`${API_URL}/api/stations`, { cache: 'no-store' });
