@@ -19,8 +19,9 @@ import { API_URL } from '@/lib/utility';
 import { titleStyle } from '@/theme/style';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import EquipmentDialog from '@/components/Equipment/EquipmentDialog';
+
 import { apiRequest } from '@/lib/api';
+import EquipmentDialog from '@/components/Equipment/EquipmentDialog';
 
 // ─── ต้องตรงกับตาราง equipment ใหม่ (ผูกกับ tele_info ผ่าน sta_code) ──────────
 interface Equipment {
@@ -38,6 +39,7 @@ interface Equipment {
   created_at: string;
   updated_at: string;
 }
+
 
 interface StationOption {
   sta_code: string;
@@ -447,13 +449,13 @@ export default function EquipmentPage() {
       )}
 
       {/* ─── Dialogs ─────────────────────────────────────────── */}
-      {/* <EquipmentDialog
+      <EquipmentDialog
         open={openDialog}
         onClose={() => { setOpenDialog(false); setEquipmentToEdit(null); }}
         onSuccess={() => { fetchEquipments(); setOpenDialog(false); setEquipmentToEdit(null); }}
         equipmentToEdit={equipmentToEdit}
         stationOptions={stations}
-      /> */}
+      />
 
       <Dialog open={openDeleteConfirm} onClose={() => setOpenDeleteConfirm(false)}>
         <DialogTitle>ยืนยันการลบ</DialogTitle>

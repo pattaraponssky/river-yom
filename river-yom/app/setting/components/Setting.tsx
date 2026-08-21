@@ -23,6 +23,7 @@ import { BoxStyle, fontTitle, titleStyle } from "@/theme/style";
 import { useAuth } from "@/contexts/AuthContext";
 import EquipmentPage from "@/app/equipment/page";
 import ReportUploadForm from "@/components/Setting/Data/ReportUpload";
+import InfoTeleStation from "@/components/Setting/Info/TeleStation";
 
 
 
@@ -112,7 +113,7 @@ const Setting: React.FC = () => {
             <Tab sx={titleStyle} label="ข้อมูลสถานีวัดน้ำฝน" />
             <Tab sx={titleStyle} label="ข้อมูลสถานีวัดน้ำท่า" />
             <Tab sx={titleStyle} label="ข้อมูลประตูระบายน้ำ" />
-            {/* <Tab sx={titleStyle} label="ข้อมูลสถานีวัดระดับน้ำทะเล" /> */}
+            <Tab sx={titleStyle} label="ข้อมูลสถานีติดตั้งโครงการ" />
           </Tabs>
         )}
 
@@ -122,7 +123,7 @@ const Setting: React.FC = () => {
             {mainTab === 0 && subTab === 0 && <InfoRainStation />}
             {mainTab === 0 && subTab === 1 && <InfoFlowStation />}
             {mainTab === 0 && subTab === 2 && <InfoGateStation />}
-            {/* {mainTab === 0 && subTab === 3 && <InfoSeaStation />} */}
+            {mainTab === 0 && subTab === 3 && <InfoTeleStation />}
           {mainTab === 1 && (
             <Box sx={{ p: 2 }}>
                 <UploadData />

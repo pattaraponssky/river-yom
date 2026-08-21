@@ -36,15 +36,17 @@ class ModelInputDataController extends ResourceController
         $gateModel  = new GateModel();
 
         // สถานีที่ต้องดึง
-        $allRainStations = ['390220', '120142', '390022', '590042', '590082', '380012', '12016'];
+        $allRainStations = ['390220', '380012', '120160', 'KRMT', 'LKBU', 'YOM007', 'YOM008'];
         $allFlowStations = ['Y.15', 'Y.16', 'Y.17', 'Y.4', 'Y.50', 'Y.51', 'Y.64'];
         $allGateStations = ['tng', 'wst'];
+        
 
         try {
             $rainData = $rainModel->getRainDataModelLast7Days($allRainStations);
             $flowData = $flowModel->getFlowDataModelLast8Days($allFlowStations);
             $gateData = $gateModel->getGateDataModelLast8Days($allGateStations);
 
+            log_message('debug', 'rainData count: ' . count($rainData) . ' | sample: ' . json_encode($rainData[0] ?? null));
             $successfulUpdates = 0;
 
             // ─────────────────────────────────────────
@@ -52,12 +54,12 @@ class ModelInputDataController extends ResourceController
             // ─────────────────────────────────────────
             if (!empty($rainData)) {
                 foreach ($rainData as $item) {
-                    $sta_code = str_pad((string)($item['sta_code'] ?? ''), 6, '0', STR_PAD_LEFT);
+                    $sta_code = (string) ($item['sta_code'] ?? '');
                     $date     = $this->toDateOnly($item['date'] ?? null);
                     $value    = isset($item['rain_mm']) && $item['rain_mm'] !== '' && $item['rain_mm'] !== null
                                 ? (float) $item['rain_mm']
                                 : null;
-
+                    
                     if (!$sta_code || !$date) {
                         continue;
                     }
@@ -75,6 +77,7 @@ class ModelInputDataController extends ResourceController
                 }
             }
 
+                
             // ─────────────────────────────────────────
             // 2. Flow Data (สถานี Y.*)
             // ─────────────────────────────────────────

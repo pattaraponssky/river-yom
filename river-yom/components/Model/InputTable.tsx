@@ -19,10 +19,10 @@ const UPDATE_FROM_MAIN_API = `${API_URL}/api/model_input_data/update-from-main`;
 
 const defaultRows = [
   { station_id: '390220', name: "ศูนย์อุทกวิทยาและบริหารน้ำภาคเหนือตอนล่าง", type: "rain_rid", values: Array(7).fill(0) },
-  { station_id: '120142', name: "ที่ว่าการอำเภอลานกระบือ", type: "rain_rid", values: Array(7).fill(0) },
-  { station_id: '390022', name: "ที่ว่าการอำเภอบางระกำ", type: "rain_rid", values: Array(7).fill(0) },
-  { station_id: '590042', name: "ที่ว่าการอำเภอกงไกรลาศ", type: "rain_rid", values: Array(7).fill(0) },
-  { station_id: '590082', name: "ที่ว่าการอำเภอคีรีมาศ", type: "rain_rid", values: Array(7).fill(0) },
+  { station_id: 'KRMT', name: "ทต.บ้านโตนด", type: "rain_rid", values: Array(7).fill(0) },
+  { station_id: 'LKBU', name: "อบต.ลานกระบือ", type: "rain_rid", values: Array(7).fill(0) },
+  { station_id: 'YOM007', name: "กงไกรลาศ", type: "rain_rid", values: Array(7).fill(0) },
+  { station_id: 'YOM008', name: "บางระกำ", type: "rain_rid", values: Array(7).fill(0) },
   { station_id: '380012', name: "สกษ.พิจิตร", type: "rain_rid", values: Array(7).fill(0) },
   { station_id: '120160', name: "P.7A", type: "rain_rid", values: Array(7).fill(0) },
 

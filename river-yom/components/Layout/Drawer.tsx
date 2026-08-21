@@ -30,6 +30,7 @@ import AssessmentIcon from '@mui/icons-material/Assessment';
 import WaterfallChartIcon from '@mui/icons-material/WaterfallChart';
 import ModelTrainingIcon from '@mui/icons-material/ModelTraining';
 import WaterDamageIcon from '@mui/icons-material/WaterDamage';
+import HomeIcon from '@mui/icons-material/Home';
 import { Handyman } from "@mui/icons-material";
 import LoginDialog from "../Users/LoginDialog";
 import { Path_URL } from "../../lib/utility";
@@ -39,6 +40,10 @@ interface DrawerProps {
   open: boolean;
   setOpen: (open: boolean) => void;
 }
+
+const MainItems = [
+  { icon: <HomeIcon fontSize="small" />, text: "หน้าแรก", path: "/" },
+];
 
 const publicMenuItems = [
   { icon: <AccountTreeIcon fontSize="small" />, text: "แผนผังลุ่มน้ำ", path: "/schematic" },
@@ -241,8 +246,26 @@ const DrawerComponent: React.FC<DrawerProps> = ({ open, setOpen }) => {
           </Tooltip>
         </Box>
 
+        
+      
+
         {/* ─── เมนู ─── */}
         <List sx={{ px: 1, py: 1, flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
+              <SectionLabel label="หน้าแรก" open={open} />
+          {MainItems.map((item) => (
+            <Tooltip key={item.path} title={!open ? item.text : ''} placement="right">
+              <ListItem component={Link} href={item.path} onClick={handleItemClick} sx={menuItemSx(item.path)}>
+                <ListItemIcon sx={iconSx(item.path)}>{item.icon}</ListItemIcon>
+                {open && (
+                  <ListItemText
+                    primary={item.text}
+                    primaryTypographyProps={{ sx: { fontFamily: 'Prompt', fontSize: '1rem', fontWeight: pathname === item.path ? 600 : 600 } }}
+                  />
+                )}
+              </ListItem>
+            </Tooltip>
+          ))}
+
           <SectionLabel label="สรุปสถานการณ์น้ำ" open={open} />
 
           {/* ปุ่มข้อมูล (collapsible) */}

@@ -35,7 +35,7 @@ class RainModel extends Model
 
     public function getRainDataLast7Days()
     {
-        $sevenDaysAgo = date('Y-m-d', strtotime('-7 days')) . ' 07:00:00'; // ✅ ระบุเวลา
+        $sevenDaysAgo = date('Y-m-d', strtotime('-7 days')); // ✅ ระบุเวลา
 
         return $this->select('*')
                     ->where('datetime >=', $sevenDaysAgo) 
@@ -43,20 +43,26 @@ class RainModel extends Model
                     ->findAll();
     }
 
-     public function getRainDataModelLast7Days()
+    public function getRainDataModelLast7Days(array $stations = [])
     {
-        $sevenDaysAgo = date('Y-m-d', strtotime('-7 days')) . ' 07:00:00'; // ✅ ระบุเวลา
+        $sevenDaysAgo = date('Y-m-d', strtotime('-7 days')) . ' 07:00:00';
 
-        return $this->select('*')
-                    ->where('datetime >=', $sevenDaysAgo) 
-                    ->orderBy('datetime', 'DESC')      
-                    ->where("TIME(datetime) = '07:00:00'")
-                    ->findAll();
+        $builder = $this->select('sta_code, datetime as date, rain_mm') // ← alias ให้ตรง
+                    ->where('datetime >=', $sevenDaysAgo)
+                    ->where('datetime <', date('Y-m-d'))
+                    ->orderBy('datetime', 'DESC');
+
+        if (!empty($stations)) {
+            $builder->whereIn('sta_code', $stations); // ← ใช้ filter สถานีที่ส่งมาด้วย
+        }
+
+        return $builder->findAll();
     }
+
 
     public function getRainDataLast14Days()
     {
-        $fourteenDaysAgo = date('Y-m-d', strtotime('-14 days')) . ' 07:00:00'; // ✅ ระบุเวลา
+        $fourteenDaysAgo = date('Y-m-d', strtotime('-14 days')); // ✅ ระบุเวลา
 
         return $this->select('*')
                     ->where('datetime >=', $fourteenDaysAgo) 

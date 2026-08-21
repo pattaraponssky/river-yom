@@ -9,8 +9,8 @@ const MQTT_CONFIG = {
   port: Number(process.env.MQTT_PORT || 1883),
   username: process.env.MQTT_USERNAME || 'itthirit',
   password: process.env.MQTT_PASSWORD || 'P@ssw0rd',
-  clientId: process.env.MQTT_CLIENT_ID || `yom-right-ingest-${Math.random().toString(16).slice(2, 8)}`,
-  topic: process.env.MQTT_TOPIC || '/irrigation/yom-right/#',
+  clientId: `yom-right-ingest-${Math.random().toString(16).slice(2, 8)}`,
+  topic: '/irrigation/yom-right/#',
 };
 
 // ── MySQL config ────────────────────────────────────────
@@ -40,6 +40,12 @@ function getWlOffset(staCode) {
   return STATION_WL_OFFSET[staCode] ?? 0;
 }
 
+function toDbStaCode(rawStationId) {
+  const match = /^YR(\d+)$/.exec(rawStationId);
+  if (!match) return rawStationId;
+  return `YR.${match[1]}`;
+}
+
 // คำนวณ wl ที่จะเก็บจริง = wl ดิบ (หรือ raw_value ถ้าไม่มี water_level) + offset ของสถานีนั้น
 function computeAdjustedWl(payload) {
   const rawWl = payload.water_level !== undefined
@@ -60,24 +66,25 @@ function validatePayload(payload) {
       return `missing field: ${key}`;
     }
   }
+  // ต้องมีอย่างน้อย water_level หรือ raw_value อย่างใดอย่างหนึ่ง
   if (payload.water_level === undefined && payload.raw_value === undefined) {
     return 'missing water_level or raw_value';
   }
   return null;
 }
 
+// ── insert ลง tele_data (ค่าหลัก: wl, rain_mm) ──
 async function saveToTeleData(payload, adjWl) {
   const sql = `
     INSERT INTO tele_data
-      (sta_code, datetime, wl, discharge, rain_mm)
-    VALUES (?, ?, ?, ?, ?)
+      (sta_code, datetime, wl, rain_mm)
+    VALUES (?, ?, ?,  ?)
   `;
 
   const params = [
-    payload.station_id,
+    toDbStaCode(payload.station_id),
     payload.timestamp,
     adjWl,
-    payload.discharge ?? null,
     payload.rainfall ?? null,
   ];
 
@@ -85,29 +92,25 @@ async function saveToTeleData(payload, adjWl) {
 }
 
 // ── insert ลง tele_data_raw (เก็บทุกค่าดิบ ทุกครั้งที่รับ message) ──
-async function saveToTeleDataRaw(payload, topic, rawWl, offset, adjWl) {
+async function saveToTeleDataRaw(payload, rawWl, offset, adjWl) {
   const sql = `
     INSERT INTO tele_data_raw
-      (sta_code, datetime, raw_value, water_level, water_level_adj, wl_offset,
-       discharge, rainfall, tip_count, status, quality, error_message,
-       mqtt_topic, payload_json)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      (sta_code, datetime, water_level, water_level_adj, wl_offset,
+       rainfall, tip_count, status, error_message,
+       payload_json)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?,  ?, ?)
   `;
 
   const params = [
-    payload.station_id,
+    toDbStaCode(payload.station_id),
     payload.timestamp,
-    payload.raw_value ?? null,
     rawWl,
     adjWl,
     offset,
-    payload.discharge ?? null,
     payload.rainfall ?? null,
     payload.tip_count ?? null,
     payload.status ?? null,
-    payload.quality ?? null,
     payload.error_message ?? null,
-    topic,
     JSON.stringify(payload),
   ];
 
@@ -121,7 +124,9 @@ const client = mqtt.connect({
   username: MQTT_CONFIG.username,
   password: MQTT_CONFIG.password,
   clientId: MQTT_CONFIG.clientId,
-  reconnectPeriod: 3000,
+  keepalive: 30,          // ส่ง PING ทุก 30 วิ กันโดน NAT/firewall ตัด idle connection
+  reconnectPeriod: 3000,  // reconnect อัตโนมัติทุก 3 วิถ้าหลุด
+  connectTimeout: 10000,  // timeout ตอน connect
   clean: true,
 });
 
@@ -133,7 +138,11 @@ client.on('connect', () => {
   });
 });
 
-client.on('reconnect', () => console.log('[MQTT] reconnecting...'));
+let reconnectCount = 0;
+client.on('reconnect', () => {
+  reconnectCount++;
+  console.log(`[MQTT] reconnecting... (attempt #${reconnectCount})`);
+});
 client.on('close', () => console.warn('[MQTT] connection closed'));
 client.on('error', (err) => console.error('[MQTT] error:', err.message));
 
@@ -146,6 +155,11 @@ client.on('message', async (topic, messageBuf) => {
     return;
   }
 
+  // DEBUG: log ทุก message ที่เข้ามาจริง ไม่ว่าจะ valid หรือไม่
+  // ถ้าไม่เห็นบรรทัดนี้เลย แปลว่า client ไม่ได้รับ message จาก broker
+  // (topic subscribe ไม่ตรง / broker ไม่ได้ push มา / connection หลุดตอนนั้นพอดี)
+  console.log(`[MQTT] received ${topic}:`, JSON.stringify(payload));
+
   const err = validatePayload(payload);
   if (err) {
     console.warn(`[MQTT] payload rejected on ${topic}: ${err}`);
@@ -155,11 +169,11 @@ client.on('message', async (topic, messageBuf) => {
   const { rawWl, offset, adjWl } = computeAdjustedWl(payload);
 
   try {
-    await saveToTeleDataRaw(payload, topic, rawWl, offset, adjWl);
+    await saveToTeleDataRaw(payload, rawWl, offset, adjWl);
     await saveToTeleData(payload, adjWl);
 
     console.log(
-      `[DB] saved ${payload.station_id} @ ${payload.timestamp} | ` +
+      `[DB] saved ${payload.station_id} (sta_code=${toDbStaCode(payload.station_id)}) @ ${payload.timestamp} | ` +
       `wl_raw=${rawWl} + offset=${offset} = wl=${adjWl} | rain=${payload.rainfall}mm`
     );
   } catch (e) {

@@ -80,28 +80,66 @@ class TeleModel extends Model
             ->get()
             ->getResultArray();
     }
+    // public function getTeleDataByCodeAndYearRange($sta_code, $startYear, $endYear)
+    // {
+        
+    //     return $this->db->table('tele_data')
+    //         ->select("DATE(datetime) as date, sta_code, wl, discharge, rain_mm")
+    //         ->where('sta_code', $sta_code)
+    //         ->where("YEAR(datetime) >=", $startYear)
+    //         ->where("YEAR(datetime) <=", $endYear)
+    //         ->where("TIME(datetime)", '07:00:00')
+    //         ->orderBy('datetime', 'ASC')
+    //         ->get()
+    //         ->getResultArray();
+    // }
+
     public function getTeleDataByCodeAndYearRange($sta_code, $startYear, $endYear)
     {
-        
-        return $this->db->table('tele_data')
-            ->select("DATE(datetime) as date, sta_code, wl, discharge, rain_mm")
-            ->where('sta_code', $sta_code)
-            ->where("YEAR(datetime) >=", $startYear)
-            ->where("YEAR(datetime) <=", $endYear)
-            ->where("TIME(datetime)", '07:00:00')
-            ->orderBy('datetime', 'ASC')
-            ->get()
-            ->getResultArray();
+        $sql = "
+            SELECT *
+            FROM (
+                SELECT t.*,
+                    ABS(TIMESTAMPDIFF(SECOND, t.datetime, 
+                        TIMESTAMP(DATE(t.datetime), '07:00:00'))) AS diff_sec,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY DATE(t.datetime)
+                        ORDER BY ABS(TIMESTAMPDIFF(SECOND, t.datetime, 
+                            TIMESTAMP(DATE(t.datetime), '07:00:00')))
+                    ) AS rn
+                FROM tele_data t
+                WHERE t.sta_code = ?
+                AND YEAR(t.datetime) BETWEEN ? AND ?
+            ) ranked
+            WHERE rn = 1
+            ORDER BY date_col ASC
+        ";
+
+        return $this->db->query($sql, [$sta_code, $startYear, $endYear])->getResultArray();
     }
 
-        public function getTeleHourlyDataByCode($sta_code)
+    public function getTeleHourlyDataByCode($sta_code)
     {
-        return $this->db->table('tele_data')
-            ->where('sta_code', $sta_code)
-            ->orderBy('datetime', 'ASC')
-            ->get()
-            ->getResultArray();
+        $sql = "
+            SELECT *
+            FROM (
+                SELECT t.*,
+                    ROUND(UNIX_TIMESTAMP(t.datetime) / 3600) AS hour_bucket,
+                    ABS(UNIX_TIMESTAMP(t.datetime) - ROUND(UNIX_TIMESTAMP(t.datetime) / 3600) * 3600) AS diff_sec,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY ROUND(UNIX_TIMESTAMP(t.datetime) / 3600)
+                        ORDER BY ABS(UNIX_TIMESTAMP(t.datetime) - ROUND(UNIX_TIMESTAMP(t.datetime) / 3600) * 3600)
+                    ) AS rn
+                FROM tele_data t
+                WHERE t.sta_code = ?
+            ) ranked
+            WHERE rn = 1
+            ORDER BY datetime ASC
+        ";
+
+        return $this->db->query($sql, [$sta_code])->getResultArray();
     }
+
     public function getTeleHourlyDataByCodeAndYearRange($sta_code, $startYear, $endYear)
     {
         return $this->db->table('tele_data')

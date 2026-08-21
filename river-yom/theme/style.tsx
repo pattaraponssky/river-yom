@@ -15,7 +15,7 @@ export const BoxStyle = (theme: any) => ({
   margin: "auto",
   borderRadius: "10px",
   boxShadow: 3,
-  marginBottom: { md: "20px", xs: "10px" },
+  marginBottom: { md: "20px", xs: "5px" },
   padding: { md: "20px", xs: "5px" },
   backgroundColor:
     theme.palette.mode === "dark"
@@ -25,13 +25,13 @@ export const BoxStyle = (theme: any) => ({
 
 export const fontTitle = {
   fontFamily: "Prompt",
-  fontSize: {md:"1.1em", xs:"0.9rem"},
+  fontSize: {md:"1.1em", xs: "0.8rem"},
   fontWeight: 600,
 };
 
 export const fontInfo = {
   fontFamily: "Prompt",
-  fontSize:{md: "1.1rem", xs: "0.9rem"},
+  fontSize:{md: "1.1rem", xs: "0.8rem"},
 };
 
 export const HeaderCellStyle = (theme: any) => ({
@@ -42,7 +42,7 @@ export const HeaderCellStyle = (theme: any) => ({
   textAlign: "center",
   backgroundColor: theme.palette.mode === 'dark' ? '#01579B' : 'rgb(1, 87, 155)',
   color: theme.palette.mode === 'dark' ? '#e0e7ff' : 'white',
-  fontSize: { xs: "0.8rem", sm: "0.9rem", md: "0.95rem" },
+  fontSize: { xs: "0.7rem", sm: "0.8rem", md: "0.95rem" },
   fontFamily: "Prompt",
 });
 
@@ -55,7 +55,7 @@ export const getCellStyle = (index: number) => (theme: any) => ({
     : (theme.palette.mode === 'dark' ? '#111827' : '#FFF'),
   textAlign: "center",
   fontFamily: "Prompt",
-  fontSize: { xs: "0.8rem", sm: "0.9rem", md: "0.9rem" },
+  fontSize: { xs: "0.7rem", sm: "0.8rem", md: "0.9rem" },
   color: theme.palette.text.primary,
 });
 

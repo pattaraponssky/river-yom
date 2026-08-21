@@ -20,7 +20,7 @@ import UploadFileIcon from "@mui/icons-material/UploadFile";
 import DownloadIcon from "@mui/icons-material/Download";
 import FolderOpenIcon from "@mui/icons-material/FolderOpen";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import { API_URL } from "@/lib/utility";
+import { API_URL, Path_URL } from "@/lib/utility";
 import { getCellStyle, HeaderCellStyle, titleStyle } from "@/theme/style";
 import { apiRequest } from "@/lib/api";
 
@@ -33,16 +33,17 @@ interface PreviewRow {
   data: Record<string, any>;
 }
 
-type FileType = "reservoir" | "flow" | "rain" | "gate" | "sea";
+type FileType = "reservoir" | "flow" | "rain" | "gate" | "sea" | "tele";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const sampleFiles: { key: FileType; label: string; path: string }[] = [
-  // { key: "reservoir", label: "ข้อมูลอ่างเก็บน้ำ", path: "./exam-upload-data/reservoir_data.csv" },
-  { key: "rain", label: "ข้อมูลฝน",              path: "./exam-upload-data/rain_data.csv"  },
-  { key: "flow", label: "ข้อมูลน้ำท่า",           path: "./exam-upload-data/flow_data.csv"  },
-  { key: "gate", label: "ข้อมูลประตูระบายน้ำ",    path: "./exam-upload-data/gate_data.csv"  },
-  // { key: "sea",  label: "ข้อมูลระดับน้ำทะเล",    path: "./exam-upload-data/sea_data.csv"   },
+  // { key: "reservoir", label: "ข้อมูลอ่างเก็บน้ำ", path: `${Path_URL}/exam-upload-data/reservoir_data.csv` },
+  { key: "rain", label: "ข้อมูลฝน",              path: `${Path_URL}/exam-upload-data/rain_data.csv`  },
+  { key: "flow", label: "ข้อมูลน้ำท่า",           path: `${Path_URL}/exam-upload-data/flow_data.csv`  },
+  { key: "gate", label: "ข้อมูลประตูระบายน้ำ",    path: `${Path_URL}/exam-upload-data/gate_data.csv`  },
+  { key: "tele", label: "ข้อมูลสถานีติดตั้ง",    path: `${Path_URL}/exam-upload-data/tele_data.csv`  },
+  // { key: "sea",  label: "ข้อมูลระดับน้ำทะเล",    path: `${Path_URL}/exam-upload-data/sea_data.csv`   },
 ];
 
 const API_PREVIEW_MAP: Record<FileType, string> = {
@@ -51,18 +52,19 @@ const API_PREVIEW_MAP: Record<FileType, string> = {
   rain:      `${API_URL}/api/rain_preview_update`,
   gate:      `${API_URL}/api/gate_preview_update`,
   sea:       `${API_URL}/api/sea_preview_update`,
+  tele:       `${API_URL}/api/tele_preview_update`,
 };
 
 const API_UPLOAD_MAP: Record<string, string> = {
-  // reservoir: `${API_URL}/api/reservoir_update_data`,
+  reservoir: `${API_URL}/api/reservoir_update_data`,
   flow: `${API_URL}/api/flow_update_data`,
   rain: `${API_URL}/api/rain_update_data`,
   gate: `${API_URL}/api/gate_update_data`,
-  // sea:  `${API_URL}/api/sea_update_data`,
+  sea:  `${API_URL}/api/sea_update_data`,
+  tele:  `${API_URL}/api/tele_update_data`,
 };
 
 // ─── Component ────────────────────────────────────────────────────────────────
-
 const UploadData: React.FC = () => {
   const [selectedFile, setSelectedFile]     = useState<File | null>(null);
   const [previewData, setPreviewData]       = useState<PreviewRow[]>([]);
@@ -98,7 +100,7 @@ const UploadData: React.FC = () => {
     setSelectedFile(file);
 
     const name = file.name.toLowerCase();
-    const type = (["reservoir", "flow", "rain", "gate", "sea"] as FileType[]).find((t) =>
+    const type = (["reservoir", "flow", "rain", "gate", "sea", "tele"] as FileType[]).find((t) =>
       name.includes(t)
     ) ?? null;
 
@@ -198,7 +200,7 @@ const UploadData: React.FC = () => {
             ขั้นตอนการใช้งาน
           </Typography>
           {[
-            { n: 1, main: "ดาวน์โหลดไฟล์ตัวอย่างด้านล่าง",                    sub: "เลือกประเภทข้อมูลที่ต้องการ: flow / rain / gate" },
+            { n: 1, main: "ดาวน์โหลดไฟล์ตัวอย่างด้านล่าง",                    sub: "เลือกประเภทข้อมูลที่ต้องการ: flow / rain / gate / tele" },
             { n: 2, main: "กรอกข้อมูลในไฟล์ตัวอย่าง โดยคงชื่อไฟล์เดิมไว้",        sub: "ระบบตรวจจับประเภทจากชื่อไฟล์ — อย่าเปลี่ยนชื่อ" },
             { n: 3, main: "เลือกไฟล์เพื่ออัปโหลด ระบบจะแสดงตัวอย่างก่อนบันทึก",   sub: "ตรวจสอบสถานะ insert / update แล้วกด ยืนยัน" },
           ].map((s) => (
@@ -293,7 +295,7 @@ const UploadData: React.FC = () => {
               ลากไฟล์มาวางที่นี่ หรือกดเพื่อเลือก
             </Typography>
             <Typography sx={{ fontFamily: "'Prompt', sans-serif", fontSize: "0.75rem", color: "text.secondary" }}>
-              รองรับเฉพาะไฟล์ .csv · ชื่อไฟล์ต้องมีคำว่า flow / rain / gate
+              รองรับเฉพาะไฟล์ .csv · ชื่อไฟล์ต้องมีคำว่า flow / rain / gate / tele
             </Typography>
             <input type="file" hidden accept=".csv" ref={fileInputRef} onChange={handleFileChange} />
           </Box>

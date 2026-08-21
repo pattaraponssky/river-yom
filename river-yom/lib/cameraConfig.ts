@@ -53,6 +53,17 @@ const YR03Cameras: CameraConfig[] = [
   { id: 'YR03', label: 'ภาพรวม 1',  type: 'wss', streamUrl: `${RIO3_WS_BASE}/YR.03` },
 ];
 
+const YR04Cameras: CameraConfig[] = [
+  { id: 'YR04', label: 'ภาพรวม 1',  type: 'wss', streamUrl: `${RIO3_WS_BASE}/YR.04` },
+];
+
+const YR05Cameras: CameraConfig[] = [
+  { id: 'YR05', label: 'ภาพรวม 1',  type: 'wss', streamUrl: `${RIO3_WS_BASE}/YR.05` },
+];
+
+const YR06Cameras: CameraConfig[] = [
+  { id: 'YR06', label: 'ภาพรวม 1',  type: 'wss', streamUrl: `${RIO3_WS_BASE}/YR.06` },
+];
 // ── Map สถานี ───────────────────────────────────────────────────────────────
 export const STATION_CAMERAS: Record<string, CameraConfig[]> = {
 
@@ -65,9 +76,9 @@ export const STATION_CAMERAS: Record<string, CameraConfig[]> = {
   'YR.01': YR01Cameras, 
   'YR.02': YR02Cameras, 
   'YR.03': YR03Cameras, 
-  'YR.04': YR01Cameras, 
-  'YR.05': YR01Cameras, 
-  'YR.06': YR01Cameras, 
+  'YR.04': YR04Cameras, 
+  'YR.05': YR05Cameras, 
+  'YR.06': YR06Cameras, 
 
   // ── Y.15 ─────────────────────────────────────────────────────────────────
   // 'Y.15': [

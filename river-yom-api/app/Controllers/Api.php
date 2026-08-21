@@ -7,6 +7,7 @@ use App\Models\RainModel;
 use App\Models\FlowModel; 
 use App\Models\GateModel; 
 use App\Models\SeaModel; 
+use App\Models\TeleModel; 
 use CodeIgniter\API\ResponseTrait;
 
 class API extends Controller
@@ -188,6 +189,22 @@ class API extends Controller
                 $exists = $model->recordExists($data['sta_code'], $data['datetime']);
                 $result[] = [
                     'type' => 'sea',
+                    'code' => $data['sta_code'],
+                    'datetime' => $data['datetime'],
+                    'status' => $exists ? 'update' : 'insert',
+                    'data' => $data,
+                ];
+            }
+        }
+
+        if (isset($input['tele'])) {
+            $model = new TeleModel();
+            foreach ($input['tele'] as $data) {
+                if (!isset($data['sta_code'], $data['datetime'])) continue;
+    
+                $exists = $model->recordExists($data['sta_code'], $data['datetime']);
+                $result[] = [
+                    'type' => 'tele',
                     'code' => $data['sta_code'],
                     'datetime' => $data['datetime'],
                     'status' => $exists ? 'update' : 'insert',
