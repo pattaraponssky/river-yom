@@ -49,28 +49,6 @@ class TeleModel extends Model
         return $result;
     }
 
-    // เมธอดสำหรับดึงข้อมูลจาก tele_data โดยใช้ sta_code
-    // public function getTeleDataByCode($sta_code)
-    // {
-    //     return $this->db->table('tele_data')
-    //         ->where('sta_code', $sta_code)
-    //         ->get()
-    //         ->getResultArray();
-    // }
-
-    // // ดึงข้อมูลจาก tele_data ตาม sta_code และช่วงปี
-    // public function getTeleDataByCodeAndYearRange($sta_code, $startYear, $endYear)
-    // {
-    //     return $this->db->table('tele_data')
-    //         ->where('sta_code', $sta_code)
-    //         ->where("YEAR(datetime) >=", $startYear)
-    //         ->where("YEAR(datetime) <=", $endYear)
-    //         ->orderBy('datetime', 'ASC')
-    //         ->get()
-    //         ->getResultArray();
-    // }
-
-    // ดึงข้อมูลเวลา 7.00 น. ของทุกวันจาก tele_data ตาม sta_code 
     public function getTeleDataByCode($sta_code)
     {
         return $this->db->table('tele_data')
@@ -80,6 +58,7 @@ class TeleModel extends Model
             ->get()
             ->getResultArray();
     }
+    
     // public function getTeleDataByCodeAndYearRange($sta_code, $startYear, $endYear)
     // {
         
@@ -112,7 +91,7 @@ class TeleModel extends Model
                 AND YEAR(t.datetime) BETWEEN ? AND ?
             ) ranked
             WHERE rn = 1
-            ORDER BY date_col ASC
+            ORDER BY datetime ASC
         ";
 
         return $this->db->query($sql, [$sta_code, $startYear, $endYear])->getResultArray();
@@ -121,10 +100,10 @@ class TeleModel extends Model
     public function getTeleHourlyDataByCode($sta_code)
     {
         $sql = "
-            SELECT *
+            SELECT sta_code, hour_dt AS datetime, wl, discharge, rain_mm
             FROM (
                 SELECT t.*,
-                    ROUND(UNIX_TIMESTAMP(t.datetime) / 3600) AS hour_bucket,
+                    FROM_UNIXTIME(ROUND(UNIX_TIMESTAMP(t.datetime) / 3600) * 3600) AS hour_dt,
                     ABS(UNIX_TIMESTAMP(t.datetime) - ROUND(UNIX_TIMESTAMP(t.datetime) / 3600) * 3600) AS diff_sec,
                     ROW_NUMBER() OVER (
                         PARTITION BY ROUND(UNIX_TIMESTAMP(t.datetime) / 3600)
@@ -134,21 +113,44 @@ class TeleModel extends Model
                 WHERE t.sta_code = ?
             ) ranked
             WHERE rn = 1
-            ORDER BY datetime ASC
+            ORDER BY hour_dt ASC
         ";
-
         return $this->db->query($sql, [$sta_code])->getResultArray();
     }
 
     public function getTeleHourlyDataByCodeAndYearRange($sta_code, $startYear, $endYear)
     {
-        return $this->db->table('tele_data')
-            ->where('sta_code', $sta_code)
-            ->where("YEAR(datetime) >=", $startYear)
-            ->where("YEAR(datetime) <=", $endYear)
-            ->orderBy('datetime', 'ASC')
-            ->get()
-            ->getResultArray();
+        $sql = "
+            SELECT sta_code, hour_dt AS datetime, wl, discharge,
+                GREATEST(rain_mm - COALESCE(prev_rain_mm, 0), 0) AS rain_mm
+            FROM (
+                SELECT
+                    sta_code,
+                    hour_dt,
+                    wl,
+                    discharge,
+                    rain_mm,
+                    LAG(rain_mm) OVER (
+                        PARTITION BY sta_code, DATE(hour_dt)
+                        ORDER BY hour_dt
+                    ) AS prev_rain_mm
+                FROM (
+                    SELECT t.*,
+                        FROM_UNIXTIME(ROUND(UNIX_TIMESTAMP(t.datetime) / 3600) * 3600) AS hour_dt,
+                        ABS(UNIX_TIMESTAMP(t.datetime) - ROUND(UNIX_TIMESTAMP(t.datetime) / 3600) * 3600) AS diff_sec,
+                        ROW_NUMBER() OVER (
+                            PARTITION BY ROUND(UNIX_TIMESTAMP(t.datetime) / 3600)
+                            ORDER BY ABS(UNIX_TIMESTAMP(t.datetime) - ROUND(UNIX_TIMESTAMP(t.datetime) / 3600) * 3600)
+                        ) AS rn
+                    FROM tele_data t
+                    WHERE t.sta_code = ?
+                    AND YEAR(t.datetime) BETWEEN ? AND ?
+                ) deduped
+                WHERE rn = 1
+            ) with_prev
+            ORDER BY hour_dt ASC
+        ";
+        return $this->db->query($sql, [$sta_code, $startYear, $endYear])->getResultArray();
     }
 
     public function getTeleDataLast7Days()

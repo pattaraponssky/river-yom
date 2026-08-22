@@ -127,10 +127,11 @@ const DataTele: React.FC<{ propsSelectedStation?: string }> = ({ propsSelectedSt
 
   const fetchTeleData = async (start: string, end: string) => {
     const endpoint = mode === "daily" ? "tele_data" : "tele_hourly_data";
-    const dateField = mode === "daily" ? "date" : "datetime";
 
     const res = await fetch(`${API_URL}/api/${endpoint}/${selectedStation}?startYear=${start}&endYear=${end}`);
     const data = await res.json();
+    
+    const dateField = mode === "daily" ? (data?.data?.[0]?.date ? "date" : "datetime") : "datetime";
 
     if (!data?.data?.length) {
       setWlGroupedData({});
@@ -165,7 +166,7 @@ const DataTele: React.FC<{ propsSelectedStation?: string }> = ({ propsSelectedSt
       const hours = datetime.getHours();
       const minutes = datetime.getMinutes();
       const seconds = mode === "daily" ? Math.floor(Math.random() * 60) : datetime.getSeconds();
-
+      // const seconds = datetime.getSeconds();
       const chartTimestamp = new Date(BASE_YEAR, month, day, hours, minutes, seconds).getTime();
 
       // ระดับน้ำ

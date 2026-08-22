@@ -298,7 +298,7 @@ const TeleExportTable: React.FC<Props> = ({
       {/* ตารางข้อมูล */}
       <Box sx={{ 
         maxHeight: '70vh', 
-        overteleY: 'auto', 
+        overflowY: 'auto', 
         border: `1px solid ${theme.palette.divider}`, 
         borderRadius: 2,
         backgroundColor: theme.palette.background.paper,

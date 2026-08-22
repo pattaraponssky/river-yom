@@ -17,7 +17,7 @@ const HecRun: React.FC = () => {
    
     useEffect(() => {
       if (!loading) {
-            requirePermission(2, '/dashboard');
+            requirePermission(1, '/dashboard');
           }
         }, [loading, requirePermission]);
       
@@ -25,7 +25,7 @@ const HecRun: React.FC = () => {
         return <div>กำลังตรวจสอบสิทธิ์...</div>;
       }
       
-      if (!currentUser || currentUser.iduser_level < 2) {
+      if (!currentUser || currentUser.iduser_level < 1) {
         return <div>ไม่มีสิทธิ์เข้าถึงหน้านี้</div>;
       }
       

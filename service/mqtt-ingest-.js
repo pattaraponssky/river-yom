@@ -30,9 +30,11 @@ const pool = mysql.createPool(DB_CONFIG);
 const STATION_WL_OFFSET = {
   YR01: 32.534,
   YR02: 39.388,
+//   YR02: 38.388,
   YR03: 40.890,
   YR04: 37.082,
   YR05: 30.928,
+//   YR05: 31.928,
   YR06: 34.690,
 };
 
@@ -46,7 +48,7 @@ function toDbStaCode(rawStationId) {
   return `YR.${match[1]}`;
 }
 
-// ── คำนวณ wl ที่จะเก็บจริง = wl ดิบ + offset ของสถานีนั้น ──
+// คำนวณ wl ที่จะเก็บจริง = wl ดิบ (หรือ raw_value ถ้าไม่มี water_level) + offset ของสถานีนั้น
 function computeAdjustedWl(payload) {
   const rawWl = payload.water_level !== undefined
     ? payload.water_level
@@ -66,54 +68,24 @@ function validatePayload(payload) {
       return `missing field: ${key}`;
     }
   }
+  // ต้องมีอย่างน้อย water_level หรือ raw_value อย่างใดอย่างหนึ่ง
   if (payload.water_level === undefined && payload.raw_value === undefined) {
     return 'missing water_level or raw_value';
   }
   return null;
 }
 
-const FIVE_MIN_MS = 5 * 60 * 1000;
-
-function parseDbTimestamp(ts) {
-  const m = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})$/.exec(String(ts).trim());
-  if (!m) return null;
-  const [, y, mo, d, h, mi, s] = m.map(Number);
-  return Date.UTC(y, mo - 1, d, h, mi, s);
-}
-
-function formatDbTimestamp(epochMs) {
-  const dt = new Date(epochMs);
-  const pad = (n) => String(n).padStart(2, '0');
-  return (
-    `${dt.getUTCFullYear()}-${pad(dt.getUTCMonth() + 1)}-${pad(dt.getUTCDate())} ` +
-    `${pad(dt.getUTCHours())}:${pad(dt.getUTCMinutes())}:${pad(dt.getUTCSeconds())}`
-  );
-}
-
-function roundToNearest5Min(ts) {
-  const epoch = parseDbTimestamp(ts);
-  if (epoch === null) {
-    console.warn(`[TIME] cannot parse timestamp "${ts}", using as-is`);
-    return ts;
-  }
-  const rounded = Math.round(epoch / FIVE_MIN_MS) * FIVE_MIN_MS;
-  return formatDbTimestamp(rounded);
-}
-
-
-async function saveToTeleData(sta_code, roundedTimestamp, adjWl, payload) {
+// ── insert ลง tele_data (ค่าหลัก: wl, rain_mm) ──
+async function saveToTeleData(payload, adjWl) {
   const sql = `
     INSERT INTO tele_data
       (sta_code, datetime, wl, rain_mm)
-    VALUES (?, ?, ?, ?)
-    ON DUPLICATE KEY UPDATE
-      wl = VALUES(wl),
-      rain_mm = VALUES(rain_mm)
+    VALUES (?, ?, ?,  ?)
   `;
 
   const params = [
-    sta_code,
-    roundedTimestamp,
+    toDbStaCode(payload.station_id),
+    payload.timestamp,
     adjWl,
     payload.rainfall ?? null,
   ];
@@ -121,27 +93,19 @@ async function saveToTeleData(sta_code, roundedTimestamp, adjWl, payload) {
   await pool.execute(sql, params);
 }
 
-async function saveToTeleDataRaw(sta_code, roundedTimestamp, rawWl, offset, adjWl, payload) {
+// ── insert ลง tele_data_raw (เก็บทุกค่าดิบ ทุกครั้งที่รับ message) ──
+async function saveToTeleDataRaw(payload, rawWl, offset, adjWl) {
   const sql = `
     INSERT INTO tele_data_raw
       (sta_code, datetime, water_level, water_level_adj, wl_offset,
        rainfall, tip_count, status, error_message,
        payload_json)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ON DUPLICATE KEY UPDATE
-      water_level = VALUES(water_level),
-      water_level_adj = VALUES(water_level_adj),
-      wl_offset = VALUES(wl_offset),
-      rainfall = VALUES(rainfall),
-      tip_count = VALUES(tip_count),
-      status = VALUES(status),
-      error_message = VALUES(error_message),
-      payload_json = VALUES(payload_json)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?,  ?, ?)
   `;
 
   const params = [
-    sta_code,
-    roundedTimestamp,
+    toDbStaCode(payload.station_id),
+    payload.timestamp,
     rawWl,
     adjWl,
     offset,
@@ -149,7 +113,7 @@ async function saveToTeleDataRaw(sta_code, roundedTimestamp, rawWl, offset, adjW
     payload.tip_count ?? null,
     payload.status ?? null,
     payload.error_message ?? null,
-    JSON.stringify(payload), // ยังเก็บ timestamp ดิบต้นฉบับไว้ใน JSON นี้
+    JSON.stringify(payload),
   ];
 
   await pool.execute(sql, params);
@@ -162,9 +126,9 @@ const client = mqtt.connect({
   username: MQTT_CONFIG.username,
   password: MQTT_CONFIG.password,
   clientId: MQTT_CONFIG.clientId,
-  keepalive: 30,
-  reconnectPeriod: 3000,
-  connectTimeout: 10000,
+  keepalive: 30,          // ส่ง PING ทุก 30 วิ กันโดน NAT/firewall ตัด idle connection
+  reconnectPeriod: 3000,  // reconnect อัตโนมัติทุก 3 วิถ้าหลุด
+  connectTimeout: 10000,  // timeout ตอน connect
   clean: true,
 });
 
@@ -193,6 +157,9 @@ client.on('message', async (topic, messageBuf) => {
     return;
   }
 
+  // DEBUG: log ทุก message ที่เข้ามาจริง ไม่ว่าจะ valid หรือไม่
+  // ถ้าไม่เห็นบรรทัดนี้เลย แปลว่า client ไม่ได้รับ message จาก broker
+  // (topic subscribe ไม่ตรง / broker ไม่ได้ push มา / connection หลุดตอนนั้นพอดี)
   console.log(`[MQTT] received ${topic}:`, JSON.stringify(payload));
 
   const err = validatePayload(payload);
@@ -202,18 +169,13 @@ client.on('message', async (topic, messageBuf) => {
   }
 
   const { rawWl, offset, adjWl } = computeAdjustedWl(payload);
-  const sta_code = toDbStaCode(payload.station_id);
-
-  // ✅ ปัดเวลาให้เป็นช่วง 5 นาทีก่อนเก็บ (ทั้ง tele_data และ tele_data_raw)
-  const roundedTimestamp = roundToNearest5Min(payload.timestamp);
 
   try {
-    await saveToTeleDataRaw(sta_code, roundedTimestamp, rawWl, offset, adjWl, payload);
-    await saveToTeleData(sta_code, roundedTimestamp, adjWl, payload);
+    await saveToTeleDataRaw(payload, rawWl, offset, adjWl);
+    await saveToTeleData(payload, adjWl);
 
     console.log(
-      `[DB] saved ${payload.station_id} (sta_code=${sta_code}) ` +
-      `raw_time=${payload.timestamp} → rounded=${roundedTimestamp} | ` +
+      `[DB] saved ${payload.station_id} (sta_code=${toDbStaCode(payload.station_id)}) @ ${payload.timestamp} | ` +
       `wl_raw=${rawWl} + offset=${offset} = wl=${adjWl} | rain=${payload.rainfall}mm`
     );
   } catch (e) {

@@ -244,8 +244,8 @@ const TeleCard: React.FC = () => {
                     <TableRow key={i} hover>
                       <TableCell sx={{...textStyle,lineHeight:{md:"2.2rem",xs:"1.2rem",whiteSpace: "nowrap",}}}>{tele.sta_name}</TableCell>
                       <TableCell sx={{...textStyle,lineHeight:{md:"2.2rem",xs:"1.2rem"}}}>{tele.sta_code}</TableCell>
-                      <TableCell sx={{...textStyle,lineHeight:{md:"2.2rem",xs:"1.2rem"}}} align="center">{numberFormat(tele.discharge, 2)}</TableCell>
                       <TableCell sx={{...textStyle,lineHeight:{md:"2.2rem",xs:"1.2rem"}}} align="center">{numberFormat(tele.wl, 2)}</TableCell>
+                      <TableCell sx={{...textStyle,lineHeight:{md:"2.2rem",xs:"1.2rem"}}} align="center">{numberFormat(tele.discharge, 2)}</TableCell>
                       <TableCell sx={{...textStyle,lineHeight:{md:"2.2rem",xs:"1.2rem"}}} align="center">{numberFormat(tele.rain_mm, 2)}</TableCell>
                     </TableRow>
                   );

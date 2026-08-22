@@ -19,10 +19,9 @@ class DailyApi extends ResourceController
 {
     protected $format = 'json';
 
-    // 🔧 helper: query ที่ตาราง datetime ให้ตรงเวลา 07:00 ของวันที่กำหนด
+    // 🔧 helper: query ที่ตาราง datetime ให้ตรงเวลา 07:00 ของวันที่กำหนด (ใช้สำหรับดูย้อนหลัง)
     protected function whereDateAt7($model, string $staCode, string $date, string $codeField = 'sta_code')
     {
-        // 1. ลอง 07:00 เป๊ะ
         $row = $model
             ->where($codeField, $staCode)
             ->where('DATE(datetime)', $date)
@@ -33,7 +32,6 @@ class DailyApi extends ResourceController
             return $row;
         }
 
-        // 2. ใกล้ 07:00 ที่สุดของวันนั้น
         $row = $model
             ->where($codeField, $staCode)
             ->where('DATE(datetime)', $date)
@@ -45,7 +43,6 @@ class DailyApi extends ResourceController
             return $row;
         }
 
-        // 3. ถอยไปวันก่อนหน้า
         $prevDate = date('Y-m-d', strtotime($date . ' -1 day'));
 
         return $model
@@ -56,8 +53,48 @@ class DailyApi extends ResourceController
             ->first();
     }
 
-    // 🔧 helper: อ่านรหัสสถานีที่ต้องการกรอง จาก query string หรือ segment ที่ 2
-    //    รองรับ: ?sta_code=Y.4  หรือ  ?res_code=srk  หรือ /api/daily/flow/2026-08-05/Y.4
+    // ✅ helper: หา record ล่าสุดจริงๆ ของสถานี (ไม่จำกัดวัน, ไม่บังคับใกล้ 07:00)
+    //    ใช้เมื่อระบุ sta_code เจาะจง + ไม่ระบุวันที่ (ต้องการค่าล่าสุดจริงแบบ YR.05)
+    protected function getLatestRecord($model, string $staCode, string $codeField = 'sta_code')
+    {
+        return $model
+            ->where($codeField, $staCode)
+            ->orderBy('datetime', 'DESC')
+            ->first();
+    }
+
+   protected function getAt7OrLatestSameDay($model, string $staCode, string $date, string $codeField = 'sta_code', int $toleranceMinutes = 30)
+    {
+        $row = $model
+            ->where($codeField, $staCode)
+            ->where('DATE(datetime)', $date)
+            ->where("TIME(datetime) = '07:00:00'")
+            ->first();
+
+        if ($row) {
+            return $row;
+        }
+
+        $row = $model
+            ->where($codeField, $staCode)
+            ->where('DATE(datetime)', $date)
+            ->where("ABS(TIMESTAMPDIFF(MINUTE, TIME(datetime), '07:00:00')) <= {$toleranceMinutes}")
+            ->orderBy('ABS(TIMESTAMPDIFF(MINUTE, TIME(datetime), "07:00:00"))', '', false)
+            ->orderBy('datetime', 'ASC')
+            ->first();
+
+        if ($row) {
+            return $row;
+        }
+
+        // 3. ไม่มีอะไรใกล้ 07:00 เลย → ใช้ค่าล่าสุดของวันนั้นแทน
+        return $model
+            ->where($codeField, $staCode)
+            ->where('DATE(datetime)', $date)
+            ->orderBy('datetime', 'DESC')
+            ->first();
+    }
+
     private function getCodeFilter($paramName = 'sta_code', $segmentCode = null)
     {
         $code = $this->request->getGet($paramName);
@@ -67,21 +104,30 @@ class DailyApi extends ResourceController
         return $code ? trim($code) : null;
     }
 
-    // 🟦 สรุปข้อมูลอ่างเก็บน้ำรายวัน
+    // 🔧 helper: หาวันที่ล่าสุดที่มีข้อมูล (กรองตามสถานีถ้าระบุ)
+    protected function getLatestDate($model, $staCode = null, $codeField = 'sta_code', $fallbackFormat = 'Y-m-d')
+    {
+        $query = $staCode ? $model->where($codeField, $staCode) : $model;
+        $latest = $query->selectMax('datetime')->first();
+
+        return ($latest && !empty($latest['datetime']))
+            ? substr($latest['datetime'], 0, 10)
+            : date($fallbackFormat);
+    }
+
+    // 🟦 สรุปข้อมูลอ่างเก็บน้ำรายวัน (ไม่แก้ไข)
     public function reservoir($date = null, $codeSegment = null)
     {
         $infoModel = new ReservoirInfoModel();
         $dataModel = new ReservoirModel();
 
-        if (!$date) {
-            $latest = $dataModel->selectMax('datetime')->first();
-            $date = $latest ? substr($latest['datetime'], 0, 10) : date('Y-m-d');
-        }
-
-        $yesterday = date('Y-m-d', strtotime($date . ' -1 day'));
-
-        // ✅ รองรับการเลือกสถานีเดียวด้วย res_code
         $resCode = $this->getCodeFilter('res_code', $codeSegment);
+
+        $isLatestMode = ($date === null);
+
+        if ($isLatestMode) {
+            $date = $this->getLatestDate(new ReservoirModel(), $resCode, 'res_code');
+        }
 
         $infoQuery = $infoModel;
         if ($resCode) {
@@ -97,15 +143,17 @@ class DailyApi extends ResourceController
         $no = 1;
 
         foreach ($reservoirs as $res) {
-            $daily = $this->whereDateAt7($dataModel, $res['res_code'], $date, 'res_code');
-
-             if (!$daily) {
-                $yesterday = date('Y-m-d', strtotime($date . ' -1 day'));
-                $daily = $this->whereDateAt7($dataModel, $res['res_code'], $yesterday, 'res_code');   
+            if ($isLatestMode) {
+                $daily = $this->getLatestRecord(new ReservoirModel(), $res['res_code'], 'res_code');
+            } else {
+                $daily = $this->whereDateAt7($dataModel, $res['res_code'], $date, 'res_code');
+                if (!$daily) {
+                    $yesterday = date('Y-m-d', strtotime($date . ' -1 day'));
+                    $daily = $this->whereDateAt7($dataModel, $res['res_code'], $yesterday, 'res_code');
+                }
             }
 
             if ($daily) {
-                
                 $p = $res['maxvol'] > 0 ? ($daily['volume'] / $res['maxvol']) * 100 : 0;
 
                 $result[] = [
@@ -132,7 +180,6 @@ class DailyApi extends ResourceController
             return (float)$b['volume'] <=> (float)$a['volume'];
         });
 
-        // ✅ ถ้าเลือกสถานีเดียว ส่งเป็น object เดี่ยวแทน array (สะดวกฝั่ง frontend)
         if ($resCode) {
             return $this->respond(['data' => $result[0] ?? null]);
         }
@@ -140,30 +187,28 @@ class DailyApi extends ResourceController
         return $this->respond(['data' => $result]);
     }
 
-    // 🟨 สรุปข้อมูลประตูน้ำรายวัน
+    // 🟨 สรุปข้อมูลประตูน้ำรายวัน (ไม่แก้ไข)
     public function gate($date = null, $codeSegment = null)
     {
         $infoModel = new GateInfoModel();
         $dataModel = new GateModel();
 
-        if (!$date) {
-            $latest = $dataModel->selectMax('datetime')->first();
-            $date = $latest ? substr($latest['datetime'], 0, 10) : date('Y-m-d');
-        }
-        $yearStart = date('Y', strtotime($date)) . '-01-01';
-
-        // ✅ รองรับการเลือกสถานีเดียวด้วย sta_code (ต้องอยู่ในลิสต์ที่อนุญาตด้วย)
         $allowedCodes = ['tng', 'wst', 'kpk'];
         $staCode = $this->getCodeFilter('sta_code', $codeSegment);
 
-        if ($staCode) {
-            if (!in_array($staCode, $allowedCodes)) {
-                return $this->failNotFound("ไม่พบสถานีประตูน้ำรหัส '{$staCode}'");
-            }
-            $sta_codes = [$staCode];
-        } else {
-            $sta_codes = $allowedCodes;
+        if ($staCode && !in_array($staCode, $allowedCodes)) {
+            return $this->failNotFound("ไม่พบสถานีประตูน้ำรหัส '{$staCode}'");
         }
+
+        $isLatestMode = ($date === null);
+
+        if ($isLatestMode) {
+            $date = $this->getLatestDate(new GateModel(), $staCode, 'sta_code');
+        }
+
+        $yearStart = date('Y', strtotime($date)) . '-01-01';
+
+        $sta_codes = $staCode ? [$staCode] : $allowedCodes;
 
         $gates = $infoModel->whereIn('sta_code', $sta_codes)->findAll();
 
@@ -171,18 +216,23 @@ class DailyApi extends ResourceController
         $no = 1;
 
         foreach ($gates as $gate) {
-            $daily = $this->whereDateAt7($dataModel, $gate['sta_code'], $date, 'sta_code');
-
-            if (!$daily || (isset($daily['discharge']) && $daily['discharge'] == 0)) {
-                $yesterday = date('Y-m-d', strtotime($date . ' -1 day'));
-                $daily = $this->whereDateAt7($dataModel, $gate['sta_code'], $yesterday, 'sta_code');
+            if ($isLatestMode) {
+                $daily = $this->getLatestRecord(new GateModel(), $gate['sta_code'], 'sta_code');
+            } else {
+                $daily = $this->whereDateAt7($dataModel, $gate['sta_code'], $date, 'sta_code');
+                if (!$daily || (isset($daily['discharge']) && $daily['discharge'] == 0)) {
+                    $yesterday = date('Y-m-d', strtotime($date . ' -1 day'));
+                    $daily = $this->whereDateAt7($dataModel, $gate['sta_code'], $yesterday, 'sta_code');
+                }
             }
+
+            $sumUntil = $isLatestMode && $daily ? $daily['datetime'] : $date . ' 07:00:00';
 
             $sumRain = $dataModel
                 ->selectSum('rain_mm', 'total_rain')
                 ->where('sta_code', $gate['sta_code'])
                 ->where('datetime >=', $yearStart . ' 07:00:00')
-                ->where('datetime <=', $date . ' 07:00:00')
+                ->where('datetime <=', $sumUntil)
                 ->first();
 
             $rainSum = ($sumRain !== null && $sumRain['total_rain'] !== null)
@@ -217,19 +267,19 @@ class DailyApi extends ResourceController
         return $this->respond(['data' => $result]);
     }
 
-    // 🟩 สรุปข้อมูลสถานีน้ำท่ารายวัน
+    // 🟩 สรุปข้อมูลสถานีน้ำท่ารายวัน (ไม่แก้ไข)
     public function flow($date = null, $codeSegment = null)
     {
         $infoModel = new FlowInfoModel();
         $dataModel = new FlowModel();
 
-        if (!$date) {
-            $latest = $dataModel->selectMax('datetime')->first();
-            $date = $latest ? substr($latest['datetime'], 0, 10) : date('Y-m-d');
-        }
-
-        // ✅ รองรับการเลือกสถานีเดียวด้วย sta_code
         $staCode = $this->getCodeFilter('sta_code', $codeSegment);
+
+        $isLatestMode = ($date === null);
+
+        if ($isLatestMode) {
+            $date = $this->getLatestDate(new FlowModel(), $staCode, 'sta_code');
+        }
 
         $infoQuery = $infoModel;
         if ($staCode) {
@@ -245,12 +295,14 @@ class DailyApi extends ResourceController
         $no = 1;
 
         foreach ($flows as $flow) {
-            $daily = $this->whereDateAt7($dataModel, $flow['sta_code'], $date, 'sta_code');
-
-            // ✅ เพิ่ม fallback ไปวันก่อนหน้า เหมือน gate()
-            if (!$daily) {
-                $yesterday = date('Y-m-d', strtotime($date . ' -1 day'));
-                $daily = $this->whereDateAt7($dataModel, $flow['sta_code'], $yesterday, 'sta_code');   
+            if ($isLatestMode) {
+                $daily = $this->getLatestRecord(new FlowModel(), $flow['sta_code'], 'sta_code');
+            } else {
+                $daily = $this->whereDateAt7($dataModel, $flow['sta_code'], $date, 'sta_code');
+                if (!$daily) {
+                    $yesterday = date('Y-m-d', strtotime($date . ' -1 day'));
+                    $daily = $this->whereDateAt7($dataModel, $flow['sta_code'], $yesterday, 'sta_code');
+                }
             }
 
             if ($daily) {
@@ -276,23 +328,23 @@ class DailyApi extends ResourceController
         return $this->respond(['data' => $result]);
     }
 
-    // 🟪 tele()
+    // 🟪 tele() — ✅ แก้ไขตามที่ต้องการ
     public function tele($date = null, $codeSegment = null)
     {
         $infoModel = new TeleInfoModel();
         $dataModel = new TeleModel();
 
-        // เหมือน flow(): ถ้าไม่มี date → ใช้วันล่าสุดที่มีข้อมูล
-        if (!$date) {
-            $latest = (new TeleModel())->selectMax('datetime')->first();
-            $date = $latest ? substr($latest['datetime'], 0, 10) : date('Y-m-d');
+        $staCode = $this->getCodeFilter('sta_code', $codeSegment)
+            ?? $this->request->getGet('sta_code');
+
+        // ✅ ระบุ date มาเอง = ต้องการดูย้อนหลัง → ใช้ logic เดิมทั้งหมด (fallback ไปวันก่อนหน้าได้)
+        $isExplicitDate = ($date !== null);
+
+        if (!$isExplicitDate) {
+            $date = $this->getLatestDate(new TeleModel(), $staCode, 'sta_code');
         }
 
         $yearStart = date('Y', strtotime($date)) . '-01-01';
-
-        // รองรับการเลือกสถานีเดียวด้วย sta_code
-        $staCode = $this->getCodeFilter('sta_code', $codeSegment)
-            ?? $this->request->getGet('sta_code');
 
         $infoQuery = $infoModel;
         if ($staCode) {
@@ -310,26 +362,31 @@ class DailyApi extends ResourceController
         foreach ($flows as $flow) {
             $code = $flow['sta_code'];
 
-            // ── ผลรวมฝน (แยก Model ใหม่ กัน state ปน) ──
+            if ($isExplicitDate) {
+                // ดูย้อนหลังตามวันที่ระบุ: ใช้ logic เดิม (07:00 → ใกล้ 07:00 → fallback วันก่อนหน้าได้)
+                $daily = $this->whereDateAt7(new TeleModel(), $code, $date, 'sta_code');
+                if (!$daily) {
+                    $yesterday = date('Y-m-d', strtotime($date . ' -1 day'));
+                    $daily = $this->whereDateAt7(new TeleModel(), $code, $yesterday, 'sta_code');
+                }
+            } elseif ($staCode) {
+                $daily = $this->getLatestRecord(new TeleModel(), $code, 'sta_code');
+            } else {
+                $daily = $this->getAt7OrLatestSameDay(new TeleModel(), $code, $date, 'sta_code');
+            }
+
+            $sumUntil = $daily ? $daily['datetime'] : ($date . ' 07:00:00');
+
             $sumRain = (new TeleModel())
                 ->selectSum('rain_mm', 'total_rain')
                 ->where('sta_code', $code)
                 ->where('datetime >=', $yearStart . ' 07:00:00')
-                ->where('datetime <=', $date . ' 07:00:00')
+                ->where('datetime <=', $sumUntil)
                 ->first();
 
             $rainSum = ($sumRain !== null && $sumRain['total_rain'] !== null)
                 ? floatval($sumRain['total_rain'])
                 : null;
-
-            // ── ข้อมูลรายวัน เวลา 07:00 (ใช้ helper เหมือน flow) ──
-            $daily = $this->whereDateAt7(new TeleModel(), $code, $date, 'sta_code');
-
-            // fallback ไปวันก่อนหน้า เหมือน flow()
-            if (!$daily) {
-                $yesterday = date('Y-m-d', strtotime($date . ' -1 day'));
-                $daily = $this->whereDateAt7(new TeleModel(), $code, $yesterday, 'sta_code');
-            }
 
             if ($daily) {
                 $result[] = [
@@ -348,6 +405,22 @@ class DailyApi extends ResourceController
                         : null,
                     'rain_sum'  => $rainSum !== null ? round($rainSum, 2) : null,
                 ];
+            } else {
+                // ✅ ไม่มีข้อมูลเลยตั้งแต่ 00:00 ของวันนี้ → ใส่ค่าว่าง แทนการข้ามสถานีนี้ไปเฉยๆ
+                $result[] = [
+                    'no'        => $no++,
+                    'sta_code'  => $flow['sta_code'],
+                    'sta_name'  => $flow['sta_name'],
+                    'province'  => $flow['province'],
+                    'lat'       => $flow['lat'],
+                    'long'      => $flow['long'],
+                    'date'      => $date,
+                    'datetime'  => null,
+                    'wl'        => null,
+                    'discharge' => null,
+                    'rain_mm'   => null,
+                    'rain_sum'  => $rainSum !== null ? round($rainSum, 2) : null,
+                ];
             }
         }
 
@@ -358,21 +431,21 @@ class DailyApi extends ResourceController
         return $this->respond(['data' => $result]);
     }
 
-    // 🟦 สรุปข้อมูลฝนรายวัน
+    // 🟦 สรุปข้อมูลฝนรายวัน (ไม่แก้ไข)
     public function rain($date = null, $codeSegment = null)
     {
         $infoModel = new RainInfoModel();
         $dataModel = new RainModel();
 
-        if (!$date) {
-            $latest = $dataModel->selectMax('datetime')->first();
-            $date = $latest ? substr($latest['datetime'], 0, 10) : date('Y-m-d');
+        $staCode = $this->getCodeFilter('sta_code', $codeSegment);
+
+        $isLatestMode = ($date === null);
+
+        if ($isLatestMode) {
+            $date = $this->getLatestDate(new RainModel(), $staCode, 'sta_code');
         }
 
         $yearStart = date('Y', strtotime($date)) . '-01-01';
-
-        // ✅ รองรับการเลือกสถานีเดียวด้วย sta_code (ข้าม logic top-7 ถ้าระบุสถานี)
-        $staCode = $this->getCodeFilter('sta_code', $codeSegment);
 
         $infoQuery = $infoModel;
         if ($staCode) {
@@ -387,13 +460,23 @@ class DailyApi extends ResourceController
         $result = [];
 
         foreach ($stations as $st) {
-            $daily = $this->whereDateAt7($dataModel, $st['sta_code'], $date, 'sta_code');;
+            if ($isLatestMode) {
+                $daily = $this->getLatestRecord(new RainModel(), $st['sta_code'], 'sta_code');
+            } else {
+                $daily = $this->whereDateAt7($dataModel, $st['sta_code'], $date, 'sta_code');
+                if (!$daily) {
+                    $yesterday = date('Y-m-d', strtotime($date . ' -1 day'));
+                    $daily = $this->whereDateAt7($dataModel, $st['sta_code'], $yesterday, 'sta_code');
+                }
+            }
+
+            $sumUntil = $isLatestMode && $daily ? $daily['datetime'] : $date . ' 07:00:00';
 
             $sumRain = $dataModel
                 ->selectSum('rain_mm', 'total_rain')
                 ->where('sta_code', $st['sta_code'])
                 ->where('datetime >=', $yearStart . ' 07:00:00')
-                ->where('datetime <=', $date . ' 07:00:00')
+                ->where('datetime <=', $sumUntil)
                 ->first();
 
             $rainSum = ($sumRain !== null && $sumRain['total_rain'] !== null)
@@ -417,7 +500,6 @@ class DailyApi extends ResourceController
             }
         }
 
-        // ✅ ถ้าระบุ sta_code เจาะจง ไม่ต้อง sort/ตัด top7 — คืนสถานีนั้นตรงๆ
         if ($staCode) {
             $r = $result[0] ?? null;
             if ($r) {

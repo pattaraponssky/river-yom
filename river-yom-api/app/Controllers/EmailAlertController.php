@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Models\FlowInfoModel;
 use App\Models\FlowModel;
 use App\Models\UserModel;
+use App\Models\TeleModel;
 use CodeIgniter\RESTful\ResourceController;
 
 class EmailAlertController extends ResourceController
@@ -30,60 +31,137 @@ class EmailAlertController extends ResourceController
         'Y.17' => ['watch' => 600, 'alert' => 720, 'crisis' => 850],
     ];
 
+    private $teleWlThresholds = [
+        'YR.01' => ['watch' => 38.96, 'alert' => 39.82, 'crisis' => 40.67],
+        'YR.02' => ['watch' => 40.89, 'alert' => 41.23, 'crisis' => 41.57],
+        'YR.03' => ['watch' => 43.60, 'alert' => 43.98, 'crisis' => 44.37],
+        'YR.04' => ['watch' => 41.71, 'alert' => 42.28, 'crisis' => 42.86],
+        'YR.05' => ['watch' => 38.62, 'alert' => 39.46, 'crisis' => 40.30],
+        'YR.06' => ['watch' => 38.48, 'alert' => 39.02, 'crisis' => 39.55],
+    ];
+
+    private $teleDischargeThresholds = [
+        // ตัวอย่าง (แก้เป็นค่าจริง)
+        // 'T001' => ['watch' => 80, 'alert' => 120, 'crisis' => 180],
+    ];
+
     /**
      * เรียกโดย Cron Job ทุกวัน 08:30
      * GET /jobs/dailyFloodAlert
      */
     public function sendDailyAlert()
     {
-        $infoModel = new FlowInfoModel();
-        $dataModel = new FlowModel();
-        $userModel = new UserModel();
+        $infoModel  = new FlowInfoModel();
+        $dataModel  = new FlowModel();
+        $teleModel  = new TeleModel();      // ← เพิ่ม
+        $userModel  = new UserModel();
 
-        // 1. ดึงข้อมูลวันล่าสุด
+        // 1. หาวันที่ล่าสุด (ใช้จาก Flow ก่อน ถ้าไม่มีค่อยใช้วันนี้)
         $latest = $dataModel->selectMax('datetime')->first();
-        $date = $latest ? $latest['datetime'] : date('Y-m-d');
+        $date   = $latest ? substr($latest['datetime'], 0, 10) : date('Y-m-d');
 
-        // 2. ตรวจสอบแต่ละสถานี
         $alerts = [];
+
+        // ─────────────────────────────────────────────
+        // 2.1 ตรวจสอบสถานี Flow (เดิม)
+        // ─────────────────────────────────────────────
         $flows = $infoModel->findAll();
 
         foreach ($flows as $flow) {
             $sta_code = $flow['sta_code'];
+
             $daily = $dataModel
                 ->where('sta_code', $sta_code)
-                ->where('datetime', $date)
+                ->where('datetime', $date)               // หรือ $date . ' 00:00:00' ถ้าเก็บเต็ม
                 ->first();
+
+            // ถ้าไม่เจอแบบ date เปล่า ลองหาแบบมีเวลา 07:00
+            if (!$daily) {
+                $daily = $dataModel
+                    ->where('sta_code', $sta_code)
+                    ->where('datetime', $date . ' 07:00:00')
+                    ->first();
+            }
 
             if (!$daily) continue;
 
-            $wl = (float)$daily['wl'];
-            $discharge = (float)$daily['discharge'];
-            $wlLevel = $this->getAlertLevel($wl, $sta_code, 'wl');
-            $dischargeLevel = $this->getAlertLevel($discharge, $sta_code, 'discharge');
+            $wl         = (float) ($daily['wl'] ?? 0);
+            $discharge  = (float) ($daily['discharge'] ?? 0);
+            $wlLevel    = $this->getAlertLevel($wl, $sta_code, 'wl');
+            $disLevel   = $this->getAlertLevel($discharge, $sta_code, 'discharge');
 
-            // แจ้งเตือนเฉพาะสถานีที่มีค่าเกินเกณฑ์ watch ขึ้นไป
-            if ($wlLevel !== 'normal' || $dischargeLevel !== 'normal') {
+            if ($wlLevel !== 'normal' || $disLevel !== 'normal') {
                 $alerts[] = [
-                    'sta_code'      => $sta_code,
-                    'sta_name'      => $flow['sta_name'],
-                    'province'      => $flow['province'],
-                    'datetime'          => $date,
-                    'wl'            => $wl,
-                    'discharge'     => $discharge,
-                    'wl_level'      => $wlLevel,
-                    'discharge_level' => $dischargeLevel,
-                    'wl_threshold'  => $this->thresholds[$sta_code] ?? null,
-                    'dis_threshold' => $this->dischargeThresholds[$sta_code] ?? null,
+                    'sta_code'        => $sta_code,
+                    'sta_name'        => $flow['sta_name'] ?? $sta_code,
+                    'province'        => $flow['province'] ?? '',
+                    'datetime'        => $daily['datetime'] ?? $date,
+                    'wl'              => $wl,
+                    'discharge'       => $discharge,
+                    'wl_level'        => $wlLevel,
+                    'discharge_level' => $disLevel,
+                    'wl_threshold'    => $this->thresholds[$sta_code] ?? null,
+                    'dis_threshold'   => $this->dischargeThresholds[$sta_code] ?? null,
+                    'source'          => 'flow',
                 ];
             }
         }
 
-        // 3. ถ้าไม่มีการแจ้งเตือน → ส่งอีเมลสรุปปกติ (optional)
+        // ─────────────────────────────────────────────
+        // 2.2 ตรวจสอบสถานี Tele (ใหม่)
+        // ─────────────────────────────────────────────
+        $teleStations = $teleModel->getTeleInfo();   // จาก tele_info
+
+        // เตรียมรายการรหัสสถานี
+        $teleCodes = array_column($teleStations, 'sta_code');
+
+        // ดึงข้อมูลวันนี้ (จะพยายามเอา 07:00 ก่อน แล้วค่อยเอาล่าสุด)
+        $teleDataList = $teleModel->getTodayTeleDataByStationCodes($teleCodes);
+
+        // แปลงเป็น map ง่าย ๆ
+        $teleDataMap = [];
+        foreach ($teleDataList as $row) {
+            $teleDataMap[$row['sta_code']] = $row;
+        }
+
+        foreach ($teleStations as $station) {
+            $sta_code = $station['sta_code'];
+
+            // ถ้ายังไม่มี threshold ข้ามไปก่อน (หรือจะแจ้งเตือนทุกสถานีก็ได้)
+            if (!isset($this->teleWlThresholds[$sta_code]) && !isset($this->teleDischargeThresholds[$sta_code])) {
+                continue;
+            }
+
+            $daily = $teleDataMap[$sta_code] ?? null;
+            if (!$daily) continue;
+
+            $wl        = (float) ($daily['wl'] ?? 0);
+            $discharge = (float) ($daily['discharge'] ?? 0);
+
+            $wlLevel  = $this->getTeleAlertLevel($wl, $sta_code, 'wl');
+            $disLevel = $this->getTeleAlertLevel($discharge, $sta_code, 'discharge');
+
+            if ($wlLevel !== 'normal' || $disLevel !== 'normal') {
+                $alerts[] = [
+                    'sta_code'        => $sta_code,
+                    'sta_name'        => $station['sta_name'] ?? $sta_code,
+                    'province'        => $station['province'] ?? '',
+                    'datetime'        => $daily['datetime'] ?? $date,
+                    'wl'              => $wl,
+                    'discharge'       => $discharge,
+                    'wl_level'        => $wlLevel,
+                    'discharge_level' => $disLevel,
+                    'wl_threshold'    => $this->teleWlThresholds[$sta_code] ?? null,
+                    'dis_threshold'   => $this->teleDischargeThresholds[$sta_code] ?? null,
+                    'source'          => 'tele',
+                ];
+            }
+        }
+
+        // 3. ส่งอีเมล
         $hasAlert = !empty($alerts);
 
-        // 4. ดึง email ของ users ทุกคนในระบบ
-        $users = $userModel->where('Status', 1)->findAll(); // เฉพาะ active users
+        $users = $userModel->where('Status', 1)->findAll();
         if (empty($users)) {
             return $this->respond(['message' => 'ไม่พบผู้ใช้ในระบบ']);
         }
@@ -104,7 +182,7 @@ class EmailAlertController extends ResourceController
 
         return $this->respond([
             'status'      => 'success',
-            'datetime'        => $date,
+            'datetime'    => $date,
             'alert_count' => count($alerts),
             'sent_to'     => $sentCount,
             'alerts'      => $alerts,
@@ -128,6 +206,19 @@ class EmailAlertController extends ResourceController
         return 'normal';
     }
 
+    private function getTeleAlertLevel(float $value, string $sta_code, string $type): string
+    {
+        $thresholds = $type === 'wl'
+            ? ($this->teleWlThresholds[$sta_code] ?? null)
+            : ($this->teleDischargeThresholds[$sta_code] ?? null);
+
+        if (!$thresholds) return 'normal';
+
+        if ($value >= $thresholds['crisis']) return 'crisis';
+        if ($value >= $thresholds['alert'])  return 'alert';
+        if ($value >= $thresholds['watch'])  return 'watch';
+        return 'normal';
+    }
     /**
      * ส่งอีเมล
      */
@@ -216,104 +307,104 @@ class EmailAlertController extends ResourceController
         }
 
         return "
-<!DOCTYPE html>
-<html lang='th'>
-<head>
-    <meta charset='UTF-8'>
-    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-</head>
-<body style='margin:0;padding:0;background:#F5F5F5;font-family:\"Segoe UI\",Arial,sans-serif;'>
-<table width='100%' bgcolor='#F5F5F5' cellpadding='0' cellspacing='0'>
-<tr><td align='center' style='padding:24px 0;'>
-<table width='640' style='background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.1);'>
+                <!DOCTYPE html>
+                <html lang='th'>
+                <head>
+                    <meta charset='UTF-8'>
+                    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+                </head>
+                <body style='margin:0;padding:0;background:#F5F5F5;font-family:\"Segoe UI\",Arial,sans-serif;'>
+                <table width='100%' bgcolor='#F5F5F5' cellpadding='0' cellspacing='0'>
+                <tr><td align='center' style='padding:24px 0;'>
+                <table width='640' style='background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.1);'>
 
-    <!-- Header -->
-    <tr>
-        <td bgcolor='{$headerColor}' style='padding:28px 32px;'>
-            <h1 style='color:#fff;margin:0;font-size:1.4em;'>{$headerText}</h1>
-            <p style='color:rgba(255,255,255,0.85);margin:6px 0 0;font-size:0.95em;'>วันที่ {$dateStr}</p>
-        </td>
-    </tr>
-
-    <!-- Greeting -->
-    <tr>
-        <td style='padding:24px 32px 12px;'>
-            <p style='margin:0;color:#333;font-size:1em;'>เรียน คุณ {$name}</p>
-            <p style='margin:10px 0 0;color:#555;line-height:1.6;'>
-                " . ($hasAlert
-                    ? "ระบบตรวจพบสถานีวัดน้ำท่าที่มีระดับน้ำ <strong>เกินเกณฑ์การเฝ้าระวัง</strong> กรุณาตรวจสอบและดำเนินการตามความเหมาะสม"
-                    : "รายงานสถานการณ์น้ำประจำวัน ทุกสถานีอยู่ในเกณฑ์ปกติ") . "
-            </p>
-        </td>
-    </tr>
-
-    <!-- Summary Badge -->
-    " . ($hasAlert ? "
-    <tr>
-        <td style='padding:0 32px 16px;'>
-            <div style='background:#FFF3E0;border-left:4px solid #FF8F00;padding:12px 16px;border-radius:4px;'>
-                <strong style='color:#E65100;'>⚠️ พบ " . count($alerts) . " สถานีที่ต้องเฝ้าระวัง</strong>
-            </div>
-        </td>
-    </tr>" : "") . "
-
-    <!-- Alert Table -->
-    <tr>
-        <td style='padding:0 32px 24px;'>
-            <table width='100%' cellpadding='0' cellspacing='0'
-                   style='border-collapse:collapse;font-size:0.9em;'>
-                <thead>
-                    <tr style='background:#1565C0;color:#fff;'>
-                        <th style='padding:10px 12px;text-align:left;border:1px solid #1976D2;'>รหัสสถานี</th>
-                        <th style='padding:10px 12px;text-align:left;border:1px solid #1976D2;'>ชื่อสถานี</th>
-                        <th style='padding:10px 12px;text-align:left;border:1px solid #1976D2;'>จังหวัด</th>
-                        <th style='padding:10px 12px;text-align:center;border:1px solid #1976D2;'>ระดับน้ำ (ม.รทก.)</th>
-                        <th style='padding:10px 12px;text-align:center;border:1px solid #1976D2;'>อัตราการไหล (ลบ.ม./วิ)</th>
+                    <!-- Header -->
+                    <tr>
+                        <td bgcolor='{$headerColor}' style='padding:28px 32px;'>
+                            <h1 style='color:#fff;margin:0;font-size:1.4em;'>{$headerText}</h1>
+                            <p style='color:rgba(255,255,255,0.85);margin:6px 0 0;font-size:0.95em;'>วันที่ {$dateStr}</p>
+                        </td>
                     </tr>
-                </thead>
-                <tbody>
-                    {$tableRows}
-                </tbody>
-            </table>
-        </td>
-    </tr>
 
-    <!-- Legend -->
-    <tr>
-        <td style='padding:0 32px 16px;'>
-            <p style='margin:0 0 8px;color:#666;font-size:0.85em;font-weight:bold;'>เกณฑ์การแจ้งเตือน:</p>
-            <span style='background:#F9A825;color:#fff;padding:3px 10px;border-radius:12px;font-size:0.82em;margin-right:6px;'>🟡 เฝ้าระวัง</span>
-            <span style='background:#FF8F00;color:#fff;padding:3px 10px;border-radius:12px;font-size:0.82em;margin-right:6px;'>🟠 เตือนภัย</span>
-            <span style='background:#D32F2F;color:#fff;padding:3px 10px;border-radius:12px;font-size:0.82em;'>🔴 วิกฤต</span>
-        </td>
-    </tr>
+                    <!-- Greeting -->
+                    <tr>
+                        <td style='padding:24px 32px 12px;'>
+                            <p style='margin:0;color:#333;font-size:1em;'>เรียน คุณ {$name}</p>
+                            <p style='margin:10px 0 0;color:#555;line-height:1.6;'>
+                                " . ($hasAlert
+                                    ? "ระบบตรวจพบสถานีวัดน้ำท่าที่มีระดับน้ำ <strong>เกินเกณฑ์การเฝ้าระวัง</strong> กรุณาตรวจสอบและดำเนินการตามความเหมาะสม"
+                                    : "รายงานสถานการณ์น้ำประจำวัน ทุกสถานีอยู่ในเกณฑ์ปกติ") . "
+                            </p>
+                        </td>
+                    </tr>
 
-    <!-- CTA Button -->
-    <tr>
-        <td style='padding:0 32px 24px;'>
-            <a href='https://yourdomain.com/dashboard'
-               style='display:inline-block;background:#1565C0;color:#fff;padding:12px 28px;
-                      border-radius:8px;text-decoration:none;font-weight:bold;font-size:0.95em;'>
-                🔍 ดูรายละเอียดในระบบ
-            </a>
-        </td>
-    </tr>
+                    <!-- Summary Badge -->
+                    " . ($hasAlert ? "
+                    <tr>
+                        <td style='padding:0 32px 16px;'>
+                            <div style='background:#FFF3E0;border-left:4px solid #FF8F00;padding:12px 16px;border-radius:4px;'>
+                                <strong style='color:#E65100;'>⚠️ พบ " . count($alerts) . " สถานีที่ต้องเฝ้าระวัง</strong>
+                            </div>
+                        </td>
+                    </tr>" : "") . "
 
-    <!-- Footer -->
-    <tr>
-        <td bgcolor='#F5F5F5' style='padding:16px 32px;text-align:center;'>
-            <p style='margin:0;color:#999;font-size:0.82em;'>
-                อีเมลนี้ส่งโดยอัตโนมัติจากระบบติดตามสถานการณ์น้ำ สำนักชลประทานที่ 3<br>
-                กรุณาอย่าตอบกลับอีเมลฉบับนี้
-            </p>
-        </td>
-    </tr>
+                    <!-- Alert Table -->
+                    <tr>
+                        <td style='padding:0 32px 24px;'>
+                            <table width='100%' cellpadding='0' cellspacing='0'
+                                style='border-collapse:collapse;font-size:0.9em;'>
+                                <thead>
+                                    <tr style='background:#1565C0;color:#fff;'>
+                                        <th style='padding:10px 12px;text-align:left;border:1px solid #1976D2;'>รหัสสถานี</th>
+                                        <th style='padding:10px 12px;text-align:left;border:1px solid #1976D2;'>ชื่อสถานี</th>
+                                        <th style='padding:10px 12px;text-align:left;border:1px solid #1976D2;'>จังหวัด</th>
+                                        <th style='padding:10px 12px;text-align:center;border:1px solid #1976D2;'>ระดับน้ำ (ม.รทก.)</th>
+                                        <th style='padding:10px 12px;text-align:center;border:1px solid #1976D2;'>อัตราการไหล (ลบ.ม./วิ)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {$tableRows}
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
 
-</table>
-</td></tr>
-</table>
-</body>
-</html>";
+                    <!-- Legend -->
+                    <tr>
+                        <td style='padding:0 32px 16px;'>
+                            <p style='margin:0 0 8px;color:#666;font-size:0.85em;font-weight:bold;'>เกณฑ์การแจ้งเตือน:</p>
+                            <span style='background:#F9A825;color:#fff;padding:3px 10px;border-radius:12px;font-size:0.82em;margin-right:6px;'>🟡 เฝ้าระวัง</span>
+                            <span style='background:#FF8F00;color:#fff;padding:3px 10px;border-radius:12px;font-size:0.82em;margin-right:6px;'>🟠 เตือนภัย</span>
+                            <span style='background:#D32F2F;color:#fff;padding:3px 10px;border-radius:12px;font-size:0.82em;'>🔴 วิกฤต</span>
+                        </td>
+                    </tr>
+
+                    <!-- CTA Button -->
+                    <tr>
+                        <td style='padding:0 32px 24px;'>
+                            <a href='https://wms-yom-right.rid.go.th/'
+                            style='display:inline-block;background:#1565C0;color:#fff;padding:12px 28px;
+                                    border-radius:8px;text-decoration:none;font-weight:bold;font-size:0.95em;'>
+                                🔍 ดูรายละเอียดในระบบ
+                            </a>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td bgcolor='#F5F5F5' style='padding:16px 32px;text-align:center;'>
+                            <p style='margin:0;color:#999;font-size:0.82em;'>
+                                อีเมลนี้ส่งโดยอัตโนมัติจากระบบติดตามสถานการณ์น้ำ สำนักชลประทานที่ 3<br>
+                                กรุณาอย่าตอบกลับอีเมลฉบับนี้
+                            </p>
+                        </td>
+                    </tr>
+
+                </table>
+                </td></tr>
+                </table>
+                </body>
+                </html>";
     }
 
     private function formatThaiDate(string $date): string
