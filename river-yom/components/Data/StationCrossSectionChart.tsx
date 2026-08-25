@@ -6,6 +6,7 @@ import Papa from 'papaparse';
 import { Box, Typography, Chip, Skeleton } from '@mui/material';
 import { Path_URL } from '@/lib/utility';
 import dynamic from 'next/dynamic';
+import { fontWeight } from 'html2canvas/dist/types/css/property-descriptors/font-weight';
 
 const ApexChart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
@@ -40,8 +41,10 @@ interface WarnLabelOffsetSet {
 interface StaffGaugeXPos {
   x: number;
   label?: string;
+  label2?: string;
   color?: string;
   offsetY?: number;
+  offsetYtext?:number;
   offsetX?: number;
 }
 
@@ -49,44 +52,50 @@ const DEFAULT_GAUGE_COLOR = '#66B2FF';
 
 const STAFF_GAUGE_POSITIONS: Record<string, StaffGaugeXPos[]> = {
   'YR.01': [
-    { x: 273, label: 'Staff Gauge', offsetY:-145 ,offsetX:0 },
-    { x: 300, label: 'Staff Gauge', offsetY:-130 ,offsetX:0 },
+    { x: 7, label:'----------------------' ,label2: '41 ม.รทก', offsetY:-135 ,offsetX: 0 ,offsetYtext: -40  },
+    { x: 7.5, label:'---------' ,label2: '40 ม.รทก', offsetY:-100 ,offsetX: 0 ,offsetYtext: -10 },
   ],
   'YR.02': [
-    { x: 845, label: 'Staff Gauge', offsetY:-80 ,offsetX:0 },
-    { x: 789, label: 'Staff Gauge', offsetY:-30 ,offsetX:0 },
+    { x: 9, label:'------------------' ,label2: '41 ม.รทก', offsetY: -30, offsetX: -50 ,offsetYtext: 80 },
+    { x: 9.5, label:'------------------' ,label2: '42 ม.รทก', offsetY: -80, offsetX: 0 ,offsetYtext: 60 },
   ],
   'YR.03': [
-    { x: 545, label: 'Staff Gauge', offsetY:80 ,offsetX:0 },
-    { x: 605, label: 'Staff Gauge', offsetY:25 ,offsetX:0 },
-    { x: 670, label: 'Staff Gauge', offsetY:-27 ,offsetX:0 },
+    { x: 12, label:'------------------' ,label2: '43 ม.รทก', offsetY: -10, offsetX: -50 ,offsetYtext: 90 },
+    { x: 12.5, label:'------------------' ,label2: '44 ม.รทก', offsetY: -60, offsetX: 0 ,offsetYtext: 70 },
+    { x: 11, label:'------------------' ,label2: '42 ม.รทก', offsetY: 35, offsetX: 0 ,offsetYtext: 110 },
   ],
   'YR.04': [
-    { x: 755, label: 'Staff Gauge', offsetY:-107 ,offsetX:0 },
-    { x: 734, label: 'Staff Gauge', offsetY:-68 ,offsetX:0 },
+    { x: 12, label:'------------------' ,label2: '40 ม.รทก', offsetY: -5, offsetX: 55 ,offsetYtext: 90 },
+    { x: 12.65, label:'------------------' ,label2: '42 ม.รทก', offsetY: -90, offsetX: 0 ,offsetYtext: 60 },
   ],
   'YR.05': [
-    { x: 200, label: 'Staff Gauge', offsetY:-151 ,offsetX:0 },
+    { x: 8.2, label:'----------------------' ,label2: '41 ม.รทก', offsetY: -140, offsetX: 45 ,offsetYtext: 70 },
   ],
   'YR.06': [
-    { x: 185, label: 'Staff Gauge', offsetY:-50 ,offsetX:0 },
-    { x: 213, label: 'Staff Gauge', offsetY:-28 ,offsetX:0 },
+    { x: 3.8, label:'------------------' ,label2: '38 ม.รทก', offsetY: -55, offsetX: -50 ,offsetYtext: 50 },
+    { x: 5, label:'------------------' ,label2: '39 ม.รทก', offsetY: -23, offsetX: 0 ,offsetYtext: 70 },
   ],
 };
 
 const DEFAULT_WARN_LABEL_OFFSETS: WarnLabelOffsetSet = {
-  normal: { offsetX: -300, offsetY: 20 },
+  normal: { offsetX: -170, offsetY: 30 },
   watch:  { offsetX: -170, offsetY: 14 },
   alert:  { offsetX: -220, offsetY: 14 },
   crisis: { offsetX: -270, offsetY: 14 },
 };
 
 const WARN_LABEL_OFFSETS_OVERRIDE: Record<string, Partial<WarnLabelOffsetSet>> = {
+  'YR.05': {
+      normal: { offsetX: 330, offsetY: 20 },
+      watch:  { offsetX: 170, offsetY: 14 },
+      alert:  { offsetX: 220, offsetY: 5 },
+      crisis: { offsetX: 270, offsetY: 0 },
+  },
   'YR.06': {
       normal: { offsetX: 330, offsetY: 20 },
       watch:  { offsetX: 170, offsetY: 14 },
-      alert:  { offsetX: 220, offsetY: 14 },
-      crisis: { offsetX: 270, offsetY: 14 },
+      alert:  { offsetX: 220, offsetY: 5 },
+      crisis: { offsetX: 270, offsetY: 0 },
   },
 };
 
@@ -241,38 +250,90 @@ const StationCrossSectionChart: React.FC<Props> = ({
           },
         },
       },
+      
     );
     }
-
     return result;
     }, [warnLevels, shiftValue, shiftedWL, waterLevel, warnLabelOffsets]);
 
   // ─── Annotations (xaxis) — Staff Gauge ตำแหน่งตามสถานี ────────
-  // ถ้าสถานีไม่มีตำแหน่งกำหนดไว้ gaugePositions จะเป็น [] → map ได้ array ว่าง → ไม่แสดงอะไร
   const xAnnotations = useMemo(() => {
-    return gaugePositions.map((g) => ({
-      x: g.x,
-      borderColor: "#000",
-      borderWidth: 0,
-      label: {
-        offsetY: g.offsetY,
-        offsetX: g.offsetX,
-        borderColor: g.color ?? DEFAULT_GAUGE_COLOR,
-        position: "center",
-        style: {
-          fontSize: "10px",
-          color: "#fff",
-          background: g.color ?? DEFAULT_GAUGE_COLOR,
+  return gaugePositions
+    .map((g) => {
+      const color = g.color ?? DEFAULT_GAUGE_COLOR;
+
+      const mainLine = {
+        x: g.x,
+        borderColor: "#FE0000",
+        borderWidth: 1,
+        strokeDashArray: 4,
+        label: {
+          offsetY: g.offsetY,
+          borderColor: color,
+          position: "center",
+          style: {
+            fontSize: "4px",
+            color: "#66B2FF",
+            background: color,
+          },
+          text: g.label,
         },
-        text: g.label ?? "Staff Gauge",
-      },
-    }));
-  }, [gaugePositions]);
+      };
+
+      const secondaryLine = {
+        x: g.x,
+        borderWidth: 0,
+        label: {
+          offsetY: g.offsetYtext, // เลื่อนข้อความไม่ให้ทับเส้นแรก
+          position: 'center' as const,
+          borderWidth: 0,
+          style: {
+              fontSize: "11px",
+              color: "#333",
+              fontWeight: 'bold',
+            },
+          text: g.label2,
+        },
+      };
+
+      return [mainLine, secondaryLine];
+    })
+    .flat();
+}, [gaugePositions]);
+
+const pointAnnotations = useMemo(() => {
+  return gaugePositions
+    .slice(0, 1) // เหลือแค่ตัวแรก
+    .filter((g) => g.x >= 1 && g.x <= groundData.length)
+    .map((g) => {
+      const idx = Math.round(g.x) - 1;
+      const y = groundData[idx] ?? groundData[0];
+
+      return {
+        x: g.x,
+        y,
+        marker: { size: 0 },
+        label: {
+          text: 'Staff Gauge',
+          offsetY: -14,
+          offsetX: g.offsetX,
+          borderColor: 'transparent',
+          style: {
+            fontSize: '11px',
+            fontWeight: 700,
+            color: '#0D47A1',
+            background: 'rgba(227, 242, 253, 0.95)',
+            padding: { left: 6, right: 6, top: 2, bottom: 2 },
+          },
+        },
+      };
+    });
+}, [gaugePositions, groundData]);
 
   // ─── Chart ──────────────────────────────────────────────────
   const chartOptions: ApexCharts.ApexOptions = useMemo(() => ({
     chart: {
-      type: 'area',
+      type: "line" as "line",
       fontFamily: 'Prompt',
       zoom:    { enabled: false },
       toolbar: { show: true },
@@ -282,8 +343,13 @@ const StationCrossSectionChart: React.FC<Props> = ({
     dataLabels: {
       enabled: false,
     },
-    annotations: { yaxis: yAnnotations, xaxis: xAnnotations },
+    annotations: {
+      yaxis: yAnnotations, 
+      xaxis: xAnnotations,
+      points: pointAnnotations,
+    },
     xaxis: {
+      type: "numeric",
       categories: groundData.map((_, i) => i + 1),
       labels:     { show: false },
       axisBorder: { show: false },
@@ -328,7 +394,7 @@ const StationCrossSectionChart: React.FC<Props> = ({
       strokeDashArray: 3,
       xaxis: { lines: { show: false } },
     },
-  }), [yAnnotations, xAnnotations, groundData, shiftValue]);
+  }), [yAnnotations, xAnnotations, pointAnnotations, groundData, shiftValue]);
 
   const chartSeries = useMemo(() => [
     {
@@ -336,10 +402,12 @@ const StationCrossSectionChart: React.FC<Props> = ({
       data: shiftedWL != null
         ? Array(groundData.length).fill(shiftedWL)
         : Array(groundData.length).fill(null),
+      type: "area"
     },
     {
       name: 'Ground (พื้นดิน)',
       data: groundData,
+      type: "area"
     },
   ], [groundData, shiftedWL]);
 
@@ -347,7 +415,7 @@ const StationCrossSectionChart: React.FC<Props> = ({
   if (groundLoading) {
     return <Skeleton variant="rounded" height={chartHeight} sx={{ borderRadius: 2 }} />;
   }
-
+  
   if (groundData.length === 0) return null;
 
   return (
@@ -397,7 +465,7 @@ const StationCrossSectionChart: React.FC<Props> = ({
       <ApexChart
         options={chartOptions}
         series={chartSeries}
-        type="area"
+        type="line"
         height={chartHeight}
       />
     </Box>
