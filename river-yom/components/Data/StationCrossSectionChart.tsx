@@ -25,6 +25,71 @@ interface Props {
   title?:      string;
 }
 
+interface WarnLabelOffset {
+  offsetX: number;
+  offsetY: number;
+}
+
+interface WarnLabelOffsetSet {
+  normal: WarnLabelOffset;
+  watch:  WarnLabelOffset;
+  alert:  WarnLabelOffset;
+  crisis: WarnLabelOffset;
+}
+
+interface StaffGaugeXPos {
+  x: number;
+  label?: string;
+  color?: string;
+  offsetY?: number;
+  offsetX?: number;
+}
+
+const DEFAULT_GAUGE_COLOR = '#66B2FF';
+
+const STAFF_GAUGE_POSITIONS: Record<string, StaffGaugeXPos[]> = {
+  'YR.01': [
+    { x: 273, label: 'Staff Gauge', offsetY:-145 ,offsetX:0 },
+    { x: 300, label: 'Staff Gauge', offsetY:-130 ,offsetX:0 },
+  ],
+  'YR.02': [
+    { x: 845, label: 'Staff Gauge', offsetY:-80 ,offsetX:0 },
+    { x: 789, label: 'Staff Gauge', offsetY:-30 ,offsetX:0 },
+  ],
+  'YR.03': [
+    { x: 545, label: 'Staff Gauge', offsetY:80 ,offsetX:0 },
+    { x: 605, label: 'Staff Gauge', offsetY:25 ,offsetX:0 },
+    { x: 670, label: 'Staff Gauge', offsetY:-27 ,offsetX:0 },
+  ],
+  'YR.04': [
+    { x: 755, label: 'Staff Gauge', offsetY:-107 ,offsetX:0 },
+    { x: 734, label: 'Staff Gauge', offsetY:-68 ,offsetX:0 },
+  ],
+  'YR.05': [
+    { x: 200, label: 'Staff Gauge', offsetY:-151 ,offsetX:0 },
+  ],
+  'YR.06': [
+    { x: 185, label: 'Staff Gauge', offsetY:-50 ,offsetX:0 },
+    { x: 213, label: 'Staff Gauge', offsetY:-28 ,offsetX:0 },
+  ],
+};
+
+const DEFAULT_WARN_LABEL_OFFSETS: WarnLabelOffsetSet = {
+  normal: { offsetX: -300, offsetY: 20 },
+  watch:  { offsetX: -170, offsetY: 14 },
+  alert:  { offsetX: -220, offsetY: 14 },
+  crisis: { offsetX: -270, offsetY: 14 },
+};
+
+const WARN_LABEL_OFFSETS_OVERRIDE: Record<string, Partial<WarnLabelOffsetSet>> = {
+  'YR.06': {
+      normal: { offsetX: 330, offsetY: 20 },
+      watch:  { offsetX: 170, offsetY: 14 },
+      alert:  { offsetX: 220, offsetY: 14 },
+      crisis: { offsetX: 270, offsetY: 14 },
+  },
+};
+
 // ─── สถานะระดับน้ำ ────────────────────────────────────────────
 const getWaterStatus = (wl: number, warn?: WarnLevel) => {
   if (!warn) return { label: 'ปกติ', color: '#69fc00', textColor: '#000' };
@@ -33,6 +98,18 @@ const getWaterStatus = (wl: number, warn?: WarnLevel) => {
   if (wl >= warn.watch)  return { label: 'เฝ้าระวัง',  color: '#FFD700', textColor: '#000' };
   return                        { label: 'ปกติ',        color: '#388E3C', textColor: '#fff' };
 };
+
+function getWarnLabelOffsets(staCode: string): WarnLabelOffsetSet {
+  const override = WARN_LABEL_OFFSETS_OVERRIDE[staCode];
+  if (!override) return DEFAULT_WARN_LABEL_OFFSETS;
+
+  return {
+    normal: override.normal ?? DEFAULT_WARN_LABEL_OFFSETS.normal,
+    watch:  override.watch  ?? DEFAULT_WARN_LABEL_OFFSETS.watch,
+    alert:  override.alert  ?? DEFAULT_WARN_LABEL_OFFSETS.alert,
+    crisis: override.crisis ?? DEFAULT_WARN_LABEL_OFFSETS.crisis,
+  };
+}
 
 // ─── Component ────────────────────────────────────────────────
 const StationCrossSectionChart: React.FC<Props> = ({
@@ -45,6 +122,17 @@ const StationCrossSectionChart: React.FC<Props> = ({
   const [groundData,    setGroundData]    = useState<number[]>([]);
   const [shiftValue,    setShiftValue]    = useState(0);
   const [groundLoading, setGroundLoading] = useState(true);
+
+  // ตำแหน่ง staff gauge ของสถานีนี้ — ไม่มีในนี้ = array ว่าง = ไม่แสดง annotation
+  const gaugePositions = useMemo<StaffGaugeXPos[]>(
+    () => STAFF_GAUGE_POSITIONS[staCode] ?? [],
+    [staCode]
+  );
+
+  const warnLabelOffsets = useMemo(
+    () => getWarnLabelOffsets(staCode),
+    [staCode]
+  );
 
   // ─── โหลด ground profile ────────────────────────────────────
   useEffect(() => {
@@ -81,29 +169,30 @@ const StationCrossSectionChart: React.FC<Props> = ({
   // ─── สถานะ ─────────────────────────────────────────────────
   const status = waterLevel != null ? getWaterStatus(waterLevel, warnLevels) : null;
 
-  // ─── Annotations ────────────────────────────────────────────
+  // ─── Annotations (yaxis) ────────────────────────────────────
   const yAnnotations = useMemo(() => {
     const result: any[] = [];
 
-    // เกณฑ์เตือนภัย
-    if (warnLevels) {
+     if (warnLevels) {
       [
-        { val: warnLevels.normal, color: '#388E3C', label: `ปกติ ${warnLevels.normal.toFixed(2)} ม.รทก.`,       tc: '#fff' ,offsetX: -120 },
-        { val: warnLevels.watch,  color: '#FFD700', label: `เฝ้าระวัง ${warnLevels.watch.toFixed(2)} ม.รทก.`,   tc: '#333' ,offsetX: -170 },
-        { val: warnLevels.alert,  color: '#F57C00', label: `เตือนภัย ${warnLevels.alert.toFixed(2)} ม.รทก.`,    tc: '#fff' ,offsetX: -220 },
-        { val: warnLevels.crisis, color: '#D32F2F', label: `วิกฤต ${warnLevels.crisis.toFixed(2)} ม.รทก.`,      tc: '#fff' ,offsetX: -270 },
-      ].forEach(l => result.push({
-        y: l.val + shiftValue,
-        borderColor: l.color, borderWidth: 1.5, strokeDashArray: 4,
-        label: {
-          position: 'center', offsetY: 14, offsetX: l.offsetX,
-          text: l.label,
-          style: { color: l.tc, background: l.color, fontWeight: 'bold', fontSize: '0.72rem', padding: { top: 2, bottom: 2, left: 5, right: 5 } },
-        },
-      }));
+        { key: 'normal' as const, val: warnLevels.normal, color: '#388E3C', label: `ปกติ ต่ำกว่า ${warnLevels.normal.toFixed(2)} ม.รทก.`,       tc: '#fff' },
+        { key: 'watch'  as const, val: warnLevels.watch,  color: '#FFD700', label: `เฝ้าระวัง ${warnLevels.watch.toFixed(2)} ม.รทก.`,   tc: '#333' },
+        { key: 'alert'  as const, val: warnLevels.alert,  color: '#F57C00', label: `เตือนภัย ${warnLevels.alert.toFixed(2)} ม.รทก.`,    tc: '#fff' },
+        { key: 'crisis' as const, val: warnLevels.crisis, color: '#D32F2F', label: `วิกฤต ${warnLevels.crisis.toFixed(2)} ม.รทก.`,      tc: '#fff' },
+      ].forEach(l => {
+        const offset = warnLabelOffsets[l.key];
+        result.push({
+          y: l.val + shiftValue,
+          borderColor: l.color, borderWidth: 1.5, strokeDashArray: 4,
+          label: {
+            position: 'center', offsetY: offset.offsetY, offsetX: offset.offsetX,
+            text: l.label,
+            style: { color: l.tc, background: l.color, fontWeight: 'bold', fontSize: '0.72rem', padding: { top: 2, bottom: 2, left: 5, right: 5 } },
+          },
+        });
+      });
     }
 
-    // เส้นระดับน้ำจริง
     if (shiftedWL != null) {
       result.push(
       {
@@ -156,7 +245,29 @@ const StationCrossSectionChart: React.FC<Props> = ({
     }
 
     return result;
-  }, [warnLevels, shiftValue, shiftedWL, waterLevel]);
+    }, [warnLevels, shiftValue, shiftedWL, waterLevel, warnLabelOffsets]);
+
+  // ─── Annotations (xaxis) — Staff Gauge ตำแหน่งตามสถานี ────────
+  // ถ้าสถานีไม่มีตำแหน่งกำหนดไว้ gaugePositions จะเป็น [] → map ได้ array ว่าง → ไม่แสดงอะไร
+  const xAnnotations = useMemo(() => {
+    return gaugePositions.map((g) => ({
+      x: g.x,
+      borderColor: "#000",
+      borderWidth: 0,
+      label: {
+        offsetY: g.offsetY,
+        offsetX: g.offsetX,
+        borderColor: g.color ?? DEFAULT_GAUGE_COLOR,
+        position: "center",
+        style: {
+          fontSize: "10px",
+          color: "#fff",
+          background: g.color ?? DEFAULT_GAUGE_COLOR,
+        },
+        text: g.label ?? "Staff Gauge",
+      },
+    }));
+  }, [gaugePositions]);
 
   // ─── Chart ──────────────────────────────────────────────────
   const chartOptions: ApexCharts.ApexOptions = useMemo(() => ({
@@ -171,7 +282,7 @@ const StationCrossSectionChart: React.FC<Props> = ({
     dataLabels: {
       enabled: false,
     },
-    annotations: { yaxis: yAnnotations ,},
+    annotations: { yaxis: yAnnotations, xaxis: xAnnotations },
     xaxis: {
       categories: groundData.map((_, i) => i + 1),
       labels:     { show: false },
@@ -217,7 +328,7 @@ const StationCrossSectionChart: React.FC<Props> = ({
       strokeDashArray: 3,
       xaxis: { lines: { show: false } },
     },
-  }), [yAnnotations, groundData, shiftValue]);
+  }), [yAnnotations, xAnnotations, groundData, shiftValue]);
 
   const chartSeries = useMemo(() => [
     {

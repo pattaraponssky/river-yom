@@ -49,6 +49,7 @@ class EmailAlertController extends ResourceController
      * เรียกโดย Cron Job ทุกวัน 08:30
      * GET /jobs/dailyFloodAlert
      */
+    
     public function sendDailyAlert()
     {
         $infoModel  = new FlowInfoModel();

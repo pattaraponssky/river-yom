@@ -389,15 +389,7 @@ export default function GateDashboard() {
         
          {/* ───────────────── Middle Row ───────────────── */}
             <Grid container spacing={2.5} sx={{ mt: 2 }}>
-              <Grid size={{ xs: 12, md: 5 }}>
-                 <StationCoordinates
-                  staCode={selectedInfo.sta_code}
-                  lat={selectedInfo.lat}
-                  long={selectedInfo.long}
-                  staName={selectedInfo.sta_name}
-                />
-                </Grid>
-              <Grid size={{ xs: 12, md: 7 }}>
+              <Grid size={{ xs: 12, md: 8 }}>
                   <Paper sx={{ p: 2, borderRadius: 2 }}>
                     {selectedCode && (
                             <StationCrossSectionChart
@@ -410,6 +402,14 @@ export default function GateDashboard() {
                     )}
                   </Paper>
                 </Grid>
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <StationCoordinates
+                      staCode={selectedInfo.sta_code}
+                      lat={selectedInfo.lat}
+                      long={selectedInfo.long}
+                      staName={selectedInfo.sta_name}
+                    />  
+                  </Grid>
             </Grid>
 
           {/* ───────────────── CCTV ───────────────── */}
