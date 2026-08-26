@@ -3,9 +3,9 @@ header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
 
-$apiUrl1 = "http://localhost/swoc-model/hec_api/input_hms.php";
-$apiUrl2 = "http://localhost/swoc-model/hec_api/filter_rain_grid_api.php";
-$apiUrl3 = "https://swocthachin.rid.go.th/swoc-api/api/gate_data_last_14_days";
+$apiUrl1 = "http://localhost/river-yom-model/hec_api/input_hms.php";
+$apiUrl2 = "http://localhost/river-yom-model/hec_api/filter_rain_grid_api.php";
+$apiUrl3 = "https://wms-yom-right.rid.go.th/river-yom-api/api/gate_data_last_14_days";
 
 function fetchApiData($url) {
     $ch = curl_init();
@@ -40,7 +40,7 @@ if (isset($data3['data']) && is_array($data3['data'])) {
     }
 }
 
-$fileName = "C:/xampp/htdocs/swoc-model/HMS_Thachin/input-hms/input-hms.txt";
+$fileName = "C:/xampp/htdocs/river-yom-model/HMS_Thachin/input-hms/input-hms.txt";
 
 $startDate = new DateTime();
 $startDate->modify("-7 days");

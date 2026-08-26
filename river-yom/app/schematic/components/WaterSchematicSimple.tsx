@@ -38,6 +38,7 @@ interface TeleStationNode {
   id: string; name: string; sta_code: string; province: string;
   x: number; y: number;
   wl: number; discharge: number; datetime: string;
+  rain_mm :number;
   cardOffsetX?: number; cardOffsetY?: number;
 }
 
@@ -68,22 +69,41 @@ const endPoint = (angleDeg: number, length: number) => {
 
 const getFlowColor = (code: string, wl: number) => {
   const th: Record<string, { red: number; orange: number; yellow: number }> = {
-    'Y.4':  { red: 51.4, orange: 50.5, yellow: 49.6 },
-    'Y.15': { red: 46.0, orange: 44.7, yellow: 43.5 },
-    'Y.50': { red: 41.5, orange: 40.5, yellow: 39.5 },
-    'Y.16': { red: 39.3, orange: 38.4, yellow: 37.6 },
-    'Y.64': { red: 38.0, orange: 37.3, yellow: 36.7 },
-    'Y.51': { red: 42.0, orange: 40.4, yellow: 38.8 },
-    'Y.17': { red: 41.8, orange: 40.6, yellow: 39.4 },
-    'wst': { red: 40.98, orange: 40.18, yellow: 39.38 },
-    'tng': { red: 44.00, orange: 42.55, yellow: 41.10 },
-    'YR.01': { yellow: 38.96, orange: 39.82, red: 40.67 },
-    'YR.02': { yellow: 40.89, orange: 41.23, red: 41.57 },
-    'YR.03': { yellow: 43.60, orange: 43.98, red: 44.37 },
-    'YR.04': { yellow: 41.71, orange: 42.28, red: 42.86 },
-    'YR.05': { yellow: 38.62, orange: 39.46, red: 40.30 },
-    'YR.06': { yellow: 38.48, orange: 39.02, red: 39.55 },
+    // 'Y.4':  { yellow: 49.6 , orange: 50.5, red: 51.4,},
+    // 'Y.15': { yellow: 43.5 , orange: 44.7, red: 46.0,},
+    // 'Y.50': { yellow: 39.5 , orange: 40.5, red: 41.5,},
+    // 'Y.16': { yellow: 37.6 , orange: 38.4, red: 39.3,},
+    // 'Y.64': { yellow: 36.7 , orange: 37.3, red: 38.0,},
+    // 'Y.51': { yellow: 38.8 , orange: 40.4, red: 42.0,},
+    // 'Y.17': { yellow: 39.4 , orange: 40.6, red: 41.8,},
+    // 'wst': {  yellow: 39.38, orange: 40.18, red: 40.98 },
+    // 'tng': {  yellow: 41.10, orange: 42.55, red: 44.00 },
+    // 'YR.01': { yellow: 38.96, orange: 39.82, red: 40.67 },
+    // 'YR.02': { yellow: 40.89, orange: 41.23, red: 41.57 },
+    // 'YR.03': { yellow: 43.60, orange: 43.98, red: 44.37 },
+    // 'YR.04': { yellow: 41.71, orange: 42.28, red: 42.86 },
+    // 'YR.05': { yellow: 38.62, orange: 39.46, red: 40.30 },
+    // 'YR.06': { yellow: 38.48, orange: 39.02, red: 39.55 },
+
+    ///// orange -50 cm and yellow -100 cm ///////
+    'Y.16': { yellow: 38.30 , orange: 38.80, red: 39.30,},
+    'Y.64': { yellow: 37.00 , orange: 37.50, red: 38.00,},
+    'Y.51': { yellow: 41.00 , orange: 41.50, red: 42.00,},
+    'Y.17': { yellow: 40.80 , orange: 41.30, red: 41.80,},
+    "Y.4":  { yellow: 50.48, orange: 50.98, red: 51.48 },
+    "Y.15": { yellow: 45.05, orange: 45.55, red: 46.05 },
+    "Y.50": { yellow: 39.78, orange: 40.28, red: 40.78 },
+    'wst': {  yellow: 39.38, orange: 40.18, red: 40.98 },
+    'tng': {  yellow: 41.10, orange: 42.55, red: 44.00 },
+    'YR.01': { yellow: 39.67, orange: 40.17, red: 40.67 },
+    'YR.02': { yellow: 40.57, orange: 41.07, red: 41.57 },
+    'YR.03': { yellow: 43.37, orange: 43.87, red: 44.37 },
+    'YR.04': { yellow: 41.86, orange: 42.36, red: 42.86 },
+    'YR.05': { yellow: 39.30, orange: 39.80, red: 40.30 },
+    'YR.06': { yellow: 38.55, orange: 39.05, red: 39.55 },
   };
+
+
   const t = th[code] || { red: 40, orange: 38, yellow: 36 };
   if (wl > t.red)    return 'red';
   if (wl > t.orange) return 'orange';
@@ -314,7 +334,7 @@ const WaterSchematicSimple: React.FC = () => {
         if (!c) return null;
         return { id: item.no.toString(), name: item.sta_name, sta_code: item.sta_code,
           province: item.province, x: c[0], y: c[1], cardOffsetX: c[2], cardOffsetY: c[3],
-          wl: parseFloat(item.wl), discharge: parseFloat(item.discharge), datetime: item.datetime };
+          wl: parseFloat(item.wl), discharge: parseFloat(item.discharge), rain_mm: parseFloat(item.rain_mm), datetime: item.datetime };
       }).filter(Boolean) as TeleStationNode[];
     };
 
@@ -408,13 +428,13 @@ const WaterSchematicSimple: React.FC = () => {
     const X1 = (d: FlowStationNode) => tab1FlowPos[d.sta_code].offsetX;
     const Y1 = (d: FlowStationNode) => tab1FlowPos[d.sta_code].offsetY;
     
-    const CW = 75, CH = 35;
+    const CW = 75, CH = 33;
     flowGroup.append('rect').attr('x', X1).attr('y', Y1).attr('width', CW).attr('height', CH).attr('rx', 8).attr('ry', 8).attr('fill', theme.palette.background.paper).attr('stroke', theme.palette.divider).attr('stroke-width', 1);
     flowGroup.append('text').attr('x', d => X1(d) + CW / 2).attr('y', d => Y1(d) + 10).attr('text-anchor', 'middle').attr('font-size', 6).attr('font-weight', 'bold').attr('fill', theme.palette.text.primary).text(d => `${d.sta_code}${d.name ? ` (${d.name})` : ''}`);
-    flowGroup.append('text').attr('x', d => X1(d) + 10).attr('y', d => Y1(d) + 20).attr('font-size', 5).attr('fill', theme.palette.text.primary).text('ระดับน้ำ: ');
+    flowGroup.append('text').attr('x', d => X1(d) + 7).attr('y', d => Y1(d) + 20).attr('font-size', 5).attr('fill', theme.palette.text.primary).text('ระดับน้ำ: ');
     flowGroup.append('text').attr('x', d => X1(d) + 32).attr('y', d => Y1(d) + 20).attr('font-size', 5).attr('font-weight', 'bold').attr('fill', '#0066cc').text(d => `${d.wl.toFixed(2)} ม.รทก.`);
-    flowGroup.append('text').attr('x', d => X1(d) + 10).attr('y', d => Y1(d) + 30).attr('font-size', 5).attr('fill', theme.palette.text.primary).text('อัตราไหล: ');
-    flowGroup.append('text').attr('x', d => X1(d) + 32).attr('y', d => Y1(d) + 30).attr('font-size', 5).attr('font-weight', 'bold').attr('fill', '#0066cc').text(d => `${d.discharge.toFixed(2)} ลบ.ม./วินาที`);
+    flowGroup.append('text').attr('x', d => X1(d) + 7).attr('y', d => Y1(d) + 26).attr('font-size', 5).attr('fill', theme.palette.text.primary).text('อัตราไหล: ');
+    flowGroup.append('text').attr('x', d => X1(d) + 32).attr('y', d => Y1(d) + 26).attr('font-size', 5).attr('font-weight', 'bold').attr('fill', '#0066cc').text(d => `${d.discharge.toFixed(2)} ลบ.ม./วินาที`);
 
     // tele nodes
     const teleGroup = container.selectAll<SVGGElement, TeleStationNode>('.tele-node')
@@ -425,13 +445,15 @@ const WaterSchematicSimple: React.FC = () => {
     teleGroup.append('circle').attr('r', 7).attr('fill', d => getFlowColor(d.sta_code, d.wl)).attr('stroke', theme.palette.text.primary).attr('stroke-width', 1);
     const cX1 = (d: TeleStationNode) => d.cardOffsetX ?? 20;
     const cY1 = (d: TeleStationNode) => d.cardOffsetY ?? -30;
-    const CW1 = 75, CH1 = 35;
+    const CW1 = 75, CH1 = 36;
     teleGroup.append('rect').attr('x', cX1).attr('y', cY1).attr('width', CW1).attr('height', CH1).attr('rx', 8).attr('ry', 8).attr('fill', theme.palette.background.paper).attr('stroke', theme.palette.divider).attr('stroke-width', 1);
     teleGroup.append('text').attr('x', d => cX1(d) + CW1 / 2).attr('y', d => cY1(d) + 10).attr('text-anchor', 'middle').attr('font-size', 6).attr('font-weight', 'bold').attr('fill', theme.palette.text.primary).text(d => `${d.sta_code}${d.name ? ` (${d.name})` : ''}`);
-    teleGroup.append('text').attr('x', d => cX1(d) + 10).attr('y', d => cY1(d) + 20).attr('font-size', 5).attr('fill', theme.palette.text.primary).text('ระดับน้ำ: ');
-    teleGroup.append('text').attr('x', d => cX1(d) + 32).attr('y', d => cY1(d) + 20).attr('font-size', 5).attr('font-weight', 'bold').attr('fill', '#0066cc').text(d => `${d.wl.toFixed(2)} ม.รทก.`);
-    teleGroup.append('text').attr('x', d => cX1(d) + 10).attr('y', d => cY1(d) + 28).attr('font-size', 5).attr('fill', theme.palette.text.primary).text('อัตราไหล: ');
-    teleGroup.append('text').attr('x', d => cX1(d) + 32).attr('y', d => cY1(d) + 28).attr('font-size', 5).attr('font-weight', 'bold').attr('fill', '#0066cc').text(d => `${d.discharge.toFixed(2)} ลบ.ม./วินาที`);
+    teleGroup.append('text').attr('x', d => cX1(d) + 9).attr('y', d => cY1(d) + 20).attr('font-size', 5).attr('fill', theme.palette.text.primary).text('ระดับน้ำ: ');
+    teleGroup.append('text').attr('x', d => cX1(d) + 34).attr('y', d => cY1(d) + 20).attr('font-size', 5).attr('font-weight', 'bold').attr('fill', '#0066cc').text(d => `${d.wl.toFixed(2)} ม.รทก.`);
+    teleGroup.append('text').attr('x', d => cX1(d) + 9).attr('y', d => cY1(d) + 26).attr('font-size', 5).attr('fill', theme.palette.text.primary).text('อัตราไหล: ');
+    teleGroup.append('text').attr('x', d => cX1(d) + 34).attr('y', d => cY1(d) + 26).attr('font-size', 5).attr('font-weight', 'bold').attr('fill', '#0066cc').text(d => `${d.discharge.toFixed(2)} ลบ.ม./วินาที`);
+    teleGroup.append('text').attr('x', d => cX1(d) + 9).attr('y', d => cY1(d) + 32).attr('font-size', 5).attr('fill', theme.palette.text.primary).text('ปริมาณฝน: ');
+    teleGroup.append('text').attr('x', d => cX1(d) + 34).attr('y', d => cY1(d) + 32).attr('font-size', 5).attr('font-weight', 'bold').attr('fill', '#0066cc').text(d => `${d.rain_mm.toFixed(2)} มม.`);
 
     const tab1GatePos: Record<string, { x: number; y: number; offsetX: number; offsetY: number }> = {
       'wst': { x: 398, y: 270, offsetX: 15, offsetY: -25 },
@@ -455,7 +477,7 @@ const WaterSchematicSimple: React.FC = () => {
       .attr('fill', d => getFlowColor(d.sta_code, d.wl_upper)) // ✅ ใช้ getGateColor
       .attr('stroke', '#fff').attr('stroke-width', 1);
 
-    const gCardW = 90, gCardH = 44;
+    const gCardW = 90, gCardH = 40;
     const gCX2 = (d: GateStationNode) => tab1GatePos[d.sta_code].offsetX;
     const gCY2 = (d: GateStationNode) => tab1GatePos[d.sta_code].offsetY;
 
@@ -473,20 +495,20 @@ const WaterSchematicSimple: React.FC = () => {
       .text(d => `${d.wl_upper.toFixed(2)} ม.รทก.`);
 
     gateGroup.append('text')
-      .attr('x', d => gCX2(d) + 10).attr('y', d => gCY2(d) + 30)
+      .attr('x', d => gCX2(d) + 10).attr('y', d => gCY2(d) + 26)
       .attr('font-size', 5).attr('fill', theme.palette.text.secondary)
       .text('ระดับน้ำท้าย:');
     gateGroup.append('text')
-      .attr('x', d => gCX2(d) + 50).attr('y', d => gCY2(d) + 30)
+      .attr('x', d => gCX2(d) + 50).attr('y', d => gCY2(d) + 26)
       .attr('font-size', 5).attr('font-weight', 'bold').attr('fill', '#0066cc')
       .text(d => `${d.wl_lower.toFixed(2)} ม.รทก.`);
 
     gateGroup.append('text')
-      .attr('x', d => gCX2(d) + 10).attr('y', d => gCY2(d) + 40)
+      .attr('x', d => gCX2(d) + 10).attr('y', d => gCY2(d) + 32)
       .attr('font-size', 5).attr('fill', theme.palette.text.secondary)
       .text('อัตราไหล:');
     gateGroup.append('text')
-      .attr('x', d => gCX2(d) + 50).attr('y', d => gCY2(d) + 40)
+      .attr('x', d => gCX2(d) + 50).attr('y', d => gCY2(d) + 32)
       .attr('font-size', 5).attr('font-weight', 'bold').attr('fill', '#0066cc')
       .text(d => `${d.discharge.toFixed(2)} ลบ.ม./วิ`);
 

@@ -7,7 +7,7 @@ def fetch_thachin_stages():
     """
     ดึงข้อมูลระดับน้ำรายชั่วโมงย้อนหลัง 7 วัน จาก API
     """
-    url = "https://swocthachin.rid.go.th/swoc-api/api/flow_hourly_data_last_7_days"
+    url = "https://wms-yom-right.rid.go.th/river-yom-api/api/flow_hourly_data_last_7_days"
     
     try:
         response = requests.get(url, timeout=15)
@@ -178,8 +178,8 @@ if __name__ == "__main__":
     
     if latest_data:
         # เปลี่ยน path นี้เป็นไฟล์จริงของคุณ
-        # input_file = "/Users/dan/SWOC ท่าจีน/web-thachin/swoc-model/Thachin.u06"  # แก้ path ตามจริง
-        input_file = r"C:\xampp\htdocs\swoc-model\RAS_Thachin\Thachin.u06"
+        # input_file = "/Users/dan/SWOC ท่าจีน/web-thachin/river-yom-model/Thachin.u06"  # แก้ path ตามจริง
+        input_file = r"C:\xampp\htdocs\river-yom-model\RAS_YOM\YOM.u06"
         replace_observed_stage(input_file, latest_data)
     else:
         print("ไม่สามารถดึงข้อมูลจาก API ได้ กรุณาตรวจสอบการเชื่อมต่อหรือ API status")

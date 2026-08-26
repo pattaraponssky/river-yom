@@ -19,9 +19,8 @@ import { API_URL } from '@/lib/utility';
 import { titleStyle } from '@/theme/style';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-
-import { apiRequest } from '@/lib/api';
 import EquipmentDialog from '@/components/Equipment/EquipmentDialog';
+import { apiRequest } from '@/lib/api';
 
 // ─── ต้องตรงกับตาราง equipment ใหม่ (ผูกกับ tele_info ผ่าน sta_code) ──────────
 interface Equipment {
@@ -34,12 +33,10 @@ interface Equipment {
   purchase_date: string | null;
   warranty_expiry: string | null;
   photo: string | null;
-  location: string | null;
   status: 'active' | 'maintenance' | 'broken' | 'retired';
   created_at: string;
   updated_at: string;
 }
-
 
 interface StationOption {
   sta_code: string;
@@ -363,7 +360,7 @@ export default function EquipmentPage() {
                 >
                   <TableCell align="center">
                     <Tooltip title="ประวัติการบำรุงรักษา">
-                      <IconButton color="info" size="small" onClick={() => router.push(`/equipment/${row.id}/maintenance`)}>
+                      <IconButton color="info" size="small" onClick={() => router.push(`/equipment/maintenance?id=${row.id}`)}>
                         <HistoryIcon fontSize="medium" />
                       </IconButton>
                     </Tooltip>

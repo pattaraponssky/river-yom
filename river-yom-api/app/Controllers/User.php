@@ -62,8 +62,8 @@ class User extends BaseController
         }
 
         $payload = [
-            'iss' => 'https://swocthachin.rid.go.th/swoc-api/',
-            'aud' => 'https://swocthachin.rid.go.th/swoc-api/',
+            'iss' => 'https://wms-yom-right.rid.go.th/river-yom-api/',
+            'aud' => 'https://wms-yom-right.rid.go.th/river-yom-api/',
             'iat' => time(),
             'exp' => time() + 7200,
             'uid' => $user['User_ID'],

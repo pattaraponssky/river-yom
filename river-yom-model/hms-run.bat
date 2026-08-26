@@ -3,7 +3,7 @@ echo Running Jython script...
 
 set "HEC_HMS_PATH=C:\Program Files\HEC\HEC-HMS\4.13"
 set "JYTHON_PATH=C:\jython2.7.4\bin\jython"
-set "SCRIPT_PATH=C:\xampp\htdocs\swoc-model\hms-run.py"
+set "SCRIPT_PATH=C:\xampp\htdocs\river-yom-model\hms-run.py"
 
 :: กำหนด USERPROFILE ให้ไม่เกิด NullPointerException
 set "USERPROFILE=C:\Users\Administrator"

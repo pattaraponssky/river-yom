@@ -2,8 +2,6 @@
 import { API_URL } from '@/lib/utility';
 import StationDetailClient from './StationDetailClient';
 
-// จำเป็นเพราะโปรเจกต์นี้ตั้ง output: 'export' (static export)
-// ต้องบอก Next.js ล่วงหน้าว่ามี sta_code ไหนบ้างที่ต้อง pre-render
 export async function generateStaticParams() {
   try {
     const res = await fetch(`${API_URL}/api/stations`, { cache: 'no-store' });

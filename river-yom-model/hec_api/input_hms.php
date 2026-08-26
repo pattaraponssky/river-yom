@@ -66,7 +66,7 @@ while ($current_loop_date <= $display_and_data_end_date_ce) {
 
 // --- โหลดข้อมูลจาก API ใหม่ swocthachin.rid.go.th ---
 // **แก้ไข URL ตามที่ร้องขอ**
-$rid_api_url = "https://swocthachin.rid.go.th/swoc-api/api/model_input_data";
+$rid_api_url = "https://wms-yom-right.rid.go.th/river-yom-api/api/model_input_data";
 $rid_data_response = fetchData($rid_api_url); 
 // เนื่องจาก API นี้อาจมีการจัดโครงสร้างข้อมูลที่แตกต่างกัน (เช่น มี 'data' key)
 $rid_data_raw = isset($rid_data_response['data']) && is_array($rid_data_response['data']) ? $rid_data_response['data'] : (is_array($rid_data_response) ? $rid_data_response : []);

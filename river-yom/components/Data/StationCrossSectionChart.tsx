@@ -6,7 +6,6 @@ import Papa from 'papaparse';
 import { Box, Typography, Chip, Skeleton } from '@mui/material';
 import { Path_URL } from '@/lib/utility';
 import dynamic from 'next/dynamic';
-import { fontWeight } from 'html2canvas/dist/types/css/property-descriptors/font-weight';
 
 const ApexChart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
@@ -44,36 +43,51 @@ interface StaffGaugeXPos {
   label2?: string;
   color?: string;
   offsetY?: number;
-  offsetYtext?:number;
+  offsetYtext?: number;
   offsetX?: number;
 }
+
+
+interface YAxisRange {
+  min?: number;
+  max?: number;
+}
+
+const Y_AXIS_RANGE_OVERRIDE: Record<string, YAxisRange> = {
+  'YR.01': { min: 32, max: 44 },
+  'YR.02': { min: 38, max: 46 },
+  'YR.03': { min: 40, max: 47 },
+  'YR.04': { min: 36, max: 45 },
+  'YR.05': { min: 30, max: 46 },
+  'YR.06': { min: 34, max: 42 },
+};
 
 const DEFAULT_GAUGE_COLOR = '#000';
 
 const STAFF_GAUGE_POSITIONS: Record<string, StaffGaugeXPos[]> = {
   'YR.01': [
-    { x: 6.7, label:'---------------------------------------------------------------------------------------------------------------------------------' ,label2: '41 ม.รทก', offsetY:-145 ,offsetX: -50 ,offsetYtext: -40  },
-    { x: 7.3, label:'-----------------------------------------------------------------------------------------------' ,label2: '40 ม.รทก', offsetY:-114 ,offsetX: 0 ,offsetYtext: -10 },
+    { x: 6.4, label:'-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------' ,label2: '+44', offsetY:-115 ,offsetX: -50 ,offsetYtext: -125  },
+    { x: 7.3, label:'--------------------------------------------------------------------' ,label2: '+41', offsetY:-70 ,offsetX: 0 ,offsetYtext: -100 },
   ],
   'YR.02': [
-    { x: 8.8, label:'-----------------------------------------------------------------------------------------------' ,label2: '41 ม.รทก', offsetY: -30, offsetX: -50 ,offsetYtext: 80 },
-    { x: 9.32, label:'-----------------------------------------------------------------------------------------------' ,label2: '42 ม.รทก', offsetY: -75, offsetX: 0 ,offsetYtext: 60 },
+    { x: 8.8, label:'-----------------------------------------------------------------------------------------------' ,label2: '+42.00', offsetY: 10, offsetX: -50 ,offsetYtext: -60 },
+    { x: 9.32, label:'-----------------------------------------------------------------------------------------------' ,label2: '+43.00', offsetY: -25, offsetX: 0 ,offsetYtext: -80 },
   ],
   'YR.03': [
-    { x: 11.9, label:'-----------------------------------------------------------------------------------------------' ,label2: '43 ม.รทก', offsetY: -20, offsetX: -50 ,offsetYtext: 90 },
-    { x: 12.4, label:'-----------------------------------------------------------------------------------------------' ,label2: '44 ม.รทก', offsetY: -72, offsetX: 0 ,offsetYtext: 70 },
-    { x: 10.8, label:'-----------------------------------------------------------------------------------------------' ,label2: '42 ม.รทก', offsetY: 35, offsetX: 0 ,offsetYtext: 110 },
+    { x: 11.9, label:'-----------------------------------------------------------------------------------------------' ,label2: '+44', offsetY: 1, offsetX: -50 ,offsetYtext: -90 },
+    { x: 12.4, label:'-----------------------------------------------------------------------------------------------' ,label2: '+45', offsetY: -49, offsetX: 0 ,offsetYtext: -110 },
+    { x: 10.8, label:'-----------------------------------------------------------------------------------------------' ,label2: '+43', offsetY: 45, offsetX: 0 ,offsetYtext: -70 },
   ],
   'YR.04': [
-    { x: 11.9, label:'-----------------------------------------------------------------------------------------------' ,label2: '40 ม.รทก', offsetY: -20, offsetX: 55 ,offsetYtext: 90 },
-    { x: 12.6, label:'-----------------------------------------------------------------------------------------------' ,label2: '42 ม.รทก', offsetY: -107, offsetX: 0 ,offsetYtext: 60 },
+    { x: 11.9, label:'-------------------------------------------------------------------------------------' ,label2: '+41', offsetY: 0, offsetX: 55 ,offsetYtext: -90 },
+    { x: 12.6, label:'-------------------------------------------------------------------------------------' ,label2: '+43', offsetY: -70, offsetX: 0 ,offsetYtext: -110 },
   ],
   'YR.05': [
-    { x: 7.8, label:'---------------------------------------------------------------------------------------------------------------------------------' ,label2: '41 ม.รทก', offsetY: -160, offsetX: 45 ,offsetYtext: 70 },
+    { x: 7.8, label:'-------------------------------------------------------------------------------------------------------------------------' ,label2: '+44', offsetY: -87, offsetX: 45 ,offsetYtext: -130 },
   ],
   'YR.06': [
-    { x: 3.8, label:'-----------------------------------------------------------------------------------------------' ,label2: '39 ม.รทก', offsetY: -55, offsetX: -50 ,offsetYtext: 50 },
-    { x: 5, label:'-----------------------------------------------------------------------------------------------' ,label2: '38 ม.รทก', offsetY: -23, offsetX: 0 ,offsetYtext: 70 },
+    { x: 3.8, label:'-----------------------------------------------------------------------------------------' ,label2: '+40', offsetY: -55, offsetX: -50 ,offsetYtext: -90 },
+    { x: 5, label:'-------------------------------------------------------------------------------------' ,label2: '+39', offsetY: -20, offsetX: 0 ,offsetYtext: -70 },
   ],
 };
 
@@ -138,7 +152,6 @@ const StationCrossSectionChart: React.FC<Props> = ({
   const [shiftValue,    setShiftValue]    = useState(0);
   const [groundLoading, setGroundLoading] = useState(true);
 
-  // ตำแหน่ง staff gauge ของสถานีนี้ — ไม่มีในนี้ = array ว่าง = ไม่แสดง annotation
   const gaugePositions = useMemo<StaffGaugeXPos[]>(
     () => STAFF_GAUGE_POSITIONS[staCode] ?? [],
     [staCode]
@@ -146,6 +159,11 @@ const StationCrossSectionChart: React.FC<Props> = ({
 
   const warnLabelOffsets = useMemo(
     () => getWarnLabelOffsets(staCode),
+    [staCode]
+  );
+
+  const yAxisRange = useMemo<YAxisRange>(
+    () => Y_AXIS_RANGE_OVERRIDE[staCode] ?? {},
     [staCode]
   );
 
@@ -178,10 +196,8 @@ const StationCrossSectionChart: React.FC<Props> = ({
       .catch(() => setGroundLoading(false));
   }, [staCode]);
 
-  // ─── ระดับน้ำ + shift ────────────────────────────────────────
   const shiftedWL = waterLevel != null ? waterLevel + shiftValue : null;
 
-  // ─── สถานะ ─────────────────────────────────────────────────
   const status = waterLevel != null ? getWaterStatus(waterLevel, warnLevels) : null;
 
   // ─── Annotations (yaxis) ────────────────────────────────────
@@ -256,7 +272,6 @@ const StationCrossSectionChart: React.FC<Props> = ({
           },
         },
       },
-      
     );
     }
     return result;
@@ -290,12 +305,12 @@ const StationCrossSectionChart: React.FC<Props> = ({
         x: g.x,
         borderWidth: 0,
         label: {
-          offsetY: g.offsetYtext, // เลื่อนข้อความไม่ให้ทับเส้นแรก
+          offsetY: g.offsetYtext,
           position: 'center' as const,
           borderWidth: 0,
           style: {
-              fontSize: "11px",
-              color: "#333",
+              fontSize: "12px",
+              color: "#FE0000",
               fontWeight: 'bold',
             },
           text: g.label2,
@@ -309,7 +324,7 @@ const StationCrossSectionChart: React.FC<Props> = ({
 
 const pointAnnotations = useMemo(() => {
   return gaugePositions
-    .slice(0, 1) // เหลือแค่ตัวแรก
+    .slice(0, 1)
     .filter((g) => g.x >= 1 && g.x <= groundData.length)
     .map((g) => {
       const idx = Math.round(g.x) - 1;
@@ -362,6 +377,8 @@ const pointAnnotations = useMemo(() => {
       axisTicks:  { show: false },
     },
     yaxis: {
+      min: yAxisRange.min != null ? yAxisRange.min + shiftValue : undefined,
+      max: yAxisRange.max != null ? yAxisRange.max + shiftValue : undefined,
       labels: {
         formatter: (v: any) => (Number(v) - shiftValue).toFixed(1),
         style: { fontSize: '0.78rem' },
@@ -400,7 +417,7 @@ const pointAnnotations = useMemo(() => {
       strokeDashArray: 3,
       xaxis: { lines: { show: false } },
     },
-  }), [yAnnotations, xAnnotations, pointAnnotations, groundData, shiftValue]);
+  }), [yAnnotations, xAnnotations, pointAnnotations, groundData, shiftValue, yAxisRange]);
 
   const chartSeries = useMemo(() => [
     {

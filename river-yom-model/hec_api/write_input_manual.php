@@ -30,7 +30,7 @@ if (isset($data3['data']) && is_array($data3['data'])) {
     }
 }
 
-$fileName = "C:/xampp/htdocs/swoc-model/HMS_Thachin/input-hms/input-hms.txt";
+$fileName = "C:/xampp/htdocs/river-yom-model/HMS_Thachin/input-hms/input-hms.txt";
 
 $startDate = new DateTime();
 $startDate->modify("-7 days");
@@ -115,7 +115,7 @@ fclose($file);
 echo "✅ สร้างไฟล์ $fileName (ท่าจีน) สำเร็จ!!";
 
 // --- START: New code to run the BAT file ---
-$batFile = 'C:\\xampp\\htdocs\\swoc-model\\HMS_Thachin\\input-hms\\input-hms.bat';
+$batFile = 'C:\\xampp\\htdocs\\river-yom-model\\HMS_Thachin\\input-hms\\input-hms.bat';
 
 // Execute the .bat file and wait for it to finish.
 // The `exec` command without `start /B` is blocking.

@@ -65,7 +65,7 @@ while ($current_loop_date <= $display_and_data_end_date_ce) {
 }
 
 // --- โหลดข้อมูลจาก API ใหม่ swocthachin.rid.go.th ---
-$rid_api_url = "https://swocthachin.rid.go.th/swoc-api/api/rain_data_last_7_days";
+$rid_api_url = "https://wms-yom-right.rid.go.th/river-yom-api/api/rain_data_last_7_days";
 $rid_data_raw = fetchData($rid_api_url); 
 $rid_data_raw = isset($rid_data_raw['data']) && is_array($rid_data_raw['data']) ? $rid_data_raw['data'] : [];
 

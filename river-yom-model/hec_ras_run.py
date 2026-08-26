@@ -5,7 +5,7 @@ import re
 from datetime import datetime, timedelta
 import subprocess
 #  กำหนดพาธไฟล์ .p01 ของแผนปัจจุบัน
-p01_file = r"C:\xampp\htdocs\swoc-model\RAS_Thachin\Thachin.p07"
+p01_file = r"C:\xampp\htdocs\river-yom-model\RAS_YOM\YOM.p07"
 
 today = datetime.today()
 start_date = (today - timedelta(days=7)).strftime("%d%b%Y,07.00").upper()  # 7 days before
@@ -37,7 +37,7 @@ print(" Successfully updated .p01 file.")
 
 
 #  ตั้งค่าพาธของโปรเจกต์ HEC-RAS
-RAS_PROJECT = r"C:\xampp\htdocs\swoc-model\RAS_Thachin\Thachin.prj"
+RAS_PROJECT = r"C:\xampp\htdocs\river-yom-model\RAS_YOM\YOM.prj"
 RAS_PROJECT = os.path.abspath(RAS_PROJECT)
 print(f" Using project file: {RAS_PROJECT}")
 

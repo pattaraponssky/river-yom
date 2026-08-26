@@ -94,20 +94,15 @@ export default function StationDetailClient({ staCode }: { staCode: string }) {
         setError(null);
         const code = encodeURIComponent(staCode);
         const [stationRes, equipRes] = await Promise.all([
-
           fetch(`${API_URL}/api/tele_info/${code}`, { credentials: 'include' }),
-          fetch(`${API_URL}/api/stations/${code}`, { credentials: 'include' }),
+          fetch(`${API_URL}/api/equipments?sta_code=${code}`, { credentials: 'include' }),
         ]);
         if (!stationRes.ok) throw new Error('ไม่พบข้อมูลสถานีนี้ใน tele_info');
         if (!equipRes.ok) throw new Error('ดึงรายการอุปกรณ์ล้มเหลว');
         const stationJson = await stationRes.json();
         const equipJson = await equipRes.json();
 
-        // debug: เปิด console ดูรูปร่าง response จริงถ้ายังเจอปัญหา
-        // console.log('equipJson:', equipJson);
-
         setStation(stationJson.data);
-        // กัน state พังถ้า backend ตอบมาไม่ใช่ array (เช่น error object, null, undefined)
         setEquipmentList(Array.isArray(equipJson.data) ? equipJson.data : []);
       } catch (err: any) {
         setError(err.message);
@@ -223,7 +218,7 @@ export default function StationDetailClient({ staCode }: { staCode: string }) {
           filtered.map(equip => (
             <Grid key={equip.id} size={{ xs: 12, sm: 6, md: 4 }}>
               <Card sx={{ borderRadius: 3, overflow: 'hidden', boxShadow: 3, height: '100%' }}>
-                <CardActionArea onClick={() => router.push(`/equipment/${equip.id}/maintenance`)}>
+                <CardActionArea onClick={() => router.push(`/equipment/maintenance?id=${equip.id}`)}>
                   {equip.photo ? (
                     <CardMedia component="img" height="150" image={equip.photo} alt={equip.name} sx={{ objectFit: 'cover' }} />
                   ) : (
@@ -254,12 +249,12 @@ export default function StationDetailClient({ staCode }: { staCode: string }) {
 
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', px: 1, pb: 1, gap: 0.5 }}>
                   <Tooltip title="ประวัติการบำรุงรักษา">
-                    <IconButton size="small" color="info" onClick={() => router.push(`/equipment/${equip.id}/maintenance`)}>
+                    <IconButton size="small" color="info" onClick={() => router.push(`/equipment/maintenance?id=${equip.id}`)}>
                       <HistoryIcon fontSize="small" />
                     </IconButton>
                   </Tooltip>
                   <Tooltip title="แก้ไขอุปกรณ์">
-                    <IconButton size="small" color="primary" onClick={() => router.push(`/stations/${encodeURIComponent(staCode)}/equipment/${equip.id}/edit`)}>
+                    <IconButton size="small" color="primary" onClick={() => router.push(`/stations/${encodeURIComponent(staCode)}/equipment/edit?id=${equip.id}`)}>
                       <EditIcon fontSize="small" />
                     </IconButton>
                   </Tooltip>

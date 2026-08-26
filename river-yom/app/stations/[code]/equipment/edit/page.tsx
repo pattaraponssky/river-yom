@@ -1,8 +1,8 @@
-// app/stations/[code]/equipment/new/page.tsx
+// app/stations/[code]/equipment/edit/page.tsx
+import { Suspense } from 'react';
 import { API_URL } from '@/lib/utility';
-import EquipmentFormClient from '@/components/Equipment/EquipmentFormClient';
+import EquipmentEditQueryWrapper from '@/components/Equipment/EquipmentEditQueryWrapper';
 
-// จำเป็นเพราะ output: 'export' — ต้อง pre-render ทุก sta_code ที่มีจริง
 export async function generateStaticParams() {
   try {
     const res = await fetch(`${API_URL}/api/stations`, { cache: 'no-store' });
@@ -12,7 +12,7 @@ export async function generateStaticParams() {
     if (!items.length) return [{ code: 'YR.01' }];
     return items.map((item: any) => ({ code: String(item.sta_code) }));
   } catch (e) {
-    console.error('generateStaticParams (equipment/new) failed:', e);
+    console.error('generateStaticParams (equipment/edit) failed:', e);
     return [{ code: 'YR.01' }];
   }
 }
@@ -21,7 +21,11 @@ interface PageProps {
   params: Promise<{ code: string }>;
 }
 
-export default async function NewEquipmentPage({ params }: PageProps) {
+export default async function EditEquipmentPage({ params }: PageProps) {
   const { code } = await params;
-  return <EquipmentFormClient mode="create" staCode={decodeURIComponent(code)} />;
+  return (
+    <Suspense fallback={null}>
+      <EquipmentEditQueryWrapper staCode={decodeURIComponent(code)} />
+    </Suspense>
+  );
 }

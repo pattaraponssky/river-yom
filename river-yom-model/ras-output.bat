@@ -1,5 +1,5 @@
 @echo off
-py C:\xampp\htdocs\swoc-model\ras-output.py
+py C:\xampp\htdocs\river-yom-model\ras-output.py
 IF %ERRORLEVEL% EQU 0 (
     echo Success Run
 ) ELSE (

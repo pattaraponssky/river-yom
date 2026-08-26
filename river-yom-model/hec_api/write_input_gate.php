@@ -24,7 +24,7 @@ function fetchApiData($url) {
 }
 
 // === API รายสถานี gate ===
-$apiUrl = "https://swocthachin.rid.go.th/swoc-api/api/model_input_data";
+$apiUrl = "https://wms-yom-right.rid.go.th/river-yom-api/api/model_input_data";
 
 // === 1. ดึงข้อมูลจาก API ===
 $data = fetchApiData($apiUrl);
@@ -103,7 +103,7 @@ $gateMode = [
 ];
 
 // === 7. ดึงข้อมูลอ่างกระเสียว (KS) ย้อนหลัง 14 วัน ===
-$resApi = "https://swocthachin.rid.go.th/swoc-api/api/reservoir_data_last_14_days";
+$resApi = "https://wms-yom-right.rid.go.th/river-yom-api/api/reservoir_data_last_14_days";
 $resData = fetchApiData($resApi);
 
 $ksOutflow = [];
@@ -122,7 +122,7 @@ $ksStart = (new DateTime())->modify('-7 days');
 $ksEnd   = (new DateTime())->modify('+7 days');
 $ksTotalDays = $ksEnd->diff($ksStart)->days + 1;
 // === 8. เขียนไฟล์ ===
-$filePath = "C:/xampp/htdocs/swoc-model/RAS_Input/input-gate.txt";
+$filePath = "C:/xampp/htdocs/river-yom-model/RAS_Input/input-gate.txt";
 // $filePath = "./input-gate.txt";
 $f = fopen($filePath, "w");
 

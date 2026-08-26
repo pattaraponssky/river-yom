@@ -146,7 +146,7 @@ foreach ($stations as $stationCode) {
     }
 }
 
-$fileName = "C:\\xampp\\htdocs\\swoc-model\\hms_thachin\\input-hms\\input-hms.txt";
+$fileName = "C:\\xampp\\htdocs\\river-yom-model\\hms_thachin\\input-hms\\input-hms.txt";
 
 $startDate = new DateTime();
 $startDate->modify("-7 days");
@@ -239,7 +239,7 @@ function runCommand($command) {
 $results = [];
 
 // 1. รัน hms-run.bat (การคำนวณ HEC-HMS)
-$batFileHMS = 'C:\\xampp\\htdocs\\swoc-model\\hms-run.bat';
+$batFileHMS = 'C:\\xampp\\htdocs\\river-yom-model\\hms-run.bat';
 echo "กำลังรัน: $batFileHMS\n";
 [$returnHMS, $outputHMS] = runCommand($batFileHMS);
 $results[] = [
@@ -257,7 +257,7 @@ if ($returnHMS !== 0) {
 
 // 2. รัน ras_update_date.py
 echo "กำลังรัน: ras_update_date.py\n";
-[$return1, $output1] = runCommand("python C:\\xampp\\htdocs\\swoc-model\\ras_update_date.py");
+[$return1, $output1] = runCommand("python C:\\xampp\\htdocs\\river-yom-model\\ras_update_date.py");
 $results[] = [
     "step" => "ras_update_date.py",
     "success" => $return1 === 0,
@@ -273,7 +273,7 @@ if ($return1 !== 0) {
 
 // 3. รัน hec_ras_compute.py
 echo "กำลังรัน: hec_ras_compute.py\n";
-[$return2, $output2] = runCommand("python C:\\xampp\\htdocs\\swoc-model\\hec_ras_compute.py");
+[$return2, $output2] = runCommand("python C:\\xampp\\htdocs\\river-yom-model\\hec_ras_compute.py");
 $results[] = [
     "step" => "hec_ras_compute.py",
     "success" => $return2 === 0,
@@ -288,7 +288,7 @@ if ($return2 !== 0) {
 }
 
 // 4. รัน ras-output-flow.bat
-$batFileFlow = 'C:\\xampp\\htdocs\\swoc-model\\ras-output-flow.bat';
+$batFileFlow = 'C:\\xampp\\htdocs\\river-yom-model\\ras-output-flow.bat';
 echo "กำลังรัน: $batFileFlow\n";
 [$return3, $output3] = runCommand($batFileFlow);
 $results[] = [
@@ -305,7 +305,7 @@ if ($return3 !== 0) {
 }
 
 // 5. รัน ras-output-gate.bat
-$batFileGate = 'C:\\xampp\\htdocs\\swoc-model\\ras-output-gate.bat';
+$batFileGate = 'C:\\xampp\\htdocs\\river-yom-model\\ras-output-gate.bat';
 echo "กำลังรัน: $batFileGate\n";
 [$return4, $output4] = runCommand($batFileGate);
 $results[] = [
@@ -323,7 +323,7 @@ if ($return4 !== 0) {
 
 // 6. รัน ras-output.py
 echo "กำลังรัน: ras-output.py\n";
-[$return5, $output5] = runCommand("python C:\\xampp\\htdocs\\swoc-model\\ras-output.py");
+[$return5, $output5] = runCommand("python C:\\xampp\\htdocs\\river-yom-model\\ras-output.py");
 $results[] = [
     "step" => "ras-output.py",
     "success" => $return5 === 0,
@@ -338,7 +338,7 @@ if ($return5 !== 0) {
 }
 
 // 7. รัน gate_json.bat
-$batFileGateJson = 'C:\\xampp\\htdocs\\swoc-model\\gate_json.bat';
+$batFileGateJson = 'C:\\xampp\\htdocs\\river-yom-model\\gate_json.bat';
 echo "กำลังรัน: $batFileGateJson\n";
 [$return6, $output6] = runCommand($batFileGateJson);
 $results[] = [
@@ -355,7 +355,7 @@ if ($return6 !== 0) {
 }
 
 // 8. รัน send_gate_open.bat
-$batFileSendGate = 'C:\\xampp\\htdocs\\swoc-model\\send_gate_open.bat';
+$batFileSendGate = 'C:\\xampp\\htdocs\\river-yom-model\\send_gate_open.bat';
 echo "กำลังรัน: $batFileSendGate\n";
 [$return7, $output7] = runCommand($batFileSendGate);
 $results[] = [

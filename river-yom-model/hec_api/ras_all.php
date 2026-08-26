@@ -20,7 +20,7 @@ function runCommand($command) {
 $results = [];
 
 // 1. รัน hec_ras_run.py
-[$return1, $output1] = runCommand("\"C:\Users\Administrator\AppData\Local\Programs\Python\Python313\python.exe\" C:\\xampp\\htdocs\\swoc-model\\hec_ras_run.py");
+[$return1, $output1] = runCommand("\"C:\Users\Administrator\AppData\Local\Programs\Python\Python313\python.exe\" C:\\xampp\\htdocs\\river-yom-model\\hec_ras_run.py");
 $results[] = [
     "step" => "hec_ras_run.py",
     "success" => $return1 === 0,
@@ -33,7 +33,7 @@ if ($return1 !== 0) {
 }
 
 // 2. รัน ras-output.py
-[$return2, $output2] = runCommand("\"C:\Users\Administrator\AppData\Local\Programs\Python\Python313\python.exe\" C:\\xampp\\htdocs\\swoc-model\\ras-output.py");
+[$return2, $output2] = runCommand("\"C:\Users\Administrator\AppData\Local\Programs\Python\Python313\python.exe\" C:\\xampp\\htdocs\\river-yom-model\\ras-output.py");
 $results[] = [
     "step" => "ras-output.py",
     "success" => $return2 === 0,
