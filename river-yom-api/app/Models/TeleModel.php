@@ -75,26 +75,74 @@ class TeleModel extends Model
 
     public function getTeleDataByCodeAndYearRange($sta_code, $startYear, $endYear)
     {
+        $fromDate = ($startYear - 1) . '-12-31 00:00:00';
+        $toDate   = $endYear . '-12-31 23:59:59';
+
         $sql = "
-            SELECT *
+            SELECT
+                d.sta_code,
+                d.datetime,
+                d.wl,
+                d.discharge,
+                COALESCE(r.rain_mm, 0) AS rain_mm
             FROM (
-                SELECT t.*,
-                    ABS(TIMESTAMPDIFF(SECOND, t.datetime, 
-                        TIMESTAMP(DATE(t.datetime), '07:00:00'))) AS diff_sec,
-                    ROW_NUMBER() OVER (
-                        PARTITION BY DATE(t.datetime)
-                        ORDER BY ABS(TIMESTAMPDIFF(SECOND, t.datetime, 
-                            TIMESTAMP(DATE(t.datetime), '07:00:00')))
-                    ) AS rn
-                FROM tele_data t
-                WHERE t.sta_code = ?
-                AND YEAR(t.datetime) BETWEEN ? AND ?
-            ) ranked
-            WHERE rn = 1
-            ORDER BY datetime ASC
+                -- wl / discharge: snapshot ใกล้ 07:00 ที่สุดของแต่ละวัน (เหมือน logic เดิมทุกอย่าง)
+                SELECT *
+                FROM (
+                    SELECT t.*,
+                        ABS(TIMESTAMPDIFF(SECOND, t.datetime,
+                            TIMESTAMP(DATE(t.datetime), '07:00:00'))) AS diff_sec,
+                        ROW_NUMBER() OVER (
+                            PARTITION BY DATE(t.datetime)
+                            ORDER BY ABS(TIMESTAMPDIFF(SECOND, t.datetime,
+                                TIMESTAMP(DATE(t.datetime), '07:00:00')))
+                        ) AS rn
+                    FROM tele_data t
+                    WHERE t.sta_code = ?
+                    AND YEAR(t.datetime) BETWEEN ? AND ?
+                ) snap
+                WHERE rn = 1
+            ) d
+            LEFT JOIN (
+                -- rain_mm: ผลรวมฝนรายชั่วโมง (diff) ของช่วง 07:00 เมื่อวาน ถึง 07:00 วันนี้
+                SELECT
+                    rain_day,
+                    SUM(hourly_rain) AS rain_mm
+                FROM (
+                    SELECT
+                        IF(TIME(hour_dt) <= '07:00:00', DATE(hour_dt), DATE(hour_dt) + INTERVAL 1 DAY) AS rain_day,
+                        GREATEST(rain_mm - COALESCE(prev_rain_mm, 0), 0) AS hourly_rain
+                    FROM (
+                        SELECT
+                            hour_dt,
+                            rain_mm,
+                            LAG(rain_mm) OVER (
+                                PARTITION BY DATE(hour_dt)
+                                ORDER BY hour_dt
+                            ) AS prev_rain_mm
+                        FROM (
+                            SELECT t.*,
+                                FROM_UNIXTIME(ROUND(UNIX_TIMESTAMP(t.datetime) / 3600) * 3600) AS hour_dt,
+                                ROW_NUMBER() OVER (
+                                    PARTITION BY ROUND(UNIX_TIMESTAMP(t.datetime) / 3600)
+                                    ORDER BY ABS(UNIX_TIMESTAMP(t.datetime) - ROUND(UNIX_TIMESTAMP(t.datetime) / 3600) * 3600)
+                                ) AS rn
+                            FROM tele_data t
+                            WHERE t.sta_code = ?
+                            AND t.datetime BETWEEN ? AND ?
+                        ) hourly_raw
+                        WHERE rn = 1
+                    ) with_prev
+                ) hourly_diff
+                GROUP BY rain_day
+            ) r ON r.rain_day = DATE(d.datetime)
+            ORDER BY d.datetime ASC
         ";
 
-        return $this->db->query($sql, [$sta_code, $startYear, $endYear])->getResultArray();
+        return $this->db->query($sql, [
+            $sta_code, $startYear, $endYear,
+            $sta_code, $fromDate, $toDate,
+        ])->getResultArray();
     }
 
     public function getTeleHourlyDataByCode($sta_code)

@@ -48,32 +48,32 @@ interface StaffGaugeXPos {
   offsetX?: number;
 }
 
-const DEFAULT_GAUGE_COLOR = '#66B2FF';
+const DEFAULT_GAUGE_COLOR = '#000';
 
 const STAFF_GAUGE_POSITIONS: Record<string, StaffGaugeXPos[]> = {
   'YR.01': [
-    { x: 7, label:'----------------------' ,label2: '41 ม.รทก', offsetY:-135 ,offsetX: 0 ,offsetYtext: -40  },
-    { x: 7.5, label:'---------' ,label2: '40 ม.รทก', offsetY:-100 ,offsetX: 0 ,offsetYtext: -10 },
+    { x: 6.7, label:'---------------------------------------------------------------------------------------------------------------------------------' ,label2: '41 ม.รทก', offsetY:-145 ,offsetX: -50 ,offsetYtext: -40  },
+    { x: 7.3, label:'-----------------------------------------------------------------------------------------------' ,label2: '40 ม.รทก', offsetY:-114 ,offsetX: 0 ,offsetYtext: -10 },
   ],
   'YR.02': [
-    { x: 9, label:'------------------' ,label2: '41 ม.รทก', offsetY: -30, offsetX: -50 ,offsetYtext: 80 },
-    { x: 9.5, label:'------------------' ,label2: '42 ม.รทก', offsetY: -80, offsetX: 0 ,offsetYtext: 60 },
+    { x: 8.8, label:'-----------------------------------------------------------------------------------------------' ,label2: '41 ม.รทก', offsetY: -30, offsetX: -50 ,offsetYtext: 80 },
+    { x: 9.32, label:'-----------------------------------------------------------------------------------------------' ,label2: '42 ม.รทก', offsetY: -75, offsetX: 0 ,offsetYtext: 60 },
   ],
   'YR.03': [
-    { x: 12, label:'------------------' ,label2: '43 ม.รทก', offsetY: -10, offsetX: -50 ,offsetYtext: 90 },
-    { x: 12.5, label:'------------------' ,label2: '44 ม.รทก', offsetY: -60, offsetX: 0 ,offsetYtext: 70 },
-    { x: 11, label:'------------------' ,label2: '42 ม.รทก', offsetY: 35, offsetX: 0 ,offsetYtext: 110 },
+    { x: 11.9, label:'-----------------------------------------------------------------------------------------------' ,label2: '43 ม.รทก', offsetY: -20, offsetX: -50 ,offsetYtext: 90 },
+    { x: 12.4, label:'-----------------------------------------------------------------------------------------------' ,label2: '44 ม.รทก', offsetY: -72, offsetX: 0 ,offsetYtext: 70 },
+    { x: 10.8, label:'-----------------------------------------------------------------------------------------------' ,label2: '42 ม.รทก', offsetY: 35, offsetX: 0 ,offsetYtext: 110 },
   ],
   'YR.04': [
-    { x: 12, label:'------------------' ,label2: '40 ม.รทก', offsetY: -5, offsetX: 55 ,offsetYtext: 90 },
-    { x: 12.65, label:'------------------' ,label2: '42 ม.รทก', offsetY: -90, offsetX: 0 ,offsetYtext: 60 },
+    { x: 11.9, label:'-----------------------------------------------------------------------------------------------' ,label2: '40 ม.รทก', offsetY: -20, offsetX: 55 ,offsetYtext: 90 },
+    { x: 12.6, label:'-----------------------------------------------------------------------------------------------' ,label2: '42 ม.รทก', offsetY: -107, offsetX: 0 ,offsetYtext: 60 },
   ],
   'YR.05': [
-    { x: 8.2, label:'----------------------' ,label2: '41 ม.รทก', offsetY: -140, offsetX: 45 ,offsetYtext: 70 },
+    { x: 7.8, label:'---------------------------------------------------------------------------------------------------------------------------------' ,label2: '41 ม.รทก', offsetY: -160, offsetX: 45 ,offsetYtext: 70 },
   ],
   'YR.06': [
-    { x: 3.8, label:'------------------' ,label2: '38 ม.รทก', offsetY: -55, offsetX: -50 ,offsetYtext: 50 },
-    { x: 5, label:'------------------' ,label2: '39 ม.รทก', offsetY: -23, offsetX: 0 ,offsetYtext: 70 },
+    { x: 3.8, label:'-----------------------------------------------------------------------------------------------' ,label2: '39 ม.รทก', offsetY: -55, offsetX: -50 ,offsetYtext: 50 },
+    { x: 5, label:'-----------------------------------------------------------------------------------------------' ,label2: '38 ม.รทก', offsetY: -23, offsetX: 0 ,offsetYtext: 70 },
   ],
 };
 
@@ -85,6 +85,12 @@ const DEFAULT_WARN_LABEL_OFFSETS: WarnLabelOffsetSet = {
 };
 
 const WARN_LABEL_OFFSETS_OVERRIDE: Record<string, Partial<WarnLabelOffsetSet>> = {
+  'YR.01': {
+      normal: { offsetX: 330, offsetY: 20 },
+      watch:  { offsetX: 170, offsetY: 14 },
+      alert:  { offsetX: 220, offsetY: 5 },
+      crisis: { offsetX: 270, offsetY: 0 },
+  },
   'YR.05': {
       normal: { offsetX: 330, offsetY: 20 },
       watch:  { offsetX: 170, offsetY: 14 },
@@ -272,8 +278,8 @@ const StationCrossSectionChart: React.FC<Props> = ({
           borderColor: color,
           position: "center",
           style: {
-            fontSize: "4px",
-            color: "#66B2FF",
+            fontSize: "1px",
+            color: "#000",
             background: color,
           },
           text: g.label,
