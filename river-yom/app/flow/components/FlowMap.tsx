@@ -568,7 +568,7 @@ const prepareChartDataForFlow = (rawData: any[], targetStaCode: string) => {
                 📈 ระดับน้ำ
               </button>
 
-              <a href="/flow?tab=0&station=${sta_code}" 
+              <a href="/river-yom/flow?tab=0&station=${sta_code}" 
                 style="padding: 4px 10px;  font-family: 'Prompt', sans-serif; background-color: #1976d2; color: white; border-radius: 6px; text-decoration: none; font-size: 0.9rem; display: inline-block; margin-top: 8px; cursor: pointer; transition: background-color 0.2s;">
                  ข้อมูลเพิ่มเติม
               </a>
@@ -632,7 +632,7 @@ const prepareChartDataForFlow = (rawData: any[], targetStaCode: string) => {
                 📈 ระดับน้ำ
               </button>
 
-              <a href="/flow?tab=0&station=${item.sta_code}" 
+              <a href="/river-yom/flow?tab=0&station=${item.sta_code}" 
                 style="padding: 4px 10px;  font-family: 'Prompt', sans-serif; background-color: #1976d2; color: white; border-radius: 6px; text-decoration: none; font-size: 0.9rem; display: inline-block; margin-top: 8px; cursor: pointer; transition: background-color 0.2s;">
                  ข้อมูลเพิ่มเติม
               </a>

@@ -69,7 +69,9 @@ export default function Dashboard() {
   return today.points
     .filter(p => {
       const river = (p.river ?? '').toString().trim();
-      return river === 'Yom River';
+      // return river === 'Yom River';
+      return river === 'YOM';
+      
     })
     .map(p => ({
       CrossSection: p.crossSection,

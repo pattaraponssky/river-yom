@@ -570,7 +570,7 @@ const RainMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,heig
                 ปริมาณน้ำฝนสะสม
               </button>
 
-              <a href="/rain?tab=0&station=${sta_code}" 
+              <a href="/river-yom/rain?tab=0&station=${sta_code}" 
                 style="font-family: Prompt; padding: 4px 10px;  background-color: #1976d2; color: white; border-radius: 6px; text-decoration: none; font-size: 0.9rem; display: inline-block; margin-top: 8px; cursor: pointer; transition: background-color 0.2s;">
                  ข้อมูลเพิ่มเติม
               </a>
@@ -637,7 +637,7 @@ const RainMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,heig
                 ปริมาณน้ำฝนสะสม
               </button>
 
-              <a href="/rain?tab=0&station=${item.sta_code}" 
+              <a href="/river-yom/rain?tab=0&station=${item.sta_code}" 
                 style="font-family: Prompt; font-weight: bold; padding: 4px 10px;  background-color: #1976d2; color: white; border-radius: 6px; text-decoration: none; font-size: 0.9rem; display: inline-block; margin-top: 8px; cursor: pointer; transition: background-color 0.2s;">
                  ข้อมูลเพิ่มเติม
               </a>

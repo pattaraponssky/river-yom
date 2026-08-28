@@ -1,20 +1,11 @@
 // app/stations/[code]/equipment/edit/page.tsx
 import { Suspense } from 'react';
-import { API_URL } from '@/lib/utility';
+
 import EquipmentEditQueryWrapper from '@/components/Equipment/EquipmentEditQueryWrapper';
+import { KNOWN_STATION_CODES } from '@/lib/StationCodes';
 
 export async function generateStaticParams() {
-  try {
-    const res = await fetch(`${API_URL}/api/stations`, { cache: 'no-store' });
-    if (!res.ok) return [{ code: 'YR.01' }];
-    const json = await res.json();
-    const items = json.data || [];
-    if (!items.length) return [{ code: 'YR.01' }];
-    return items.map((item: any) => ({ code: String(item.sta_code) }));
-  } catch (e) {
-    console.error('generateStaticParams (equipment/edit) failed:', e);
-    return [{ code: 'YR.01' }];
-  }
+  return KNOWN_STATION_CODES.map(code => ({ code }));
 }
 
 interface PageProps {

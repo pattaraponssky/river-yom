@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Path_URL } from '@/lib/utility';
 import { formatThaiDay } from '@/lib/utility';
 import { StationInfo, TeleDataItem } from '../hydro';
-
+import { TELE_WARN_LEVELS, getWarnLevel } from '@/lib/warnLevels';
 
 // ฟังก์ชันช่วยสร้าง marker สำหรับสถานีน้ำท่า (tele)
 const addTeleMarkers = (
@@ -53,21 +53,26 @@ const addTeleMarkers = (
         return `${Path_URL}/images/icons/tele_station_icon_green.png`;
       }
 
-      if (wl >= 10) {
+      const level = getWarnLevel(TELE_WARN_LEVELS, sta_code);
+
+      if (!level) {
+        return `${Path_URL}/images/icons/tele_station_icon_green.png`;
+      }
+
+      if (wl >= level.crisis) {
         return `${Path_URL}/images/icons/tele_station_icon_red.png`;
       }
 
-      if (wl >= 8) {
+      if (wl >= level.alert) {
         return `${Path_URL}/images/icons/tele_station_icon_orange.png`;
       }
 
-      if (wl >= 6) {
+      if (wl >= level.watch) {
         return `${Path_URL}/images/icons/tele_station_icon_yellow.png`;
       }
 
       return `${Path_URL}/images/icons/tele_station_icon_green.png`;
     };
-
 
     const wlValue =
       isToday && latest?.wl != null
@@ -105,7 +110,7 @@ const addTeleMarkers = (
           🌧️ ปริมาณฝน
         </button>
 
-        <a href="/tele?tab=0&station=${sta_code}" 
+        <a href="/river-yom/tele?tab=0&station=${sta_code}" 
             style="padding: 4px 10px; background-color: #1976d2; color: white; border-radius: 6px; text-decoration: none; font-size: 0.9rem; display: inline-block; margin-top: 8px; cursor: pointer; transition: background-color 0.2s;">
                 ข้อมูลเพิ่มเติม
         </a>

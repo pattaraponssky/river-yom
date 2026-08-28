@@ -1,37 +1,16 @@
-// app/stations/[code]/page.tsx
-import { API_URL } from '@/lib/utility';
+
+import { KNOWN_STATION_CODES } from '@/lib/StationCodes';
 import StationDetailClient from './StationDetailClient';
-
+ 
 export async function generateStaticParams() {
-  try {
-    const res = await fetch(`${API_URL}/api/stations`, { cache: 'no-store' });
-
-    if (!res.ok) {
-      console.warn('generateStaticParams (stations): API not ok', res.status);
-      return [{ code: 'YR.01' }];
-    }
-
-    const json = await res.json();
-    const items = json.data || [];
-
-    if (!items.length) {
-      return [{ code: 'YR.01' }];
-    }
-
-    return items.map((item: any) => ({
-      code: String(item.sta_code),
-    }));
-  } catch (e) {
-    console.error('generateStaticParams (stations) failed:', e);
-    return [{ code: 'YR.01' }];
-  }
+  return KNOWN_STATION_CODES.map(code => ({ code }));
 }
-
 interface PageProps {
   params: Promise<{ code: string }>;
 }
-
+ 
 export default async function StationDetailPage({ params }: PageProps) {
   const { code } = await params;
   return <StationDetailClient staCode={decodeURIComponent(code)} />;
 }
+ 

@@ -28,15 +28,14 @@ export interface RasData {
 
 // ─── Station mapping ──────────────────────────────────────────
 export const STATION_MAPPING: Record<string, number> = {
- "YR.01": 13590,
-  "YR.02": 33751,
-  "YR.03": 51151,
-  "YR.04": 39509,
-  "YR.05": 2611,
-  "YR.06": 889,
-  "Y.4": 94522,
-  "Y.15": 41446,
-  "Y.50": 54142,
+  "YR.01": 72518,
+  "YR.02": 4423,
+  "YR.03": 22019,
+  "YR.04": 6019,
+  "YR.05": 54578,
+  "YR.06": 6812,
+  "Y.15": 93590,
+  "Y.50": 54108,
 };
 
 const CROSS_TO_STATION = new Map<number, string>(

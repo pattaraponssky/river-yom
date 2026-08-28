@@ -1,20 +1,10 @@
 // app/stations/[code]/equipment/new/page.tsx
-import { API_URL } from '@/lib/utility';
-import EquipmentFormClient from '@/components/Equipment/EquipmentFormClient';
 
-// จำเป็นเพราะ output: 'export' — ต้อง pre-render ทุก sta_code ที่มีจริง
+import EquipmentFormClient from '@/components/Equipment/EquipmentFormClient';
+import { KNOWN_STATION_CODES } from '@/lib/StationCodes';
+
 export async function generateStaticParams() {
-  try {
-    const res = await fetch(`${API_URL}/api/stations`, { cache: 'no-store' });
-    if (!res.ok) return [{ code: 'YR.01' }];
-    const json = await res.json();
-    const items = json.data || [];
-    if (!items.length) return [{ code: 'YR.01' }];
-    return items.map((item: any) => ({ code: String(item.sta_code) }));
-  } catch (e) {
-    console.error('generateStaticParams (equipment/new) failed:', e);
-    return [{ code: 'YR.01' }];
-  }
+  return KNOWN_STATION_CODES.map(code => ({ code }));
 }
 
 interface PageProps {

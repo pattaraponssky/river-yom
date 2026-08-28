@@ -26,15 +26,15 @@ interface StationMeta {
 }
 
 const warningData: StationMeta[] = [
-  {
-    id: 1,
-    staCode: 'Y.4',
-    location: '',
-    subdistrict: 'ธานี',
-    district: 'เมืองสุโขทัย',
-    province: 'สุโขทัย',
-    bank: 51.59,
-  },
+  // {
+  //   id: 1,
+  //   staCode: 'Y.4',
+  //   location: '',
+  //   subdistrict: 'ธานี',
+  //   district: 'เมืองสุโขทัย',
+  //   province: 'สุโขทัย',
+  //   bank: 51.59,
+  // },
   {
     id: 2,
     staCode: 'Y.15',

@@ -303,7 +303,7 @@ const LongProfileChart: React.FC<Props> = ({ waterData, chartHeight = 500, isDar
     xaxis: {
       type: "numeric" as "numeric",
       categories: profileData.map((d) => d.KM),
-      title: { text: "ระยะทาง (กม.)", style: { color: textColor } },
+      title: { text: "ระยะทาง (กม.) จาก Y.4", style: { color: textColor } },
       labels: { style: { colors: textColor } },
       axisBorder: { show: false },
       axisTicks: { color: gridColor },
@@ -346,7 +346,7 @@ const LongProfileChart: React.FC<Props> = ({ waterData, chartHeight = 500, isDar
           } else {
             province = "นอกเขตที่กำหนด";
           }
-          return `ระยะทาง: ${val} กม. (${province})`;
+          return `ระยะทางจาก Y.4 : ${val} กม. (${province})`;
         },
       },
     },
@@ -592,7 +592,7 @@ const LongProfileChart: React.FC<Props> = ({ waterData, chartHeight = 500, isDar
         },
         {
           x: 90, // ตำแหน่งในแกน X
-          y: 50, // ค่าของ Y
+          y: 45, // ค่าของ Y
           marker: {
             size: 0, // ทำให้จุดใหญ่ขึ้นเพื่อมองเห็นง่าย
           },
@@ -608,7 +608,7 @@ const LongProfileChart: React.FC<Props> = ({ waterData, chartHeight = 500, isDar
         },
         {
           x: 130, // ตำแหน่งในแกน X
-          y: 50, // ค่าของ Y
+          y: 45, // ค่าของ Y
           marker: {
             size: 0, // ทำให้จุดใหญ่ขึ้นเพื่อมองเห็นง่าย
           },
@@ -687,7 +687,7 @@ const LongProfileChart: React.FC<Props> = ({ waterData, chartHeight = 500, isDar
   return (
     <Box>
       <Typography gutterBottom sx={{ ...titleStyle, fontWeight: "bold" }}>
-        รูปตัดตามยาวแม่น้ำยมฝั่งขวา (Y.4 - Y.17)
+        รูปตัดตามยาวแม่น้ำยมฝั่งขวา (Y.15 - Y.17)
       </Typography>
 
       <Typography
