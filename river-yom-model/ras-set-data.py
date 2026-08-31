@@ -49,7 +49,7 @@ def replace_observed_stage(file_path, station_wl_dict):
     แทนที่ Observed Stage Hydrograph ด้วยข้อมูลใหม่จาก API
     ใช้ state machine เพื่อข้ามข้อมูลเก่าได้แม่นยำขึ้น
     """
-    station_order = ["T.10", "T.13", "T.15", "T.1", "T.14"]  # ตามลำดับในไฟล์ของคุณ
+    station_order = ["Y.15"]  # ตามลำดับในไฟล์ของคุณ
 
     with open(file_path, 'r', encoding='utf-8') as f:
         lines = f.readlines()
@@ -178,7 +178,7 @@ if __name__ == "__main__":
     
     if latest_data:
         # เปลี่ยน path นี้เป็นไฟล์จริงของคุณ
-        # input_file = "/Users/dan/SWOC ท่าจีน/web-thachin/river-yom-model/Thachin.u06"  # แก้ path ตามจริง
+        # input_file = "/Users/dan/SWOC แม่ยมฝั่งขวา/web-thachin/river-yom-model/Thachin.u06"  # แก้ path ตามจริง
         input_file = r"C:\xampp\htdocs\river-yom-model\RAS_YOM\YOM.u06"
         replace_observed_stage(input_file, latest_data)
     else:

@@ -146,7 +146,7 @@ foreach ($stations as $stationCode) {
     }
 }
 
-$fileName = "C:\\xampp\\htdocs\\river-yom-model\\hms_thachin\\input-hms\\input-hms.txt";
+$fileName = "C:\\xampp\\htdocs\\river-yom-model\\HMS-R-YR\\input-hms\\input-hms.txt";
 
 $startDate = new DateTime();
 $startDate->modify("-7 days");

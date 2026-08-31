@@ -30,7 +30,7 @@ $data2 = fetchApiData($apiUrl2);
 // ดึงข้อมูลจาก API ใหม่ (ซึ่งจะมีทั้ง 'rain' และ 'flow')
 $data3 = fetchApiData($apiUrl3);
 
-$stations = ['C.54', 'T.18', 'T.17', 'T.16','T.13'];
+$stations = ['Y.15'];
 $flowData = [];
 
 // 2. **ปรับปรุง Logic การประมวลผลข้อมูล Flow จาก model_input_data**
@@ -52,7 +52,7 @@ if (isset($data3['data']) && is_array($data3['data'])) {
     }
 }
 
-$fileName = "C:/xampp/htdocs/river-yom-model/HMS_Thachin/input-hms/input-hms.txt";
+$fileName = "C:/xampp/htdocs/river-yom-model/HMS-R-YR/Input-HMS/input-hms.txt";
 
 $startDate = new DateTime();
 $startDate->modify("-7 days");
@@ -61,7 +61,7 @@ $endDate->modify("+13 days");
 
 $currentDateFormatted = $startDate->format("dMY");
 
-$variables = ['SB-01', 'SB-02', 'SB-03', 'SB-04', 'SB-05', 'SB-06', 'SB-07', 'SB-08', 'SB-09', 'SB-10', 'SB-11'];
+$variables = ['SB-01', 'SB-02', 'SB-03', 'SB-04', 'SB-05'];
 
 $file = fopen($fileName, "w");
 
@@ -109,11 +109,7 @@ foreach ($variables as $var) {
 
 // กำหนดชื่อที่ต้องการสำหรับแต่ละสถานี
 $stationMappings = [
-    'C.54' => 'Gate1', 
-    'T.18' => 'Gate2', 
-    'T.17' => 'Gate3', 
-    'T.16' => 'Gate4', 
-    'T.13' => 'T.13'
+    'Y.15' => 'Y.15'
 ];
 
 $today = new DateTime();
@@ -121,8 +117,7 @@ $today = new DateTime();
 foreach ($stations as $station) {
     $mappedName = $stationMappings[$station] ?? $station;
 
-    // *** แก้ไขตรงนี้: รวม 'T.13' เข้าไปในกลุ่มที่ใช้ Logic ดึงค่าล่าสุดที่ไม่เป็น 0 ***
-    $isGateOrT13 = in_array($station, ['C.54', 'T.18', 'T.17', 'T.16', 'T.13']);
+    $isGateOrT13 = in_array($station, ['Y.15']);
     
     // เตรียมหาค่าล่าสุดที่ไม่เป็นศูนย์ (ถ้าจำเป็น)
     $lastNonZeroFlow = 0;
@@ -180,6 +175,6 @@ foreach ($stations as $station) {
 fwrite($file, "\tEND FILE\n");
 fclose($file);
 
-echo "✅ สร้างไฟล์ $fileName (ท่าจีน) สำเร็จ!!";
+echo "✅ สร้างไฟล์ $fileName (แม่ยมฝั่งขวา) สำเร็จ!!";
 ?>
 

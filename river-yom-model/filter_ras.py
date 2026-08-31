@@ -17,7 +17,7 @@ TARGET_SECTIONS = {
 }
 
 # โฟลเดอร์และไฟล์ต้นฉบับ
-# SOURCE_DIR = Path("/Users/dan/SWOC ท่าจีน/web-thachin/frontend/public/ras-output")
+# SOURCE_DIR = Path("/Users/dan/SWOC แม่ยมฝั่งขวา/web-thachin/frontend/public/ras-output")
 SOURCE_DIR = Path("C:/xampp/htdocs/ras-output")
 SOURCE_FILE = SOURCE_DIR / "output_ras.csv"
 

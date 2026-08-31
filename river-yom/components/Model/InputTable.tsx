@@ -18,13 +18,21 @@ const MODEL_INPUT_API = `${API_URL}/api/model_input_data`;
 const UPDATE_FROM_MAIN_API = `${API_URL}/api/model_input_data/update-from-main`; // Endpoint ใหม่
 
 const defaultRows = [
-  { station_id: '390220', name: "ศูนย์อุทกวิทยาและบริหารน้ำภาคเหนือตอนล่าง", type: "rain_rid", values: Array(7).fill(0) },
-  { station_id: 'KRMT', name: "ทต.บ้านโตนด", type: "rain_rid", values: Array(7).fill(0) },
-  { station_id: 'LKBU', name: "อบต.ลานกระบือ", type: "rain_rid", values: Array(7).fill(0) },
-  { station_id: 'YOM007', name: "กงไกรลาศ", type: "rain_rid", values: Array(7).fill(0) },
-  { station_id: 'YOM008', name: "บางระกำ", type: "rain_rid", values: Array(7).fill(0) },
-  { station_id: '380012', name: "สกษ.พิจิตร", type: "rain_rid", values: Array(7).fill(0) },
+  // { station_id: '390220', name: "ศูนย์อุทกวิทยาและบริหารน้ำภาคเหนือตอนล่าง", type: "rain_rid", values: Array(7).fill(0) },
+  // { station_id: 'KRMT', name: "ทต.บ้านโตนด", type: "rain_rid", values: Array(7).fill(0) },
+  // { station_id: 'LKBU', name: "อบต.ลานกระบือ", type: "rain_rid", values: Array(7).fill(0) },
+  // { station_id: 'YOM007', name: "กงไกรลาศ", type: "rain_rid", values: Array(7).fill(0) },
+  // { station_id: 'YOM008', name: "บางระกำ", type: "rain_rid", values: Array(7).fill(0) },
+  // { station_id: '380012', name: "สกษ.พิจิตร", type: "rain_rid", values: Array(7).fill(0) },
   { station_id: '120160', name: "P.7A", type: "rain_rid", values: Array(7).fill(0) },
+  { station_id: 'tng', name: "ปตร.ท่านางงาม", type: "rain_rid", values: Array(8).fill(0) },
+  { station_id: 'wst', name: "ปตร.วังสะตือ", type: "rain_rid", values: Array(8).fill(0) },
+  { station_id: 'YR.01', name: "สะพานชุมแสงสงคราม", type: "rain_rid", values: Array(8).fill(0) },
+  { station_id: 'YR.02', name: "สะพานบ้านห้วงกระได", type: "rain_rid", values: Array(8).fill(0) },
+  { station_id: 'YR.03', name: "สะพานวัดทุ่งอ้ายโห้", type: "rain_rid", values: Array(8).fill(0) },
+  { station_id: 'YR.04', name: "สะพานข้ามคลองกรุงกรัก", type: "rain_rid", values: Array(8).fill(0) },
+  { station_id: 'YR.05', name: "สะพานท่านางงาม", type: "rain_rid", values: Array(8).fill(0) },
+  { station_id: 'YR.06', name: "สะพานข้ามคลองห้วยคต", type: "rain_rid", values: Array(8).fill(0) },
 
   { station_id: 'tng', name: "ปตร.ท่านางงาม", type: "flow", values: Array(8).fill(0) },
   { station_id: 'wst', name: "ปตร.วังสะตือ", type: "flow", values: Array(8).fill(0) },
@@ -100,16 +108,10 @@ export default function RainInputTable() {
     'SB-03': { '690171': 0.397491, '040052': 0.602509 },
     'SB-04': { '690171': 0.994784, '040052': 0.005216 },
     'SB-05': { '690171': 0.096386, '040052': 0.893483, '040062': 0.010130 },
-    'SB-06': { '600013': 0.593401, '690171': 0.013694, '040052': 0.392904 },
-    'SB-07': { '600023': 0.220773, '690171': 0.779227 },
-    'SB-08': { '600013': 0.073420, '600023': 0.705110, '690171': 0.147377, '040052': 0.074092 },
-    'SB-09': { '600023': 0.978914, '230052': 0.021086 },
-    'SB-10': { '600013': 0.528361, '600023': 0.260375, '230052': 0.211264 },
-    'SB-11': { '600013': 0.000012, '530012': 0.311614, '230052': 0.688374 },
   };
 
   const cardData = [
-    { title: "1.ดาวน์โหลดกริดฝนพยากรณ์ (กรมอุตุนิยมวิทยา)", color: "#1976d2", icon: <BeachAccess />, url: `${Model_URL}/hec_api/dowload_rain_grid.php` },
+    { title: "1.ดาวน์โหลดกริดฝนพยากรณ์ (กรมอุตุนิยมวิทยา)", color: "#1976d2", icon: <BeachAccess />, url: `${Model_URL}/hec_api/download_rain_grid.php` },
     { title: "2.เตรียมข้อมูลแบบจำลองจากตารางข้อมูลน้ำฝน-น้ำท่า", color: "#1976d2", icon: <WaterDrop />, url: `${Model_URL}/hec_api/write_input_manual.php` },
   ];
 
@@ -274,16 +276,13 @@ export default function RainInputTable() {
     const newRows = [...rows];
     let val = parseFloat(value);
     if (isNaN(val) || val < 0) val = 0;
-    
-    // Find the actual row index in the 'rows' state from the mapped index
-    const actualRowIndex = rows.findIndex(row => row.station_id === newRows[rowIdx].station_id);
 
-    if (actualRowIndex !== -1) {
-      newRows[actualRowIndex].values[dayIdx] = val;
+    const targetRow = newRows[rowIdx]; // rowIdx ที่ส่งเข้ามาคือ actualRowIndex อยู่แล้ว จึงใช้ rowIdx ตรงๆ ได้เลย
+    if (targetRow) {
+      targetRow.values[dayIdx] = val;
       setRows(newRows);
     }
   };
-  
   // Encapsulate loadData logic in a useCallback hook for use in useEffect and handleUpdateFromMain
   const loadData = useCallback(async () => {
     // Check if it's an initial load or a button reload
@@ -403,17 +402,23 @@ export default function RainInputTable() {
           </TableRow>
         </TableHead>
         <TableBody>
-          {tableRows.map((row, rowIdx) => {
+         {tableRows.map((row, rowIdx) => {
             const numberOfCells = endDayOffset - startDayOffset + 1;
             let startIndexInValues = 0;
 
             const isRowInError = !row.hasDataLoaded && !isTableDataLoaded; 
+
+            // เดิม: หาแค่ station_id → ชนกันได้
+            // ใหม่: ต้อง match ทั้ง station_id และ type
+            const actualRowIndex = rows.findIndex(
+              r => r.station_id === row.station_id && r.type === row.type
+            );
+
             return (
-              <TableRow key={row.station_id}>
+              <TableRow key={`${row.station_id}-${row.type}`}>
                 <TableCell sx={getCellStyle(rowIdx, isRowInError)}>{row.station_id} ({row.name})</TableCell>
                 {Array.from({ length: numberOfCells }).map((_, colIdx) => {
                   const valueToShow = row.values[startIndexInValues + colIdx];
-                  const actualRowIndex = rows.findIndex(r => r.station_id === row.station_id);
                   return (
                     <TableCell key={colIdx} sx={getCellStyle(rowIdx, isRowInError)}>
                       <TextField

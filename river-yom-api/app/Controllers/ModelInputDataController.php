@@ -7,6 +7,8 @@ use App\Models\ModelInputDataModel;
 use App\Models\RainModel;
 use App\Models\GateModel;
 use App\Models\FlowModel;
+use App\Models\TeleModel;
+
 
 class ModelInputDataController extends ResourceController
 {
@@ -34,17 +36,23 @@ class ModelInputDataController extends ResourceController
         $rainModel  = new RainModel();
         $flowModel  = new FlowModel();
         $gateModel  = new GateModel();
+        $teleModel  = new TeleModel();
 
         // สถานีที่ต้องดึง
-        $allRainStations = ['390220', '380012', '120160', 'KRMT', 'LKBU', 'YOM007', 'YOM008'];
-        $allFlowStations = ['Y.15', 'Y.16', 'Y.17', 'Y.4', 'Y.50', 'Y.51', 'Y.64'];
+        // $allRainStations = ['390220', '380012', '120160', 'KRMT', 'LKBU', 'YOM007', 'YOM008'];
+        // $allFlowStations = ['Y.15', 'Y.16', 'Y.17', 'Y.4', 'Y.50', 'Y.51', 'Y.64'];
+        $allRainStations = ['120160'];
+        $allFlowStations = ['Y.15'];
         $allGateStations = ['tng', 'wst'];
+        $allTeleStations = ['YR.01', 'YR.02', 'YR.03', 'YR.04', 'YR.05', 'YR.06'];
         
 
         try {
             $rainData = $rainModel->getRainDataModelLast7Days($allRainStations);
             $flowData = $flowModel->getFlowDataModelLast8Days($allFlowStations);
             $gateData = $gateModel->getGateDataModelLast8Days($allGateStations);
+            $teleRainData = $teleModel->getTeleRainDataLast7Days($allTeleStations);
+            $gateRainData = $gateModel->getGateRainDataLast8Days($allGateStations);
 
             log_message('debug', 'rainData count: ' . count($rainData) . ' | sample: ' . json_encode($rainData[0] ?? null));
             $successfulUpdates = 0;
@@ -147,6 +155,62 @@ class ModelInputDataController extends ResourceController
                         'sta_code'  => $sta_code,
                         'date'      => $date,
                         'data_type' => 'flow',
+                        'value'     => $value,
+                    ];
+
+                    if ($inputModel->upsertData($record, false)) {
+                        $successfulUpdates++;
+                    }
+                }
+            }
+
+            // ─────────────────────────────────────────
+            // 1b. Rain Data จาก Tele Station (YR.01-06)
+            // ─────────────────────────────────────────
+            if (!empty($teleRainData)) {
+                foreach ($teleRainData as $item) {
+                    $sta_code = (string) ($item['sta_code'] ?? '');
+                    $date     = $this->toDateOnly($item['date'] ?? null);
+                    $value    = isset($item['rainfall']) && $item['rainfall'] !== '' && $item['rainfall'] !== null
+                                ? (float) $item['rainfall']
+                                : null;
+
+                    if (!$sta_code || !$date) {
+                        continue;
+                    }
+
+                    $record = [
+                        'sta_code'  => $sta_code,
+                        'date'      => $date,
+                        'data_type' => 'rain',
+                        'value'     => $value,
+                    ];
+
+                    if ($inputModel->upsertData($record, false)) {
+                        $successfulUpdates++;
+                    }
+                }
+            }
+
+            // ─────────────────────────────────────────
+            // 1c. Rain Data จาก Gate Station (tng, wst)
+            // ─────────────────────────────────────────
+            if (!empty($gateRainData)) {
+                foreach ($gateRainData as $item) {
+                    $sta_code = (string) ($item['sta_code'] ?? '');
+                    $date     = $this->toDateOnly($item['date'] ?? null);
+                    $value    = isset($item['rainfall']) && $item['rainfall'] !== '' && $item['rainfall'] !== null
+                                ? (float) $item['rainfall']
+                                : null;
+
+                    if (!$sta_code || !$date) {
+                        continue;
+                    }
+
+                    $record = [
+                        'sta_code'  => $sta_code,
+                        'date'      => $date,
+                        'data_type' => 'rain',
                         'value'     => $value,
                     ];
 

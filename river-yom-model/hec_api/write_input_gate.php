@@ -30,7 +30,7 @@ $apiUrl = "https://wms-yom-right.rid.go.th/river-yom-api/api/model_input_data";
 $data = fetchApiData($apiUrl);
 
 // === 2. ตั้งค่ารายชื่อสถานี ===
-$stations = ['PPM', 'MSW', 'KYG', 'KTB', 'MHC', 'BYH', 'PBL', 'BBP', 'SPN', 'PTL'];
+$stations = ['tng', 'wst'];
 
 // === 3. เตรียมข้อมูลรายวัน ===
 $tempData = [];
@@ -77,29 +77,16 @@ $currentDateHeader = $startDate->format('dMY');
 
 // === 6. Mapping ชื่อสถานี ===
 $stationNames = [
-    'PPM' => 'Gate PPM',
-    'MSW' => 'Gate MSW',
-    'KYG' => 'Gate KYG',
-    'KTB' => 'Gate KTB',
-    'MHC' => 'Gate MHC',
-    'BYH' => 'Gate BYH',
-    'PBL' => 'Gate PBL',
-    'BBP' => 'Gate BBP',
-    'SPN' => 'Gate SPN',
-    'PTL' => 'Gate PTL'
+    'wst' => 'Gate WST',
+    'tng' => 'Gate TNG',
 ];
 
 $gateMode = [
-    'PPM' => 'real',   
-    'MSW' => 'real',
-    'KYG' => 'real',
-    'KTB' => 'real',
-    'MHC' => 'real',
-    'BYH' => 'real',
-    'PBL' => 'latest',
-    'BBP' => 'latest',
-    'SPN' => 'latest',
-    'PTL' => 'latest'
+
+    // 'BYH' => 'real',
+    // 'PBL' => 'latest',
+    'tng' => 'latest',
+    'wst' => 'latest',
 ];
 
 // === 7. ดึงข้อมูลอ่างกระเสียว (KS) ย้อนหลัง 14 วัน ===

@@ -371,7 +371,7 @@
 
               // เพิ่มแต่ละ Polygon แยกกัน
               const multiPolygon = new longdo.Polygon(polygonCoordinates, {
-                title: `<span style="font-size:1.1rem; font-weight:bold; vertical-align:middle;"> ขอบเขตพื้นที่ลุ่มน้ำท่าจีน </span>`,
+                title: `<span style="font-size:1.1rem; font-weight:bold; vertical-align:middle;"> ขอบเขตพื้นที่ลุ่มน้ำแม่ยมฝั่งขวา </span>`,
                 detail: `<span style="font-size:0.9rem; vertical-align:middle;"><b>ขนาดพื้นที่:</b> ${AREA_SQKM.toFixed(2)} ตร.กม.<br></span> 
                           <span style="font-size:0.9rem; vertical-align:middle;"><b>แม่น้ำ:</b> ${MBASIN_T}<br></span> `,
                 lineWidth: 3,

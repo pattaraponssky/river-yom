@@ -223,6 +223,32 @@ class TeleModel extends Model
                     ->findAll();
     }
 
+    public function getTeleRainDataLast7Days(array $staCodes): array
+    {
+        if (empty($staCodes)) {
+            return [];
+        }
+
+        $startDate = date('Y-m-d 00:00:00', strtotime('-7 days'));
+        $placeholders = implode(',', array_fill(0, count($staCodes), '?'));
+
+        $sql = "
+            SELECT
+                sta_code,
+                DATE(datetime) AS date,
+                MAX(rain_mm) AS rainfall
+            FROM tele_data
+            WHERE sta_code IN ({$placeholders})
+            AND datetime >= ?
+            GROUP BY sta_code, DATE(datetime)
+            ORDER BY date ASC
+        ";
+
+        $params = array_merge($staCodes, [$startDate]);
+
+        return $this->db->query($sql, $params)->getResultArray();
+    }
+
 
     public function updateTeleData(string $sta_code, string $date, array $updateData)
     {

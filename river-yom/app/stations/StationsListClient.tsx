@@ -15,13 +15,7 @@ import { useRouter } from 'next/navigation';
 import { API_URL, Path_URL } from '@/lib/utility';
 import { useAuth } from '@/contexts/AuthContext';
 
-// ─────────────────────────────────────────────────────────────
-// สถานะ "ออนไลน์/ออฟไลน์" ของสถานี
-// เดี๋ยว backend จะส่ง field นี้มาจาก log ล่าสุดในตาราง operation_logs
-// (เช่น query: SELECT sta_code, status FROM operation_logs
-//   WHERE (sta_code, run_datetime) IN (SELECT sta_code, MAX(run_datetime) ... GROUP BY sta_code))
-// ตอนนี้ backend ยังไม่พร้อม เลย mock ให้เป็น 'online' ไปก่อนทั้งหมด (ดู getStationStatus ด้านล่าง)
-// ─────────────────────────────────────────────────────────────
+
 type StationLiveStatus = 'online' | 'offline' | 'warning';
 
 interface TeleStation {

@@ -6,18 +6,18 @@ echo.
 
 :: STEP 1 - เรียก PHP สำหรับโหลดข้อมูลฝน
 echo Step 1: Download rain grid
-curl http://localhost/river-yom-model/hec_api/dowload_rain_grid.php
+curl https://wms-yom-right.rid.go.th/river-yom-model/hec_api/download_rain_grid.php
 echo.
 
 :: STEP 2 - เขียน input TXT
 echo Step 2: Write input txt
-curl http://localhost/river-yom-model/hec_api/write_input_txt.php
+curl https://wms-yom-right.rid.go.th/river-yom-model/hec_api/write_input_txt.php
 echo.
 
 :: STEP 3 - Run HEC-DSSVue สำหรับ input-hms
 echo Step 3: Run DSSVue for input-hms.py
 set DSSVUE_PATH="C:\Program Files\HEC\HEC-DSSVue\HEC-DSSVue.exe"
-set SCRIPT_PATH="C:\xampp\htdocs\river-yom-model\HMS_Thachin\input-hms\input-hms.py"
+set SCRIPT_PATH="C:\xampp\htdocs\river-yom-model\HMS-R-YR\input-hms\input-hms.py"
 %DSSVUE_PATH% -s %SCRIPT_PATH%
 if %ERRORLEVEL%==0 (
     echo [OK] DSSVue input-hms.py finished
@@ -28,24 +28,24 @@ if %ERRORLEVEL%==0 (
 )
 echo.
 
-:: STEP 4 - เขียน input TXT
-echo Step 4: Write input txt
-curl http://localhost/river-yom-model/hec_api/write_input_gate.php
-echo.
+@REM :: STEP 4 - เขียน input TXT
+@REM echo Step 4: Write input txt
+@REM curl https://wms-yom-right.rid.go.th/river-yom-model/hec_api/write_input_gate.php
+@REM echo.
 
-:: STEP 5 - Run HEC-DSSVue สำหรับ input-gate
-echo Step 5: Run DSSVue for input-gate.py
-set DSSVUE_PATH="C:\Program Files\HEC\HEC-DSSVue\HEC-DSSVue.exe"
-set SCRIPT_PATH="C:\xampp\htdocs\river-yom-model\RAS_Input\input-gate.py"
-%DSSVUE_PATH% -s %SCRIPT_PATH%
-if %ERRORLEVEL%==0 (
-    echo [OK] DSSVue input-gate.py finished
-) else (
-    echo [ERROR] DSSVue input-gate.py failed
-    pause
-    exit /b
-)
-echo.
+@REM :: STEP 5 - Run HEC-DSSVue สำหรับ input-gate
+@REM echo Step 5: Run DSSVue for input-gate.py
+@REM set DSSVUE_PATH="C:\Program Files\HEC\HEC-DSSVue\HEC-DSSVue.exe"
+@REM set SCRIPT_PATH="C:\xampp\htdocs\river-yom-model\RAS_Input\input-gate.py"
+@REM %DSSVUE_PATH% -s %SCRIPT_PATH%
+@REM if %ERRORLEVEL%==0 (
+@REM     echo [OK] DSSVue input-gate.py finished
+@REM ) else (
+@REM     echo [ERROR] DSSVue input-gate.py failed
+@REM     pause
+@REM     exit /b
+@REM )
+@REM echo.
 
 :: STEP 6 - Run HEC-HMS ผ่าน Jython
 echo Step 6: Run HEC-HMS via Jython
@@ -70,7 +70,7 @@ echo.
 
 :: STEP 7 - Run HEC-RAS script
 echo Step 7: Run hec_ras_run.py
-py C:\xampp\htdocs\river-yom-model\ras-set-data.py
+@REM py C:\xampp\htdocs\river-yom-model\ras-set-data.py
 py C:\xampp\htdocs\river-yom-model\hec_ras_run.py
 if %ERRORLEVEL%==0 (
     echo [OK] RAS Python run complete
@@ -88,6 +88,19 @@ if %ERRORLEVEL%==0 (
     echo [OK] ras-output.py run complete
 ) else (
     echo [ERROR] ras-output.py failed
+    pause
+    exit /b
+)
+echo.
+
+
+:: STEP 9 - Run send gate open (ส่งข้อเสนอแนะการเปิดประตูระบายน้ำ)
+echo Step 9: Run send date gate open
+python C:\xampp\htdocs\river-yom-model\send_gate_open.py
+if %ERRORLEVEL%==0 (
+    echo [OK] send_gate_open.py run complete
+) else (
+    echo [ERROR] send_gate_open.py failed
     pause
     exit /b
 )

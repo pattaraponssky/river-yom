@@ -16,7 +16,7 @@ $sb_daily_values = $postData['sb_daily_values'];
 $data3 = $postData['data3']; // Use data3 from the POST request
 $data2 = $postData['data2']; // Use data2 from the POST request
 
-$stations = ['C.54', 'T.18', 'T.17', 'T.16', 'T.13'];
+$stations = ['Y.15'];
 $flowData = [];
 
 // Process data from the gate data sent via POST
@@ -30,7 +30,7 @@ if (isset($data3['data']) && is_array($data3['data'])) {
     }
 }
 
-$fileName = "C:/xampp/htdocs/river-yom-model/HMS_Thachin/input-hms/input-hms.txt";
+$fileName = "C:/xampp/htdocs/river-yom-model/HMS-R-YR/input-hms/input-hms.txt";
 
 $startDate = new DateTime();
 $startDate->modify("-7 days");
@@ -39,7 +39,7 @@ $endDate->modify("+13 days");
 
 $currentDateFormatted = $startDate->format("dMY");
 
-$variables = ['SB-01', 'SB-02', 'SB-03', 'SB-04', 'SB-05', 'SB-06', 'SB-07', 'SB-08', 'SB-09', 'SB-10', 'SB-11'];
+$variables = ['SB-01', 'SB-02', 'SB-03', 'SB-04', 'SB-05'];
 
 $file = fopen($fileName, "w");
 
@@ -76,12 +76,9 @@ foreach ($variables as $var) {
 
 // Define the names for each station
 $stationMappings = [
-    'C.54' => 'Gate1', 
-    'T.18' => 'Gate2', 
-    'T.17' => 'Gate3', 
-    'T.16' => 'Gate4', 
-    'T.13' => 'T.13'
+    'Y.15' => 'Y.15'
 ];
+
 
 foreach ($stations as $station) {
     $mappedName = $stationMappings[$station] ?? $station;
@@ -112,10 +109,10 @@ foreach ($stations as $station) {
 fwrite($file, "\tEND FILE\n");
 fclose($file);
 
-echo "✅ สร้างไฟล์ $fileName (ท่าจีน) สำเร็จ!!";
+echo "✅ สร้างไฟล์ $fileName (แม่ยมฝั่งขวา) สำเร็จ!!";
 
 // --- START: New code to run the BAT file ---
-$batFile = 'C:\\xampp\\htdocs\\river-yom-model\\HMS_Thachin\\input-hms\\input-hms.bat';
+$batFile = 'C:\\xampp\\htdocs\\river-yom-model\\HMS-R-YR\\input-hms\\input-hms.bat';
 
 // Execute the .bat file and wait for it to finish.
 // The `exec` command without `start /B` is blocking.
@@ -123,9 +120,9 @@ exec("\"$batFile\"", $output, $return_var);
 
 // Check the result and set a success or failure message.
 if ($return_var === 0) {
-    echo "✅ สร้างไฟล์ $fileName (ท่าจีน) สำเร็จ!! และรันไฟล์ BAT เรียบร้อย";
+    echo "✅ สร้างไฟล์ $fileName (แม่ยมฝั่งขวา) สำเร็จ!! และรันไฟล์ BAT เรียบร้อย";
 } else {
-    echo "❌ สร้างไฟล์ $fileName (ท่าจีน) สำเร็จ!! แต่มีข้อผิดพลาดในการรันไฟล์ BAT.";
+    echo "❌ สร้างไฟล์ $fileName (แม่ยมฝั่งขวา) สำเร็จ!! แต่มีข้อผิดพลาดในการรันไฟล์ BAT.";
 }
 // --- END: New code to run the BAT file ---
 

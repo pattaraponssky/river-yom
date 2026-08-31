@@ -85,6 +85,19 @@ class GateModel extends Model
                     ->findAll();
     }
 
+    public function getGateRainDataLast8Days(array $staCodes): array
+    {
+        if (empty($staCodes)) {
+            return [];
+        }
+
+        $startDate = date('Y-m-d 00:00:00', strtotime('-8 days'));
+
+        return $this->select("sta_code, datetime AS date, rain_mm AS rainfall")
+            ->whereIn('sta_code', $staCodes)
+            ->where('datetime >=', $startDate)
+            ->findAll();
+    }
     public function updateGateData(string $sta_code, string $date, array $updateData)
     {
         if (empty($updateData)) {

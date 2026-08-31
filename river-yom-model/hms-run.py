@@ -38,8 +38,8 @@ dss_end_date_precip = dss_end_date_precip_raw[:2] + dss_end_date_precip_raw[2].u
 locale.setlocale(locale.LC_TIME, '')
 
 # --- File Paths ---
-forecast_file = r"C:\xampp\htdocs\river-yom-model\HMS_Thachin\forecast\Forecast_1.forecast"
-gage_file = r"C:\xampp\htdocs\river-yom-model\HMS_Thachin\Thachin_Basin.gage"
+forecast_file = r"C:\xampp\htdocs\river-yom-model\HMS-R-YR\RID3_R_YR\forecast\Forecast_1.forecast"
+gage_file = r"C:\xampp\htdocs\river-yom-model\HMS-R-YR\RID3_R_YR\RID3_R_YR.gage"
 
 # --- Update Forecast File (This part is already correct) ---
 try:
@@ -157,7 +157,7 @@ except Exception as e:
 
 # --- Run HEC-HMS Forecast ---
 try:
-    myProject = Project.open(r"C:\xampp\htdocs\river-yom-model\HMS_Thachin\Thachin_Basin.hms")
+    myProject = Project.open(r"C:\xampp\htdocs\river-yom-model\HMS-R-YR\RID3_R_YR\RID3_R_YR.hms")
     myProject.computeForecast("Forecast 1")
     myProject.close()
     Hms.shutdownEngine()
