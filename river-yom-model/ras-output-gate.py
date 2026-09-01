@@ -1,7 +1,7 @@
 from hec.heclib.dss import HecDss
 from datetime import datetime, timedelta
 
-file = R"C:\xampp\htdocs\rid3-model\RAS_RID03\RID03.dss"
+file = R"C:\xampp\htdocs\river-yom-model\RAS_RID03\RID03.dss"
 dssfile = HecDss.open(file)
 
 today = datetime.today()
@@ -17,21 +17,22 @@ if not same_month:
 paths = [
     "/Khlong Samrong Reach 1/187 INL STRUCT Gate #1/Gate Opening/{}/1Hour/Plan-01/".format(date_part),
     "/Yom River Reach 2/2796 INL STRUCT Gate #1/Gate Opening/{}/1Hour/Plan-01/".format(date_part),
-    "/Yom River Reach 2/30189 INL STRUCT Gate #1/Gate Opening/{}/1Hour/Plan-01/".format(date_part)
+    "/YOM Reach 3/77569 INL STRUCT Gate #1/Gate Opening/{}/1Hour/YOM-1/".format(date_part),
+    "/YOM Reach 2/50177 INL STRUCT Gate #1/Gate Opening/{}/1Hour/YOM-1/".format(date_part),
 ] 
 
 flows_start = [dssfile.get(path) for path in paths]
 
 if not same_month:
     path_end = [
-        "/Khlong Samrong Reach 1/187 INL STRUCT Gate #1/Gate Opening/{}/1Hour/Plan-01/".format(date_part),
-        "/Yom River Reach 2/2796 INL STRUCT Gate #1/Gate Opening/{}/1Hour/Plan-01/".format(date_part),
-        "/Yom River Reach 2/30189 INL STRUCT Gate #1/Gate Opening/{}/1Hour/Plan-01/".format(date_part)
+        "/YOM Reach 3/77569 INL STRUCT Gate #1/Gate Opening/{}/1Hour/YOM-1/".format(date_part),
+        "/YOM Reach 2/50177 INL STRUCT Gate #1/Gate Opening/{}/1Hour/YOM-1/".format(date_part),
     ]
     flows_end = [dssfile.get(path) for path in path_end]
 
+
 with open(R'C:\xampp\htdocs\river-yom\ras-output\gate_output.csv', 'w') as file:
-    file.write("DateTime,wst,tng,kpk\n")
+    file.write("DateTime,wst,tng\n")
     
     num_values_start = flows_start[0].numberValues
 

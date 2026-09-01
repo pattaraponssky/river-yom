@@ -28,27 +28,8 @@ if %ERRORLEVEL%==0 (
 )
 echo.
 
-@REM :: STEP 4 - เขียน input TXT
-@REM echo Step 4: Write input txt
-@REM curl https://wms-yom-right.rid.go.th/river-yom-model/hec_api/write_input_gate.php
-@REM echo.
-
-@REM :: STEP 5 - Run HEC-DSSVue สำหรับ input-gate
-@REM echo Step 5: Run DSSVue for input-gate.py
-@REM set DSSVUE_PATH="C:\Program Files\HEC\HEC-DSSVue\HEC-DSSVue.exe"
-@REM set SCRIPT_PATH="C:\xampp\htdocs\river-yom-model\RAS_Input\input-gate.py"
-@REM %DSSVUE_PATH% -s %SCRIPT_PATH%
-@REM if %ERRORLEVEL%==0 (
-@REM     echo [OK] DSSVue input-gate.py finished
-@REM ) else (
-@REM     echo [ERROR] DSSVue input-gate.py failed
-@REM     pause
-@REM     exit /b
-@REM )
-@REM echo.
-
-:: STEP 6 - Run HEC-HMS ผ่าน Jython
-echo Step 6: Run HEC-HMS via Jython
+:: STEP 4 - Run HEC-HMS ผ่าน Jython
+echo Step 4: Run HEC-HMS via Jython
 set "HEC_HMS_PATH=C:\Program Files\HEC\HEC-HMS\4.13"
 set "JYTHON_PATH=C:\jython2.7.4\bin\jython"
 set "SCRIPT_PATH=C:\xampp\htdocs\river-yom-model\hms-run.py"
@@ -68,8 +49,8 @@ if %ERRORLEVEL%==0 (
 )
 echo.
 
-:: STEP 7 - Run HEC-RAS script
-echo Step 7: Run hec_ras_run.py
+:: STEP 5 - Run HEC-RAS script
+echo Step 5: Run hec_ras_run.py
 @REM py C:\xampp\htdocs\river-yom-model\ras-set-data.py
 py C:\xampp\htdocs\river-yom-model\hec_ras_run.py
 if %ERRORLEVEL%==0 (
@@ -81,8 +62,8 @@ if %ERRORLEVEL%==0 (
 )
 echo.
 
-:: STEP 8 - Run ras-output.py (สรุปผลลัพธ์ RAS)
-echo Step 8: Run ras-output.py
+:: STEP 6 - Run ras-output.py (สรุปผลลัพธ์ RAS)
+echo Step 6: Run ras-output.py
 py C:\xampp\htdocs\river-yom-model\ras-output.py
 if %ERRORLEVEL%==0 (
     echo [OK] ras-output.py run complete
@@ -94,8 +75,20 @@ if %ERRORLEVEL%==0 (
 echo.
 
 
-:: STEP 9 - Run send gate open (ส่งข้อเสนอแนะการเปิดประตูระบายน้ำ)
-echo Step 9: Run send date gate open
+:: STEP 7 - cal gate open (คำนวณข้อเสนอแนะการเปิดประตูระบายน้ำ)
+echo Step 7: cal gate open
+python C:\xampp\htdocs\river-yom-model\gate_json.py
+if %ERRORLEVEL%==0 (
+    echo [OK] gate_json.py run complete
+) else (
+    echo [ERROR] gate_json.py failed
+    pause
+    exit /b
+)
+echo.
+
+:: STEP 8 - Run send gate open (ส่งข้อเสนอแนะการเปิดประตูระบายน้ำ)
+echo Step 8: Run send date gate open
 python C:\xampp\htdocs\river-yom-model\send_gate_open.py
 if %ERRORLEVEL%==0 (
     echo [OK] send_gate_open.py run complete

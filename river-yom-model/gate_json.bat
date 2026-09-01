@@ -1,5 +1,5 @@
 @echo off
-python C:\xampp\htdocs\rid3-model\gate_json.py
+python C:\xampp\htdocs\river-yom-model\gate_json.py
 IF %ERRORLEVEL% EQU 0 (
     echo Success Run
 ) ELSE (

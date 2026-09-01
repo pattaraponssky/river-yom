@@ -192,7 +192,7 @@ export default function MaintenanceClient({ id }: { id: string }) {
   if (loading) {
     return <div>กำลังตรวจสอบสิทธิ์...</div>;
   }
-  if (!currentUser || currentUser.iduser_level < 2) {
+  if (!currentUser || currentUser.iduser_level < 1) {
     return <div>ไม่มีสิทธิ์เข้าถึงหน้านี้</div>;
   }
 

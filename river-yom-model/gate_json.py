@@ -24,13 +24,6 @@ GATE_CONFIGS = [
         "station_code": "tng",
         "station_name": "ปตร.ท่านางงาม",
     },
-    {
-        "input_col": "kpk",
-        "num_gates": 1,
-        "suffix": "kpk",
-        "station_code": "kpk",
-        "station_name": "ปตร.คลองปลากด",
-    },
 ]
 
 def process_gate_data(df_input: pd.DataFrame, config: dict):
