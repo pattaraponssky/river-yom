@@ -195,16 +195,10 @@ const WaterForecastChart: React.FC<Props> = ({ today, archive }) => {
     const observed = todayAll.filter(d => new Date(d.x).getTime() <  tofTs);
     const forecast = todayAll.filter(d => new Date(d.x).getTime() >= tofTs);
 
-    const archiveSeries = archive.map((snap, i) => ({
-      name:  `พยากรณ์ ${snap.date}`,
-      data:  snapshotPoints(snap, station),
-      color: ARCHIVE_COLORS[Math.min(i, ARCHIVE_COLORS.length - 1)],
-    }));
 
     return [
       { name: 'ค่าตรวจวัดจริง',      data: observed, color: '#1E88E5' },
       { name: 'ค่าพยากรณ์ (วันนี้)', data: forecast,  color: '#66BB6A' },
-      ...archiveSeries,
     ];
   }
 
