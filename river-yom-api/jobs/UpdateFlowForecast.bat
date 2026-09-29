@@ -9,7 +9,7 @@ echo.
 echo ===============================
 echo เก็บผล Flow Forecast Data...
 echo ===============================
-curl -s https://wms-yom-right.rid.go.th/river-yom-api/snapshot/run/SwocThachinForecastSnapshot2025
+curl -s https://wms-yom-right.rid.go.th/river-yom-api/snapshot/run/RIDFORECAST!@#
 echo.
 
 

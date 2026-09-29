@@ -239,7 +239,7 @@ $routes->group('aboutus', function($routes) {
 
 $routes->options('(:any)', 'CorsController::preflight');
 
-$routes->get('snapshot/run/(:segment)', 'SaveForecastSnapshot::run/$1'); //SwocThachinForecastSnapshot2025
+$routes->get('snapshot/run/(:segment)', 'SaveForecastSnapshot::run/$1'); //RIDFORECAST!@#
 
 // Email Alert Routes
 $routes->get('jobs/dailyFloodAlert',  'EmailAlertController::sendDailyAlert');

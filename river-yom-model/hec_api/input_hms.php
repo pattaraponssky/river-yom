@@ -64,7 +64,6 @@ while ($current_loop_date <= $display_and_data_end_date_ce) {
     $current_loop_date->modify('+1 day');
 }
 
-// --- โหลดข้อมูลจาก API ใหม่ swocthachin.rid.go.th ---
 // **แก้ไข URL ตามที่ร้องขอ**
 $rid_api_url = "https://wms-yom-right.rid.go.th/river-yom-api/api/model_input_data";
 $rid_data_response = fetchData($rid_api_url); 

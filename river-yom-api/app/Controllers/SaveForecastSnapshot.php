@@ -11,7 +11,7 @@ class SaveForecastSnapshot extends BaseController
     use ResponseTrait;
 
     // เปลี่ยน key ได้ตามใจเลย
-    private const API_KEY = 'SwocThachinForecastSnapshot2025';
+    private const API_KEY = 'RIDFORECAST!@#';
 
     public function run($key = null)
     {

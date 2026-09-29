@@ -169,7 +169,7 @@ class User extends BaseController
         $emailService->setTo($email);
         $emailService->setSubject('ยืนยันการสมัครสมาชิก SWOC แม่ยมฝั่งขวา'); // เปลี่ยนเป็นชื่อแอปของคุณ
 
-        $frontendBaseUrl = 'https://swocthachin.rid.go.th'; // <-- แก้ไขตรงนี้ให้เป็น URL ของ Frontend คุณ
+        $frontendBaseUrl = 'https://wms-yom-right.rid.go.th'; // <-- แก้ไขตรงนี้ให้เป็น URL ของ Frontend คุณ
 
         $verificationLink = $frontendBaseUrl . '/verify-email?token=' . $verificationToken;
 
@@ -342,7 +342,7 @@ class User extends BaseController
         $emailService->setTo($email);
         $emailService->setSubject('รีเซ็ตรหัสผ่าน SWOC แม่ยมฝั่งขวา');
 
-        $frontendBaseUrl = 'https://swocthachin.rid.go.th';
+        $frontendBaseUrl = 'https://wms-yom-right.rid.go.th';
         $resetLink = $frontendBaseUrl . '/reset-password?token=' . $resetToken;
 
         $message = "

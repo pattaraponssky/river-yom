@@ -291,7 +291,7 @@ const FloodWarningTable: React.FC<FloodWarningTableProps> = ({ maxLevels, waterT
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.setAttribute("download", "flood_warning_thachin.csv");
+    link.setAttribute("download", "flood_warning.csv");
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

@@ -225,9 +225,7 @@ river-yom/
 
 ### 5. วางไฟล์โปรเจกต์
 
-1. นำโฟลเดอร์โมเดล (เช่น `sti_thachin` หรือโฟลเดอร์โมเดลของ river-yom) ไปไว้ที่ไดรฟ์ `D:/`
-   ให้มีโครงสร้างเช่น `D:/sti_thachin`
-2. นำไฟล์โค้ด **Frontend**, **CodeIgniter 4**, และ **Model** ไปไว้ใน Apache server โดยวางไว้ใน
+1. นำไฟล์โค้ด **Frontend**, **CodeIgniter 4**, และ **Model** ไปไว้ใน Apache server โดยวางไว้ใน
    โฟลเดอร์ `htdocs` (เช่น `C:/xampp/htdocs/river-yom`)
 
    Build frontend ก่อนนำไปวาง:

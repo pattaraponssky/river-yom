@@ -10,8 +10,8 @@ class EmailTest extends Controller
         $emailService = service('email');
 
         $emailService->setTo('pattarapon.ssk.y@gmail.com'); // **CHANGE THIS TO A REAL EMAIL YOU CAN ACCESS**
-        $emailService->setSubject('CodeIgniter 4 Email Test SWOC');
-        $emailService->setMessage('This is a test email from SWOC Thachin. If you receive this, email setup is working!');
+        $emailService->setSubject('CodeIgniter 4 Email Test');
+        $emailService->setMessage('This is a test email from If you receive this, email setup is working!');
 
         if ($emailService->send()) {
             echo 'Email sent successfully!';
