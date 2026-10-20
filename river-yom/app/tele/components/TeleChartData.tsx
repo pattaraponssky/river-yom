@@ -10,6 +10,7 @@ import TextSnippetIcon from '@mui/icons-material/TextSnippet';
 import { Box, Button, Menu, MenuItem } from '@mui/material';
 import { fontInfo } from '@/theme/style';
 import dynamic from 'next/dynamic';
+import { buildWarnAnnotationsFor, TELE_WARN_LEVELS, FLOW_DISCHARGE_WARN_LEVELS, TELE_WATER_LEVEL_Y_AXIS_RANGE } from '@/lib/warnLevels';
 
 const ApexCharts = dynamic(() => import('react-apexcharts'), { ssr: false });
 
@@ -25,74 +26,7 @@ interface DataChartProps {
 
 const BASE_YEAR = 2000;
 
-const flowAnnotations: Record<string, ApexAnnotations> = {
-  'YR.01': {
-    yaxis: [
-      { y: 40.67, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 40.67 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
-      { y: 39.82, borderColor: 'orange', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 39.82 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'orange' } } },
-      { y: 38.96, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 38.96 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
-    ],
-  },
-  'YR.02': {
-    yaxis: [
-      { y: 41.57, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 41.57 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
-      { y: 41.23, borderColor: 'orange', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 41.23 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'orange' } } },
-      { y: 40.89, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 40.89 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
-    ]
-  },
-  'YR.03': {
-    yaxis: [  
-      { y: 44.37, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 44.37 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
-      { y: 43.98, borderColor: 'orange', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 43.98 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'orange' } } },
-      { y: 43.60, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 43.60 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
-      ]
-  },
-  'YR.04': {
-    yaxis: [
-      { y: 42.86, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 42.86 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
-      { y: 42.28, borderColor: 'orange', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 42.28 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'orange' } } },
-      { y: 41.71, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 41.71 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
-    ]
-  },
-  'YR.05': {
-    yaxis: [
-      { y: 40.30, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 40.30 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
-      { y: 39.46, borderColor: 'orange', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 39.46 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'orange' } } },
-      { y: 38.62, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 38.62 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
-    ]
-  },
-  'YR.06': {
-    yaxis: [
-      { y: 39.55, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 39.55 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
-      { y: 39.02, borderColor: 'orange', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 39.02 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'orange' } } },
-      { y: 38.48, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 38.48 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
-    ]
-  },
-  '': {
-    yaxis: [
-    ]
-  },
-};
 
-// เพิ่มตรงส่วนบน (หลัง flowAnnotations หรือใกล้ ๆ)
-const flowDischargeAnnotations: Record<string, ApexAnnotations> = {
-  'Y.4': {
-    yaxis: [
-      { y: 600, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต > 600 ลบ.ม./วินาที', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
-      { y: 450, borderColor: 'orange', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 450 ลบ.ม./วินาที', style: { fontSize: '12px', color: '#000', background: 'orange' } } },
-      { y: 320, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 320 ลบ.ม./วินาที', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
-    ],
-  }
-};
-
-const flowWaterLevelYAxisRange: Record<string, { min: number; max: number }> = {
-  'YR.01': { min: 32, max: 41 },
-  'YR.02': { min: 33, max: 43 },
-  'YR.03': { min: 36, max: 46 },
-  'YR.04': { min: 35, max: 44 },
-  'YR.05': { min: 32, max: 42 },
-  'YR.06': { min: 32, max: 41 },
-};
 
 const FlowChart: React.FC<DataChartProps> = ({ data, type, height = 350 ,sta_code ,sta_name, mode = 'daily', isDark }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -332,17 +266,17 @@ const FlowChart: React.FC<DataChartProps> = ({ data, type, height = 350 ,sta_cod
   const baseOptions = chartOptionsMap[type as 'wl' | 'discharge' | 'rain_sum' | 'rain'] as ApexCharts.ApexOptions;
   let annotations: ApexAnnotations | undefined;
   if (type === 'wl') {
-    annotations = sta_code ? flowAnnotations[sta_code] || { yaxis: [] } : undefined;
+    annotations = buildWarnAnnotationsFor(TELE_WARN_LEVELS, sta_code, { unit: 'ม.รทก.' });
   } else if (type === 'discharge') {
-    annotations = sta_code ? flowDischargeAnnotations[sta_code] || { yaxis: [] } : undefined;
+    annotations = buildWarnAnnotationsFor(FLOW_DISCHARGE_WARN_LEVELS, sta_code, { unit: 'ลบ.ม./วินาที', prefix: '> ' });
   }
   let yaxis = baseOptions.yaxis;
 
-  if (type === 'wl' && sta_code && flowWaterLevelYAxisRange[sta_code]) {
+  if (type === 'wl' && sta_code && TELE_WATER_LEVEL_Y_AXIS_RANGE[sta_code]) {
     yaxis = [{
       ...(Array.isArray(baseOptions.yaxis) ? baseOptions.yaxis[0] : baseOptions.yaxis),
-      min: flowWaterLevelYAxisRange[sta_code].min,
-      max: flowWaterLevelYAxisRange[sta_code].max,
+      min: TELE_WATER_LEVEL_Y_AXIS_RANGE[sta_code].min,
+      max: TELE_WATER_LEVEL_Y_AXIS_RANGE[sta_code].max,
     }];
   }
 

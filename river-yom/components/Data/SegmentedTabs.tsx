@@ -18,12 +18,14 @@ interface SegmentedTabsProps {
 }
 
 // ─── Tab menu แบบ segmented-control: responsive, ไม่ต้องเลื่อนจอมือถือ ──
-// ใช้ร่วมกันได้ทุกหน้า (rain / flow / gate / tele / reservoir ฯลฯ)
-// แค่ส่ง items เข้ามา ไม่ต้องผูกกับ label/icon เฉพาะของระบบใดระบบหนึ่ง
 const SegmentedTabs: React.FC<SegmentedTabsProps> = ({ items, value, onChange, ariaLabel = 'main category' }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const primary = theme.palette.primary.main;
+  const isDark = theme.palette.mode === 'dark';
+  const trackBg = isDark
+    ? alpha(theme.palette.common.white, 0.06)
+    : theme.palette.grey[100];
 
   return (
     <Box
@@ -31,7 +33,7 @@ const SegmentedTabs: React.FC<SegmentedTabsProps> = ({ items, value, onChange, a
         mb: { xs: 2, sm: 2.5 },
         p: 0.6,
         borderRadius: 3,
-        bgcolor: 'grey.100',
+        bgcolor: trackBg,
         border: '1px solid',
         borderColor: 'divider',
       }}

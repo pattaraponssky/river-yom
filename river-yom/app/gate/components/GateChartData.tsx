@@ -10,6 +10,11 @@ import TableChartIcon from '@mui/icons-material/TableChart';
 import TextSnippetIcon from '@mui/icons-material/TextSnippet';
 import { fontInfo } from '../../../theme/style';
 import dynamic from 'next/dynamic';
+import {
+  GATE_WARN_LEVELS,
+  GATE_WATER_LEVEL_Y_AXIS_RANGE,
+  buildWarnAnnotationsFor,
+} from '@/lib/warnLevels';
 
 const ApexCharts = dynamic(() => import('react-apexcharts'), { ssr: false });
 
@@ -32,40 +37,6 @@ const GateChart: React.FC<DataChartProps> = ({ data, type , height = 350 ,sta_co
   const textColor = isDark ? "#e2e8f0" : "#334155";         // ตัวอักษรหลัก
   const gridColor = isDark ? "#334155" : "#e2e8f0";  
   if (!data || !data.series) return null;
-  
-  const gateAnnotations: Record<string, ApexAnnotations> = {
-    'kpk': {
-      yaxis: [
-        { y: 43.00, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 43.00 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
-        { y: 41.93, borderColor: 'orange', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 41.93 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'orange' } } },
-        { y: 40.86, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 40.86 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
-      ],
-    },
-    'tng': {
-      yaxis: [
-        { y: 42.55, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 42.55 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
-        { y: 41.10, borderColor: 'orange', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 41.10 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'orange' } } },
-        { y: 39.10, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 39.10 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
-      ]
-    },
-    'wst': {
-      yaxis: [  
-        { y: 42.55, borderColor: '#FF0000', borderWidth: 4, strokeDashArray: 10, label: { text: 'วิกฤต 42.55 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FF0000' } } },
-        { y: 41.10, borderColor: 'orange', borderWidth: 4, strokeDashArray: 10, label: { text: 'เตือนภัย: 41.10 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: 'orange' } } },
-        { y: 37.38, borderColor: '#FFD700', borderWidth: 4, strokeDashArray: 10, label: { text: 'เฝ้าระวัง 37.38 ม.รทก.', style: { fontSize: '12px', color: '#fff', background: '#FFD700' } } },
-        ]
-    },
-    '': {
-      yaxis: [
-      ]
-    },
-  };
-
-  const GateWaterLevelYAxisRange: Record<string, { min: number; max: number }> = {
-  'wst': { min: 32, max: 44 },
-  'tng': { min: 33, max: 43 },
-  'kpk': { min: 36, max: 44 },
-};
 
   const chartOptionsMap = {
     discharge: {
@@ -220,14 +191,16 @@ const GateChart: React.FC<DataChartProps> = ({ data, type , height = 350 ,sta_co
 
   // เลือก options ตาม type
   const baseOptions = chartOptionsMap[type as 'wl_upper'| 'wl_lower' | 'discharge'] as ApexCharts.ApexOptions;
-  const annotations = sta_code && (type === 'wl_upper' || type === 'wl_lower') ? gateAnnotations[sta_code] || { yaxis: [] } : undefined;
+  const annotations = (type === 'wl_upper' || type === 'wl_lower')
+    ? buildWarnAnnotationsFor(GATE_WARN_LEVELS, sta_code, { unit: 'ม.รทก.' })
+    : undefined;
   let yaxis = baseOptions.yaxis;
 
-  if ((type === 'wl_upper' || type === 'wl_lower') && sta_code && GateWaterLevelYAxisRange[sta_code]) {
+  if ((type === 'wl_upper' || type === 'wl_lower') && sta_code && GATE_WATER_LEVEL_Y_AXIS_RANGE[sta_code]) {
     yaxis = [{
       ...(Array.isArray(baseOptions.yaxis) ? baseOptions.yaxis[0] : baseOptions.yaxis),
-      min: GateWaterLevelYAxisRange[sta_code].min,
-      max: GateWaterLevelYAxisRange[sta_code].max,
+      min: GATE_WATER_LEVEL_Y_AXIS_RANGE[sta_code].min,
+      max: GATE_WATER_LEVEL_Y_AXIS_RANGE[sta_code].max,
     }];
   }
 

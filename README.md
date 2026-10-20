@@ -20,6 +20,7 @@
 - [ขั้นตอนการทำงานของระบบ (Pipeline)](#ขั้นตอนการทำงานของระบบ-pipeline)
 - [ความต้องการของระบบ (Requirements)](#ความต้องการของระบบ-requirements)
 - [การติดตั้ง](#การติดตั้ง)
+- [การตั้งค่าสำหรับการพัฒนา (Development Setup)](#การตั้งค่าสำหรับการพัฒนา-development-setup)
 - [การตั้งค่า Task Scheduler](#การตั้งค่า-task-scheduler)
 - [การตั้งค่า SSL / โดเมน (ถ้ามี)](#การตั้งค่า-ssl--โดเมน-ถ้ามี)
 - [การเปิด Firewall](#การเปิด-firewall)
@@ -47,7 +48,7 @@
 
 **Frontend**
 
-- [Vite](https://vitejs.dev/) — เครื่องมือ build โปรเจกต์ React
+- [Next.js](https://nextjs.org/) — เฟรมเวิร์ก React (App Router)
 - [React](https://react.dev/) — เฟรมเวิร์ก UI
 - [TypeScript](https://www.typescriptlang.org/) — เสริมความปลอดภัยและโครงสร้างให้ JavaScript
 - [MUI](https://mui.com/) — UI component library
@@ -223,6 +224,66 @@ river-yom/
 
 - ตั้งค่า user ของ MySQL พร้อมรหัสผ่าน แล้วนำเข้าฐานข้อมูลของโครงการ (import .sql)
 
+## การตั้งค่าความปลอดภัยของ XAMPP
+ 
+เนื่องจากค่าเริ่มต้นของ XAMPP ถูกออกแบบมาเพื่อการพัฒนา (development) ไม่ใช่เพื่อใช้งานจริงบน
+เซิร์ฟเวอร์ที่เปิดสู่อินเทอร์เน็ต ก่อนนำระบบขึ้นใช้งานจริงควรตั้งค่าความปลอดภัยเพิ่มเติม ดังนี้
+ 
+1. **ตั้งรหัสผ่าน root ของ MySQL**
+   ค่าเริ่มต้นของ MySQL ใน XAMPP ไม่มีรหัสผ่าน ต้องตั้งรหัสผ่านให้ user `root` ทันที:
+```sql
+   ALTER USER 'root'@'localhost' IDENTIFIED BY 'ตั้งรหัสผ่านที่ปลอดภัย';
+   FLUSH PRIVILEGES;
+```
+ 
+   จากนั้นอัปเดตไฟล์ `.env` ของ backend ให้ตรงกับรหัสผ่านใหม่
+ 
+2. **จำกัดการเข้าถึง phpMyAdmin**
+   - แก้ไขไฟล์ `phpmyadmin/config.inc.php` ให้บังคับใช้ authentication แบบ `cookie` (ห้ามใช้ `config`)
+   - จำกัดการเข้าถึงเฉพาะ localhost หรือ IP ที่กำหนด โดยแก้ไฟล์
+     `xampp/apache/conf/extra/httpd-xampp.conf` ในส่วน `<Directory "/xampp/htdocs/phpmyadmin">`:
+```apache
+     Require local
+     # หรือระบุ IP ที่อนุญาตเฉพาะ
+     Require ip 192.168.1.0/24
+```
+ 
+   - หากไม่จำเป็นต้องใช้งาน phpMyAdmin บนเซิร์ฟเวอร์จริง ให้ปิดการเข้าถึงจากภายนอกทั้งหมด หรือลบ
+     ออกจาก `htdocs`
+3. **ปิดหน้า XAMPP Dashboard / Status Pages ที่ไม่จำเป็น**
+   เช่น `xampp/htdocs/xampp` (webalizer, phpinfo, sqlitemanager ฯลฯ) ให้ลบหรือจำกัดการเข้าถึง
+   เฉพาะ localhost ในไฟล์ `httpd-xampp.conf` เช่นเดียวกับ phpMyAdmin
+4. **ปิดการแสดง Directory Listing**
+   ป้องกันไม่ให้ผู้ใช้เห็นรายชื่อไฟล์ทั้งหมดในโฟลเดอร์เมื่อไม่มีไฟล์ index ให้แก้ไข `httpd.conf`
+   ในส่วน `<Directory>` ของ `DocumentRoot`:
+```apache
+   Options -Indexes
+```
+ 
+5. **ปิดการเข้าถึงไฟล์สำคัญด้วย `.htaccess`**
+   ป้องกันไม่ให้เข้าถึงไฟล์ config, env และไฟล์ระบบผ่านเว็บโดยตรง:
+```apache
+   <FilesMatch "^\.(env|git|htaccess|htpasswd)">
+       Require all denied
+   </FilesMatch>
+ 
+   <FilesMatch "\.(sql|log|bak|ini)$">
+       Require all denied
+   </FilesMatch>
+```
+ 
+6. **ปิด/ลบ Service ที่ไม่ใช้งาน**
+   ปิดหรือลบ FTP (FileZilla), Mercury Mail และ Tomcat ที่มากับ XAMPP หากไม่ได้ใช้งานจริง เพื่อลด
+   ช่องทางการโจมตี
+7. **อัปเดต PHP และ XAMPP ให้เป็นเวอร์ชันล่าสุดที่รองรับ**
+   ตรวจสอบและอัปเดต patch ด้านความปลอดภัยของ Apache/PHP/MySQL อย่างสม่ำเสมอ และปิดการแสดง
+   error รายละเอียด (`display_errors = Off`) ในไฟล์ `php.ini` เมื่อใช้งานจริง เพื่อไม่ให้ข้อมูล
+   โครงสร้างระบบรั่วไหลผ่านหน้า error
+8. **จำกัดสิทธิ์ผู้ใช้งานฐานข้อมูล**
+   สร้าง MySQL user แยกสำหรับแอปพลิเคชัน (ไม่ใช้ `root`) และให้สิทธิ์เฉพาะฐานข้อมูลของโครงการ
+   เท่าที่จำเป็น (SELECT, INSERT, UPDATE, DELETE) แทนการให้สิทธิ์ระดับ ALL PRIVILEGES แบบไม่จำกัด
+---
+
 ### 5. วางไฟล์โปรเจกต์
 
 1. นำไฟล์โค้ด **Frontend**, **CodeIgniter 4**, และ **Model** ไปไว้ใน Apache server โดยวางไว้ใน
@@ -262,6 +323,109 @@ sudo chmod -R 777 /var/www/html/river-yom
 
 ทดสอบให้ครบทั้งการเปิดเว็บแสดงผล, การเรียกใช้ API, การรันโมเดลรายวัน และการดึงข้อมูลเข้าสู่ระบบ
 ก่อนเปิดใช้งานจริง
+
+---
+
+## การตั้งค่าสำหรับการพัฒนา (Development Setup)
+
+ส่วนนี้สำหรับนักพัฒนาที่ต้องการรันระบบบนเครื่องตัวเอง (local) เพื่อแก้ไข/ทดสอบโค้ด โดยไม่ต้อง
+ติดตั้ง HEC หรือรัน pipeline ทั้งหมด เพียงรัน **frontend** และ **backend** เท่านั้น
+
+### ความต้องการเบื้องต้น
+
+- **PHP** ≥ 8.1 พร้อม extensions ที่ CodeIgniter 4 ต้องใช้ (`intl`, `mbstring`, `mysqli`, `json`,
+  `curl`) — ตรวจสอบด้วย `php -v`
+- **Composer** — จัดการ dependency ของ backend
+- **Node.js + npm** — รัน frontend (Next.js)
+- **MySQL/MariaDB** — ฐานข้อมูลโครงการ (จะใช้ XAMPP หรือ standalone ก็ได้)
+
+### 1. Backend (CodeIgniter 4)
+
+```sh
+git clone <river-yom-api-repo-url>
+cd river-yom-api
+
+# ติดตั้ง dependency
+composer install
+
+# สร้างไฟล์ .env จากไฟล์ตัวอย่าง แล้วตั้งค่า DB
+cp env .env
+```
+
+แก้ไขไฟล์ `.env` ให้ตั้งค่าเชื่อมต่อฐานข้อมูลและเปิดโหมดพัฒนา:
+
+```ini
+CI_ENVIRONMENT = development
+
+database.default.hostname = 127.0.0.1
+database.default.database = river_yom
+database.default.username = root
+database.default.password = 
+database.default.DBDriver = MySQLi
+database.default.port = 3306
+database.default.charset = utf8mb4
+database.default.DBCollat = utf8mb4_general_ci
+```
+
+> `CI_ENVIRONMENT = development` จะเปิดการแสดง error ละเอียดและ hot-reload ข้อมูลระหว่างพัฒนา
+> **ห้ามใช้ค่านี้บนเซิร์ฟเวอร์จริง** (ให้ใช้ `production`)
+
+นำเข้าฐานข้อมูล (import ไฟล์ `.sql` ของโครงการ) แล้วรัน dev server ด้วย:
+
+```sh
+php spark serve
+```
+
+ค่าเริ่มต้นจะรันที่ `http://localhost:8080` หากต้องการเปลี่ยนพอร์ต:
+
+```sh
+php spark serve --port 8081
+```
+
+คำสั่งอื่น ๆ ที่มีประโยชน์:
+
+```sh
+php spark routes        # ดูรายการ route ทั้งหมด
+php spark db:table      # ดูโครงสร้างตาราง
+composer test           # รัน PHPUnit
+```
+
+### 2. Frontend (Next.js + React + TypeScript + MUI)
+
+```sh
+cd river-yom
+
+# ติดตั้ง dependency
+npm install
+
+# รัน dev server (hot reload)
+npm run dev
+```
+
+ค่าเริ่มต้นจะรันที่ `http://localhost:3000`
+
+คำสั่งอื่น ๆ:
+
+```sh
+npm run build     # build สำหรับ production (ได้ไฟล์ในโฟลเดอร์ out)
+npm run start     # รัน production build
+npm run lint      # ตรวจสอบโค้ดด้วย ESLint
+```
+
+### 3. เชื่อม frontend เข้ากับ backend
+
+กำหนด URL ของ API ที่ frontend จะเรียกผ่านตัวแปรสภาพแวดล้อม `NEXT_PUBLIC_API_URL`
+(เช่นในไฟล์ `.env` หรือ `.env.local` ที่ root ของโปรเจกต์ frontend):
+
+```ini
+NEXT_PUBLIC_API_URL=http://localhost:8080
+```
+
+จากนั้นเปิด http://localhost:3000 เพื่อทดสอบ โดยต้องรันทั้ง backend (`php spark serve`) และ
+frontend (`npm run dev`) ควบคู่กัน
+
+> ระหว่างพัฒนา backend หากแก้โค้ดใน `app/` ไม่ต้องรีสตาร์ท `spark serve` ทุกครั้ง แต่หากแก้ไฟล์
+> `.env` หรือไฟล์ config ให้กด `Ctrl+C` แล้วรันใหม่เพื่อโหลดค่าใหม่
 
 ---
 
@@ -316,7 +480,7 @@ Include conf/extra/httpd-ssl.conf
 
 1. เปิด **Windows Firewall** → **Inbound Rules** → **New Rule**
 2. เลือกประเภท **Port** → **TCP**
-3. ระบุพอร์ต `80` และ `443`
+3. ระบุพอร์ต `80` และ `443`ำ
 4. อนุญาตการเชื่อมต่อ (Allow the connection)
 
 ---
