@@ -9,10 +9,19 @@ import CloseIcon       from '@mui/icons-material/Close';
 import ZoomInIcon      from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon     from '@mui/icons-material/ZoomOut';
 import AspectRatioIcon from '@mui/icons-material/AspectRatio';
+import FullscreenIcon     from '@mui/icons-material/Fullscreen';
+import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
 import MapIcon         from '@mui/icons-material/Map';
 import PhotoIcon       from '@mui/icons-material/Photo';
 import * as d3 from 'd3';
 import { API_URL, formatThaiDay, Path_URL } from '@/lib/utility';
+import {
+  WATER_LEVEL_WARN_LEVELS,
+  WARN_LEVEL_COLORS,
+  WarnLevel,
+  getWarnLevel,
+  getWarnLevelCategory,
+} from '@/lib/warnLevels';
 import DataReservoirStation from '@/app/reservoir/components/ReservoirData';
 import DataFlowCombined     from '@/app/flow/components/FlowData';
 import ExportMapButton      from './Exportmapbutton';
@@ -67,48 +76,16 @@ const endPoint = (angleDeg: number, length: number) => {
   return { dx: Math.cos(rad) * length, dy: Math.sin(rad) * length };
 };
 
+// เกณฑ์เตือนภัยระดับน้ำดึงจาก lib/warnLevels.ts (แหล่งข้อมูลกลาง)
+// ถ้าไม่พบรหัสสถานี ใช้ค่า default เดิม (red 40 / orange 38 / yellow 36)
+const FALLBACK_WARN_LEVEL: WarnLevel = { normal: 36, watch: 36, alert: 38, crisis: 40 };
+
 const getFlowColor = (code: string, wl: number) => {
-  const th: Record<string, { red: number; orange: number; yellow: number }> = {
-    // 'Y.4':  { yellow: 49.6 , orange: 50.5, red: 51.4,},
-    // 'Y.15': { yellow: 43.5 , orange: 44.7, red: 46.0,},
-    // 'Y.50': { yellow: 39.5 , orange: 40.5, red: 41.5,},
-    // 'Y.16': { yellow: 37.6 , orange: 38.4, red: 39.3,},
-    // 'Y.64': { yellow: 36.7 , orange: 37.3, red: 38.0,},
-    // 'Y.51': { yellow: 38.8 , orange: 40.4, red: 42.0,},
-    // 'Y.17': { yellow: 39.4 , orange: 40.6, red: 41.8,},
-    // 'wst': {  yellow: 39.38, orange: 40.18, red: 40.98 },
-    // 'tng': {  yellow: 41.10, orange: 42.55, red: 44.00 },
-    // 'YR.01': { yellow: 38.96, orange: 39.82, red: 40.67 },
-    // 'YR.02': { yellow: 40.89, orange: 41.23, red: 41.57 },
-    // 'YR.03': { yellow: 43.60, orange: 43.98, red: 44.37 },
-    // 'YR.04': { yellow: 41.71, orange: 42.28, red: 42.86 },
-    // 'YR.05': { yellow: 38.62, orange: 39.46, red: 40.30 },
-    // 'YR.06': { yellow: 38.48, orange: 39.02, red: 39.55 },
-
-    ///// orange -50 cm and yellow -100 cm ///////
-    'Y.16': { yellow: 38.30 , orange: 38.80, red: 39.30,},
-    'Y.64': { yellow: 37.00 , orange: 37.50, red: 38.00,},
-    'Y.51': { yellow: 41.00 , orange: 41.50, red: 42.00,},
-    'Y.17': { yellow: 40.80 , orange: 41.30, red: 41.80,},
-    "Y.4":  { yellow: 50.48, orange: 50.98, red: 51.48 },
-    "Y.15": { yellow: 45.05, orange: 45.55, red: 46.05 },
-    "Y.50": { yellow: 39.78, orange: 40.28, red: 40.78 },
-    'wst': {  yellow: 39.38, orange: 40.18, red: 40.98 },
-    'tng': {  yellow: 41.10, orange: 42.55, red: 44.00 },
-    'YR.01': { yellow: 39.67, orange: 40.17, red: 40.67 },
-    'YR.02': { yellow: 40.57, orange: 41.07, red: 41.57 },
-    'YR.03': { yellow: 43.37, orange: 43.87, red: 44.37 },
-    'YR.04': { yellow: 41.86, orange: 42.36, red: 42.86 },
-    'YR.05': { yellow: 39.30, orange: 39.80, red: 40.30 },
-    'YR.06': { yellow: 38.55, orange: 39.05, red: 39.55 },
-  };
-
-
-  const t = th[code] || { red: 40, orange: 38, yellow: 36 };
-  if (wl > t.red)    return 'red';
-  if (wl > t.orange) return 'orange';
-  if (wl > t.yellow) return '#FFD700';
-  return '#69fc00ff';
+  const level = getWarnLevel(WATER_LEVEL_WARN_LEVELS, code) ?? FALLBACK_WARN_LEVEL;
+  const category = getWarnLevelCategory(level, wl);
+  // เดิมใช้ 'red' ตรงๆ สำหรับ crisis — คงไว้เพื่อความเข้ากันได้กับ CSS/การแสดงผลเดิม
+  if (category === 'crisis') return 'red';
+  return WARN_LEVEL_COLORS[category];
 };
 
 // วาด animated arrow โดยใช้ orient="auto" + path ตามองศา
@@ -218,6 +195,46 @@ const WaterSchematicSimple: React.FC = () => {
   const [selectedStation, setSelectedStation] = useState<string | undefined>();
   const [selectedName,    setSelectedName]    = useState('');
   const [selectedType,    setSelectedType]    = useState<'reservoir' | 'flow' | 'tele' | 'gate' | undefined>();
+  const [isFullscreen,    setIsFullscreen]    = useState(false);
+
+  // Ref ของ Paper ที่ครอบ SVG — ใช้เป็น element สำหรับ Fullscreen API
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+
+  // sync สถานะ fullscreen กับ browser (รองรับการกด Esc ออกเอง)
+  useEffect(() => {
+    const onChange = () => setIsFullscreen(document.fullscreenElement === mapContainerRef.current);
+    document.addEventListener('fullscreenchange', onChange);
+    return () => document.removeEventListener('fullscreenchange', onChange);
+  }, []);
+
+  // เมื่อสลับโหมดเต็มจอ ให้จัดแผนผังให้พอดีพื้นที่ใหม่
+  useEffect(() => {
+    const id = window.setTimeout(() => fitToView(tabIndex === 1), 350);
+    return () => window.clearTimeout(id);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isFullscreen]);
+
+  const toggleFullscreen = async () => {
+    const el = mapContainerRef.current;
+    if (!el) return;
+    try {
+      if (document.fullscreenElement === el) {
+        await document.exitFullscreen();
+      } else {
+        await el.requestFullscreen();
+      }
+    } catch {
+      // บางเบราว์เซอร์/iframe บล็อก Fullscreen API → fallback เป็น overlay เต็มจอแบบ CSS
+      setIsFullscreen(prev => !prev);
+    }
+  };
+
+  const exitFullscreen = async () => {
+    if (document.fullscreenElement === mapContainerRef.current) {
+      try { await document.exitFullscreen(); } catch { /* ignore */ }
+    }
+    setIsFullscreen(false);
+  };
 
   // อัปเดต openDialogRef ทุก render เพื่อให้ setState ล่าสุดเสมอ
   useEffect(() => {
@@ -358,6 +375,7 @@ const WaterSchematicSimple: React.FC = () => {
 
     const zoom = d3.zoom<SVGSVGElement, unknown>()
       .scaleExtent([0.3, 12])
+      .extent([[0, 0], [WIDTH, HEIGHT]])
       .on('zoom', e => container.attr('transform', e.transform));
     zoomRefTab1.current = zoom;
     svg.call(zoom);
@@ -7216,6 +7234,7 @@ const WaterSchematicSimple: React.FC = () => {
     // zoom
     const zoom = d3.zoom<SVGSVGElement, unknown>()
       .scaleExtent([0.2, 8])
+      .extent([[0, 0], [690, 900]])
       .on('zoom', e => container.attr('transform', e.transform));
     zoomRefTab2.current = zoom;
     svg.call(zoom);
@@ -7256,28 +7275,44 @@ const WaterSchematicSimple: React.FC = () => {
   // ─── Render ───────────────────────────────────────────────────
 
   const ZoomControls = ({ isTab2 }: { isTab2: boolean }) => (
-    <Box sx={{ position: 'absolute', top: 20, right: 20, display: 'flex', flexDirection: 'column', gap: 1, zIndex: 10 }}>
+    <Box
+      sx={{
+        position: 'absolute', top: { xs: 8, sm: 20 }, right: { xs: 8, sm: 20 },
+        display: 'flex', flexDirection: { xs: 'row', sm: 'column' }, gap: 1, zIndex: 10,
+      }}
+    >
       <IconButton size="small" onClick={() => zoomIn(isTab2)}  sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', boxShadow: 1 }}><ZoomInIcon /></IconButton>
       <IconButton size="small" onClick={() => zoomOut(isTab2)} sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', boxShadow: 1 }}><ZoomOutIcon /></IconButton>
       <IconButton size="small" onClick={() => fitToView(isTab2)} sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', boxShadow: 1 }}><AspectRatioIcon /></IconButton>
     </Box>
   );
 
+  // ความสูงพื้นที่แสดงแผนผัง: ปกติอิง viewport, โหมดเต็มจอเต็มพื้นที่ที่เหลือ
+  const mapHeight = isFullscreen ? '100%' : { xs: '70vh', sm: '75vh', md: '80vh' };
+
   return (
-    <Box sx={{ p: 2, bgcolor: 'background.default', minHeight: '100vh' }}>
-      <Typography id="card-daily" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main',textAlign:{md:"left",xs:"center"},fontSize:{ md:24 , xs:19 }}}>
+    <Box sx={{ p: { xs: 1, sm: 2 }, bgcolor: 'background.default', minHeight: '100vh' }}>
+      <Typography id="card-daily" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main', textAlign: { md: "left", xs: "center" }, fontSize: { md: 24, xs: 18 }, px: { xs: 0.5, sm: 0 } }}>
         แผนผังสถานการณ์น้ำประจำวันที่ {formatThaiDay(teles[0]?.datetime) || 'ล่าสุด'}
       </Typography>
 
-      <Box sx={{ display: 'flex',flexDirection:{md:"row",xs:"column"}, alignItems:{ md:'flex-start' ,xs:'center'}, justifyContent: 'space-between', mb: 1 }}>
-        <Box sx={{ display: 'inline-flex', mb: 2.5, border: '0.5px solid', borderColor: 'divider', borderRadius: 2, overflow: 'hidden' }}>
+      <Box sx={{ display: 'flex', flexDirection: { md: "row", xs: "column" }, alignItems: { md: 'flex-start', xs: 'stretch' }, justifyContent: 'space-between', gap: { xs: 1.5, md: 2 }, mb: 1 }}>
+        {/* Tab switcher */}
+        <Box
+          sx={{
+            display: 'inline-flex', width: { xs: '100%', md: 'auto' },
+            border: '0.5px solid', borderColor: 'divider', borderRadius: 2, overflow: 'hidden',
+          }}
+        >
           {[
-            { label: 'แผนผังลุ่มน้ำพื้นที่โครงการ',      icon: <MapIcon   sx={{ fontSize: 18 }} />, index: 0 },
-            { label: 'แผนผังลุ่มน้ำเจ้าพระยา (ตอนบน)', icon: <PhotoIcon sx={{ fontSize: 18 }} />, index: 1 },
+            { label: 'แผนผังลุ่มน้ำพื้นที่โครงการ',      shortLabel: 'พื้นที่โครงการ', icon: <MapIcon   sx={{ fontSize: 18 }} />, index: 0 },
+            { label: 'แผนผังลุ่มน้ำเจ้าพระยา (ตอนบน)', shortLabel: 'เจ้าพระยาตอนบน', icon: <PhotoIcon sx={{ fontSize: 18 }} />, index: 1 },
           ].map(tab => (
             <Box key={tab.index} onClick={() => setTabIndex(tab.index)} sx={{
-              display: 'flex', alignItems: 'center', gap: 1, px: 2.5, py: 1.25,
-              fontSize: '0.875rem', fontFamily: 'Prompt', cursor: 'pointer',
+              flex: { xs: 1, md: 'none' }, justifyContent: 'center',
+              display: 'flex', alignItems: 'center', gap: 0.75, px: { xs: 1.5, sm: 2.5 }, py: { xs: 1, sm: 1.25 },
+              fontSize: { xs: '0.78rem', sm: '0.875rem' }, fontFamily: 'Prompt', cursor: 'pointer',
+              textAlign: 'center',
               borderRight: tab.index === 0 ? '0.5px solid' : 'none', borderColor: 'divider',
               transition: 'all 0.15s',
               bgcolor: tabIndex === tab.index ? '#28378B' : 'background.paper',
@@ -7285,20 +7320,79 @@ const WaterSchematicSimple: React.FC = () => {
               fontWeight: tabIndex === tab.index ? 600 : 400,
               '&:hover': { bgcolor: tabIndex === tab.index ? '#28378B' : 'grey.100' },
             }}>
-              {tab.icon}{tab.label}
+              {tab.icon}
+              <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>{tab.label}</Box>
+              <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>{tab.shortLabel}</Box>
             </Box>
           ))}
         </Box>
-        <ExportMapButton svgRef={tabIndex === 0 ? svgRefTab1 : svgRefTab2} filename={`water-schematic-${new Date().toISOString().slice(0,10)}`} />
+
+        {/* Action buttons */}
+        <Box
+          sx={{
+            display: 'flex',
+            gap: 1,
+            width: { xs: '100%', md: 'auto' },
+            flexWrap: 'nowrap',
+            alignItems: 'stretch',
+            justifyContent: { xs: 'center', md: 'flex-end' },
+          }}
+        >
+          <IconButton
+            onClick={toggleFullscreen}
+            aria-label={isFullscreen ? 'ออกจากโหมดเต็มจอ' : 'โหมดเต็มจอ'}
+            title={isFullscreen ? 'ออกจากโหมดเต็มจอ' : 'โหมดเต็มจอ'}
+            sx={{ flexShrink: 0, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}
+          >
+            {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
+          </IconButton>
+          <Box
+            sx={{
+              flex: { xs: 1, sm: 'unset', md: 'unset' },
+              maxWidth: { xs: 'none', sm: 260, md: 'none' },
+              display: 'flex',
+              '& > button': { flex: 1, width: '100%' },
+            }}
+          >
+            <ExportMapButton svgRef={tabIndex === 0 ? svgRefTab1 : svgRefTab2} filename={`water-schematic-${new Date().toISOString().slice(0,10)}`} />
+          </Box>
+        </Box>
       </Box>
 
-      <Paper elevation={1} sx={{ p: 2, borderRadius: 2, position: 'relative', overflow: 'hidden' }}>
-        <Box sx={{ display: tabIndex === 0 ? 'block' : 'none', position: 'relative' }}>
-          <svg ref={svgRefTab1} style={{ width: '100%', height: 'auto', minHeight: '900px' }} />
+      <Paper
+        ref={mapContainerRef}
+        elevation={1}
+        sx={{
+          p: { xs: 1, sm: 2 },
+          borderRadius: isFullscreen ? 0 : 2,
+          position: 'relative',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          // โหมดเต็มจอ (ทั้ง Fullscreen API และ CSS overlay) ให้เต็มพื้นที่
+          ...(isFullscreen && {
+            position: 'fixed', inset: 0, zIndex: 1300,
+            width: '100vw', height: '100vh',
+            bgcolor: 'background.default', borderRadius: 0, m: 0,
+          }),
+        }}
+      >
+        {/* ปุ่มออกจากโหมดเต็มจอ (สำหรับกรณี CSS overlay ที่ Fullscreen API ถูกบล็อก) */}
+        {isFullscreen && (
+          <Box sx={{ position: 'absolute', top: 8, left: 8, zIndex: 20 }}>
+            <IconButton size="small" onClick={exitFullscreen} title="ออกจากโหมดเต็มจอ"
+              sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', boxShadow: 1 }}>
+              <FullscreenExitIcon />
+            </IconButton>
+          </Box>
+        )}
+
+        <Box sx={{ display: tabIndex === 0 ? 'flex' : 'none', position: 'relative', width: '100%', height: mapHeight, flex: 1, minHeight: 0 }}>
+          <svg ref={svgRefTab1} style={{ width: '100%', height: '100%', display: 'block' }} />
           <ZoomControls isTab2={false} />
         </Box>
-        <Box sx={{ display: tabIndex === 1 ? 'block' : 'none', position: 'relative' }}>
-          <svg ref={svgRefTab2} style={{ width: '100%', height: 'auto', minHeight: '900px' }} />
+        <Box sx={{ display: tabIndex === 1 ? 'flex' : 'none', position: 'relative', width: '100%', height: mapHeight, flex: 1, minHeight: 0 }}>
+          <svg ref={svgRefTab2} style={{ width: '100%', height: '100%', display: 'block' }} />
           <ZoomControls isTab2={true} />
         </Box>
       </Paper>

@@ -20,6 +20,14 @@ class Stations extends ResourceController
     {
         $db = Database::connect();
 
+        // เวลาข้อมูลล่าสุดของแต่ละสถานี (สำหรับคำนวณสถานะ)
+        $latest = $db->table('tele_data')
+            ->select('sta_code, MAX(datetime) AS latest_datetime')
+            ->groupBy('sta_code')
+            ->get()
+            ->getResultArray();
+        $latestMap = array_column($latest, 'latest_datetime', 'sta_code');
+
         $builder = $db->table('tele_info t');
         $builder->select('t.sta_code, t.sta_name, t.river, t.tambon, t.district, t.province,
                            t.capacity, t.lat, t.long, COUNT(e.id) AS equipment_count');
@@ -30,9 +38,10 @@ class Stations extends ResourceController
 
         $stations = $builder->get()->getResultArray();
 
-        // แปลง equipment_count เป็น int (บาง driver คืนเป็น string)
+        // แปลง equipment_count เป็น int (บาง driver คืนเป็น string) และแนบเวลาข้อมูลล่าสุด
         foreach ($stations as &$s) {
-            $s['equipment_count'] = (int) $s['equipment_count'];
+            $s['equipment_count']  = (int) $s['equipment_count'];
+            $s['latest_datetime']  = $latestMap[$s['sta_code']] ?? null;
         }
 
         return $this->respond([

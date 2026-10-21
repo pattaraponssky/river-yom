@@ -15,7 +15,7 @@ import { Path_URL, formatThaiDay } from "@/lib/utility";
 import { titleStyle } from "@/theme/style";
 import dynamic from "next/dynamic";
 import { FLOW_WARN_LEVELS, TELE_WARN_LEVELS, getWarnLevel } from '../../../lib/warnLevels';
-import { STATION_MAPPING } from '@/components/hooks/useRasData';
+import { STATION_MAPPING, thaiTodayYMD } from '@/components/hooks/useRasData';
 
 const ApexChart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
@@ -97,7 +97,22 @@ const WaterLevelChart: React.FC<Props> = ({ data, chartHeight = 550 }) => {
       });
   }, []);
 
-  const stationData = useMemo(() => data.filter((item) => item.station === selectedStation), [data, selectedStation]);
+  // วันปัจจุบัน (RAS เริ่ม 07:00) แสดงเฉพาะ 07:00 เป็นต้นไป
+  // ส่วนวันถัดไปแสดงข้อมูลทั้งหมดตามที่มี (00:00 - 23:00)
+  const startFilterDate = thaiTodayYMD();
+
+  const stationData = useMemo(
+    () =>
+      data.filter((item) => {
+        if (item.station !== selectedStation) return false;
+        const date = item.time.split("T")[0];
+        if (date !== startFilterDate) return true;
+        const timePart = item.time.split("T")[1] ?? "";
+        const hour = Number(timePart.slice(0, 2));
+        return hour >= 7;
+      }),
+    [data, selectedStation, startFilterDate]
+  );
 
   const groupedByDate = useMemo(() => {
     return stationData.reduce((acc, item) => {
@@ -109,7 +124,7 @@ const WaterLevelChart: React.FC<Props> = ({ data, chartHeight = 550 }) => {
   }, [stationData]);
 
   const availableDates = useMemo(() => {
-    const today = new Date().toISOString().split("T")[0];
+    const today = thaiTodayYMD();
     return Object.keys(groupedByDate)
       .filter(date => date >= today)
       .sort();

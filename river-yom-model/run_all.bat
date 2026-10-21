@@ -74,9 +74,20 @@ if %ERRORLEVEL%==0 (
 )
 echo.
 
+:: STEP 7 - backup ras output (สำรองผลลัพธ์ RAS)
+echo Step 7: 
+python C:\xampp\htdocs\river-yom-model\backup_ras.py
+if %ERRORLEVEL%==0 (
+    echo [OK] backup_ras.py run complete
+) else (
+    echo [ERROR] backup_ras.py failed
+    pause
+    exit /b
+)
+echo.
 
-:: STEP 7 - cal gate open (คำนวณข้อเสนอแนะการเปิดประตูระบายน้ำ)
-echo Step 7: cal gate open
+:: STEP 8 - cal gate open (คำนวณข้อเสนอแนะการเปิดประตูระบายน้ำ)
+echo Step 8: cal gate open
 python C:\xampp\htdocs\river-yom-model\gate_json.py
 if %ERRORLEVEL%==0 (
     echo [OK] gate_json.py run complete
@@ -87,8 +98,8 @@ if %ERRORLEVEL%==0 (
 )
 echo.
 
-:: STEP 8 - Run send gate open (ส่งข้อเสนอแนะการเปิดประตูระบายน้ำ)
-echo Step 8: Run send date gate open
+:: STEP 9 - Run send gate open (ส่งข้อเสนอแนะการเปิดประตูระบายน้ำ)
+echo Step 9: Run send date gate open
 python C:\xampp\htdocs\river-yom-model\send_gate_open.py
 if %ERRORLEVEL%==0 (
     echo [OK] send_gate_open.py run complete

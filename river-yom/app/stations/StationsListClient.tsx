@@ -30,6 +30,7 @@ interface TeleStation {
   lat: number | null;
   long: number | null;
   equipment_count?: number;
+  latest_datetime?: string | null;          // เวลาข้อมูลล่าสุด "YYYY-MM-DD HH:MM:SS"
   latest_status?: StationLiveStatus | null; // ★ field ที่ backend จะเพิ่มมาให้ทีหลัง
 }
 
@@ -39,10 +40,26 @@ const LIVE_STATUS_CONFIG: Record<StationLiveStatus, { label: string; color: stri
   warning: { label: 'มีปัญหา',    color: '#f59e0b', chipColor: 'warning' },
 };
 
-// ★ TODO: ลบฟังก์ชันนี้ทิ้งเมื่อ backend ส่ง station.latest_status มาจริงแล้ว
-// ตอนนี้ mock เป็น 'online' ทุกสถานีไปก่อนตามที่ตกลงกัน
+// ถ้าข้อมูลล่าสุดของสถานีหายไปเกิน 1 วัน → 'มีปัญหา' (warning)
+const STALE_THRESHOLD_MS = 24 * 60 * 60 * 1000;
+
 function getStationStatus(station: TeleStation): StationLiveStatus {
-  return station.latest_status ?? 'online';
+  // ใช้ค่าที่ backend ส่งมาตรงๆ ถ้ามี
+  if (station.latest_status) return station.latest_status;
+
+  // ไม่มีข้อมูลล่าสุดเลย → ถือว่ามีปัญหา
+  if (!station.latest_datetime) return 'warning';
+
+  // "YYYY-MM-DD HH:MM:SS" เป็นเวลาไทย (Asia/Bangkok, UTC+7) → เติม offset ให้ถูกต้อง
+  // รองรับทั้งกรณีมี/ไม่มี seconds
+  const normalized = station.latest_datetime.trim().replace(' ', 'T');
+  const latest = new Date(
+    normalized.length === 16 ? `${normalized}:00+07:00` : `${normalized}+07:00`
+  );
+  if (isNaN(latest.getTime())) return 'warning';
+
+  const ageMs = Date.now() - latest.getTime();
+  return ageMs > STALE_THRESHOLD_MS ? 'warning' : 'online';
 }
 
 export default function StationsListClient() {
@@ -97,23 +114,40 @@ export default function StationsListClient() {
   }
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
+    <Container maxWidth={false} disableGutters sx={{ py: { xs: 2, md: 3 }, px: { xs: 2, sm: 3, md: 4 } }}>
       {/* Header */}
-      <Box sx={{ mb: 3 }}>
-        <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
-          <Typography variant="h4" sx={{ fontWeight: 'bold', fontFamily: 'Prompt' }}>
+      <Box sx={{ mb: { xs: 2, md: 3 } }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column', sm: 'row' },
+            alignItems: { xs: 'flex-start', sm: 'center' },
+            justifyContent: 'space-between',
+            gap: { xs: 1.5, sm: 2 },
+          }}
+        >
+          <Typography
+            variant="h4"
+            sx={{ fontWeight: 'bold', fontFamily: 'Prompt', fontSize: { xs: '1.4rem', sm: '1.75rem', md: '2.125rem' } }}
+          >
             สถานีติดตั้งอุปกรณ์
           </Typography>
-          <Button variant="contained" color="primary" onClick={() => router.push('/equipment')}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => router.push('/equipment')}
+            fullWidth
+            sx={{ fontFamily: 'Prompt', width: { xs: '100%', sm: 'auto' } }}
+          >
             รายการอุปกรณ์ทั้งหมด
           </Button>
         </Box>
-        <Typography variant="body2" color="text.secondary" sx={{ fontFamily: 'Prompt' }}>
+        <Typography variant="body2" color="text.secondary" sx={{ fontFamily: 'Prompt', mt: 0.5 }}>
           ฝั่งขวาแม่น้ำยม อำเภอบางระกำ จังหวัดพิษณุโลก — {filtered.length} สถานี
         </Typography>
 
         {/* Legend สรุปสถานะ */}
-        <Box sx={{ display: 'flex', gap: 1.5, mt: 1.5, flexWrap: 'wrap' }}>
+        <Box sx={{ display: 'flex', gap: { xs: 1.25, sm: 1.5 }, mt: 1.5, flexWrap: 'wrap' }}>
           {(Object.keys(LIVE_STATUS_CONFIG) as StationLiveStatus[]).map(key => (
             <Box key={key} sx={{ display: 'flex', alignItems: 'center', gap: 0.7 }}>
               <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: LIVE_STATUS_CONFIG[key].color }} />
@@ -131,16 +165,16 @@ export default function StationsListClient() {
         onChange={e => setSearchTerm(e.target.value)}
         size="small"
         fullWidth
-        sx={{ mb: 3, maxWidth: 420 }}
+        sx={{ mb: { xs: 2, md: 3 }, maxWidth: { xs: '100%', sm: 420 } }}
         InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon /></InputAdornment> }}
       />
 
       {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
 
-      <Grid container spacing={3}>
+      <Grid container spacing={{ xs: 2, sm: 2.5, md: 3 }}>
         {loadingData ? (
-          Array.from({ length: 6 }).map((_, i) => (
-            <Grid key={i} size={{ xs: 12, sm: 6, md: 4 }}>
+          Array.from({ length: 8 }).map((_, i) => (
+            <Grid key={i} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
               <Skeleton variant="rounded" height={260} />
             </Grid>
           ))
@@ -157,7 +191,7 @@ export default function StationsListClient() {
             const statusCfg = LIVE_STATUS_CONFIG[liveStatus];
 
             return (
-              <Grid key={station.sta_code} size={{ xs: 12, sm: 6, md: 4 }}>
+              <Grid key={station.sta_code} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
                 <Card sx={{ borderRadius: 3, overflow: 'hidden', boxShadow: 3, height: '100%' }}>
                   <CardActionArea
                     onClick={() => router.push(`/stations/${encodeURIComponent(station.sta_code)}`)}
@@ -165,9 +199,14 @@ export default function StationsListClient() {
                   >
                     <Box sx={{ position: 'relative' }}>
                       {photo ? (
-                        <CardMedia component="img" height="160" image={photo} alt={station.sta_name} sx={{ objectFit: 'cover' }} />
+                        <CardMedia
+                          component="img"
+                          image={photo}
+                          alt={station.sta_name}
+                          sx={{ height: { xs: 180, sm: 160, lg: 150 }, objectFit: 'cover' }}
+                        />
                       ) : (
-                        <Box sx={{ height: 160, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'grey.100', color: 'grey.400' }}>
+                        <Box sx={{ height: { xs: 180, sm: 160, lg: 150 }, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'grey.100', color: 'grey.400' }}>
                           <WaterIcon sx={{ fontSize: 40 }} />
                         </Box>
                       )}
@@ -196,22 +235,29 @@ export default function StationsListClient() {
                       </Tooltip>
                     </Box>
 
-                    <CardContent sx={{ flexGrow: 1 }}>
-                      <Typography variant="subtitle1" sx={{ fontWeight: 'bold', fontFamily: 'Prompt', mb: 0.5 }}>
+                    <CardContent sx={{ flexGrow: 1, p: { xs: 1.75, sm: 2 }, '&:last-child': { pb: { xs: 1.75, sm: 2 } } }}>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 'bold', fontFamily: 'Prompt', mb: 0.25, lineHeight: 1.3 }}>
                         {station.sta_code}
                       </Typography>
-                      <Typography variant="body2" sx={{ fontFamily: 'Prompt', mb: 1 }}>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontFamily: 'Prompt', mb: 0.75,
+                          display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+                          minHeight: '2.6em',
+                        }}
+                      >
                         {station.sta_name}
                       </Typography>
 
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary', mb: 0.5 }}>
-                        <PlaceIcon fontSize="small" />
+                      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.5, color: 'text.secondary', mb: 0.75 }}>
+                        <PlaceIcon fontSize="small" sx={{ mt: 0.25, flexShrink: 0 }} />
                         <Typography variant="caption" sx={{ fontFamily: 'Prompt' }}>
                           {[station.river, station.tambon, station.district].filter(Boolean).join(' • ')}
                         </Typography>
                       </Box>
 
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, flexWrap: 'wrap' }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
                           <SensorsIcon fontSize="small" />
                           <Typography variant="caption" sx={{ fontFamily: 'Prompt' }}>
@@ -219,7 +265,7 @@ export default function StationsListClient() {
                           </Typography>
                         </Box>
                         {station.capacity != null && (
-                          <Chip size="small" label={`${station.capacity} ลบ.ม./วิ`} sx={{ fontFamily: 'Prompt' }} />
+                          <Chip size="small" label={`${station.capacity} ลบ.ม./วิ`} sx={{ fontFamily: 'Prompt', maxWidth: '100%' }} />
                         )}
                       </Box>
                     </CardContent>

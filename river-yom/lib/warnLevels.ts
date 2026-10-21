@@ -58,6 +58,15 @@ export const RAIN_WARN_LEVELS: Record<string, WarnLevel> = {
   default: { normal: 0, watch: 35, alert: 60, crisis: 90 },
 };
 
+// ─── รวมเกณฑ์ระดับน้ำทุกประเภท (Tele + Gate + Flow) ──────────
+// ใช้เมื่อต้องการ lookup ด้วยรหัสสถานีที่ไม่รู้ประเภทล่วงหน้า
+// (เช่น แผนผังที่แสดงทั้งสถานีโทรมาตร ประตูน้ำ และน้ำท่ารวมกัน)
+export const WATER_LEVEL_WARN_LEVELS: Record<string, WarnLevel> = {
+  ...TELE_WARN_LEVELS,
+  ...GATE_WARN_LEVELS,
+  ...FLOW_WARN_LEVELS,
+};
+
 // ─── ช่วงแกน Y ของกราฟระดับน้ำ ───────────────────────────────
 export const TELE_WATER_LEVEL_Y_AXIS_RANGE: Record<string, YAxisRange> = {
   'YR.01': { min: 32, max: 42 },
@@ -90,6 +99,39 @@ export function getWarnLevel(
   fallbackKey = 'default'
 ): WarnLevel | undefined {
   return levels[staCode] ?? levels[fallbackKey];
+}
+
+// ─── สีตามระดับเตือนภัย (ใช้กับแผนผัง/แผนที่) ─────────────────
+export const WARN_LEVEL_COLORS = {
+  crisis: '#FF0000',   // วิกฤต
+  alert:  'orange',    // เตือนภัย
+  watch:  '#FFD700',   // เฝ้าระวัง
+  normal: '#69fc00ff', // ปกติ
+  unknown: '#9e9e9e',  // ไม่พบเกณฑ์
+} as const;
+
+export type WarnLevelColorKey = keyof typeof WARN_LEVEL_COLORS;
+
+// คืนชื่อระดับ (crisis/alert/watch/normal) จากค่าระดับน้ำ เทียบกับเกณฑ์ที่ให้
+export function getWarnLevelCategory(
+  level: WarnLevel,
+  value: number
+): Exclude<WarnLevelColorKey, 'unknown'> {
+  if (value > level.crisis) return 'crisis';
+  if (value > level.alert)  return 'alert';
+  if (value > level.watch)  return 'watch';
+  return 'normal';
+}
+
+// คืนสีตามระดับน้ำ โดยดึงเกณฑ์จาก map ที่ส่งมา (คืนสี unknown ถ้าไม่พบเกณฑ์)
+export function getWarnLevelColor(
+  levels: Record<string, WarnLevel>,
+  staCode: string,
+  value: number
+): string {
+  const level = getWarnLevel(levels, staCode);
+  if (!level) return WARN_LEVEL_COLORS.unknown;
+  return WARN_LEVEL_COLORS[getWarnLevelCategory(level, value)];
 }
 
 // ─── Annotation builders ─────────────────────────────────────

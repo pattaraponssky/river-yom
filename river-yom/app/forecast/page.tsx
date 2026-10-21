@@ -15,7 +15,7 @@ import { forecastMenus } from '@/lib/menuFloating';
 import { useMemo } from 'react';
 import CenteredLoading from '@/components/Layout/CenteredLoading';
 import { Alert } from '@mui/material';
-import { useRasData } from '@/components/hooks/useRasData';
+import { useRasData, forecastStartTs, toTs } from '@/components/hooks/useRasData';
 
 // ─── Station ที่ใช้คำนวณ warning table ───────────────────────
 
@@ -28,12 +28,10 @@ export default function Dashboard() {
   const { maxElevations, waterPeaks, waterTrends } = useMemo(() => {
     if (!today) return { maxElevations: {}, waterPeaks: {}, waterTrends: {} };
 
-    const now      = new Date();
-    const today9am = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 9, 0, 0);
-    const tomorrow9am = new Date(today9am);
-    tomorrow9am.setDate(today9am.getDate() + 1);
+    const tofTs        = forecastStartTs();
+    const tomorrowTofTs = tofTs + 24 * 60 * 60 * 1000;
 
-    const futurePoints = today.points.filter(p => new Date(p.time) >= today9am);
+    const futurePoints = today.points.filter(p => toTs(p.time) >= tofTs);
     const maxElevations: Record<string, number>                       = {};
     const waterPeaks:    Record<string, { elevation: number; time: string }> = {};
     const waterTrends:   Record<string, string>                       = {};
@@ -46,8 +44,8 @@ export default function Dashboard() {
       maxElevations[sta] = peak.elevation;
       waterPeaks[sta]    = { elevation: peak.elevation, time: peak.time };
 
-      const before = pts.filter(p => new Date(p.time) < tomorrow9am);
-      const after  = pts.filter(p => new Date(p.time) >= tomorrow9am);
+      const before = pts.filter(p => toTs(p.time) < tomorrowTofTs);
+      const after  = pts.filter(p => toTs(p.time) >= tomorrowTofTs);
 
       if (!before.length || !after.length) {
         waterTrends[sta] = 'ไม่มีข้อมูลเพียงพอ';

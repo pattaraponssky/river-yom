@@ -6,20 +6,19 @@ import { Path_URL } from '@/lib/utility';
 // ─── Types ────────────────────────────────────────────────────
 
 export interface WaterLevelPoint {
-  river: string;
-  time:         string;   // ISO string
+  river:        string;
+  time:         string;   // "YYYY-MM-DDTHH:mm:ss" (ตามเวลาในไฟล์ CSV ไม่แปลง timezone)
   station:      string;
   elevation:    number;
   crossSection: number;
 }
 
 export interface ForecastSnapshot {
-  date:   string;             // "YYYY-MM-DD" = วันที่รัน forecast นั้น
+  date:   string;             // "YYYY-MM-DD" = วันที่รัน forecast นั้น (เวลาไทย)
   points: WaterLevelPoint[];
 }
 
 export interface RasData {
-  /** ข้อมูลทั้งหมด (today + archive) รวมกัน */
   today:    ForecastSnapshot | null;
   archive:  ForecastSnapshot[];        // เรียงจากเก่า → ใหม่
   loading:  boolean;
@@ -41,9 +40,40 @@ export const STATION_MAPPING: Record<string, number> = {
 const CROSS_TO_STATION = new Map<number, string>(
   Object.entries(STATION_MAPPING).map(([k, v]) => [v, k])
 );
-// ─── Helpers ──────────────────────────────────────────────────
 
-/** แปลง "dd/mm/yyyy HH:mm" (พ.ศ. หรือ ค.ศ.) → ISO string */
+// ─── Time helpers ─────────────────────────────────────────────
+
+/** "YYYY-MM-DDTHH:mm:ss" → timestamp ที่ถือเวลาตามไฟล์ CSV (ไม่แปลง timezone)
+ *  ใช้ร่วมกับ ApexCharts ที่แสดงแกนเวลาแบบ UTC จะได้ตรงกับ CSV */
+export function toTs(iso: string): number {
+  const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+  if (!m) return NaN;
+  return Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]);
+}
+
+/** วันนี้ตามเวลาไทย "YYYY-MM-DD" */
+export function thaiTodayYMD(): string {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Bangkok' }).format(new Date());
+}
+
+/** จุดเริ่ม forecast = 07:00 ของวันนี้ (เวลาไทย) */
+export function forecastStartTs(): number {
+  return toTs(`${thaiTodayYMD()}T07:00:00`);
+}
+
+/** สร้าง array ของวันที่ย้อนหลัง n วัน (เวลาไทย) รูปแบบ "YYYY-MM-DD" เรียง เก่า → ใหม่ */
+function pastDates(n: number): string[] {
+  const base = new Date(`${thaiTodayYMD()}T00:00:00Z`);
+  return Array.from({ length: n }, (_, i) => {
+    const d = new Date(base);
+    d.setUTCDate(d.getUTCDate() - (i + 1));
+    return d.toISOString().slice(0, 10);
+  }).reverse();
+}
+
+// ─── CSV helpers ──────────────────────────────────────────────
+
+/** แปลง "dd/mm/yyyy HH:mm" (พ.ศ. หรือ ค.ศ.) → "YYYY-MM-DDTHH:mm:00" */
 function parseDateString(raw: string | undefined): string | null {
   if (!raw) return null;
   const [datePart, timePart] = raw.trim().split(/\s+/);
@@ -76,18 +106,10 @@ function parseCsv(csvText: string): WaterLevelPoint[] {
       // ทิ้งเฉพาะ row ที่ข้อมูลพื้นฐานไม่ครบ
       if (!time || isNaN(crossSection) || isNaN(elevation)) return null;
 
-      // station อาจเป็น '' ถ้า crossSection ไม่อยู่ใน mapping
-      // → LongProfile ใช้ crossSection โดยตรง ไม่ต้องการ station
-      // → chart/warning ที่ต้องการ station จะ filter เอาเฉพาะที่มีค่าอยู่แล้ว
+      // station เป็น '' ถ้า crossSection ไม่อยู่ใน mapping
       const station = CROSS_TO_STATION.get(crossSection) ?? '';
 
-      return {
-        time,
-        station,
-        elevation,
-        crossSection,
-        river,
-      };
+      return { time, station, elevation, crossSection, river };
     })
     .filter((p): p is WaterLevelPoint => p !== null);
 }
@@ -95,21 +117,12 @@ function parseCsv(csvText: string): WaterLevelPoint[] {
 /** ดึงและ parse CSV จาก URL เดียว (คืน null ถ้า fetch ล้มเหลว) */
 async function fetchCsv(url: string): Promise<WaterLevelPoint[] | null> {
   try {
-    const res = await fetch(url);
+    const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) return null;
     return parseCsv(await res.text());
   } catch {
     return null;
   }
-}
-
-/** สร้าง array ของวันที่ย้อนหลัง n วัน รูปแบบ "YYYY-MM-DD" */
-function pastDates(n: number): string[] {
-  return Array.from({ length: n }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() - (i + 1));   // -1, -2, -3 ...
-    return d.toISOString().slice(0, 10);
-  }).reverse();                          // เรียง เก่า → ใหม่
 }
 
 // ─── Hook ─────────────────────────────────────────────────────
@@ -135,7 +148,7 @@ export function useRasData(archiveDays = 3): RasData {
       setError(null);
 
       try {
-        const todayStr = new Date().toISOString().slice(0, 10);
+        const todayStr = thaiTodayYMD();
 
         // โหลดทุกไฟล์พร้อมกัน
         const [todayPoints, ...archiveResults] = await Promise.all([

@@ -7,7 +7,8 @@ hec = win32com.client.Dispatch("RAS630.HECRASController")
 
 # === ระบุพาธไฟล์โครงการ HEC-RAS และไฟล์ CSV ===
 project_file = r"C:\xampp\htdocs\river-yom-model\RAS_YOM\YOM.prj"
-csv_file = r"C:\xampp\htdocs\ras-output\output_ras.csv"
+csv_file = r"C:\xampp\htdocs\river-yom\ras-output\output_ras.csv"
+# csv_file = r"C:\xampp\htdocs\ras-output\output_ras.csv"
 
 # === เปิดโครงการ HEC-RAS ===
 hec.Project_Open(project_file)
@@ -28,7 +29,7 @@ river_names = list(river_names)
 # === ดึง Profiles ===
 profiles = list(hec.Output_GetProfiles(1)[1])
 num_profiles = len(profiles)
-selected_rivers = [1]  # ถ้าต้องการดึงแม่น้ำ 1 กับ 2 => selected_rivers = [1, 2]
+selected_rivers = [1,2,3,4]  # ถ้าต้องการดึงแม่น้ำ 1 กับ 2 => selected_rivers = [1, 2]
 
 for profile_index in range(1, num_profiles):  # profile_index 0 คือ header
     profile_name = profiles[profile_index]
