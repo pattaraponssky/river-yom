@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Path_URL } from '@/lib/utility';
 import { formatThaiDay } from '@/lib/utility';
 import { StationInfo, TeleDataItem } from '../hydro';
-import { TELE_WARN_LEVELS, getWarnLevel } from '@/lib/warnLevels';
+import { TELE_WARN_LEVELS, getWarnLevel, formatBankRow } from '@/lib/warnLevels';
 
 // ฟังก์ชันช่วยสร้าง marker สำหรับสถานีน้ำท่า (tele)
 const addTeleMarkers = (
@@ -45,6 +45,10 @@ const addTeleMarkers = (
     const rain_mm = isToday && latest?.rain_mm != null && parseFloat(latest.rain_mm) !== 0
       ? parseFloat(latest.rain_mm).toFixed(2)
       : '-';
+
+    // ระดับตลิ่ง + เทียบระดับน้ำกับตลิ่ง (แถวเดียว)
+    const wlNum = wl !== '-' ? parseFloat(wl) : null;
+    const bankRow = formatBankRow(TELE_WARN_LEVELS, sta_code, wlNum);
 
     const safeStaCode = sta_code.replace(/\./g, '_');
 
@@ -92,7 +96,8 @@ const addTeleMarkers = (
         <div style="font-size:0.9rem;line-height:1.4rem;">
           <div><b>รหัสสถานี:</b> <span style="color:#4caf50;font-weight:bold;">${sta_code || '-'}</span></div>
           <div><b>📉 อัตราการไหล:</b> <span style="color:#1e88e5;font-weight:bold;">${discharge} ลบ.ม./วินาที</span></div>
-          <div><b>📈 ระดับน้ำ:</b> <span style="color:#e53935;font-weight:bold;">${wl} ม.รทก.</span></div>
+          <div><b>📈 ระดับน้ำปัจจุบัน:</b> <span style="color:#e53935;font-weight:bold;">${wl} ม.รทก.</span></div>
+          <div><b>🧱 ${bankRow}</b></div>
           <div><b>🌧️ ปริมาณฝน:</b> <span style="color:#43a047;font-weight:bold;">${rain_mm} มม.</span></div>
         </div>
 

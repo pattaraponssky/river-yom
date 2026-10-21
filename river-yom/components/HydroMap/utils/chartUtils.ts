@@ -1,6 +1,80 @@
 // chartUtils.ts
 // ไม่ import ApexCharts ที่ด้านบนเลย → ป้องกัน SSR error
 
+import {
+  TELE_WARN_LEVELS,
+  GATE_WARN_LEVELS,
+  FLOW_WARN_LEVELS,
+  WarnLevel,
+  getWarnLevel,
+  getBankLevel,
+  makeWarnAnnotation,
+} from '@/lib/warnLevels';
+
+// เลือกชุดเกณฑ์เตือนภัยตามประเภทของกราฟ
+const resolveWarnLevels = (type: string): Record<string, WarnLevel> => {
+  if (type.startsWith('tele_')) return TELE_WARN_LEVELS;
+  if (type.startsWith('gate_') || type === 'wl_upper' || type === 'wl_lower') return GATE_WARN_LEVELS;
+  return FLOW_WARN_LEVELS;
+};
+
+// สร้าง annotation: ระดับตลิ่ง + เกณฑ์เตือนภัย (สำหรับกราฟระดับน้ำ)
+const buildWaterLevelAnnotations = (
+  type: string,
+  code: string,
+): ApexAnnotations => {
+  // เฉพาะกราฟระดับน้ำ (wl) เท่านั้นจึงจะแสดงตลิ่ง/เกณฑ์
+  const isWaterLevel =
+    type === 'wl' || type === 'tele_wl' || type === 'wl_upper' || type === 'wl_lower';
+  if (!isWaterLevel) return { yaxis: [] };
+
+  const levels = resolveWarnLevels(type);
+  const yaxis: YAxisAnnotations[] = [];
+
+  const level = getWarnLevel(levels, code);
+  if (level) {
+    yaxis.push(makeWarnAnnotation(level.crisis, '#FF0000', ``, 'left', -12));
+    yaxis.push(makeWarnAnnotation(level.alert, 'orange', ``, 'left', 0));
+    yaxis.push(makeWarnAnnotation(level.watch, '#FFD700', ``, 'left', 12));
+    // yaxis.push(makeWarnAnnotation(level.crisis, '#FF0000', `วิกฤต ${level.crisis}`, 'left', -12));
+    // yaxis.push(makeWarnAnnotation(level.alert, 'orange', `เตือนภัย ${level.alert}`, 'left', 0));
+    // yaxis.push(makeWarnAnnotation(level.watch, '#FFD700', `เฝ้าระวัง ${level.watch}`, 'left', 12));
+  }
+
+  const bank = getBankLevel(levels, code);
+  if (bank != null) {
+    yaxis.push(makeWarnAnnotation(bank, '#FF0000', `ระดับตลิ่ง ${bank}`, 'right', 0, { borderWidth: 2 }));
+    // yaxis.push(makeWarnAnnotation(bank, '#8e24aa',`ระดับตลิ่ง ${bank}`, 'right', 0, { borderWidth: 2 }));
+  }
+
+  return { yaxis };
+};
+
+// สร้างช่วงแกน Y ของกราฟระดับน้ำ: max = max(ข้อมูล, ตลิ่ง+margin), min = min(ข้อมูล)
+const buildWaterLevelYAxis = (
+  type: string,
+  code: string,
+  seriesData: { x: number; y: number | null }[],
+): { min?: number; max?: number } => {
+  const isWaterLevel =
+    type === 'wl' || type === 'tele_wl' || type === 'wl_upper' || type === 'wl_lower';
+  if (!isWaterLevel) return {};
+
+  const values = seriesData
+    .map((d) => d.y)
+    .filter((v): v is number => v != null && !isNaN(v));
+  if (values.length === 0) return {};
+
+  const levels = resolveWarnLevels(type);
+  const bank = getBankLevel(levels, code);
+
+  const dataMin = Math.min(...values);
+  const dataMax = Math.max(...values);
+  const max = bank != null && bank >= dataMax ? bank : dataMax + 0.5;
+
+  return { min: dataMin, max };
+};
+
 // เก็บ instance ของ chart (จะใช้เฉพาะ client)
 const chartsInstances: Record<string, Record<string, any>> = {};
 
@@ -219,6 +293,9 @@ export const renderChart = async (
   // แสดง div ที่ต้องการ
   element.style.display = 'block';
 
+  // ช่วงแกน Y ของกราฟระดับน้ำ (ให้เห็นเส้นระดับตลิ่ง)
+  const yAxisRange = buildWaterLevelYAxis(type, code, seriesData);
+
   // สร้างและ render chart
   const chart = new ApexCharts(element, {
     chart: {
@@ -233,7 +310,12 @@ export const renderChart = async (
       type: 'datetime',
       labels: { datetimeUTC: false, format: 'dd MMM' },
     },
+    yaxis: {
+      min: yAxisRange.min,
+      max: yAxisRange.max,
+    },
     colors: [color],
+    annotations: buildWaterLevelAnnotations(type, code),
     dataLabels: {
       enabled: true,
       offsetY: -20,

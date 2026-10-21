@@ -67,6 +67,71 @@ export const WATER_LEVEL_WARN_LEVELS: Record<string, WarnLevel> = {
   ...FLOW_WARN_LEVELS,
 };
 
+// ─── ระดับตลิ่ง (bank level) — ม.รทก. ────────────────────────
+// กำหนดค่าเฉพาะสถานีที่ต้องการทับค่า default
+// ถ้าไม่มีในนี้ จะใช้ค่า default เท่ากับระดับวิกฤต (crisis) ของสถานีนั้น
+export const BANK_LEVELS: Record<string, number> = {
+  // ตัวอย่าง: 'Y.4': 51.48,
+};
+
+// สีของระดับตลิ่ง (ม่วง) ใช้ทั้ง popup และเส้น annotation บนกราฟ
+export const BANK_LEVEL_COLOR = '#8e24aa';
+
+// ค่าระดับตลิ่งของสถานี — ถ้าไม่กำหนดไว้ ใช้ระดับวิกฤต (crisis) เป็นค่าเริ่มต้น
+export function getBankLevel(
+  levels: Record<string, WarnLevel>,
+  staCode: string
+): number | undefined {
+  if (BANK_LEVELS[staCode] != null) return BANK_LEVELS[staCode];
+  const level = getWarnLevel(levels, staCode);
+  return level?.crisis;
+}
+
+export interface BankComparison {
+  bank: number;      // ระดับตลิ่ง
+  diff: number;      // ระดับน้ำ - ระดับตลิ่ง (ติดลบ = ต่ำกว่าตลิ่ง)
+  over: boolean;     // เกินตลิ่งหรือไม่
+  label: string;     // ข้อความสรุป เช่น '+3.00' / '-2.00'
+}
+
+// ระยะเผื่อด้านบนของกราฟเหนือระดับตลิ่ง (ม.)
+export const BANK_CHART_MARGIN = 3;
+
+// เทียบระดับน้ำกับระดับตลิ่ง → คืนส่วนต่าง (+/-)
+export function compareToBank(
+  levels: Record<string, WarnLevel>,
+  staCode: string,
+  waterLevel: number
+): BankComparison | undefined {
+  const bank = getBankLevel(levels, staCode);
+  if (bank == null || isNaN(bank)) return undefined;
+
+  const diff = +(waterLevel - bank).toFixed(2);
+  const over = diff > 0;
+  const label = `${diff > 0 ? '+' : ''}${diff.toFixed(2)}`;
+
+  return { bank, diff, over, label };
+}
+
+// ข้อความแถวเดียว: ระดับตลิ่ง + การเทียบระดับน้ำ (สูง/ต่ำ)
+export function formatBankRow(
+  levels: Record<string, WarnLevel>,
+  staCode: string,
+  waterLevel: number | null | undefined
+): string {
+  const bank = getBankLevel(levels, staCode);
+  const bankText = bank != null ? `${bank.toFixed(2)} ม.` : '-';
+
+  if (waterLevel == null || isNaN(waterLevel)) {
+    return `ระดับตลิ่ง: ${bankText}`;
+  }
+  const cmp = compareToBank(levels, staCode, waterLevel);
+  if (!cmp) return `ระดับตลิ่ง: ${bankText}`;
+
+  const cmpColor = cmp.over ? '#e53935' : '#2e7d32';
+  return `ระดับตลิ่ง: <span style="color:${BANK_LEVEL_COLOR};font-weight:bold;">${bankText} ม.รทก.</span> ปัจจุบัน <span style="color:#e53935;font-weight:bold;">สูง</span>/<span style="color:#4caf50;font-weight:bold;">ต่ำ</span> กว่าระดับตลิ่ง: <span style="color:${cmpColor};font-weight:bold;">${cmp.label} ม.</span>`;
+}
+
 // ─── ช่วงแกน Y ของกราฟระดับน้ำ ───────────────────────────────
 export const TELE_WATER_LEVEL_Y_AXIS_RANGE: Record<string, YAxisRange> = {
   'YR.01': { min: 32, max: 42 },

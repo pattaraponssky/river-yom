@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 import { Path_URL } from '@/lib/utility';
 import { formatThaiDay } from '@/lib/utility';
 import { StationInfo, GateDataItem } from '../hydro';
+import { GATE_WARN_LEVELS, formatBankRow } from '@/lib/warnLevels';
 
 
 const addGateMarkers = (
@@ -45,6 +46,10 @@ const addGateMarkers = (
       ? parseFloat(latest.wl_lower).toFixed(2)
       : '-';
 
+    // ระดับตลิ่ง + เทียบระดับน้ำ (เหนือ) กับตลิ่ง (แถวเดียว)
+    const wlUpperNum = wl_upper !== '-' ? parseFloat(wl_upper) : null;
+    const bankRow = formatBankRow(GATE_WARN_LEVELS, sta_code, wlUpperNum);
+
     const safeStaCode = sta_code.replace(/\./g, '_');
 
     const marker = new window.longdo.Marker(position, {
@@ -60,6 +65,7 @@ const addGateMarkers = (
           <div><b>📉 อัตราการไหล:</b> <span style="color:#1e88e5;font-weight:bold;">${discharge} ลบ.ม./วินาที</span></div>
           <div><b>📈 ระดับน้ำเหนือ:</b> <span style="color:#e53935;font-weight:bold;">${wl_upper} ม.รทก.</span></div>
           <div><b>📈 ระดับน้ำท้าย:</b> <span style="color:#e53935;font-weight:bold;">${wl_lower} ม.รทก.</span></div>
+          <div><b>🧱 ${bankRow}</b></div>
         </div>
 
         <button onclick="window.renderChart('${sta_code}', 'gate_discharge')"

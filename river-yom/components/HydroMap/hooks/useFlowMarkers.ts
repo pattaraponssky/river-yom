@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Path_URL } from '@/lib/utility';
 import { formatThaiDay } from '@/lib/utility';
 import { StationInfo, FlowDataItem } from '../hydro';
+import { FLOW_WARN_LEVELS, formatBankRow } from '@/lib/warnLevels';
 
 
 // ฟังก์ชันช่วยสร้าง marker สำหรับสถานีน้ำท่า (flow)
@@ -41,6 +42,10 @@ const addFlowMarkers = (
       ? parseFloat(latest.wl).toFixed(2)
       : '-';
 
+    // ระดับตลิ่ง + เทียบระดับน้ำกับตลิ่ง (แถวเดียว)
+    const wlNum = wl !== '-' ? parseFloat(wl) : null;
+    const bankRow = formatBankRow(FLOW_WARN_LEVELS, sta_code, wlNum);
+
     const safeStaCode = sta_code.replace(/\./g, '_');
 
     const marker = new window.longdo.Marker(position, {
@@ -54,7 +59,8 @@ const addFlowMarkers = (
         <div style="font-size:0.9rem;line-height:1.4rem;">
           <div><b>รหัสสถานี:</b> <span style="color:#4caf50;font-weight:bold;">${sta_code || '-'}</span></div>
           <div><b>📉 อัตราการไหล:</b> <span style="color:#1e88e5;font-weight:bold;">${discharge} ลบ.ม./วินาที</span></div>
-          <div><b>📈 ระดับน้ำ:</b> <span style="color:#e53935;font-weight:bold;">${wl} ม.รทก.</span></div>
+          <div><b>📈 ระดับน้ำปัจจุบัน:</b> <span style="color:#e53935;font-weight:bold;">${wl} ม.รทก.</span></div>
+          <div><b>🧱 ${bankRow}</b></div>
         </div>
 
         <button onclick="window.renderChart('${sta_code}', 'discharge')"
