@@ -2,12 +2,11 @@ import { useState, useEffect, useCallback } from "react";
 import {
   Table, TableHead, TableBody, TableCell, TableRow,
   TextField, Button, Typography,
-  CardContent,
-  Grid,
-  Card,
   CircularProgress,
   Box,
-  Divider
+  Divider,
+  Paper,
+  Stack,
 } from "@mui/material";
 import { BeachAccess, WaterDrop } from "@mui/icons-material";
 import axios from "axios";
@@ -16,6 +15,13 @@ import { API_URL, Model_URL } from "@/lib/utility";
 // กำหนด Endpoint สำหรับ API ใหม่
 const MODEL_INPUT_API = `${API_URL}/api/model_input_data`;
 const UPDATE_FROM_MAIN_API = `${API_URL}/api/model_input_data/update-from-main`; // Endpoint ใหม่
+
+interface ModelInputItem {
+  sta_code: string;
+  data_type: string;
+  date: string;
+  value: number | string;
+}
 
 const defaultRows = [
   // { station_id: '390220', name: "ศูนย์อุทกวิทยาและบริหารน้ำภาคเหนือตอนล่าง", type: "rain_rid", values: Array(7).fill(0) },
@@ -46,7 +52,9 @@ const defaultRows = [
 ];
 
 const HeaderCellStyle = {
-  top: { xs: 115, md: 60 },
+  position: "sticky",
+  top: 0,
+  zIndex: 2,
   border: "1px solid #ddd",
   fontFamily: "Prompt",
   fontWeight: "bold",
@@ -54,14 +62,16 @@ const HeaderCellStyle = {
   backgroundColor: "rgb(1, 87, 155)",
   color: "white",
   fontSize: { xs: "0.8rem", sm: "0.8rem", md: "0.9rem" },
+  whiteSpace: "nowrap",
 };
 
 const getCellStyle = (index: number, isError: boolean) => ({
-  padding: "5px",
+  padding: { xs: "3px", md: "5px" },
   backgroundColor: isError ? '#FF7C80' : (index % 2 === 0 ? '#FAFAFA' : '#FFF'),
   textAlign: "center",
   fontFamily: "Prompt",
-  fontSize: { xs: "0.8rem", sm: "0.8rem", md: "0.9rem" },
+  fontSize: { xs: "0.75rem", sm: "0.8rem", md: "0.9rem" },
+  whiteSpace: "nowrap",
 });
 
 // Helper function to get dates in YYYY-MM-DD format
@@ -111,8 +121,8 @@ export default function RainInputTable() {
   };
 
   const cardData = [
-    { title: "1.ดาวน์โหลดกริดฝนพยากรณ์ (กรมอุตุนิยมวิทยา)", color: "#1976d2", icon: <BeachAccess />, url: `${Model_URL}/hec_api/download_rain_grid.php` },
-    { title: "2.เตรียมข้อมูลแบบจำลองจากตารางข้อมูลน้ำฝน-น้ำท่า", color: "#1976d2", icon: <WaterDrop />, url: `${Model_URL}/hec_api/write_input_manual.php` },
+    { title: "1. ดาวน์โหลดกริดฝนพยากรณ์ (กรมอุตุนิยมวิทยา)", description: "ดาวน์โหลดข้อมูลกริดฝนพยากรณ์ล่าสุดเพื่อใช้เป็นข้อมูลนำเข้า", color: "#1976d2", icon: <BeachAccess />, url: `${Model_URL}/hec_api/download_rain_grid.php` },
+    { title: "2. เตรียมข้อมูลแบบจำลองจากตารางข้อมูลน้ำฝน-น้ำท่า", description: "สร้างไฟล์ข้อมูลนำเข้าแบบจำลอง (Hec-Dss) จากค่าที่กรอกในตาราง", color: "#1976d2", icon: <WaterDrop />, url: `${Model_URL}/hec_api/write_input_manual.php` },
   ];
 
   // (processRainData และ processFlowData ไม่เปลี่ยนแปลง)
@@ -179,8 +189,8 @@ export default function RainInputTable() {
         } else {
           setMessages((prev) => ({ ...prev, [index]: "✅ Run Success" }));
         }
-      } catch (error: any) {
-        setMessages((prev) => ({ ...prev, [index]: "❌ Error executing PHP script: " + (error.message || error) }));
+      } catch (error: unknown) {
+        setMessages((prev) => ({ ...prev, [index]: "❌ Error executing PHP script: " + (error instanceof Error ? error.message : String(error)) }));
       } finally {
         setButtonLoading((prev) => ({ ...prev, [index]: false }));
       }
@@ -210,8 +220,8 @@ export default function RainInputTable() {
         } else {
           setMessages((prev) => ({ ...prev, [index]: "✅ Run Success" }));
         }
-      } catch (error: any) {
-        setMessages((prev) => ({ ...prev, [index]: "❌ Error executing PHP script: " + (error.message || error) }));
+      } catch (error: unknown) {
+        setMessages((prev) => ({ ...prev, [index]: "❌ Error executing PHP script: " + (error instanceof Error ? error.message : String(error)) }));
       } finally {
         setButtonLoading((prev) => ({ ...prev, [index]: false }));
       }
@@ -254,8 +264,8 @@ export default function RainInputTable() {
         setMessages((prev) => ({ ...prev, save: "❌ บันทึกข้อมูลล้มเหลว: " + (response.data.message || 'Unknown Error') }));
       }
 
-    } catch (error: any) {
-      setMessages((prev) => ({ ...prev, save: "❌ Error: " + (error.message || error.toString()) }));
+    } catch (error: unknown) {
+      setMessages((prev) => ({ ...prev, save: "❌ Error: " + (error instanceof Error ? error.message : String(error)) }));
       console.error("Save Data Error:", error);
     } finally {
       setButtonLoading((prev) => ({ ...prev, save: false }));
@@ -300,8 +310,11 @@ export default function RainInputTable() {
           const syncResponse = await axios.post(UPDATE_FROM_MAIN_API);
           const syncMsg = `✅ [Sync Success] ${syncResponse.data.message}`;
           setMessages((prev) => ({ ...prev, update: syncMsg }));
-      } catch (error: any) {
-          const errMsg = "❌ [Sync Error]: ไม่สามารถซิงค์จากข้อมูลหลักได้ " + (error.response?.data?.message || error.message || error.toString());
+      } catch (error: unknown) {
+          const detail = axios.isAxiosError(error)
+            ? (error.response?.data?.message || error.message)
+            : (error instanceof Error ? error.message : String(error));
+          const errMsg = "❌ [Sync Error]: ไม่สามารถซิงค์จากข้อมูลหลักได้ " + detail;
           // Show sync error but continue to load existing data
           setMessages((prev) => ({ ...prev, update: errMsg }));
           console.error("Sync failed, loading existing data:", error);
@@ -312,8 +325,8 @@ export default function RainInputTable() {
       const rainDateKeys = getDates(-7, -1);
       const flowDateKeys = getDates(-7, 0);
       
-      let modelInputData: any[] = [];
-      let hasDataLoaded = { rain: false, flow: false };
+      let modelInputData: ModelInputItem[] = [];
+      const hasDataLoaded = { rain: false, flow: false };
 
       // 3. ดึงข้อมูลจากตาราง Model Input Data (API GET)
       const resInputData = await axios.get(MODEL_INPUT_API);
@@ -322,7 +335,7 @@ export default function RainInputTable() {
       }
 
       const inputDataMap = new Map();
-      modelInputData.forEach((data: any) => {
+      modelInputData.forEach((data: ModelInputItem) => {
           const key = `${data.sta_code}_${data.data_type}_${data.date}`;
           inputDataMap.set(key, data.value);
           // ตรวจสอบว่ามีข้อมูลจาก API ใหม่หรือไม่
@@ -332,7 +345,7 @@ export default function RainInputTable() {
 
       // 4. สร้าง New Rows จากข้อมูลที่ดึงมา (เหมือนเดิม)
       const newRows = defaultRows.map(row => {
-          let values = Array(row.type === "rain_rid" ? 7 : 8).fill(0);
+          const values = Array(row.type === "rain_rid" ? 7 : 8).fill(0);
           const isFlow = row.type === 'flow';
           const dateKeys = isFlow ? flowDateKeys : rainDateKeys;
           const dataType = isFlow ? 'flow' : 'rain';
@@ -381,75 +394,88 @@ export default function RainInputTable() {
   const flowRows = rows.filter(row => row.type === 'flow');
 
   const renderTable = (tableRows: (typeof defaultRows[number] & { hasDataLoaded?: boolean })[], title: string, startDayOffset: number, endDayOffset: number, isTableDataLoaded: boolean) => (
-    <Box sx={{ my: 4 ,overflowX: 'auto'}}>
-      <Box sx={{ display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-        <Typography variant="h6" sx={{ fontWeight: "bold", fontFamily: "Prompt", mb: 2 }}>
+    <Box sx={{ my: { xs: 2, md: 3 } }}>
+      <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, justifyContent: "space-between", alignItems: { xs: "flex-start", sm: "center" }, gap: 1, mb: 1.5 }}>
+        <Typography variant="h6" sx={{ fontWeight: "bold", fontFamily: "Prompt", fontSize: { xs: "0.9rem", md: "1rem" } }}>
           {title}
         </Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-          <Typography sx={{ fontFamily: 'Prompt', fontWeight: "bold", mr: 1 }}>พื้นหลังสีแดง (</Typography>
-          <Box sx={{ width: 25, height: 25, backgroundColor: '#FF7C80', mr: 1 }} />
-          <Typography sx={{ fontFamily: 'Prompt', fontWeight: "bold", mr: 2 }}>) คือไม่สามารถดึงข้อมูลได้</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+          <Typography sx={{ fontFamily: 'Prompt', fontWeight: "bold", fontSize: { xs: "0.72rem", md: "0.8rem" }, mr: 0.75 }}>พื้นหลังสีแดง (</Typography>
+          <Box sx={{ width: 16, height: 16, backgroundColor: '#FF7C80', mr: 0.75, borderRadius: 0.5 }} />
+          <Typography sx={{ fontFamily: 'Prompt', fontWeight: "bold", fontSize: { xs: "0.72rem", md: "0.8rem" } }}>) คือไม่สามารถดึงข้อมูลได้</Typography>
         </Box>
       </Box>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell sx={{ ...HeaderCellStyle, minWidth: { md: "200px", xs: "100px" } }}>สถานี</TableCell>
-            {generateDates(startDayOffset, endDayOffset).map((dateStr, i) => (
-              <TableCell key={i} sx={HeaderCellStyle}>{dateStr}</TableCell>
-            ))}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-         {tableRows.map((row, rowIdx) => {
-            const numberOfCells = endDayOffset - startDayOffset + 1;
-            let startIndexInValues = 0;
-
-            const isRowInError = !row.hasDataLoaded && !isTableDataLoaded; 
-
-            // เดิม: หาแค่ station_id → ชนกันได้
-            // ใหม่: ต้อง match ทั้ง station_id และ type
-            const actualRowIndex = rows.findIndex(
-              r => r.station_id === row.station_id && r.type === row.type
-            );
-
-            return (
-              <TableRow key={`${row.station_id}-${row.type}`}>
-                <TableCell sx={getCellStyle(rowIdx, isRowInError)}>{row.station_id} ({row.name})</TableCell>
-                {Array.from({ length: numberOfCells }).map((_, colIdx) => {
-                  const valueToShow = row.values[startIndexInValues + colIdx];
-                  return (
-                    <TableCell key={colIdx} sx={getCellStyle(rowIdx, isRowInError)}>
-                      <TextField
-                        type="number"
-                        variant="outlined"
-                        size="small"
-                        value={valueToShow !== undefined ? valueToShow.toFixed(2) : '0.00'}
-                        inputProps={{ min: 0 }}
-                        onKeyDown={(e) => {
-                          if (e.key === '-' || e.key === 'e') e.preventDefault();
-                        }}
-                        onChange={(e) =>
-                          handleChange(actualRowIndex, startIndexInValues + colIdx, e.target.value)
-                        }
-                      />
-                    </TableCell>
-                  );
-                })}
+      <Paper variant="outlined" sx={{ borderRadius: 2 }}>
+        <Box sx={{ overflowX: 'auto' }}>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ ...HeaderCellStyle, minWidth: { md: "200px", xs: "120px" }, textAlign: 'left' }}>สถานี</TableCell>
+                {generateDates(startDayOffset, endDayOffset).map((dateStr, i) => (
+                  <TableCell key={i} sx={HeaderCellStyle}>{dateStr}</TableCell>
+                ))}
               </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
+            </TableHead>
+            <TableBody>
+             {tableRows.map((row, rowIdx) => {
+                const numberOfCells = endDayOffset - startDayOffset + 1;
+                const startIndexInValues = 0;
+
+                const isRowInError = !row.hasDataLoaded && !isTableDataLoaded; 
+
+                // เดิม: หาแค่ station_id → ชนกันได้
+                // ใหม่: ต้อง match ทั้ง station_id และ type
+                const actualRowIndex = rows.findIndex(
+                  r => r.station_id === row.station_id && r.type === row.type
+                );
+
+                return (
+                  <TableRow key={`${row.station_id}-${row.type}`}>
+                    <TableCell sx={getCellStyle(rowIdx, isRowInError)}>{row.station_id} ({row.name})</TableCell>
+                    {Array.from({ length: numberOfCells }).map((_, colIdx) => {
+                      const valueToShow = row.values[startIndexInValues + colIdx];
+                      return (
+                        <TableCell key={colIdx} sx={getCellStyle(rowIdx, isRowInError)}>
+                          <TextField
+                            type="number"
+                            variant="outlined"
+                            size="small"
+                            value={valueToShow !== undefined ? valueToShow.toFixed(2) : '0.00'}
+                            inputProps={{ min: 0, step: 0.01 }}
+                            onKeyDown={(e) => {
+                              if (e.key === '-' || e.key === 'e') e.preventDefault();
+                            }}
+                            onChange={(e) =>
+                              handleChange(actualRowIndex, startIndexInValues + colIdx, e.target.value)
+                            }
+                            sx={{
+                              width: { xs: 64, md: 80 },
+                              '& .MuiInputBase-input': {
+                                py: 0.5,
+                                px: 0.5,
+                                textAlign: 'center',
+                                fontSize: { xs: '0.72rem', md: '0.82rem' },
+                              },
+                            }}
+                          />
+                        </TableCell>
+                      );
+                    })}
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </Box>
+      </Paper>
     </Box>
   );
 
   if (initialDataLoading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh', gap: 2 }}>
         <CircularProgress />
-        <Typography sx={{ fontFamily: "Prompt", ml: 2 }}>กำลังโหลดข้อมูล (รวมการซิงค์ข้อมูลหลัก)...</Typography>
+        <Typography sx={{ fontFamily: "Prompt" }}>กำลังโหลดข้อมูล (รวมการซิงค์ข้อมูลหลัก)...</Typography>
       </Box>
     );
   }
@@ -466,110 +492,127 @@ export default function RainInputTable() {
 
 
       {/* กลุ่มปุ่มบันทึก/อัปเดตข้อมูลเข้าตาราง Input */}
-      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4, justifyContent: 'center', alignItems: 'flex-start', my: 4 }}>
-        
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2, my: 2 }}>
         {/* ปุ่มซิงค์และโหลดข้อมูลหลัก */}
-        <Box sx={{ display: 'flex', flexDirection: 'column', textAlign: "center", minWidth: 250 }}>
+        <Paper variant="outlined" sx={{ p: 1.5, borderRadius: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <Box>
+            <Typography sx={{ fontFamily: 'Prompt', fontWeight: 600, fontSize: { xs: '0.85rem', md: '0.9rem' } }}>
+              ซิงค์ข้อมูลจากแหล่งข้อมูลหลัก
+            </Typography>
+            <Typography sx={{ fontFamily: 'Prompt', fontSize: '0.75rem', color: 'text.secondary' }}>
+              ดึงข้อมูลน้ำฝน-น้ำท่าล่าสุดจากฐานข้อมูลหลักมาใส่ในตาราง
+            </Typography>
+          </Box>
           <Button
-              variant="contained"
-              color="primary"
-              size="large"
-              sx={{ fontFamily: "Prompt", width: "100%", mb: 1 }}
-              onClick={handleSyncAndReload} 
-              disabled={buttonLoading.update}
-              >
-              {buttonLoading.update ? <CircularProgress size={24} color="inherit" /> : "🔄 ซิงค์และโหลดข้อมูลล่าสุด"}
+            variant="contained"
+            color="primary"
+            sx={{ fontFamily: "Prompt", width: "100%" }}
+            onClick={handleSyncAndReload}
+            disabled={buttonLoading.update}
+          >
+            {buttonLoading.update ? <CircularProgress size={22} color="inherit" /> : "ซิงค์และโหลดข้อมูลล่าสุด"}
           </Button>
-          <Typography
-              variant="body1"
+          {messages.update && (
+            <Typography
               sx={{
-                textAlign: "center",
-                marginTop: 1,
                 fontFamily: "Prompt",
-                fontSize: { xs: "0.8rem", md: "0.9rem" },
-                color: messages.update?.includes("Error") || messages.update?.includes("❌") ? "red" : "blue",
+                fontSize: "0.75rem",
+                color: messages.update.includes("Error") || messages.update.includes("❌") ? "error.main" : "info.main",
               }}
-              >
+            >
               {messages.update}
-          </Typography>
-        </Box>
+            </Typography>
+          )}
+        </Paper>
 
         {/* ปุ่มบันทึกข้อมูลที่แก้ไขด้วยมือ */}
-        <Box sx={{ display: 'flex', flexDirection: 'column', textAlign: "center", minWidth: 250 }}>
+        <Paper variant="outlined" sx={{ p: 1.5, borderRadius: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <Box>
+            <Typography sx={{ fontFamily: 'Prompt', fontWeight: 600, fontSize: { xs: '0.85rem', md: '0.9rem' } }}>
+              บันทึกข้อมูลที่แก้ไขด้วยมือ
+            </Typography>
+            <Typography sx={{ fontFamily: 'Prompt', fontSize: '0.75rem', color: 'text.secondary' }}>
+              บันทึกค่าที่แก้ไขในตารางลงฐานข้อมูล Model Input
+            </Typography>
+          </Box>
           <Button
-              variant="contained"
-              color="success"
-              size="large"
-              sx={{ fontFamily: "Prompt", width: "100%", mt: { xs: 2, md: 0 } }}
-              onClick={handleSaveData}
-              disabled={buttonLoading.save}
-              >
-              {buttonLoading.save ? <CircularProgress size={24} color="inherit" /> : "💾 บันทึกข้อมูลที่แก้ไขด้วยมือ"}
-              
+            variant="contained"
+            color="success"
+            sx={{ fontFamily: "Prompt", width: "100%" }}
+            onClick={handleSaveData}
+            disabled={buttonLoading.save}
+          >
+            {buttonLoading.save ? <CircularProgress size={22} color="inherit" /> : "บันทึกข้อมูลที่แก้ไขด้วยมือ"}
           </Button>
-          <Typography
-              variant="body1"
+          {messages.save && (
+            <Typography
               sx={{
-                textAlign: "center",
-                marginTop: 1,
                 fontFamily: "Prompt",
-                fontSize: { xs: "0.8rem", md: "0.9rem" },
-                color: messages.save?.includes("❌") ? "red" : "green",
+                fontSize: "0.75rem",
+                color: messages.save.includes("❌") ? "error.main" : "success.main",
               }}
-              >
-            {messages.save}
-          </Typography>
-        </Box>
+            >
+              {messages.save}
+            </Typography>
+          )}
+        </Paper>
       </Box>
-      <Divider sx={{ my: 4 }} />
 
-      <Typography variant="h6" sx={{ fontWeight: "bold", fontFamily: "Prompt", mb: 2 }}>
+      <Divider sx={{ my: 3 }} />
+
+      <Typography variant="h6" sx={{ fontWeight: "bold", fontFamily: "Prompt", mb: 1.5, fontSize: { xs: "0.95rem", md: "1rem" } }}>
         ขั้นตอนการเตรียมข้อมูลน้ำฝน-น้ำท่า สำหรับแบบจำลอง (Hec-Dss)
       </Typography>
 
-      <Grid container spacing={2}>
+      <Stack spacing={1.25}>
         {cardData.slice(0, 2).map((card, index) => (
-          <Grid size={{ xs: 12, sm: 6, lg: 6 }} key={index}>
-            <Card sx={{ borderRadius: 2 }}>
-              <CardContent>
-                <Typography
-                  variant="h6"
-                  color="textSecondary"
-                  gutterBottom
-                  sx={{ fontFamily: "Prompt" }}
-                >
-                  {card.icon} {card.title}
+          <Paper
+            key={index}
+            variant="outlined"
+            sx={{
+              p: 1.5,
+              borderRadius: 2,
+              display: 'flex',
+              flexDirection: { xs: 'column', sm: 'row' },
+              alignItems: { xs: 'stretch', sm: 'center' },
+              gap: 1.5,
+            }}
+          >
+            <Box sx={{ flex: 1, minWidth: 0, display: 'flex', gap: 1.25 }}>
+              <Box sx={{ color: card.color, display: 'flex', mt: 0.25 }}>{card.icon}</Box>
+              <Box>
+                <Typography sx={{ fontFamily: 'Prompt', fontWeight: 600, fontSize: { xs: '0.85rem', md: '0.9rem' } }}>
+                  {card.title}
                 </Typography>
-
-                <Button
-                  variant="contained"
-                  sx={{ marginTop: 2, width: "100%", backgroundColor: card.color }}
-                  onClick={() => handleRunPhpFile(index, card.url)}
-                  disabled={buttonLoading[index]}
-                >
-                  {buttonLoading[index] ? (
-                    <CircularProgress size={24} color="inherit" />
-                  ) : (
-                    "รันคำสั่ง"
-                  )}
-                </Button>
-
-                <Typography
-                  variant="body1"
-                  sx={{
-                    textAlign: "center",
-                    marginTop: 2,
-                    fontFamily: "Prompt",
-                    color: messages[index]?.includes("Error") ? "red" : "green",
-                  }}
-                >
-                  {messages[index]}
+                <Typography sx={{ fontFamily: 'Prompt', fontSize: '0.75rem', color: 'text.secondary', mt: 0.25 }}>
+                  {card.description}
                 </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
+                {messages[index] && (
+                  <Typography
+                    sx={{
+                      fontFamily: 'Prompt',
+                      fontSize: '0.75rem',
+                      mt: 0.5,
+                      color: messages[index].includes("❌") || messages[index].includes("Error") ? 'error.main' : 'success.main',
+                    }}
+                  >
+                    {messages[index]}
+                  </Typography>
+                )}
+              </Box>
+            </Box>
+
+            <Button
+              variant="contained"
+              sx={{ fontFamily: 'Prompt', minWidth: { xs: '100%', sm: 120 }, backgroundColor: card.color }}
+              onClick={() => handleRunPhpFile(index, card.url)}
+              disabled={buttonLoading[index]}
+            >
+              {buttonLoading[index] ? <CircularProgress size={22} color="inherit" /> : "รันคำสั่ง"}
+            </Button>
+          </Paper>
         ))}
-      </Grid>
+      </Stack>
     </Box>
   );
 }

@@ -1,0 +1,27 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # 🔒 ป้องกันการเข้าถึงไฟล์ระบบ (เช่น .git, .htaccess)
+  <FilesMatch "^\.(htaccess|git|env)">
+    Order allow,deny
+    Deny from all
+  </FilesMatch>
+
+  # 🔒 ป้องกันการเข้าถึงโฟลเดอร์สำคัญโดยตรง
+  RewriteRule ^(backup)/ - [F,L]
+
+  # ✅ ถ้าไฟล์หรือโฟลเดอร์มีอยู่จริง ให้ส่งตรง
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # ✅ ถ้าไม่เจอไฟล์/โฟลเดอร์ ให้ส่งไป index.html (React SPA entry point)
+  RewriteRule ^ index.html [L]
+</IfModule>
+
+# 🔒 ปิดการแสดง directory listing (ไม่ให้เห็นไฟล์ในโฟลเดอร์)
+Options -Indexes
+
+# 🔒 ปิดการแสดง Server Signature
+ServerSignature Off

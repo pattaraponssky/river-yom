@@ -76,6 +76,7 @@ export const StationTable: React.FC<StationTableProps> = ({
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<StationRow | null>(null);
+  const [openRemovePhotoDialog, setOpenRemovePhotoDialog] = useState(false);
 
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -304,7 +305,10 @@ export const StationTable: React.FC<StationTableProps> = ({
 
   const handleDragLeave = () => setDragActive(false);
 
-  const removePhoto = () => updateField("photo", "");
+  const removePhoto = () => {
+    updateField("photo", "");
+    setOpenRemovePhotoDialog(false);
+  };
 
   const headerCellSx = {
     bgcolor: config.accent,
@@ -762,7 +766,12 @@ export const StationTable: React.FC<StationTableProps> = ({
                   </Button>
 
                   {Boolean(formData.photo) && (
-                    <Button color="error" onClick={removePhoto} disabled={uploading} sx={{ fontFamily: "Prompt" }}>
+                    <Button
+                      color="error"
+                      onClick={() => setOpenRemovePhotoDialog(true)}
+                      disabled={uploading}
+                      sx={{ fontFamily: "Prompt" }}
+                    >
                       ลบรูปที่อัปโหลด
                     </Button>
                   )}
@@ -898,6 +907,28 @@ export const StationTable: React.FC<StationTableProps> = ({
           </Button>
           <Button variant="contained" color="error" startIcon={<DeleteIcon />} onClick={handleDeleteSubmit} sx={{ fontFamily: "Prompt" }}>
             ลบข้อมูล
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={openRemovePhotoDialog} onClose={() => setOpenRemovePhotoDialog(false)} PaperProps={{ sx: { borderRadius: 3, "& .MuiButton-root": { fontSize: "0.82rem" } } }}>
+        <DialogTitle sx={{ fontFamily: "Prompt", fontWeight: 700 }}>
+          ยืนยันการลบรูปภาพ
+        </DialogTitle>
+        <DialogContent>
+          <Typography sx={{ fontFamily: "Prompt" }}>
+            ต้องการลบรูปที่อัปโหลดใช่หรือไม่?
+          </Typography>
+          <Alert severity="warning" sx={{ mt: 2, fontFamily: "Prompt" }}>
+            รูปภาพจะถูกลบออกและไม่สามารถกู้คืนได้
+          </Alert>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setOpenRemovePhotoDialog(false)} sx={{ fontFamily: "Prompt" }}>
+            ยกเลิก
+          </Button>
+          <Button variant="contained" color="error" startIcon={<DeleteIcon />} onClick={removePhoto} sx={{ fontFamily: "Prompt" }}>
+            ลบรูปภาพ
           </Button>
         </DialogActions>
       </Dialog>

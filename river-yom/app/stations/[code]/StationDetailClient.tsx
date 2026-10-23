@@ -3,9 +3,9 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import {
-  Container, Typography, Box, CircularProgress, Alert, Button, Grid,
-  Card, CardMedia, CardContent, CardActionArea, Chip, IconButton,
-  Tooltip, TextField, InputAdornment, Skeleton,
+  Container, Typography, Box, CircularProgress, Alert, Button,
+  Chip, IconButton, Tooltip, TextField, InputAdornment, Skeleton,
+  Paper, Divider,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AddIcon from '@mui/icons-material/Add';
@@ -105,8 +105,8 @@ export default function StationDetailClient({ staCode }: { staCode: string }) {
 
         setStation(stationJson.data);
         setEquipmentList(Array.isArray(equipJson.data) ? equipJson.data : []);
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : 'ดึงข้อมูลสถานีล้มเหลว');
       } finally {
         setLoadingData(false);
       }
@@ -130,8 +130,8 @@ export default function StationDetailClient({ staCode }: { staCode: string }) {
       const res = await apiRequest(`${API_URL}/api/equipments/delete/${equipmentId}`, { method: 'POST', credentials: 'include' });
       if (!res.ok) throw new Error('ลบอุปกรณ์ล้มเหลว');
       setEquipmentList(prev => prev.filter(e => e.id !== equipmentId));
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'ลบอุปกรณ์ล้มเหลว');
     }
   };
 
@@ -204,51 +204,71 @@ export default function StationDetailClient({ staCode }: { staCode: string }) {
         </Box>
       </Box>
 
-      <Grid container spacing={3}>
-        {loadingData ? (
-          Array.from({ length: 3 }).map((_, i) => (
-            <Grid key={i} size={{ xs: 12, sm: 6, md: 4 }}><Skeleton variant="rounded" height={240} /></Grid>
-          ))
-        ) : filtered.length === 0 ? (
-          <Grid size={{ xs: 12 }}>
-            <Box sx={{ textAlign: 'center', py: 8 }}>
-              <Typography color="text.secondary">ยังไม่มีอุปกรณ์ในสถานีนี้</Typography>
-            </Box>
-          </Grid>
-        ) : (
-          filtered.map(equip => (
-            <Grid key={equip.id} size={{ xs: 12, sm: 6, md: 4 }}>
-              <Card sx={{ borderRadius: 3, overflow: 'hidden', boxShadow: 3, height: '100%' }}>
-                <CardActionArea onClick={() => router.push(`/equipment/maintenance?id=${equip.id}`)}>
-                  {equip.photo ? (
-                    <CardMedia component="img" height="150" image={equip.photo} alt={equip.name} sx={{ objectFit: 'cover' }} />
-                  ) : (
-                    <Box sx={{ height: 150, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'grey.100', color: 'grey.400' }}>
-                      {TYPE_ICON[equip.type] ?? <ImageNotSupportedIcon sx={{ fontSize: 36 }} />}
-                    </Box>
-                  )}
-                  <CardContent>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 0.5 }}>
-                      <Chip size="small" icon={TYPE_ICON[equip.type] as any} label={TYPE_LABEL[equip.type] ?? equip.type} variant="outlined" sx={{ fontFamily: 'Prompt' }} />
-                      <Chip size="small" label={STATUS_LABEL[equip.status]} color={STATUS_COLOR[equip.status]} sx={{ fontFamily: 'Prompt' }} />
-                    </Box>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold', fontFamily: 'Prompt', mt: 1 }}>
+      {loadingData ? (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} variant="rounded" height={68} />
+          ))}
+        </Box>
+      ) : filtered.length === 0 ? (
+        <Box sx={{ textAlign: 'center', py: 8 }}>
+          <Typography color="text.secondary" sx={{ fontFamily: 'Prompt' }}>
+            ยังไม่มีอุปกรณ์ในสถานีนี้
+          </Typography>
+        </Box>
+      ) : (
+        <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
+          {filtered.map((equip, index) => (
+            <Box key={equip.id}>
+              <Box
+                onClick={() => router.push(`/equipment/maintenance?id=${equip.id}`)}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: { xs: 1.5, sm: 2 },
+                  px: { xs: 1.5, sm: 2 },
+                  py: 1.25,
+                  cursor: 'pointer',
+                  flexWrap: { xs: 'wrap', sm: 'nowrap' },
+                  transition: 'background-color 0.15s',
+                  '&:hover': { bgcolor: 'action.hover' },
+                }}
+              >
+                {equip.photo ? (
+                  <Box
+                    component="img"
+                    src={equip.photo}
+                    alt={equip.name}
+                    sx={{ width: { xs: 44, sm: 52 }, height: { xs: 44, sm: 52 }, borderRadius: 1.5, objectFit: 'cover', flexShrink: 0, bgcolor: 'grey.100' }}
+                  />
+                ) : (
+                  <Box sx={{ width: { xs: 44, sm: 52 }, height: { xs: 44, sm: 52 }, borderRadius: 1.5, bgcolor: 'grey.100', color: 'grey.500', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, '& svg': { fontSize: { xs: 22, sm: 26 } } }}>
+                    {TYPE_ICON[equip.type] ?? <ImageNotSupportedIcon />}
+                  </Box>
+                )}
+
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', mb: 0.25 }}>
+                    <Typography sx={{ fontFamily: 'Prompt', fontWeight: 600, fontSize: { xs: '0.88rem', sm: '0.95rem' }, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {equip.name}
                     </Typography>
-                    {equip.serial_number && (
-                      <Typography variant="caption" color="text.secondary" sx={{ fontFamily: 'Prompt', display: 'block' }}>
-                        S/N: {equip.serial_number}
-                      </Typography>
-                    )}
-                    {equip.last_maintenance_date && (
-                      <Typography variant="caption" color="text.secondary" sx={{ fontFamily: 'Prompt', display: 'block' }}>
-                        บำรุงรักษาล่าสุด: {equip.last_maintenance_date}
-                      </Typography>
-                    )}
-                  </CardContent>
-                </CardActionArea>
+                    <Chip
+                      size="small"
+                      label={STATUS_LABEL[equip.status]}
+                      color={STATUS_COLOR[equip.status]}
+                      sx={{ fontFamily: 'Prompt', height: 22, '& .MuiChip-label': { px: 1, fontSize: '0.72rem' } }}
+                    />
+                  </Box>
+                  <Typography color="text.secondary" sx={{ fontFamily: 'Prompt', fontSize: { xs: '0.72rem', sm: '0.78rem' }, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {[
+                      TYPE_LABEL[equip.type] ?? equip.type,
+                      equip.serial_number ? `S/N: ${equip.serial_number}` : null,
+                      equip.last_maintenance_date ? `บำรุงรักษาล่าสุด: ${equip.last_maintenance_date}` : null,
+                    ].filter(Boolean).join(' • ')}
+                  </Typography>
+                </Box>
 
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', px: 1, pb: 1, gap: 0.5 }}>
+                <Box sx={{ display: 'flex', gap: 0.25, ml: { xs: 'auto', sm: 0 }, flexShrink: 0 }} onClick={(e) => e.stopPropagation()}>
                   <Tooltip title="ประวัติการบำรุงรักษา">
                     <IconButton size="small" color="info" onClick={() => router.push(`/equipment/maintenance?id=${equip.id}`)}>
                       <HistoryIcon fontSize="small" />
@@ -265,11 +285,12 @@ export default function StationDetailClient({ staCode }: { staCode: string }) {
                     </IconButton>
                   </Tooltip>
                 </Box>
-              </Card>
-            </Grid>
-          ))
-        )}
-      </Grid>
+              </Box>
+              {index < filtered.length - 1 && <Divider />}
+            </Box>
+          ))}
+        </Paper>
+      )}
     </Container>
   );
 }

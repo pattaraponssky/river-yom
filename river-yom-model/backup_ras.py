@@ -19,13 +19,17 @@ for file_path in files_to_copy:
         print(f"[SKIP] ไม่พบไฟล์ : {src}")
         continue
 
+    # สำเนาไปยังโฟลเดอร์ archive ที่อยู่ข้างไฟล์ต้นฉบับ
+    archive_dir = src.parent / "archive"
+    archive_dir.mkdir(parents=True, exist_ok=True)
+
     # สร้างชื่อไฟล์ใหม่
-    # output_ras.csv -> output_ras_2026-07-13.csv
-    dst = src.with_name(f"{src.stem}_{today}{src.suffix}")
+    # output_ras.csv -> archive\output_ras_2026-07-13.csv
+    dst = archive_dir / f"{src.stem}_{today}{src.suffix}"
 
     # คัดลอกไฟล์
     shutil.copy2(src, dst)
 
-    print(f"[OK] {src.name} -> {dst.name}")
+    print(f"[OK] {src.name} -> {dst}")
 
 print("เสร็จสิ้น")
