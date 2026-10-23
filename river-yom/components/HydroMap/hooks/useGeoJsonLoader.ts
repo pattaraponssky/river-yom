@@ -23,7 +23,7 @@ export const useGeoJsonLoader = (jsonPaths: string[]) => {
 
         const results = await Promise.all(promises);
         setJsonDataList(results);
-        console.log(`โหลด GeoJSON สำเร็จทั้งหมด ${results.length} ไฟล์`);
+        // console.log(`โหลด GeoJSON สำเร็จทั้งหมด ${results.length} ไฟล์`);
       } catch (err: any) {
         console.error('เกิดข้อผิดพลาดในการโหลด GeoJSON:', err);
         setError(err.message || 'ไม่สามารถโหลดไฟล์ GeoJSON ได้');

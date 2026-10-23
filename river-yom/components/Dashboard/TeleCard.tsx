@@ -76,26 +76,26 @@ const TeleCard: React.FC = () => {
   };
 
   return (
-    <Box sx={{mx: "auto", mb: 2 }}>
-      <Card sx={{ borderRadius: 3, boxShadow: 2 }}>
-        <CardContent>
+    <Box sx={{ mx: "auto", mb: { xs: 1.5, sm: 2 } }}>
+      <Card sx={{ borderRadius: { xs: 2, sm: 3 }, boxShadow: 2 }}>
+        <CardContent sx={{ p: { xs: 1.5, sm: 2 }, "&:last-child": { pb: { xs: 1.5, sm: 2 } } }}>
           {/* Header */}
-          <Box display="flex" alignItems="center" mb={2}>
+          <Box sx={{ display: "flex", alignItems: "center", flexWrap: "wrap", rowGap: 0.5, mb: { xs: 1.25, sm: 2 } }}>
             <Avatar
               src={`${Path_URL}/images/icons/tele_station_icon.png`}
                sx={{
-                    width: { xs: 35, md: 45 },
-                    height: { xs: 35, md: 45 },
+                    width: { xs: 32, sm: 40, md: 45 },
+                    height: { xs: 32, sm: 40, md: 45 },
                     boxShadow: `0 4px 12px ${alpha(primary, 0.4)}`,
-                    mr: 2,
+                    mr: { xs: 1.25, sm: 2 },
                 }}
             />
             <Typography 
-               sx={{ fontWeight: "bold", fontSize: { md: "1.4rem", xs: "1rem" }, fontFamily:"Prompt" }}
+               sx={{ fontWeight: "bold", fontSize: { xs: "0.9rem", sm: "1.05rem", md: "1.4rem" }, fontFamily: "Prompt" }}
             >
               สถานีติดตั้งโครงการพื้นที่ฝั่งขวาแม่น้ำยม
             </Typography>
-            <Typography component="span" sx={{ fontWeight: "bold", fontSize: { md: "1.1rem", xs: "0.85rem" }, fontFamily:"Prompt", color: "text.secondary", ml: 1 }}>
+            <Typography component="span" sx={{ display: { xs: "none", sm: "inline" }, fontWeight: "bold", fontSize: { sm: "0.85rem", md: "1.1rem" }, fontFamily: "Prompt", color: "text.secondary", ml: 1 }}>
               (ข้อมูลตรวจวัดเวลา 07:00 น.)
             </Typography>
              {/* <Tooltip title="แหล่งที่มาของข้อมูล">
@@ -114,7 +114,7 @@ const TeleCard: React.FC = () => {
             </Tooltip> */}
           </Box>
 
-          <Divider sx={{ mb: 2 }} />
+          <Divider sx={{ mb: { xs: 1.25, sm: 2 } }} />
 
           {/* Summary Card */}
            <Paper
@@ -122,9 +122,9 @@ const TeleCard: React.FC = () => {
             sx={{
               bgcolor: cardColor,
               borderColor: "rgba(0,0,0,0.05)",
-              mb: 2,
+              mb: { xs: 1.25, sm: 2 },
               borderRadius: 2,
-              p: 2,
+              p: { xs: 1.25, sm: 2 },
             }}
           >
             <Grid container spacing={1} alignItems="center">
@@ -135,7 +135,7 @@ const TeleCard: React.FC = () => {
                 <Typography 
                   sx={{
                     fontWeight: 800,
-                    fontSize: '1.4rem',
+                    fontSize: { xs: '1.05rem', sm: '1.4rem' },
                     background: `linear-gradient(90deg, ${primary}, ${secondary})`,
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
@@ -156,7 +156,7 @@ const TeleCard: React.FC = () => {
                 <Typography 
                     sx={{
                       fontWeight: 800,
-                      fontSize: '1.4rem',
+                      fontSize: { xs: '1.05rem', sm: '1.4rem' },
                       background: `linear-gradient(90deg, ${primary}, ${secondary})`,
                       WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
@@ -177,7 +177,7 @@ const TeleCard: React.FC = () => {
                 <Typography 
                     sx={{
                       fontWeight: 800,
-                      fontSize: '1.4rem',
+                      fontSize: { xs: '1.05rem', sm: '1.4rem' },
                       background: `linear-gradient(90deg, ${primary}, ${secondary})`,
                       WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
@@ -201,7 +201,7 @@ const TeleCard: React.FC = () => {
               boxShadow: 1,
             }}
           >
-            <Table size="small">
+            <Table size="small" sx={{ minWidth: { xs: 540, md: "100%" } }}>
               <TableHead >
                  <TableRow
                     sx={{

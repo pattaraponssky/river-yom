@@ -21,7 +21,7 @@ import {
 import ReservoirChart from "@/app/reservoir/components/ReservoirChartData";
 import ReservoirExportTable from "@/app/reservoir/components/ReservoirTableData";
 import CenteredLoading from "@/components/Layout/CenteredLoading";
-import { API_URL, Path_URL } from "@/lib/utility";
+import { API_URL, DEFAULT_STATION_PHOTO, Path_URL, resolvePhotoUrl } from "@/lib/utility";
 import { fontInfo, titleStyle, textStyle, HeaderCellStyle } from "@/theme/style";
 
 interface DataReservoirStationProps {
@@ -249,8 +249,8 @@ const DataReservoirStation: React.FC<DataReservoirStationProps> = ({ propsSelect
             <img
               src={
                 station
-                  ? `${Path_URL}/images/reservoir/${station.res_code}.jpg`
-                  : `${Path_URL}/images/default_img.png`
+                  ? (resolvePhotoUrl(station.photo) || `${Path_URL}/images/reservoir/${station.res_code}.jpg`)
+                  : DEFAULT_STATION_PHOTO
               }
               alt="Station"
               style={{
@@ -260,7 +260,7 @@ const DataReservoirStation: React.FC<DataReservoirStationProps> = ({ propsSelect
                 borderRadius: "10px",
                 boxShadow: "0px 3px 6px rgba(0, 0, 0, 0.56)"
               }}
-              onError={(e) => (e.currentTarget.src = `${Path_URL}/images/default_img.png`)}
+              onError={(e) => (e.currentTarget.src = DEFAULT_STATION_PHOTO)}
             />
           </Box>
           

@@ -3,23 +3,40 @@ import { useState, useCallback } from "react";
 import { API_URL } from "@/lib/utility";
 import { apiRequest } from "@/lib/api";
 
+type StationRecord = Record<string, unknown>;
+
 interface UseCRUDOptions {
-  endpoint: string;       // เช่น "/api/rain_info"
-  idField: string;        // เช่น "sta_code"
+  endpoint: string;
+  idField: string;
   credentials?: boolean;
 }
 
+interface ApiErrorBody {
+  message?: string;
+  messages?: Record<string, string>;
+}
+
+const getErrorMessage = async (res: Response, fallback: string) => {
+  const body = (await res.json().catch(() => null)) as ApiErrorBody | null;
+  return body?.messages?.error ?? body?.message ?? fallback;
+};
+
 export function useStationCRUD({ endpoint, idField, credentials = false }: UseCRUDOptions) {
-  const [stations, setStations] = useState<any[]>([]);
+  const [stations, setStations] = useState<StationRecord[]>([]);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
     severity: "success" as "success" | "error",
   });
 
+  const showSnackbar = (message: string, severity: "success" | "error") => {
+    setSnackbar({ open: true, message, severity });
+  };
+
   const fetchAll = useCallback(async () => {
     try {
-      const res  = await apiRequest(`${API_URL}${endpoint}`);
+      const res = await apiRequest(`${API_URL}${endpoint}`);
+      if (!res.ok) throw new Error("โหลดข้อมูลล้มเหลว");
       const data = await res.json();
       setStations(Array.isArray(data) ? data : data?.data ?? []);
     } catch {
@@ -27,54 +44,65 @@ export function useStationCRUD({ endpoint, idField, credentials = false }: UseCR
     }
   }, [endpoint]);
 
-  const handleAdd = useCallback(async (newData: any) => {
+  const handleAdd = useCallback(async (newData: StationRecord) => {
     try {
-      await apiRequest(`${API_URL}${endpoint}`, {
+      const res = await apiRequest(`${API_URL}${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: credentials ? "include" : "same-origin",
         body: JSON.stringify(newData),
       });
+
+      if (!res.ok) {
+        throw new Error(await getErrorMessage(res, "เพิ่มข้อมูลล้มเหลว"));
+      }
+
       await fetchAll();
       showSnackbar("เพิ่มข้อมูลสำเร็จ", "success");
-    } catch {
-      showSnackbar("เพิ่มข้อมูลล้มเหลว", "error");
+    } catch (error: unknown) {
+      showSnackbar(error instanceof Error ? error.message : "เพิ่มข้อมูลล้มเหลว", "error");
     }
   }, [endpoint, credentials, fetchAll]);
 
-  const handleEdit = useCallback(async (editData: any) => {
+  const handleEdit = useCallback(async (editData: StationRecord) => {
     try {
-      await apiRequest(`${API_URL}${endpoint}/${editData[idField]}`, {
+      const res = await apiRequest(`${API_URL}${endpoint}/${editData[idField]}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: credentials ? "include" : "same-origin",
         body: JSON.stringify(editData),
       });
+
+      if (!res.ok) {
+        throw new Error(await getErrorMessage(res, "แก้ไขข้อมูลล้มเหลว"));
+      }
+
       setStations(prev =>
-        prev.map(s => s[idField] === editData[idField] ? editData : s)
+        prev.map(station => station[idField] === editData[idField] ? { ...station, ...editData } : station)
       );
       showSnackbar("แก้ไขข้อมูลสำเร็จ", "success");
-    } catch {
-      showSnackbar("แก้ไขข้อมูลล้มเหลว", "error");
+    } catch (error: unknown) {
+      showSnackbar(error instanceof Error ? error.message : "แก้ไขข้อมูลล้มเหลว", "error");
     }
   }, [endpoint, idField, credentials]);
 
   const handleDelete = useCallback(async (id: string) => {
     try {
-      await apiRequest(`${API_URL}${endpoint}/${id}`, {
+      const res = await apiRequest(`${API_URL}${endpoint}/${id}`, {
         method: "DELETE",
         credentials: credentials ? "include" : "same-origin",
       });
-      setStations(prev => prev.filter(s => s[idField] !== id));
+
+      if (!res.ok) {
+        throw new Error(await getErrorMessage(res, "ลบข้อมูลล้มเหลว"));
+      }
+
+      setStations(prev => prev.filter(station => station[idField] !== id));
       showSnackbar("ลบข้อมูลสำเร็จ", "success");
-    } catch {
-      showSnackbar("ลบข้อมูลล้มเหลว", "error");
+    } catch (error: unknown) {
+      showSnackbar(error instanceof Error ? error.message : "ลบข้อมูลล้มเหลว", "error");
     }
   }, [endpoint, idField, credentials]);
-
-  const showSnackbar = (message: string, severity: "success" | "error") => {
-    setSnackbar({ open: true, message, severity });
-  };
 
   const closeSnackbar = () => setSnackbar(prev => ({ ...prev, open: false }));
 

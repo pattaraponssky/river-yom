@@ -9,6 +9,37 @@ export interface RainDataItem { sta_code: string; datetime: string; wl?: string 
 export interface FlowDataItem { sta_code: string; datetime: string; wl?: string | null; discharge?: string | null; }
 export interface TeleDataItem { sta_code: string; datetime: string; wl?: string | null; discharge?: string | null; rain_mm?: string | null; }
 export interface GateDataItem { sta_code: string; datetime: string; wl_upper?: string | null; wl_lower?: string | null; discharge?: string | null; }
+export interface ReservoirDataItem {
+  res_code: string;
+  datetime: string;
+  wl?: string | null;
+  volume?: string | null;
+  inflow?: string | null;
+  outflow?: string | null;
+}
+
+export interface ReservoirInfo {
+  res_code: string;
+  res_name: string;
+  district: string;
+  province: string;
+  lat: string;
+  long: string;
+  rid_code?: string;
+  tambon?: string;
+  type?: string;
+  size?: string;
+  owner?: string;
+  da_km2?: string;
+  maxvol?: string;
+  nhvol?: string;
+  minvol?: string;
+  maxwl?: string;
+  nhwl?: string;
+  minwl?: string;
+  inflow_avg?: string;
+  photo?: string | null;
+}
 
 export interface StationInfo {
   sta_code: string;

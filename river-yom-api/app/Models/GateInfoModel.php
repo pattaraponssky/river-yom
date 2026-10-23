@@ -12,6 +12,6 @@ class GateInfoModel extends Model
 
     protected $returnType = 'array';
     protected $allowedFields = [
-        'sta_code', 'sta_name', 'tambon', 'district', 'province', 'capacity', 'lat', 'long'
+        'sta_code', 'sta_name', 'gate_no', 'gate_height', 'tambon', 'district', 'province', 'capacity', 'lat', 'long', 'type', 'photo'
     ];
 }

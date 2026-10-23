@@ -3,6 +3,7 @@ import React, { useEffect } from "react";
 import { Snackbar, Alert } from "@mui/material";
 import { StationTable } from "./StationTable";
 import { useStationCRUD } from "./useStationCRUD";
+import { RAIN_STATION_CONFIG } from "./stationInfoConfig";
 
 const InfoRainStation: React.FC = () => {
   const { stations, snackbar, fetchAll, handleAdd, handleEdit, handleDelete, closeSnackbar } =
@@ -14,10 +15,7 @@ const InfoRainStation: React.FC = () => {
     <>
       <StationTable
         stations={stations}
-        title="เพิ่มสถานีน้ำฝน"
-        addLabel="เพิ่มสถานี"
-        idField="sta_code"
-        requiredFields={["sta_code", "name"]}
+        config={RAIN_STATION_CONFIG}
         onAdd={handleAdd}
         onEdit={handleEdit}
         onDelete={handleDelete}

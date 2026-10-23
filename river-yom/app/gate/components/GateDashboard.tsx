@@ -9,7 +9,7 @@ import {
   IconButton, Tooltip, Stack, SelectChangeEvent,
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import { API_URL, Path_URL } from '@/lib/utility';
+import { API_URL, DEFAULT_STATION_PHOTO, Path_URL, resolvePhotoUrl } from '@/lib/utility';
 import { useTheme, alpha } from '@mui/material';
 import CameraViewer from '@/components/Data/CameraViewer';
 import { STATION_CAMERAS } from '@/lib/cameraConfig';
@@ -33,6 +33,7 @@ interface GateInfo {
   river?: string;
   lat: string;
   long: string;
+  photo?: string | null;
 }
 
 interface GateLatest {
@@ -202,10 +203,10 @@ export default function GateDashboard() {
                 >
                   <Box
                     component="img"
-                    src={`${Path_URL}/images/gate/${selectedInfo.sta_code}.jpg`}
+                    src={resolvePhotoUrl(selectedInfo.photo) || `${Path_URL}/images/gate/${selectedInfo.sta_code}.jpg`}
                     alt={selectedInfo.sta_name}
                     onError={(e: any) => {
-                      e.target.src = `${Path_URL}/images/default_img.png`;
+                      e.target.src = DEFAULT_STATION_PHOTO;
                     }}
                     sx={{
                       width: '100%',

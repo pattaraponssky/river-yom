@@ -91,10 +91,13 @@ const DashboardCards: React.FC<DashboardCardsProps> = ({ data, loading = false, 
   // แสดง loading skeleton
   if (loading) {
     return (
-      <Grid container spacing={2}>
-        {[...Array(5)].map((_, i) => (
+      <Grid container spacing={{ xs: 1.5, sm: 2 }}>
+        {[...Array(4)].map((_, i) => (
           <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={i}>
-            <Skeleton variant="rectangular" height={220} sx={{ borderRadius: 4 }} />
+            <Skeleton
+              variant="rectangular"
+              sx={{ height: { xs: 96, sm: 220 }, borderRadius: { xs: 2, sm: 4 } }}
+            />
           </Grid>
         ))}
       </Grid>
@@ -114,7 +117,7 @@ const DashboardCards: React.FC<DashboardCardsProps> = ({ data, loading = false, 
 
   // แสดงการ์ดปกติ
   return (
-    <Grid container spacing={2}>
+    <Grid container spacing={{ xs: 1.5, sm: 2 }}>
       {cardData.map((card, index) => (
         <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={index}>
           <DashboardCard {...card} />

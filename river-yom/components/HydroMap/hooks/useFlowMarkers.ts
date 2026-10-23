@@ -2,7 +2,6 @@ import { useEffect, useRef } from 'react';
 import { Path_URL } from '@/lib/utility';
 import { formatThaiDay } from '@/lib/utility';
 import { StationInfo, FlowDataItem } from '../hydro';
-import { FLOW_WARN_LEVELS, formatBankRow } from '@/lib/warnLevels';
 
 
 // ฟังก์ชันช่วยสร้าง marker สำหรับสถานีน้ำท่า (flow)
@@ -29,7 +28,7 @@ const addFlowMarkers = (
     let isToday = false;
     if (latest?.datetime) {
       const parsedDate = new Date(latest.datetime);
-      if (!isNaN(parsedDate.getTime())) { // ✅ เช็คว่าแปลงได้จริงก่อน (ไม่ใช่ Invalid Date)
+      if (!isNaN(parsedDate.getTime())) {
         isToday = parsedDate.toISOString().slice(0, 10) === todayStr;
       }
     }
@@ -41,10 +40,6 @@ const addFlowMarkers = (
     const wl = isToday && latest?.wl != null && parseFloat(latest.wl) !== 0
       ? parseFloat(latest.wl).toFixed(2)
       : '-';
-
-    // ระดับตลิ่ง + เทียบระดับน้ำกับตลิ่ง (แถวเดียว)
-    const wlNum = wl !== '-' ? parseFloat(wl) : null;
-    const bankRow = formatBankRow(FLOW_WARN_LEVELS, sta_code, wlNum);
 
     const safeStaCode = sta_code.replace(/\./g, '_');
 
@@ -59,8 +54,7 @@ const addFlowMarkers = (
         <div style="font-size:0.9rem;line-height:1.4rem;">
           <div><b>รหัสสถานี:</b> <span style="color:#4caf50;font-weight:bold;">${sta_code || '-'}</span></div>
           <div><b>📉 อัตราการไหล:</b> <span style="color:#1e88e5;font-weight:bold;">${discharge} ลบ.ม./วินาที</span></div>
-          <div><b>📈 ระดับน้ำปัจจุบัน:</b> <span style="color:#e53935;font-weight:bold;">${wl} ม.รทก.</span></div>
-          <div><b>🧱 ${bankRow}</b></div>
+          <div><b>📈 ระดับน้ำ:</b> <span style="color:#e53935;font-weight:bold;">${wl} ม.รทก.</span></div>
         </div>
 
         <button onclick="window.renderChart('${sta_code}', 'discharge')"
@@ -72,10 +66,7 @@ const addFlowMarkers = (
                 style="background:#e53935;color:white;padding:4px 10px;border:none;border-radius:6px;font-size:0.9rem;cursor:pointer;margin:4px 2px;">
           📈 ระดับน้ำ
         </button>
-        <a href="/river-yom/flow?tab=0&station=${sta_code}" 
-            style="padding: 4px 10px; background-color: #1976d2; color: white; border-radius: 6px; text-decoration: none; font-size: 0.9rem; display: inline-block; margin-top: 8px; cursor: pointer; transition: background-color 0.2s;">
-                ข้อมูลเพิ่มเติม
-        </a>
+     
         <br/>
         <div id="chart-discharge-${safeStaCode}" style="display:none; width:100%; height:220px;"></div>
         <div id="chart-wl-${safeStaCode}" style="display:none; width:100%; height:220px;"></div>
@@ -99,7 +90,7 @@ const addFlowMarkers = (
     markersRef.current.push(marker);
   });
 
-  console.log(`เพิ่ม Flow markers จำนวน ${markersRef.current.length} ตัว`);
+  // console.log(`เพิ่ม Flow markers จำนวน ${markersRef.current.length} ตัว`);
 };
 
 // ลบ marker ทั้งหมดใน array นี้

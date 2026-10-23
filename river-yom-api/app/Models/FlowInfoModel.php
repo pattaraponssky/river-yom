@@ -12,6 +12,6 @@ class FlowInfoModel extends Model
 
     protected $returnType = 'array';
     protected $allowedFields = [
-        'sta_code', 'sta_name', 'river', 'tambon', 'district', 'province', 'da_km2', 'capacity', 'lat', 'long'
+        'sta_code', 'sta_name', 'river', 'tambon', 'district', 'province', 'da_km2', 'capacity', 'lat', 'long', 'photo'
     ];
 }

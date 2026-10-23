@@ -10,6 +10,6 @@ class SeaInfoModel extends Model
     protected $useAutoIncrement = false; // ❌ ปิดเพราะ res_code ไม่ใช่ AUTO_INCREMENT
     protected $returnType = 'array';
     protected $allowedFields = [
-        'sta_code', 'name','tambon', 'district', 'province', 'long', 'lat'
+        'sta_code', 'name', 'tambon', 'district', 'province', 'long', 'lat', 'photo'
     ];
 }

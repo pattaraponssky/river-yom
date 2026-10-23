@@ -81,7 +81,7 @@ const ManualUpdateReservoir: React.FC = () => {
 
   return (
     <Box sx={{ fontFamily: "'Prompt', sans-serif", mt: {md:4,xs:2} }}>
-      <Typography variant="h5" sx={{ marginBottom: "1rem", fontWeight: 600, ...titleStyle, color: "#28378B" }}>
+      <Typography variant="h6" sx={{ marginBottom: "1rem", fontWeight: 600, ...titleStyle, fontSize: { xs: "0.95rem", md: "1.05rem" }, color: "#28378B" }}>
         อัปเดตข้อมูลอ่างเก็บน้ำย้อนหลัง (กำหนดวันที่)
       </Typography>
       <Paper sx={{ p: { xs: 2, sm: 4 }, borderRadius: 2, }}>
@@ -111,6 +111,7 @@ const ManualUpdateReservoir: React.FC = () => {
           disabled={loading || !startDate || !endDate} // Disable if loading or dates not selected
           sx={{
             ...titleStyle,
+            fontSize: { xs: "0.8rem", md: "0.85rem" },
             borderRadius: 2,
             width: { xs: "100%", sm: "auto" },
             minWidth: 150,

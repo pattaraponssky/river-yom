@@ -82,7 +82,7 @@ const EditAboutUs: React.FC = () => {
       <Typography
         fontWeight="bold"
         mb={2}
-        sx={titleStyle}
+        sx={{ ...titleStyle, fontSize: { xs: "0.95rem", md: "1.05rem" } }}
         component="div" 
       >
         แก้ไขข้อมูลเว็บไซต์

@@ -86,15 +86,16 @@ const FlowCard: React.FC = () => {
 
 
   return (
-    <Box sx={{ mx: "auto", mb: 2 }}>
-      <Card sx={{ borderRadius: 3, boxShadow: 2 }}>
+    <Box sx={{ mx: "auto", mb: { xs: 1.5, sm: 2 } }}>
+      <Card sx={{ borderRadius: { xs: 2, sm: 3 }, boxShadow: 2 }}>
          <CardHeader
+            sx={{ px: { xs: 1.5, sm: 2 }, py: { xs: 1.25, sm: 2 }, "& .MuiCardHeader-avatar": { mr: { xs: 1.25, sm: 2 } } }}
             avatar={
               <Avatar
                 src={`${Path_URL}/images/icons/flow_station_icon.png`}
                  sx={{
-                    width: { xs: 35, md: 45 },
-                    height: { xs: 35, md: 45 },
+                    width: { xs: 32, sm: 40, md: 45 },
+                    height: { xs: 32, sm: 40, md: 45 },
                     boxShadow: `0 4px 12px ${alpha(primary, 0.4)}`,
                 }}
               />
@@ -103,17 +104,17 @@ const FlowCard: React.FC = () => {
               <Typography
                 sx={{
                   fontWeight: "bold",
-                  fontSize: { md: "1.4rem", xs: "1rem" },
+                  fontSize: { xs: "0.9rem", sm: "1.05rem", md: "1.4rem" },
                   fontFamily: "Prompt",
                 }}
               >
                 สถานีวัดน้ำท่า 
-                  <Typography component="span" sx={{ fontWeight: "bold", fontSize: { md: "1.1rem", xs: "0.85rem" }, fontFamily:"Prompt", color: "text.secondary", ml: 1 }}>
+                  <Typography component="span" sx={{ display: { xs: "none", sm: "inline" }, fontWeight: "bold", fontSize: { sm: "0.85rem", md: "1.1rem" }, fontFamily: "Prompt", color: "text.secondary", ml: 1 }}>
                     (ข้อมูลตรวจวัดเวลา 07:00 น.)
                     <Tooltip title="แหล่งที่มาของข้อมูล">
                       <IconButton
-                        size="medium"
-                        sx={{ ml: 1 }}
+                        size="small"
+                        sx={{ ml: { xs: 0.5, sm: 1 }, p: 0.5 }}
                         onClick={() =>
                           window.open(
                             'http://hydro-2.rid.go.th/',
@@ -121,7 +122,7 @@ const FlowCard: React.FC = () => {
                           )
                         }
                       >
-                        <SourceIcon fontSize="medium" />
+                        <SourceIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
                   </Typography>
@@ -133,16 +134,16 @@ const FlowCard: React.FC = () => {
           />
           <Divider />
 
-          <CardContent>
+          <CardContent sx={{ p: { xs: 1.5, sm: 2 }, "&:last-child": { pb: { xs: 1.5, sm: 2 } } }}>
 
            <Paper
               variant="outlined"
               sx={{
                 bgcolor: cardColor,
                 borderColor: "rgba(0,0,0,0.05)",
-                mb: 2,
+                mb: { xs: 1.25, sm: 2 },
                 borderRadius: 2,
-                p: 2,
+                p: { xs: 1.25, sm: 2 },
               }}
             >
             <Grid container spacing={1} alignItems="center">
@@ -153,7 +154,7 @@ const FlowCard: React.FC = () => {
                 <Typography 
                     sx={{
                       fontWeight: 800,
-                      fontSize: '1.3rem',
+                      fontSize: { xs: '1.05rem', sm: '1.3rem' },
                       background: `linear-gradient(90deg, ${primary}, ${secondary})`,
                       WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
@@ -173,7 +174,7 @@ const FlowCard: React.FC = () => {
                 <Typography 
                     sx={{
                       fontWeight: 800,
-                      fontSize: '1.3rem',
+                      fontSize: { xs: '1.05rem', sm: '1.3rem' },
                       background: `linear-gradient(90deg, ${primary}, ${secondary})`,
                       WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
@@ -191,7 +192,7 @@ const FlowCard: React.FC = () => {
           {/* Table */}
       
            <Card variant="outlined" sx={{ borderRadius: 2, overflow: "auto",  }}>
-            <Table size="small">
+            <Table size="small" sx={{ minWidth: { xs: 520, md: "100%" } }}>
               <TableHead>
                 <TableRow
                     sx={{

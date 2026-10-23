@@ -3,7 +3,6 @@ import { useEffect, useRef } from 'react';
 import { Path_URL } from '@/lib/utility';
 import { formatThaiDay } from '@/lib/utility';
 import { StationInfo, GateDataItem } from '../hydro';
-import { GATE_WARN_LEVELS, formatBankRow } from '@/lib/warnLevels';
 
 
 const addGateMarkers = (
@@ -29,7 +28,7 @@ const addGateMarkers = (
     let isToday = false;
     if (latest?.datetime) {
       const parsedDate = new Date(latest.datetime);
-      if (!isNaN(parsedDate.getTime())) { // ✅ เช็คว่าแปลงได้จริงก่อน (ไม่ใช่ Invalid Date)
+      if (!isNaN(parsedDate.getTime())) {
         isToday = parsedDate.toISOString().slice(0, 10) === todayStr;
       }
     }
@@ -46,10 +45,6 @@ const addGateMarkers = (
       ? parseFloat(latest.wl_lower).toFixed(2)
       : '-';
 
-    // ระดับตลิ่ง + เทียบระดับน้ำ (เหนือ) กับตลิ่ง (แถวเดียว)
-    const wlUpperNum = wl_upper !== '-' ? parseFloat(wl_upper) : null;
-    const bankRow = formatBankRow(GATE_WARN_LEVELS, sta_code, wlUpperNum);
-
     const safeStaCode = sta_code.replace(/\./g, '_');
 
     const marker = new window.longdo.Marker(position, {
@@ -65,7 +60,6 @@ const addGateMarkers = (
           <div><b>📉 อัตราการไหล:</b> <span style="color:#1e88e5;font-weight:bold;">${discharge} ลบ.ม./วินาที</span></div>
           <div><b>📈 ระดับน้ำเหนือ:</b> <span style="color:#e53935;font-weight:bold;">${wl_upper} ม.รทก.</span></div>
           <div><b>📈 ระดับน้ำท้าย:</b> <span style="color:#e53935;font-weight:bold;">${wl_lower} ม.รทก.</span></div>
-          <div><b>🧱 ${bankRow}</b></div>
         </div>
 
         <button onclick="window.renderChart('${sta_code}', 'gate_discharge')"
@@ -82,10 +76,7 @@ const addGateMarkers = (
                 style="background:#e53935;color:white;padding:4px 10px;border:none;border-radius:6px;font-size:0.9rem;cursor:pointer;margin:4px 2px;">
           📈 ระดับน้ำท้าย
         </button>
-        <a href="/river-yom/gate?tab=0&station=${sta_code}" 
-            style="padding: 4px 10px; background-color: #1976d2; color: white; border-radius: 6px; text-decoration: none; font-size: 0.9rem; display: inline-block; margin-top: 8px; cursor: pointer; transition: background-color 0.2s;">
-                ข้อมูลเพิ่มเติม
-        </a>
+      
         <br/>
         <div id="chart-gate_discharge-${safeStaCode}" style="display:none; width:100%; height:220px;"></div>
         <div id="chart-wl_upper-${safeStaCode}" style="display:none; width:100%; height:220px;"></div>
@@ -110,7 +101,7 @@ const addGateMarkers = (
     markersRef.current.push(marker);
   });
 
-  console.log(`เพิ่ม Gate markers จำนวน ${markersRef.current.length} ตัว`);
+  // console.log(`เพิ่ม Gate markers จำนวน ${markersRef.current.length} ตัว`);
 };
 
 const removeMarkers = (map: any, markersRef: React.MutableRefObject<any[]>) => {

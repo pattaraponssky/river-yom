@@ -8,7 +8,7 @@ import {
   IconButton, Tooltip, Stack, SelectChangeEvent,
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import { API_URL, Path_URL } from '@/lib/utility';
+import { API_URL, DEFAULT_STATION_PHOTO, Path_URL, resolvePhotoUrl } from '@/lib/utility';
 import CameraViewer from '@/components/Data/CameraViewer';
 import { STATION_CAMERAS } from '@/lib/cameraConfig';
 import StationCrossSectionChart from '@/components/Data/StationCrossSectionChart';
@@ -28,6 +28,7 @@ interface FlowInfo {
   river?: string;
   lat: string;
   long: string;
+  photo?: string | null;
 }
 
 interface FlowLatest {
@@ -210,10 +211,10 @@ export default function FlowDashboard() {
                 >
                   <Box
                     component="img"
-                    src={`${Path_URL}/images/flow_station/${selectedInfo.sta_code}.jpg`}
+                    src={resolvePhotoUrl(selectedInfo.photo) || `${Path_URL}/images/flow_station/${selectedInfo.sta_code}.jpg`}
                     alt={selectedInfo.sta_name}
                     onError={(e: any) => {
-                      e.target.src = `${Path_URL}/images/default_img.png`;
+                      e.target.src = DEFAULT_STATION_PHOTO;
                     }}
                     sx={{
                       width: '100%',

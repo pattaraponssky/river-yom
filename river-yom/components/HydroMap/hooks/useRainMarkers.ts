@@ -20,18 +20,24 @@ const addRainMarkers = (
   );
 
   rainInfo.forEach((station) => {
-    const { sta_code, district, province, lat, long } = station;
+    const { sta_code, sta_name, district, province, lat, long } = station;
     const position = { lat: parseFloat(lat), lon: parseFloat(long) };
 
     if (isNaN(position.lat) || isNaN(position.lon)) return;
 
     const latest = latestMap.get(sta_code);
-    const isToday = latest && new Date(latest.datetime).toISOString().slice(0, 10) === yesterdayStr;
+    let isToday = false;
+    if (latest?.datetime) {
+      const parsedDate = new Date(latest.datetime);
+      if (!isNaN(parsedDate.getTime())) {
+        isToday = parsedDate.toISOString().slice(0, 10) === yesterdayStr;
+      }
+    }
 
     const rainValue = latest?.rain_mm != null ? parseFloat(latest.rain_mm) : NaN;
     const rain_mm = 
       isToday && !isNaN(rainValue)
-        ? rainValue.toFixed(2)       
+        ? rainValue.toFixed(2)          // แสดง 0.00 ถ้าเป็น 0, หรือค่าอื่นตามจริง
         : '-';
 
     // เปลี่ยนไอคอนตามว่ามีฝนหรือไม่ (ตัวอย่าง logic เดิม)
@@ -40,8 +46,8 @@ const addRainMarkers = (
     const safeStaCode = sta_code.replace(/\./g, '_');
 
     const marker = new window.longdo.Marker(position, {
-      title: `<img src="${Path_URL}/images/icons/${iconFile}" style="width:25px;height:25px;vertical-align:middle;margin-right:5px" /> 
-              <span style="font-size:1.1rem;font-weight:bold;vertical-align:middle;">${name} (${sta_code || '-'}) อ.${district} จ.${province}</span>`,
+      title: `<img src="${Path_URL}/images/icons/rain_station_icon.png" style="width:25px;height:25px;vertical-align:middle;margin-right:5px" /> 
+              <span style="font-size:1.1rem;font-weight:bold;vertical-align:middle;">${sta_name} (${sta_code || '-'}) อ.${district} จ.${province}</span>`,
 
       detail: `
         <div style="font-size:1rem;">
@@ -61,10 +67,7 @@ const addRainMarkers = (
                 style="background:#e53935;color:white;padding:4px 10px;border:none;border-radius:6px;font-size:0.9rem;cursor:pointer;margin:4px 2px;">
           📉 ปริมาณน้ำฝนสะสม
         </button>
-        <a href="/river-yom/rain?tab=0&station=${sta_code}" 
-            style="padding: 4px 10px; background-color: #1976d2; color: white; border-radius: 6px; text-decoration: none; font-size: 0.9rem; display: inline-block; margin-top: 8px; cursor: pointer; transition: background-color 0.2s;">
-                ข้อมูลเพิ่มเติม
-        </a>
+       
         <br/>
         <div id="chart-rain_mm-${safeStaCode}" style="display:none; width:100%; height:220px;"></div>
         <div id="chart-rain_series-${safeStaCode}" style="display:none; width:100%; height:220px;"></div>
@@ -88,7 +91,7 @@ const addRainMarkers = (
     markersRef.current.push(marker);
   });
 
-  console.log(`เพิ่ม Rain markers จำนวน ${markersRef.current.length} ตัว`);
+  // console.log(`เพิ่ม Rain markers จำนวน ${markersRef.current.length} ตัว`);
 };
 
 const removeMarkers = (map: any, markersRef: React.MutableRefObject<any[]>) => {

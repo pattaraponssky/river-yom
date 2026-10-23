@@ -20,7 +20,7 @@ import {
 import TeleChart from "@/app/tele/components/TeleChartData";
 import TeleExportTable from "@/app/tele/components/TeleTableData";
 import CenteredLoading from "@/components/Layout/CenteredLoading";
-import { API_URL, Path_URL } from "@/lib/utility";
+import { API_URL, DEFAULT_STATION_PHOTO, Path_URL, resolvePhotoUrl } from "@/lib/utility";
 import { titleStyle, textStyle, fontInfo } from "@/theme/style";
 import { HeaderCellStyle } from '../../../theme/style';
 import CameraViewer from "@/components/Data/CameraViewer";
@@ -319,7 +319,7 @@ const DataTele: React.FC<{ propsSelectedStation?: string }> = ({ propsSelectedSt
 
           <Box sx={{ display: "flex", justifyContent: "center" }}>
             <img
-              src={station ? `${Path_URL}/images/tele/${station.sta_code}.jpg` : `${Path_URL}/images/images/default_img.png`}
+              src={station ? (resolvePhotoUrl(station.photo) || `${Path_URL}/images/tele/${station.sta_code}.jpg`) : DEFAULT_STATION_PHOTO}
               alt="Station"
               style={{
                 width: "100%",
@@ -328,7 +328,7 @@ const DataTele: React.FC<{ propsSelectedStation?: string }> = ({ propsSelectedSt
                 borderRadius: "10px",
                 boxShadow: "0px 3px 6px rgba(0, 0, 0, 0.56)"
               }}
-              onError={(e) => (e.currentTarget.src = `${Path_URL}/images/default_img.png`)}
+              onError={(e) => (e.currentTarget.src = DEFAULT_STATION_PHOTO)}
             />
           </Box>
         </Grid>

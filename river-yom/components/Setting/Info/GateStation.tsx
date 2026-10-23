@@ -3,6 +3,7 @@ import React, { useEffect } from "react";
 import { Snackbar, Alert } from "@mui/material";
 import { StationTable } from "./StationTable";
 import { useStationCRUD } from "./useStationCRUD";
+import { GATE_STATION_CONFIG } from "./stationInfoConfig";
 
 const InfoGateStation: React.FC = () => {
   const { stations, snackbar, fetchAll, handleAdd, handleEdit, handleDelete, closeSnackbar } =
@@ -14,10 +15,7 @@ const InfoGateStation: React.FC = () => {
     <>
       <StationTable
         stations={stations}
-        title="เพิ่มประตูระบายน้ำ"
-        addLabel="เพิ่มสถานี"
-        idField="sta_code"
-        requiredFields={["sta_code", "sta_name"]}
+        config={GATE_STATION_CONFIG}
         onAdd={handleAdd}
         onEdit={handleEdit}
         onDelete={handleDelete}

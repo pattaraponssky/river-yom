@@ -8,12 +8,12 @@ export const createToggleMenu = (
   initialCheck: boolean,
   onChange: Dispatch<SetStateAction<boolean>>
 ) => {
-  return new window.longdo.MenuBar({
+  return new (window as any).longdo.MenuBar({
     button: [
       {
         label,
         value,
-        type: window.longdo.ButtonType.Toggle,
+        type: (window as any).longdo.ButtonType.Toggle,
         check: initialCheck,
       },
     ],

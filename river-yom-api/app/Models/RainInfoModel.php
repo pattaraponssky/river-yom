@@ -12,6 +12,6 @@ class RainInfoModel extends Model
 
     protected $returnType = 'array';
     protected $allowedFields = [
-        'sta_code', 'sta_code', 'name', 'basin','tambon', 'district', 'province', 'long', 'lat'
+        'sta_code', 'name', 'basin', 'tambon', 'district', 'province', 'long', 'lat', 'photo'
     ];
 }

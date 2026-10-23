@@ -59,27 +59,42 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
           elevation={3}
           sx={{
             height: '100%',
-            borderRadius: 3,
+            borderRadius: { xs: 2, sm: 3 },
             overflow: 'hidden',
             background: cardBg,
             border: `1px solid ${borderColor}`,
             transition: 'all 0.25s ease',
             position: 'relative',
             '&:hover': {
-              transform: 'translateY(-6px)',
+              transform: { xs: 'translateY(-2px)', sm: 'translateY(-6px)' },
               boxShadow: `0 12px 32px ${alpha(theme.palette.primary.main, isDark ? 0.25 : 0.15)}`,
               borderColor: hoverBorder,
             },
           }}
         >
-          <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', height: '100%' }}>
+          <Box
+            sx={{
+              p: { xs: 1.5, sm: 3 },
+              display: 'flex',
+              flexDirection: { xs: 'row', sm: 'column' },
+              alignItems: { xs: 'center', sm: 'stretch' },
+              gap: { xs: 1.25, sm: 0 },
+              height: '100%',
+            }}
+          >
             {/* ไอคอน + หัวข้อ */}
-            <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+            <Stack
+              direction="row"
+              spacing={{ xs: 1.25, sm: 2 }}
+              alignItems="center"
+              sx={{ mb: { xs: 0, sm: 2 }, flex: { xs: 1, sm: 'none' }, minWidth: 0 }}
+            >
               <Box
                 sx={{
-                  width: 60,
-                  height: 60,
-                  borderRadius: '16px',
+                  width: { xs: 40, sm: 60 },
+                  height: { xs: 40, sm: 60 },
+                  borderRadius: { xs: 2, sm: '16px' },
+                  flexShrink: 0,
                   background: `linear-gradient(135deg, ${alpha(primary, 0.25)}, ${alpha(primary, 0.05)})`,
                   display: 'flex',
                   alignItems: 'center',
@@ -92,15 +107,15 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
                   src={image}
                   alt={title}
                   sx={{
-                    width: 36,
-                    height: 36,
+                    width: { xs: 24, sm: 36 },
+                    height: { xs: 24, sm: 36 },
                     objectFit: 'contain',
                     filter: isDark ? 'brightness(1.2)' : 'none',
                   }}
                 />
               </Box>
 
-              <Box>
+              <Box sx={{ minWidth: 0 }}>
                 <Typography
                   variant="subtitle1"
                   sx={{
@@ -108,7 +123,7 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
                     fontWeight: 700,
                     color: textColor,
                     lineHeight: 1.2,
-                    fontSize: { xs: '1rem', sm: '1.2rem'}
+                    fontSize: { xs: '0.82rem', sm: '1.2rem' }
                   }}
                 >
                   {title}
@@ -119,7 +134,7 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
                     color: theme.palette.text.secondary,
                     fontFamily: 'Prompt, sans-serif',
                     fontWeight: 500,
-                    fontSize: { xs: '0.75rem', sm: '0.95rem'}
+                    fontSize: { xs: '0.68rem', sm: '0.95rem' }
                   }}
                 >
                   {subTitle}
@@ -128,8 +143,19 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
             </Stack>
 
             {/* ข้อมูลหลัก (ใหญ่และเด่น) */}
-            <Box sx={{ mt: 'auto' }}>
-              <Stack direction="row" spacing={1} alignItems="baseline">
+            <Box
+              sx={{
+                mt: { xs: 0, sm: 'auto' },
+                flexShrink: 0,
+                textAlign: { xs: 'right', sm: 'left' },
+              }}
+            >
+              <Stack
+                direction="row"
+                spacing={{ xs: 0.5, sm: 1 }}
+                alignItems="baseline"
+                justifyContent={{ xs: 'flex-end', sm: 'flex-start' }}
+              >
                 <Typography
                   variant="h4"
                   component="div"
@@ -138,6 +164,7 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
                     color: accentColor,
                     fontFamily: 'Prompt, sans-serif',
                     lineHeight: 1,
+                    fontSize: { xs: '1.35rem', sm: '2.125rem' },
                   }}
                 >
                   {value_data}
@@ -149,6 +176,9 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
                     color: theme.palette.text.secondary,
                     fontWeight: 500,
                     fontFamily: 'Prompt, sans-serif',
+                    fontSize: { xs: '0.65rem', sm: '1rem' },
+                    lineHeight: { xs: 1.1, sm: 1.5 },
+                    maxWidth: { xs: 72, sm: 'none' },
                   }}
                 >
                   {unit_data}
@@ -156,13 +186,20 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
               </Stack>
 
               {/* ข้อมูลรอง (value + unit) */}
-              <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.5 }}>
+              <Stack
+                direction="row"
+                spacing={{ xs: 0.5, sm: 1 }}
+                alignItems="center"
+                justifyContent={{ xs: 'flex-end', sm: 'flex-start' }}
+                sx={{ mt: 0.25 }}
+              >
                 <Typography
                   variant="body1"
                   sx={{
                     fontWeight: 600,
                     color: textColor,
                     fontFamily: 'Prompt, sans-serif',
+                    fontSize: { xs: '0.7rem', sm: '1rem' },
                   }}
                 >
                   {value}
@@ -172,6 +209,7 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
                   sx={{
                     color: theme.palette.text.secondary,
                     fontFamily: 'Prompt, sans-serif',
+                    fontSize: { xs: '0.65rem', sm: '0.875rem' },
                   }}
                 >
                   {unit}

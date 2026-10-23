@@ -12,7 +12,7 @@ import PlaceIcon from '@mui/icons-material/Place';
 import SensorsIcon from '@mui/icons-material/Sensors';
 import WaterIcon from '@mui/icons-material/Water';
 import { useRouter } from 'next/navigation';
-import { API_URL, Path_URL } from '@/lib/utility';
+import { API_URL, Path_URL, resolvePhotoUrl } from '@/lib/utility';
 import { useAuth } from '@/contexts/AuthContext';
 
 
@@ -29,6 +29,7 @@ interface TeleStation {
   capacity: number | null;
   lat: number | null;
   long: number | null;
+  photo?: string | null;
   equipment_count?: number;
   latest_datetime?: string | null;          // เวลาข้อมูลล่าสุด "YYYY-MM-DD HH:MM:SS"
   latest_status?: StationLiveStatus | null; // ★ field ที่ backend จะเพิ่มมาให้ทีหลัง
@@ -186,7 +187,7 @@ export default function StationsListClient() {
           </Grid>
         ) : (
           filtered.map(station => {
-            const photo = `${Path_URL}/images/tele/${station.sta_code}.jpg`;
+            const photo = resolvePhotoUrl(station.photo) || `${Path_URL}/images/tele/${station.sta_code}.jpg`;
             const liveStatus = getStationStatus(station);
             const statusCfg = LIVE_STATUS_CONFIG[liveStatus];
 

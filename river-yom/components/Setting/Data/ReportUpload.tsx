@@ -171,8 +171,8 @@ const ReportUploadForm: React.FC = () => {
             fontFamily: 'Prompt',
             fontWeight: 700,
             fontSize: {
-              xs: '1.35rem',
-              md: '1.7rem',
+              xs: '1.05rem',
+              md: '1.2rem',
             },
             color: 'text.primary',
             mb: 0.5,
@@ -184,7 +184,7 @@ const ReportUploadForm: React.FC = () => {
         <Typography
           sx={{
             fontFamily: 'Prompt',
-            fontSize: '0.95rem',
+            fontSize: '0.85rem',
             color: 'text.secondary',
           }}
         >
@@ -225,7 +225,7 @@ const ReportUploadForm: React.FC = () => {
                 sx={{
                   fontFamily: 'Prompt',
                   fontWeight: 700,
-                  fontSize: '1.15rem',
+                  fontSize: '1rem',
                   mb: 0.5,
                 }}
               >
@@ -236,7 +236,7 @@ const ReportUploadForm: React.FC = () => {
                 sx={{
                   fontFamily: 'Prompt',
                   color: 'text.secondary',
-                  fontSize: '0.85rem',
+                  fontSize: '0.78rem',
                 }}
               >
                 เลือกประเภทไฟล์และไฟล์ที่ต้องการนำเข้าสู่ระบบ
@@ -282,7 +282,7 @@ const ReportUploadForm: React.FC = () => {
                     <Typography
                       sx={{
                         fontFamily: 'Prompt',
-                        fontSize: '0.9rem',
+                        fontSize: '0.82rem',
                         fontWeight: 500,
                       }}
                     >
@@ -335,7 +335,7 @@ const ReportUploadForm: React.FC = () => {
                   sx={{
                     fontFamily: 'Prompt',
                     fontWeight: 600,
-                    fontSize: '0.9rem',
+                    fontSize: '0.82rem',
                   }}
                 >
                   {current.label}
@@ -344,7 +344,7 @@ const ReportUploadForm: React.FC = () => {
                 <Typography
                   sx={{
                     fontFamily: 'Prompt',
-                    fontSize: '0.8rem',
+                    fontSize: '0.74rem',
                     color: 'text.secondary',
                   }}
                 >
@@ -413,7 +413,7 @@ const ReportUploadForm: React.FC = () => {
                     sx={{
                       fontFamily: 'Prompt',
                       fontWeight: 600,
-                      fontSize: '0.95rem',
+                      fontSize: '0.85rem',
                       wordBreak: 'break-all',
                     }}
                   >
@@ -424,7 +424,7 @@ const ReportUploadForm: React.FC = () => {
                     sx={{
                       fontFamily: 'Prompt',
                       color: 'text.secondary',
-                      fontSize: '0.8rem',
+                      fontSize: '0.74rem',
                       mt: 0.5,
                     }}
                   >
@@ -473,7 +473,7 @@ const ReportUploadForm: React.FC = () => {
                     sx={{
                       fontFamily: 'Prompt',
                       color: 'text.secondary',
-                      fontSize: '0.8rem',
+                      fontSize: '0.74rem',
                       mt: 0.5,
                     }}
                   >
@@ -496,7 +496,7 @@ const ReportUploadForm: React.FC = () => {
                   <Typography
                     sx={{
                       fontFamily: 'Prompt',
-                      fontSize: '0.8rem',
+                      fontSize: '0.74rem',
                     }}
                   >
                     กำลังอัปโหลดไฟล์...
@@ -541,7 +541,7 @@ const ReportUploadForm: React.FC = () => {
                 borderRadius: 2,
                 fontFamily: 'Prompt',
                 fontWeight: 600,
-                fontSize: '0.95rem',
+                fontSize: '0.85rem',
               }}
             >
               {loading ? 'กำลังอัปโหลด...' : 'อัปโหลดไฟล์'}
@@ -582,7 +582,7 @@ const ReportUploadForm: React.FC = () => {
                   sx={{
                     fontFamily: 'Prompt',
                     fontWeight: 700,
-                    fontSize: '1.15rem',
+                    fontSize: '1rem',
                   }}
                 >
                   วิธีการใช้งาน
@@ -593,7 +593,7 @@ const ReportUploadForm: React.FC = () => {
                 sx={{
                   fontFamily: 'Prompt',
                   color: 'text.secondary',
-                  fontSize: '0.85rem',
+                  fontSize: '0.78rem',
                 }}
               >
                 ขั้นตอนการอัปโหลดรายงานเข้าสู่ระบบ
@@ -650,7 +650,7 @@ const ReportUploadForm: React.FC = () => {
                       justifyContent: 'center',
                       fontFamily: 'Prompt',
                       fontWeight: 600,
-                      fontSize: '0.85rem',
+                      fontSize: '0.78rem',
                     }}
                   >
                     {step.no}
@@ -661,7 +661,7 @@ const ReportUploadForm: React.FC = () => {
                       sx={{
                         fontFamily: 'Prompt',
                         fontWeight: 600,
-                        fontSize: '0.9rem',
+                        fontSize: '0.82rem',
                       }}
                     >
                       {step.title}
@@ -670,7 +670,7 @@ const ReportUploadForm: React.FC = () => {
                     <Typography
                       sx={{
                         fontFamily: 'Prompt',
-                        fontSize: '0.8rem',
+                        fontSize: '0.74rem',
                         color: 'text.secondary',
                         lineHeight: 1.6,
                       }}
@@ -742,7 +742,7 @@ const ReportUploadForm: React.FC = () => {
                       <Typography
                         sx={{
                           fontFamily: 'Prompt',
-                          fontSize: '0.82rem',
+                          fontSize: '0.75rem',
                           fontWeight: 500,
                         }}
                       >
@@ -772,7 +772,7 @@ const ReportUploadForm: React.FC = () => {
                 borderRadius: 2,
                 '& .MuiAlert-message': {
                   fontFamily: 'Prompt',
-                  fontSize: '0.8rem',
+                  fontSize: '0.74rem',
                   lineHeight: 1.6,
                 },
               }}

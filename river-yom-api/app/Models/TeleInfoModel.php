@@ -12,6 +12,6 @@ class TeleInfoModel extends Model
 
     protected $returnType = 'array';
     protected $allowedFields = [
-        'sta_code', 'sta_name', 'river', 'tambon', 'district', 'province', 'capacity', 'lat', 'long'
+        'sta_code', 'sta_name', 'river', 'tambon', 'district', 'province', 'capacity', 'lat', 'long', 'reference_wl', 'photo'
     ];
 }

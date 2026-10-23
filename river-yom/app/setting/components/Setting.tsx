@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from "react";
-import { Box, Tabs, Tab, Typography, Grid, CircularProgress, Paper } from '@mui/material';
+import { Box, Tabs, Tab, Typography, Grid, Paper } from '@mui/material';
 import {
   Storage,
   BarChart,
@@ -24,6 +24,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import EquipmentPage from "@/app/equipment/page";
 import ReportUploadForm from "@/components/Setting/Data/ReportUpload";
 import InfoTeleStation from "@/components/Setting/Info/TeleStation";
+import {
+  RAIN_STATION_CONFIG,
+  FLOW_STATION_CONFIG,
+  GATE_STATION_CONFIG,
+  TELE_STATION_CONFIG,
+} from "@/components/Setting/Info/stationInfoConfig";
 
 
 
@@ -57,68 +63,128 @@ const Setting: React.FC = () => {
 
   return (
     <div>
-      <Box sx={{ ...BoxStyle }}>
+      <Box
+        sx={{
+          ...BoxStyle,
+          p: { xs: 1.5, md: 2.5 },
+          "& .MuiTab-root": { fontSize: { xs: "0.78rem", md: "0.9rem" } },
+          "& .MuiButton-root": { fontSize: { xs: "0.78rem", md: "0.85rem" } },
+          "& .MuiInputBase-input": { fontSize: { xs: "0.82rem", md: "0.875rem" } },
+          "& .MuiInputLabel-root": { fontSize: { xs: "0.8rem", md: "0.85rem" } },
+          "& .MuiFormHelperText-root": { fontSize: "0.72rem" },
+          "& .MuiMenuItem-root": { fontSize: "0.85rem" },
+          "& .MuiChip-label": { fontSize: "0.72rem" },
+          "& .MuiAlert-message": { fontSize: "0.8rem" },
+          "& .MuiTableCell-root": { fontSize: { xs: "0.72rem", md: "0.8rem" } },
+        }}
+      >
+        <Box sx={{ mb: 2 }}>
+          <Typography sx={{ fontFamily: "Prompt", fontWeight: 700, fontSize: { xs: "1rem", md: "1.2rem" }, color: "text.primary" }}>
+            ตั้งค่าและจัดการข้อมูล
+          </Typography>
+          <Typography sx={{ fontFamily: "Prompt", fontSize: { xs: "0.75rem", md: "0.82rem" }, color: "text.secondary" }}>
+            จัดการข้อมูลสถานี ข้อมูลย้อนหลัง ข้อมูลเว็บไซต์ และรายงานประจำวัน
+          </Typography>
+        </Box>
+
         {/* Main Tabs */}
         <Tabs
           value={mainTab}
           onChange={handleMainTabChange}
           aria-label="main category"
-          variant="scrollable" // ใช้ scrollable tab
-          scrollButtons="auto" // เพิ่มปุ่มเลื่อนอัตโนมัติ
-          sx={{ marginBottom: "10px" ,width:{ xs:"85vw", sm:"85vw", md:"auto"}}}
+          variant="scrollable"
+          scrollButtons="auto"
+          allowScrollButtonsMobile
+          sx={{
+            mb: 2,
+            minHeight: 50,
+            p: 0.5,
+            borderRadius: 2.5,
+            bgcolor: (theme) => theme.palette.mode === "dark" ? "rgba(255,255,255,0.04)" : "rgba(40,55,139,0.05)",
+            "& .MuiTabs-indicator": { display: "none" },
+            "& .MuiTab-root": {
+              minHeight: 44,
+              borderRadius: 2,
+              gap: 0.75,
+              textTransform: "none",
+              color: "text.secondary",
+              transition: "all 0.18s ease",
+            },
+            "& .MuiTab-root.Mui-selected": {
+              bgcolor: "background.paper",
+              color: "primary.main",
+              boxShadow: "0 2px 10px rgba(15, 23, 42, 0.08)",
+            },
+          }}
         >
-          {/* <Tab
-            sx={{ ...fontTitle}}
-            icon={<Settings />} // ไอคอนการตั้งค่าระบบ
-            iconPosition="start"
-            label="การตั้งค่าระบบ"
-          /> */}
           <Tab
-            sx={{ ...fontTitle}}
-            icon={<Storage />} // ไอคอนข้อมูลสถานี
+            sx={{ ...fontTitle, fontSize: { xs: "0.8rem", md: "0.95rem" } }}
+            icon={<Storage />}
             iconPosition="start"
             label="ข้อมูลสถานี"
           />
           <Tab
-            sx={{ ...fontTitle}}
-            icon={<BarChart />} // ไอคอนการตั้งค่าแบบจำลอง
+            sx={{ ...fontTitle, fontSize: { xs: "0.8rem", md: "0.95rem" } }}
+            icon={<BarChart />}
             iconPosition="start"
             label="อัปเดตข้อมูลย้อนหลัง"
           />
           <Tab
-            sx={{ ...fontTitle}}
-            icon={<Info />} // ไอคอนเกี่ยวกับเรา
+            sx={{ ...fontTitle, fontSize: { xs: "0.8rem", md: "0.95rem" } }}
+            icon={<Info />}
             iconPosition="start"
             label="ข้อมูลเว็บไซต์"
-            />
+          />
           <Tab
-              sx={{ ...fontTitle}}
-              icon={<HomeRepairService />} // ไอคอนลิงค์เพิ่มเติม
-              iconPosition="start"
-              label="อัปโหลดรายงานประจำวัน"
-            />
+            sx={{ ...fontTitle, fontSize: { xs: "0.8rem", md: "0.95rem" } }}
+            icon={<HomeRepairService />}
+            iconPosition="start"
+            label="อัปโหลดรายงานประจำวัน"
+          />
         </Tabs>
 
         {/* Sub Tabs - Show only when 'ข้อมูลสถานี' is selected */}
         {mainTab === 0 && (
-          <Tabs
-            value={subTab}
-            onChange={handleSubTabChange}
-            aria-label="sub category"
+          <Box
             sx={{
-              "& .MuiTab-root": { color: "#28378B" }, // ตัวอักษรสีเข้มขึ้น
+              mb: 1,
+              borderRadius: 2.5,
+              border: (theme) => `1px solid ${theme.palette.divider}`,
+              bgcolor: "background.paper",
+              overflow: "hidden",
             }}
           >
-            {/* <Tab sx={titleStyle} label="ข้อมูลอ่างเก็บน้ำ/เขื่อน" /> */}
-            <Tab sx={titleStyle} label="ข้อมูลสถานีวัดน้ำฝน" />
-            <Tab sx={titleStyle} label="ข้อมูลสถานีวัดน้ำท่า" />
-            <Tab sx={titleStyle} label="ข้อมูลประตูระบายน้ำ" />
-            <Tab sx={titleStyle} label="ข้อมูลสถานีติดตั้งโครงการ" />
-          </Tabs>
+            <Tabs
+              value={subTab}
+              onChange={handleSubTabChange}
+              aria-label="sub category"
+              variant="scrollable"
+              scrollButtons="auto"
+              allowScrollButtonsMobile
+              sx={{
+                minHeight: 46,
+                "& .MuiTabs-indicator": { height: 3, borderRadius: 3 },
+                "& .MuiTab-root": {
+                  minHeight: 46,
+                  textTransform: "none",
+                  fontFamily: "Prompt",
+                  fontWeight: 600,
+                  gap: 0.75,
+                  color: "text.secondary",
+                },
+                "& .MuiTab-root.Mui-selected": { color: "primary.main" },
+              }}
+            >
+              <Tab sx={{ ...titleStyle, fontSize: { xs: "0.78rem", md: "0.88rem" } }} icon={RAIN_STATION_CONFIG.icon} iconPosition="start" label="สถานีวัดน้ำฝน" />
+              <Tab sx={{ ...titleStyle, fontSize: { xs: "0.78rem", md: "0.88rem" } }} icon={FLOW_STATION_CONFIG.icon} iconPosition="start" label="สถานีวัดน้ำท่า" />
+              <Tab sx={{ ...titleStyle, fontSize: { xs: "0.78rem", md: "0.88rem" } }} icon={GATE_STATION_CONFIG.icon} iconPosition="start" label="ประตูระบายน้ำ" />
+              <Tab sx={{ ...titleStyle, fontSize: { xs: "0.78rem", md: "0.88rem" } }} icon={TELE_STATION_CONFIG.icon} iconPosition="start" label="สถานีติดตั้งโครงการ" />
+            </Tabs>
+          </Box>
         )}
 
         {/* Content Display */}
-        <Box sx={{ paddingTop: "20px" }}>
+        <Box sx={{ paddingTop: { xs: 1, md: 2 } }}>
             {/* {mainTab === 0 && subTab === 0 && <InfoDamStation />} */}
             {mainTab === 0 && subTab === 0 && <InfoRainStation />}
             {mainTab === 0 && subTab === 1 && <InfoFlowStation />}
@@ -135,10 +201,10 @@ const Setting: React.FC = () => {
               <Paper sx={{ p: { xs: 2, sm: 4 }, borderRadius: 2, mt:2}}>
                   {/* ── ขั้นตอนการใช้งาน ── */}
                     <Box sx={{ mb: 3 }}>
-                       <Typography sx={{ fontSize: "1.25rem", fontWeight: 600, color: "#28378B", mb: 2.5 }}>
+                       <Typography sx={{ fontSize: { xs: "1rem", md: "1.1rem" }, fontWeight: 600, color: "#28378B", mb: 2 }}>
                         จัดการข้อมูลย้อนหลัง
                       </Typography>
-                      <Typography sx={{ fontSize: "1rem", fontWeight: 600, color: "text.disabled", letterSpacing: "0.06em", mb: 1.5, textTransform: "uppercase", fontFamily: "'Prompt', sans-serif" }}>
+                      <Typography sx={{ fontSize: "0.8rem", fontWeight: 600, color: "text.disabled", letterSpacing: "0.06em", mb: 1.25, textTransform: "uppercase", fontFamily: "'Prompt', sans-serif" }}>
                         ขั้นตอนการใช้งาน
                       </Typography>
                       {[
@@ -151,8 +217,8 @@ const Setting: React.FC = () => {
                             {s.n}
                           </Box>
                           <Box>
-                            <Typography sx={{ fontFamily: "'Prompt', sans-serif", fontSize: "0.975rem", color: "text.primary", lineHeight: 1.5 }}>{s.main}</Typography>
-                            <Typography sx={{ fontFamily: "'Prompt', sans-serif", fontSize: "0.875rem", color: "text.secondary" }}>{s.sub}</Typography>
+                            <Typography sx={{ fontFamily: "'Prompt', sans-serif", fontSize: { xs: "0.82rem", md: "0.875rem" }, color: "text.primary", lineHeight: 1.45 }}>{s.main}</Typography>
+                            <Typography sx={{ fontFamily: "'Prompt', sans-serif", fontSize: { xs: "0.74rem", md: "0.8rem" }, color: "text.secondary" }}>{s.sub}</Typography>
                           </Box>
                         </Box>
                       ))}

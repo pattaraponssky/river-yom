@@ -36,6 +36,22 @@ export async function apiRequest(
   return res;
 }
 
+export async function uploadFile(
+  url: string,
+  form: FormData
+): Promise<Response> {
+  const headers = new Headers();
+  const csrf = getCsrfToken();
+  if (csrf) headers.set("X-CSRF-TOKEN", csrf);
+
+  return fetch(url, {
+    method: "POST",
+    body: form,
+    headers,
+    credentials: "include",
+  });
+}
+
 // ใช้แทน fetch ทั่วไป
 // เดิม: fetch(`${API_URL}/api/rain_info`, { method: 'DELETE' })
 // ใหม่: apiRequest(`${API_URL}/api/rain_info/${id}`, { method: 'DELETE' })

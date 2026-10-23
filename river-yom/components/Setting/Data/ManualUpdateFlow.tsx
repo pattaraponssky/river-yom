@@ -83,7 +83,7 @@ const ManualUpdateFlow: React.FC = () => {
 
   return (
     <Box sx={{ fontFamily: "'Prompt', sans-serif", mt: {md:4,xs:2} }}>
-      <Typography variant="h5" sx={{ marginBottom: "1rem", fontWeight: 600, ...titleStyle, color: "#28378B" }}>
+      <Typography variant="h6" sx={{ marginBottom: "1rem", fontWeight: 600, ...titleStyle, fontSize: { xs: "0.95rem", md: "1.05rem" }, color: "#28378B" }}>
         อัปเดตข้อมูลน้ำท่า (กำหนดวันที่)
       </Typography>
       <Paper sx={{ p: { xs: 2, sm: 4 }, borderRadius: 2,}}>
@@ -113,6 +113,7 @@ const ManualUpdateFlow: React.FC = () => {
           disabled={loading || !startDate || !endDate}
           sx={{
             ...titleStyle,
+            fontSize: { xs: "0.8rem", md: "0.85rem" },
             borderRadius: 2,
             width: { xs: "100%", sm: "auto" },
             minWidth: 150,

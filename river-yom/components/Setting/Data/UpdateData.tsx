@@ -188,7 +188,7 @@ const UploadData: React.FC = () => {
 
   return (
     <Box sx={{ fontFamily: "'Prompt', sans-serif" }}>
-      <Typography sx={{ mb: "1rem", fontWeight: 600, ...titleStyle, color: "#28378B" }}>
+      <Typography sx={{ mb: "1rem", fontWeight: 600, ...titleStyle, fontSize: { xs: "0.95rem", md: "1.05rem" }, color: "#28378B" }}>
         อัปโหลดข้อมูลย้อนหลัง
       </Typography>
 
@@ -196,7 +196,7 @@ const UploadData: React.FC = () => {
 
         {/* ── ขั้นตอนการใช้งาน ── */}
         <Box sx={{ mb: 3 }}>
-          <Typography sx={{ fontSize: "1rem", fontWeight: 600, color: "text.disabled", letterSpacing: "0.06em", mb: 1.5, textTransform: "uppercase", fontFamily: "'Prompt', sans-serif" }}>
+          <Typography sx={{ fontSize: "0.8rem", fontWeight: 600, color: "text.disabled", letterSpacing: "0.06em", mb: 1.5, textTransform: "uppercase", fontFamily: "'Prompt', sans-serif" }}>
             ขั้นตอนการใช้งาน
           </Typography>
           {[
@@ -209,8 +209,8 @@ const UploadData: React.FC = () => {
                 {s.n}
               </Box>
               <Box>
-                <Typography sx={{ fontFamily: "'Prompt', sans-serif", fontSize: "0.975rem", color: "text.primary", lineHeight: 1.5 }}>{s.main}</Typography>
-                <Typography sx={{ fontFamily: "'Prompt', sans-serif", fontSize: "0.875rem", color: "text.secondary" }}>{s.sub}</Typography>
+                <Typography sx={{ fontFamily: "'Prompt', sans-serif", fontSize: { xs: "0.82rem", md: "0.875rem" }, color: "text.primary", lineHeight: 1.45 }}>{s.main}</Typography>
+                <Typography sx={{ fontFamily: "'Prompt', sans-serif", fontSize: { xs: "0.74rem", md: "0.8rem" }, color: "text.secondary" }}>{s.sub}</Typography>
               </Box>
             </Box>
           ))}

@@ -3,6 +3,7 @@ import React, { useEffect } from "react";
 import { Snackbar, Alert } from "@mui/material";
 import { StationTable } from "./StationTable";
 import { useStationCRUD } from "./useStationCRUD";
+import { RESERVOIR_STATION_CONFIG } from "./stationInfoConfig";
 
 const InfoDamStation: React.FC = () => {
   const { stations, snackbar, fetchAll, handleAdd, handleEdit, handleDelete, closeSnackbar } =
@@ -14,14 +15,10 @@ const InfoDamStation: React.FC = () => {
     <>
       <StationTable
         stations={stations}
-        title="เพิ่มอ่างเก็บน้ำ"
-        addLabel="เพิ่มอ่างเก็บน้ำ"
-        idField="res_code"
-        requiredFields={["res_code", "res_name"]}
+        config={RESERVOIR_STATION_CONFIG}
         onAdd={handleAdd}
         onEdit={handleEdit}
         onDelete={handleDelete}
-        credentials
       />
       <Snackbar open={snackbar.open} autoHideDuration={5000} onClose={closeSnackbar}
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}>

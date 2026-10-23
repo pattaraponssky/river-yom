@@ -23,7 +23,7 @@ import {
 import GateChart from '@/app/gate/components/GateChartData';
 import GateExportTable from '@/app/gate/components/GateTableData';
 import CenteredLoading from '@/components/Layout/CenteredLoading';
-import { API_URL, Path_URL } from '@/lib/utility';
+import { API_URL, DEFAULT_STATION_PHOTO, Path_URL, resolvePhotoUrl } from '@/lib/utility';
 import { titleStyle, textStyle, HeaderCellStyle, fontInfo } from '@/theme/style';
 
 interface DataGateProps {
@@ -292,8 +292,8 @@ const DataGate: React.FC<DataGateProps> = ({ propsSelectedStation }) => {
             <img
               src={
                 station
-                  ? `${Path_URL}/images/gate/${station.sta_code}.jpg`
-                  : `${Path_URL}/images/default_img.png`
+                  ? (resolvePhotoUrl(station.photo) || `${Path_URL}/images/gate/${station.sta_code}.jpg`)
+                  : DEFAULT_STATION_PHOTO
               }
               alt="Station"
               style={{
@@ -303,7 +303,7 @@ const DataGate: React.FC<DataGateProps> = ({ propsSelectedStation }) => {
                 borderRadius: '10px',
                 boxShadow: '0px 3px 6px rgba(0, 0, 0, 0.56)',
               }}
-              onError={(e) => (e.currentTarget.src = `${Path_URL}/images/default_img.png`)}
+              onError={(e) => (e.currentTarget.src = DEFAULT_STATION_PHOTO)}
             />
           </Box>
         </Grid>

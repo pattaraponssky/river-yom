@@ -21,7 +21,7 @@ import VideocamIcon from '@mui/icons-material/Videocam';
 import SolarPowerIcon from '@mui/icons-material/SolarPower';
 import MemoryIcon from '@mui/icons-material/Memory';
 import { useRouter } from 'next/navigation';
-import { API_URL, Path_URL } from '@/lib/utility';
+import { API_URL, Path_URL, resolvePhotoUrl } from '@/lib/utility';
 import { useAuth } from '@/contexts/AuthContext';
 import { apiRequest } from '@/lib/api';
 
@@ -37,6 +37,7 @@ interface TeleStation {
   capacity: number | null;
   lat: number | null;
   long: number | null;
+  photo?: string | null;
 }
 
 interface Equipment {
@@ -141,7 +142,7 @@ export default function StationDetailClient({ staCode }: { staCode: string }) {
     return <Box sx={{ p: 4, textAlign: 'center' }}><Typography variant="h6" color="error">ไม่มีสิทธิ์เข้าถึงหน้านี้</Typography></Box>;
   }
 
-  const photo = `${Path_URL}/images/tele/${staCode}.jpg`
+  const photo = resolvePhotoUrl(station?.photo) || `${Path_URL}/images/tele/${staCode}.jpg`
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>

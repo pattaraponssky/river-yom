@@ -14,7 +14,7 @@ class ReservoirInfoModel extends Model
     protected $allowedFields = [
         'res_code', 'rid_code', 'res_name', 'tambon', 'district', 'province',
         'type', 'size', 'owner', 'long', 'lat', 'da_km2', 'maxvol', 'nhvol', 'minvol',
-        'maxwl', 'nhwl', 'minwl', 'inflow_avg'
+        'maxwl', 'nhwl', 'minwl', 'inflow_avg', 'photo'
     ];
 
     public function getReservoirInfo()

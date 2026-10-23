@@ -8,6 +8,25 @@ export const Forecast_URL = process.env.NEXT_PUBLIC_FORECAST_URL;
 ////// API PATHS DEV ///
 ////////////////////////
 
+export const resolvePhotoUrl = (photo?: string | null): string | undefined => {
+  if (!photo) return undefined;
+  const value = String(photo).trim();
+  if (!value) return undefined;
+  if (/^(https?:)?\/\//i.test(value) || value.startsWith("data:")) return value;
+  if (value.startsWith("/")) return value;
+  return `${API_URL ?? ""}/${value.replace(/^\/+/, "")}`;
+};
+
+export const getStationFallbackPhoto = (
+  folder: string | undefined,
+  code: string | null | undefined
+): string | undefined => {
+  if (!folder || !code) return undefined;
+  return `${Path_URL ?? ""}/images/${folder}/${encodeURIComponent(String(code))}.jpg`;
+};
+
+export const DEFAULT_STATION_PHOTO = `${Path_URL ?? ""}/images/default_img.png`;
+
 export const nowThaiDate = () => {
   const daysOfWeek = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"];
   const monthsOfYear = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
