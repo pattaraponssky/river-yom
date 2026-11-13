@@ -18,7 +18,6 @@ import {
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import ImageIcon from '@mui/icons-material/Image';
-import DescriptionIcon from '@mui/icons-material/Description';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
@@ -118,6 +117,7 @@ const ReportUploadForm: React.FC = () => {
     try {
       const res = await fetch(`${API_URL}/api/report/upload`, {
         method: 'POST',
+        credentials: 'include',
         body: form,
       });
 
@@ -141,10 +141,10 @@ const ReportUploadForm: React.FC = () => {
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       setMessage({
         type: 'error',
-        text: e.message || 'เกิดข้อผิดพลาดในการอัปโหลด',
+        text: e instanceof Error ? e.message : 'เกิดข้อผิดพลาดในการอัปโหลด',
       });
     } finally {
       setLoading(false);

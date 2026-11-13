@@ -16,6 +16,7 @@ import { useMemo } from 'react';
 import CenteredLoading from '@/components/Layout/CenteredLoading';
 import { Alert } from '@mui/material';
 import { useRasData, forecastStartTs, toTs } from '@/components/hooks/useRasData';
+import { useClientDate } from '@/components/hooks/useClientDate';
 
 // ─── Station ที่ใช้คำนวณ warning table ───────────────────────
 
@@ -23,6 +24,7 @@ const WARNING_STATIONS = ['Y.15', 'Y.16', 'Y.4', 'Y.50', 'Y.64', 'YR.01', 'YR.02
 
 export default function Dashboard() {
   const { today, archive, loading, error } = useRasData(3); // archive ย้อนหลัง 3 วัน
+  const clientDate = useClientDate();
 
   // ─── คำนวณค่า max / peak / trend จาก forecast วันนี้ ────
   const { maxElevations, waterPeaks, waterTrends } = useMemo(() => {
@@ -94,7 +96,7 @@ export default function Dashboard() {
   return (
     <Container maxWidth="xl" sx={{ py: 2 }}>
       <Typography id="card-daily" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main',textAlign:{md:"left",xs:"center"},fontSize:{ md:24 , xs:19 }}}>
-        ผลพยากรณ์น้ำโดยแบบจำลองโมเดลลุ่มน้ำ วันที่ {formatThaiDay(Date())}
+        ผลพยากรณ์น้ำโดยแบบจำลองโมเดลลุ่มน้ำ วันที่ {clientDate ? formatThaiDay(clientDate.toString()) : ''}
       </Typography>
 
       {error && (

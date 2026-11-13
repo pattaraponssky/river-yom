@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
+use App\Libraries\AuthContext;
 use App\Models\UserModel;
 use App\Models\UserTempModel;
 use CodeIgniter\API\ResponseTrait;
@@ -21,44 +22,125 @@ class User extends BaseController
         $this->key = env('JWT_SECRET');
     }
 
+    private function safeUserFields(): string
+    {
+        return 'User_ID, Username, Name, email, CreateDate, Status, iduser_level';
+    }
+
+    private function cookieOptions(int $expires): array
+    {
+        return [
+            'expires'  => $expires,
+            'path'     => '/',
+            'domain'   => '',
+            'secure'   => $this->request->isSecure(),
+            'httponly' => true,
+            'samesite' => 'Strict',
+        ];
+    }
+
+    private function frontendBaseUrl(): string
+    {
+        $url = trim((string) env('FRONTEND_URL'));
+        if ($url === '') {
+            $url = 'https://wms-yom-right.rid.go.th/river-yom';
+        }
+
+        return rtrim($url, '/');
+    }
+
+    private function currentUser(): ?object
+    {
+        if (AuthContext::$user !== null) {
+            return AuthContext::$user;
+        }
+
+        $token = $this->request->getCookie('access_token');
+        if (!$token || !$this->key) {
+            return null;
+        }
+
+        try {
+            return JWT::decode($token, new Key($this->key, 'HS256'));
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+
+    private function findUserByResetToken(UserModel $model, string $token): ?array
+    {
+        $user = $model->where('reset_token', hash('sha256', $token))->first();
+        if (!$user) {
+            $user = $model->where('reset_token', $token)->first();
+        }
+
+        return $user ?: null;
+    }
+
+    private function validPassword(string $password): bool
+    {
+        $length = strlen($password);
+
+        return $length >= 8 && $length <= 72;
+    }
+
+    private function requireAdmin(): ?object
+    {
+        $user = $this->currentUser();
+
+        if (!$user || (int) ($user->iduser_level ?? 0) < 2) {
+            return null;
+        }
+
+        return $user;
+    }
+
     public function verifyToken()
     {
-        $jwt = $this->request->getCookie('jwt_token');
-        if (!$jwt) {
+        $jwt = $this->request->getCookie('access_token');
+        if (!$jwt || !$this->key) {
             return false;
         }
 
         try {
-            $decoded = JWT::decode($jwt, new Key(getenv('JWT_SECRET_KEY'), 'HS256'));
-            return $decoded; // หรือ user id, username จาก payload
-        } catch (\Exception $e) {
+            return JWT::decode($jwt, new Key($this->key, 'HS256'));
+        } catch (\Throwable $e) {
             return false;
         }
     }
 
     public function login()
-    {   
-        if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-            http_response_code(200);
-            exit;
-        }
-
+    {
         if (!$this->key) {
-            return $this->failServerError('JWT secret key ไม่ถูกตั้งค่า');
+            log_message('critical', 'JWT_SECRET is not configured');
+            return $this->failServerError('ไม่สามารถเข้าสู่ระบบได้ในขณะนี้');
         }
 
-        $username = $this->request->getPost('username');
-        $password = $this->request->getPost('password');
+        $username = trim((string) $this->request->getPost('username'));
+        $password = (string) $this->request->getPost('password');
+        $genericError = 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง';
+
+        if ($username === '' || $password === '') {
+            return $this->failUnauthorized($genericError);
+        }
 
         $model = new UserModel();
         $user = $model->where('Username', $username)->first();
 
         if (!$user) {
-            return $this->failNotFound('ไม่พบชื่อผู้ใช้');
+            // Keep timing similar for unknown usernames.
+            password_verify($password, '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi');
+            log_message('warning', 'Failed login for unknown user from IP {ip}', ['ip' => $this->request->getIPAddress()]);
+            return $this->failUnauthorized($genericError);
         }
 
-        if (!password_verify($password, $user['Password'])) {
-            return $this->failUnauthorized('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
+        if (($user['Status'] !== null && (int) $user['Status'] !== 1)
+            || !password_verify($password, (string) $user['Password'])) {
+            log_message('warning', 'Failed login for {username} from IP {ip}', [
+                'username' => $username,
+                'ip'       => $this->request->getIPAddress(),
+            ]);
+            return $this->failUnauthorized($genericError);
         }
 
         $payload = [
@@ -66,28 +148,16 @@ class User extends BaseController
             'aud' => 'https://wms-yom-right.rid.go.th/river-yom-api/',
             'iat' => time(),
             'exp' => time() + 7200,
-            'uid' => $user['User_ID'],
+            'uid' => (int) $user['User_ID'],
             'username' => $user['Username'],
-            'iduser_level' => $user['iduser_level'],
+            'iduser_level' => (int) $user['iduser_level'],
             'email' => $user['email'],
             'name' => $user['Name'],
         ];
 
         $token = JWT::encode($payload, $this->key, 'HS256');
 
-        setcookie(
-            'access_token',
-            $token,
-            [
-                'expires' => time() + 7200,
-                'path' => '/',
-                'domain' => '', // ใส่โดเมนหากมี
-                // 'secure'    => $_SERVER['HTTPS'] === 'on' || $_SERVER['SERVER_PORT'] === '443',
-                'secure' => false, // ✅ true ใน production (https เท่านั้น)
-                'httponly' => true,
-                'samesite' => 'Strict', // หรือ 'Strict'
-            ]
-        );
+        setcookie('access_token', $token, $this->cookieOptions(time() + 7200));
 
         return $this->respond([
             'message' => 'เข้าสู่ระบบสำเร็จ',
@@ -96,15 +166,7 @@ class User extends BaseController
 
     public function logout()
     {
-        setcookie('access_token', '', [
-            'expires' => time() - 7200,
-            'path' => '/',
-            'domain' => '',
-            'secure' => false,
-            // 'secure' => true,
-            'httponly' => true,
-            'samesite' => 'Strict',
-        ]);
+        setcookie('access_token', '', $this->cookieOptions(time() - 7200));
         return $this->respond(['message' => 'ออกจากระบบแล้ว']);
     }
 
@@ -115,13 +177,29 @@ class User extends BaseController
             exit;
         }
 
-        $username = $this->request->getPost('username');
-        $name = $this->request->getPost('name');
-        $email = $this->request->getPost('email');
-        $password = $this->request->getPost('password');
+        $username = trim((string) $this->request->getPost('username'));
+        $name = trim((string) $this->request->getPost('name'));
+        $email = trim((string) $this->request->getPost('email'));
+        $password = (string) $this->request->getPost('password');
 
-        if (!$username || !$email || !$password || !$name) {
+        if ($username === '' || $name === '' || $email === '' || $password === '') {
             return $this->failValidationErrors('กรุณากรอกข้อมูลให้ครบ');
+        }
+
+        if (!preg_match('/^[\p{L}\p{N}._-]{3,50}$/u', $username)) {
+            return $this->failValidationErrors('ชื่อผู้ใช้ต้องมี 3-50 ตัวอักษร และใช้ได้เฉพาะตัวอักษร ตัวเลข จุด ขีดล่าง หรือขีดกลาง');
+        }
+
+        if (mb_strlen($name) > 255) {
+            return $this->failValidationErrors('ชื่อยาวเกินไป');
+        }
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL) || mb_strlen($email) > 255) {
+            return $this->failValidationErrors('รูปแบบอีเมลไม่ถูกต้อง');
+        }
+
+        if (!$this->validPassword($password)) {
+            return $this->failValidationErrors('รหัสผ่านต้องมี 8-72 ตัวอักษร');
         }
 
         $tempModel = new UserTempModel();
@@ -137,9 +215,9 @@ class User extends BaseController
 
         // --- เพิ่ม Logic สำหรับ Email Verification ---
 
-        // 1. Generate a unique verification token
-        $verificationToken = bin2hex(random_bytes(32)); // Creates a 64-character hex string
-        $tokenExpiresAt = date('Y-m-d H:i:s', strtotime('+1 hour')); // Token valid for 1 hour
+        // 1. Generate a unique verification token. Only the hash is stored.
+        $verificationToken = bin2hex(random_bytes(32));
+        $tokenExpiresAt = date('Y-m-d H:i:s', strtotime('+1 hour'));
 
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
@@ -149,10 +227,10 @@ class User extends BaseController
             'Password' => $hashedPassword,
             'Name' => $name,
             'CreateDate' => date('Y-m-d H:i:s'),
-            'Status' => 0,  // ยังไม่ active
+            'Status' => 0,
             'iduser_level' => 1,
-            'verification_token' => $verificationToken, // Save the token
-            'token_expires_at' => $tokenExpiresAt,     // Save token expiry
+            'verification_token' => hash('sha256', $verificationToken),
+            'token_expires_at' => $tokenExpiresAt,
         ];
 
         try {
@@ -169,9 +247,7 @@ class User extends BaseController
         $emailService->setTo($email);
         $emailService->setSubject('ยืนยันการสมัครสมาชิก SWOC แม่ยมฝั่งขวา'); // เปลี่ยนเป็นชื่อแอปของคุณ
 
-        $frontendBaseUrl = 'https://wms-yom-right.rid.go.th'; // <-- แก้ไขตรงนี้ให้เป็น URL ของ Frontend คุณ
-
-        $verificationLink = $frontendBaseUrl . '/verify-email?token=' . $verificationToken;
+        $verificationLink = $this->frontendBaseUrl() . '/verify-email?token=' . $verificationToken;
 
         // Important: If your frontend is on a different domain/port, replace base_url() with your frontend URL
         // Example: $verificationLink = 'http://localhost:3000/verify-email?token=' . $verificationToken;
@@ -225,16 +301,19 @@ class User extends BaseController
             exit;
         }
 
-        $token = $this->request->getGet('token');
+        $token = trim((string) $this->request->getGet('token'));
 
-        if (!$token) {
+        if ($token === '') {
             return $this->fail('ลิงก์ยืนยันไม่สมบูรณ์ หรือไม่มี Token', 400);
         }
 
         $tempModel = new \App\Models\UserTempModel();
 
-        // 1. ลองค้นหาผู้ใช้ด้วย Token นี้ก่อน
-        $user = $tempModel->where('verification_token', $token)->first();
+        // 1. ค้นหาด้วย hash ก่อน แล้วค่อยรองรับ token แบบเดิมที่ยังค้างอยู่ในระบบ
+        $user = $tempModel->where('verification_token', hash('sha256', $token))->first();
+        if (!$user) {
+            $user = $tempModel->where('verification_token', $token)->first();
+        }
 
         // --- ส่วนที่ต้องแก้ไข/เพิ่ม Logic ---
         if (!$user) {
@@ -277,7 +356,7 @@ class User extends BaseController
         // --- สิ้นสุดส่วนที่แก้ไข/เพิ่ม Logic ---
 
         // --- สถานการณ์ที่ 2: พบ Token, ตรวจสอบการหมดอายุ ---
-        if (strtotime($user['token_expires_at']) < time()) {
+        if (empty($user['token_expires_at']) || strtotime($user['token_expires_at']) < time()) {
             return $this->fail('ลิงก์ยืนยันหมดอายุแล้ว กรุณาสมัครใหม่', 400);
         }
 
@@ -295,8 +374,8 @@ class User extends BaseController
         // ดำเนินการยืนยันอีเมลจริง (ครั้งแรกที่ถูกต้อง)
         $updateData = [
             'Status' => 1,
-            // 'verification_token' => null, // **สำคัญ: ตรงนี้คือที่ Token ถูกเซ็ตเป็น NULL**
-            // 'token_expires_at' => null,
+            'verification_token' => null,
+            'token_expires_at' => null,
         ];
 
         try {
@@ -315,35 +394,33 @@ class User extends BaseController
 
     public function forgotPassword()
     {
-        $email = $this->request->getPost('email');
-        if (!$email) {
-            return $this->failValidationErrors('กรุณากรอกอีเมล');
+        $email = trim((string) $this->request->getPost('email'));
+        $genericResponse = ['message' => 'หากอีเมลนี้อยู่ในระบบ เราได้ส่งลิงก์รีเซ็ตรหัสผ่านไปแล้ว'];
+
+        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return $this->respond($genericResponse);
         }
 
         $userModel = new UserModel();
         $user = $userModel->where('email', $email)->first();
 
         if (!$user) {
-            return $this->failNotFound('ไม่พบอีเมลนี้ในระบบ');
+            return $this->respond($genericResponse);
         }
 
-        // สร้าง Token และวันหมดอายุ
         $resetToken = bin2hex(random_bytes(32));
         $tokenExpires = date('Y-m-d H:i:s', strtotime('+1 hour'));
 
-        // บันทึก token ลงฐานข้อมูล (เพิ่มฟิลด์ใหม่ในตาราง user)
         $userModel->update($user['User_ID'], [
-            'reset_token' => $resetToken,
-            'reset_expires_at' => $tokenExpires
+            'reset_token' => hash('sha256', $resetToken),
+            'reset_expires_at' => $tokenExpires,
         ]);
 
-        // ส่งอีเมลลิงก์รีเซ็ตรหัสผ่าน
         $emailService = service('email');
         $emailService->setTo($email);
         $emailService->setSubject('รีเซ็ตรหัสผ่าน SWOC แม่ยมฝั่งขวา');
 
-        $frontendBaseUrl = 'https://wms-yom-right.rid.go.th';
-        $resetLink = $frontendBaseUrl . '/reset-password?token=' . $resetToken;
+        $resetLink = $this->frontendBaseUrl() . '/reset-password?token=' . $resetToken;
 
         $message = "
             <p>เรียนคุณ {$user['Name']},</p>
@@ -355,31 +432,34 @@ class User extends BaseController
 
         $emailService->setMessage($message);
 
-        if ($emailService->send()) {
-            return $this->respond(['message' => 'ส่งลิงก์รีเซ็ตรหัสผ่านไปยังอีเมลของคุณแล้ว']);
-        } else {
+        if (!$emailService->send()) {
             log_message('error', 'Failed to send reset password email: ' . $emailService->printDebugger(['headers']));
-            return $this->fail('ไม่สามารถส่งอีเมลได้ กรุณาลองใหม่ภายหลัง');
         }
+
+        return $this->respond($genericResponse);
     }
 
     public function resetPassword()
     {
-        $token = $this->request->getPost('token');
-        $newPassword = $this->request->getPost('password');
+        $token = trim((string) $this->request->getPost('token'));
+        $newPassword = (string) $this->request->getPost('password');
 
-        if (!$token || !$newPassword) {
+        if ($token === '' || $newPassword === '') {
             return $this->failValidationErrors('กรุณากรอกข้อมูลให้ครบ');
         }
 
+        if (!$this->validPassword($newPassword)) {
+            return $this->failValidationErrors('รหัสผ่านต้องมี 8-72 ตัวอักษร');
+        }
+
         $userModel = new UserModel();
-        $user = $userModel->where('reset_token', $token)->first();
+        $user = $this->findUserByResetToken($userModel, $token);
 
         if (!$user) {
             return $this->failNotFound('Token ไม่ถูกต้อง');
         }
 
-        if (strtotime($user['reset_expires_at']) < time()) {
+        if (empty($user['reset_expires_at']) || strtotime($user['reset_expires_at']) < time()) {
             return $this->fail('ลิงก์นี้หมดอายุแล้ว กรุณาขอใหม่');
         }
 
@@ -397,19 +477,19 @@ class User extends BaseController
 
     public function validateResetToken()
     {
-        $token = $this->request->getPost('token');
-        if (!$token) {
+        $token = trim((string) $this->request->getPost('token'));
+        if ($token === '') {
             return $this->failValidationErrors('กรุณาส่ง Token');
         }
 
         $userModel = new UserModel();
-        $user = $userModel->where('reset_token', $token)->first();
+        $user = $this->findUserByResetToken($userModel, $token);
 
         if (!$user) {
             return $this->respond(['valid' => false, 'message' => 'Token ไม่ถูกต้อง']);
         }
 
-        if (strtotime($user['reset_expires_at']) < time()) {
+        if (empty($user['reset_expires_at']) || strtotime($user['reset_expires_at']) < time()) {
             return $this->respond(['valid' => false, 'message' => 'Token หมดอายุ']);
         }
 
@@ -417,27 +497,12 @@ class User extends BaseController
     }
     public function getUserByUsername($username)
     {
-        if ($this->request->getMethod() === 'options') {
-            return $this->response->setStatusCode(200)->send();
-        }
-    
-        $token = $this->request->getCookie('access_token'); // อ่าน token จาก cookie
-    
-        if (!$token) {
-            return $this->failUnauthorized('Missing access_token cookie');
-        }
-    
-        try {
-            // ตรวจสอบและถอดรหัส JWT
-            $decoded = JWT::decode($token, new Key($this->key, 'HS256'));
-            // คุณอาจตรวจสอบข้อมูลใน token เช่น username, roles, etc. ที่นี่
-        } catch (\Exception $e) {
-            return $this->failUnauthorized('Token ไม่ถูกต้อง: ' . $e->getMessage());
+        if (!$this->requireAdmin()) {
+            return $this->failForbidden('Forbidden');
         }
 
-        // ดึงข้อมูลผู้ใช้ตาม username
         $model = new UserModel();
-        $user = $model->where('Username', $username)->first();
+        $user = $model->select($this->safeUserFields())->where('Username', $username)->first();
 
         if (!$user) {
             return $this->failNotFound('ไม่พบผู้ใช้');
@@ -450,78 +515,83 @@ class User extends BaseController
     
     public function getAllUsers()
     {
-        if ($this->request->getMethod() === 'options') {
-            return $this->response->setStatusCode(200)->send();
-        }
-
-        $token = $this->request->getCookie('access_token');
-
-        if (!$token) {
-            return $this->failUnauthorized('Missing access_token');
-        }
-
-        if (empty($this->key) || $this->key === 'fallback_secret_key') {
-            return $this->fail('JWT secret key is missing or invalid');
-        }
-        
-        try {
-            $decoded = JWT::decode($token, new Key($this->key, 'HS256'));
-        } catch (\Exception $e) {
-            return $this->failUnauthorized('Invalid token: ' . $e->getMessage());
+        if (!$this->requireAdmin()) {
+            return $this->failForbidden('Forbidden');
         }
 
         $model = new UserModel();
-        $users = $model->findAll();
+        $users = $model->select($this->safeUserFields())->findAll();
 
         return $this->respond($users);
     }
 
     public function updateUser($username = null)
     {
-    
-        if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-            http_response_code(200);
-            exit;
-        }
-
-        if (!$this->key) {
-            return $this->failServerError('JWT secret key ไม่ถูกตั้งค่า');
-        }
-
-        $token = $this->request->getCookie('access_token'); // ✅ อ่านจาก cookie
-        try {
-            $decoded = JWT::decode($token, new Key($this->key, 'HS256'));
-        } catch (\Exception $e) {
-            return $this->failUnauthorized('Token ไม่ถูกต้อง: ' . $e->getMessage());
+        $decoded = $this->currentUser();
+        if (!$decoded) {
+            return $this->failUnauthorized('Unauthorized');
         }
 
         $model = new UserModel();
-
-        // หา user โดย Username
         $user = $model->where('Username', $username)->first();
         if (!$user) {
             return $this->failNotFound('ไม่พบผู้ใช้งาน');
         }
+
+        $isAdmin = (int) ($decoded->iduser_level ?? 0) >= 2;
+        $isSelf = isset($decoded->username) && strcasecmp((string) $decoded->username, (string) $user['Username']) === 0;
+
+        if (!$isAdmin && !$isSelf) {
+            return $this->failForbidden('คุณไม่มีสิทธิ์แก้ไขข้อมูลผู้ใช้รายนี้');
+        }
+
         $input = $this->request->getJSON(true) ?? $this->request->getRawInput();
-
         if (!is_array($input)) {
             return $this->failValidationErrors('ข้อมูลที่ส่งมาไม่ถูกต้อง');
         }
 
-        // ตรวจสอบ $input ว่าเป็น array หรือไม่
-        if (!is_array($input)) {
-            return $this->failValidationErrors('ข้อมูลที่ส่งมาไม่ถูกต้อง');
-        }
-
-        // เตรียมข้อมูลที่จะอัปเดต
         $data = [];
-        if (isset($input['Username'])) $data['Username'] = $input['Username'];
-        if (isset($input['email'])) $data['email'] = $input['email'];
-        if (isset($input['Name'])) $data['Name'] = $input['Name'];
-        // if (isset($input['Status'])) $data['Status'] = $input['Status'];
-        // if (isset($input['iduser_level'])) $data['iduser_level'] = $input['iduser_level'];
-        if (isset($input['Password']) && !empty($input['Password'])) {
-            $data['Password'] = password_hash($input['Password'], PASSWORD_DEFAULT);
+
+        if (array_key_exists('email', $input)) {
+            $email = trim((string) $input['email']);
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL) || mb_strlen($email) > 255) {
+                return $this->failValidationErrors('รูปแบบอีเมลไม่ถูกต้อง');
+            }
+
+            $exists = $model->where('email', $email)
+                ->where('User_ID !=', $user['User_ID'])
+                ->first();
+            if ($exists) {
+                return $this->failValidationErrors('อีเมลนี้ถูกใช้งานแล้ว');
+            }
+
+            $data['email'] = $email;
+        }
+
+        $name = $input['Name'] ?? $input['name'] ?? null;
+        if ($name !== null) {
+            $name = trim((string) $name);
+            if ($name === '' || mb_strlen($name) > 255) {
+                return $this->failValidationErrors('ชื่อไม่ถูกต้อง');
+            }
+            $data['Name'] = $name;
+        }
+
+        $password = $input['Password'] ?? $input['password'] ?? null;
+        if ($password !== null && $password !== '') {
+            $password = (string) $password;
+            if (!$this->validPassword($password)) {
+                return $this->failValidationErrors('รหัสผ่านต้องมี 8-72 ตัวอักษร');
+            }
+
+            if ($isSelf) {
+                $currentPassword = (string) ($input['current_password'] ?? $input['currentPassword'] ?? '');
+                if ($currentPassword === '' || !password_verify($currentPassword, (string) $user['Password'])) {
+                    return $this->failUnauthorized('รหัสผ่านปัจจุบันไม่ถูกต้อง');
+                }
+            }
+
+            $data['Password'] = password_hash($password, PASSWORD_DEFAULT);
         }
 
         if (empty($data)) {
@@ -530,9 +600,8 @@ class User extends BaseController
 
         $model->update($user['User_ID'], $data);
 
-        // ดึงข้อมูลผู้ใช้ที่อัปเดตแล้วมาแสดง
-        $updatedUser = $model->find($user['User_ID']);
-        unset($updatedUser['Password']); 
+        $updatedUser = $model->select($this->safeUserFields())->find($user['User_ID']);
+
         return $this->respond([
             'message' => 'อัปเดตข้อมูลผู้ใช้สำเร็จ',
             'user' => $updatedUser
@@ -541,25 +610,14 @@ class User extends BaseController
 
     public function updateUserById($id)
     {
-        if ($this->request->getMethod() === 'options') {
-            return $this->response->setStatusCode(200)->send();
-        }
-        
-        $token = $this->request->getCookie('access_token');
-        if (!$token) {
-            return $this->failUnauthorized('Missing access_token');
-        }
-
-        try {
-            $decoded = JWT::decode($token, new Key($this->key, 'HS256'));
-        } catch (\Exception $e) {
-            return $this->failUnauthorized('Invalid token: ' . $e->getMessage());
+        $decoded = $this->requireAdmin();
+        if (!$decoded) {
+            return $this->failForbidden('Forbidden');
         }
 
         $requesterLevel = (int) ($decoded->iduser_level ?? 0);
-        $requesterId = (int) ($decoded->uid ?? 0); // uid = User_ID จาก token
+        $requesterId = (int) ($decoded->uid ?? 0);
 
-        // อนุญาตเฉพาะ admin (level 2) หรือสูงกว่าเท่านั้นที่เรียก method นี้ได้
         if ($requesterLevel < 2) {
             return $this->failForbidden('คุณไม่มีสิทธิ์แก้ไขข้อมูลผู้ใช้คนอื่น');
         }
@@ -570,55 +628,96 @@ class User extends BaseController
             return $this->failNotFound('ไม่พบผู้ใช้งาน');
         }
 
+        $targetId = (int) $targetUser['User_ID'];
         $targetLevel = (int) ($targetUser['iduser_level'] ?? 0);
+        $isSelf = $requesterId === $targetId;
 
-        // กฎสิทธิ์: Admin (2) แก้ไข Operator (1) ได้เท่านั้น
-        // ห้ามแก้ admin อื่น (level 2) ยกเว้นตัวเอง
-        if ($requesterId === $targetUser['User_ID']) {
-            // อนุญาตให้ admin แก้ไขตัวเองผ่าน method นี้ได้ (ถ้าต้องการ)
-        } 
-        elseif ($requesterLevel === 2 && $targetLevel !== 1) {
-            return $this->failForbidden('คุณไม่มีสิทธิ์แก้ไขข้อมูลของผู้ดูแลระบบอื่น');
-        } 
-        elseif ($requesterLevel === 2 && $targetLevel === 1) {
-            // Admin แก้ Operator ได้ → ผ่าน
-        } 
-        else {
-            return $this->failForbidden('คุณไม่มีสิทธิ์แก้ไขผู้ใช้นี้');
+        if (!$isSelf) {
+            if ($requesterLevel === 2 && $targetLevel !== 1) {
+                return $this->failForbidden('คุณไม่มีสิทธิ์แก้ไขข้อมูลของผู้ดูแลระบบอื่น');
+            }
+
+            if ($requesterLevel !== 2) {
+                return $this->failForbidden('คุณไม่มีสิทธิ์แก้ไขผู้ใช้นี้');
+            }
         }
 
-        // ดำเนินการอัปเดต
         $input = $this->request->getJSON(true);
         if (!is_array($input)) {
             return $this->failValidationErrors('ข้อมูลที่ส่งมาไม่ถูกต้อง');
         }
 
         $data = [];
-        if (isset($input['Username'])) $data['Username'] = $input['Username'];
-        if (isset($input['email'])) $data['email'] = $input['email'];
-        if (isset($input['Name'])) $data['Name'] = $input['Name'];
-        
+
+        if (array_key_exists('Username', $input)) {
+            $username = trim((string) $input['Username']);
+            if (!preg_match('/^[\p{L}\p{N}._-]{3,50}$/u', $username)) {
+                return $this->failValidationErrors('ชื่อผู้ใช้ไม่ถูกต้อง');
+            }
+
+            $exists = $model->where('Username', $username)
+                ->where('User_ID !=', $targetId)
+                ->first();
+            if ($exists) {
+                return $this->failValidationErrors('ชื่อผู้ใช้นี้มีในระบบแล้ว');
+            }
+
+            $data['Username'] = $username;
+        }
+
+        if (array_key_exists('email', $input)) {
+            $email = trim((string) $input['email']);
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL) || mb_strlen($email) > 255) {
+                return $this->failValidationErrors('รูปแบบอีเมลไม่ถูกต้อง');
+            }
+
+            $exists = $model->where('email', $email)
+                ->where('User_ID !=', $targetId)
+                ->first();
+            if ($exists) {
+                return $this->failValidationErrors('อีเมลนี้ถูกใช้งานแล้ว');
+            }
+
+            $data['email'] = $email;
+        }
+
+        if (array_key_exists('Name', $input)) {
+            $name = trim((string) $input['Name']);
+            if ($name === '' || mb_strlen($name) > 255) {
+                return $this->failValidationErrors('ชื่อไม่ถูกต้อง');
+            }
+            $data['Name'] = $name;
+        }
+
         if (isset($input['iduser_level'])) {
             $newLevel = (int) $input['iduser_level'];
-            if ($requesterLevel === 2 && $targetLevel === 1 && in_array($newLevel, [1, 2])) {
-                $data['iduser_level'] = $newLevel; // อนุญาตเปลี่ยน
-            } else {
-                unset($data['iduser_level']); // ห้ามเปลี่ยนกรณีอื่น
+            if ($requesterLevel === 2 && $targetLevel === 1 && in_array($newLevel, [1, 2], true)) {
+                $data['iduser_level'] = $newLevel;
             }
         }
 
         if (!empty($input['Password'])) {
-            $data['Password'] = password_hash($input['Password'], PASSWORD_DEFAULT);
+            $password = (string) $input['Password'];
+            if (!$this->validPassword($password)) {
+                return $this->failValidationErrors('รหัสผ่านต้องมี 8-72 ตัวอักษร');
+            }
+
+            if ($isSelf) {
+                $currentPassword = (string) ($input['current_password'] ?? $input['currentPassword'] ?? '');
+                if ($currentPassword === '' || !password_verify($currentPassword, (string) $targetUser['Password'])) {
+                    return $this->failUnauthorized('รหัสผ่านปัจจุบันไม่ถูกต้อง');
+                }
+            }
+
+            $data['Password'] = password_hash($password, PASSWORD_DEFAULT);
         }
 
         if (empty($data)) {
             return $this->failValidationErrors('ไม่มีข้อมูลที่จะแก้ไข');
         }
 
-        $model->update($id, $data);
-        $updatedUser = $model->find($id);
-
-        unset($updatedUser['Password']);
+        $model->update($targetId, $data);
+        $updatedUser = $model->select($this->safeUserFields())->find($targetId);
 
         return $this->respond([
             'message' => 'อัปเดตข้อมูลผู้ใช้สำเร็จ',
@@ -660,11 +759,17 @@ class User extends BaseController
             exit;
         }
 
+        if (!$this->requireAdmin()) {
+            return $this->failForbidden('Forbidden');
+        }
+
         $model = new UserTempModel();
 
         // ดึงผู้ใช้จาก user_temp เฉพาะที่มี Status เป็น 1 (ยืนยันอีเมลแล้ว)
         // Fetch users from user_temp only where Status is 1 (email verified)
-        $users = $model->where('Status', 1)->findAll();
+        $users = $model->select('User_ID, Username, Name, email, CreateDate, Status, iduser_level')
+            ->where('Status', 1)
+            ->findAll();
 
         return $this->respond($users);
     }
@@ -674,11 +779,10 @@ class User extends BaseController
 
     public function approve($id)
     {
-        if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-            http_response_code(200);
-            exit;
+        if (!$this->requireAdmin()) {
+            return $this->failForbidden('Forbidden');
         }
-        
+
         $tempModel = new \App\Models\UserTempModel();
         $userModel = new \App\Models\UserModel();
 
@@ -722,6 +826,10 @@ class User extends BaseController
 
     public function reject($id)
     {
+        if (!$this->requireAdmin()) {
+            return $this->failForbidden('Forbidden');
+        }
+
         $tempModel = new UserTempModel();
         
         // ตรวจสอบว่ามีคำขออยู่หรือไม่
@@ -742,11 +850,11 @@ class User extends BaseController
     {
         $token = $this->request->getCookie('access_token');
 
-        if (!$token) {
+        if (!$token || !$this->key) {
             return $this->respond([
                 'authenticated' => false,
                 'message' => 'No token provided'
-            ], 200);   // เปลี่ยนจาก failUnauthorized เป็น 200
+            ], 200);
         }
 
         try {
@@ -759,19 +867,29 @@ class User extends BaseController
                 ], 200);
             }
 
-            $iduser_level = isset($decoded->iduser_level) ? (int)$decoded->iduser_level : 0;
+            $uid = (int) ($decoded->uid ?? 0);
+            $user = $uid > 0
+                ? (new UserModel())->select($this->safeUserFields())->find($uid)
+                : null;
+
+            if (!$user || ($user['Status'] !== null && (int) $user['Status'] !== 1)) {
+                return $this->respond([
+                    'authenticated' => false,
+                    'message' => 'User is not active'
+                ], 200);
+            }
 
             return $this->respond([
-                 'authenticated' => true,
-                'username' => $decoded->username ?? null,
-                'iduser_level' => $iduser_level,
-                'name' => $decoded->name ?? null,
-                'email' => $decoded->email ?? null,
-                'uid' => $decoded->uid ?? null,
+                'authenticated' => true,
+                'username' => $user['Username'],
+                'iduser_level' => (int) $user['iduser_level'],
+                'name' => $user['Name'],
+                'email' => $user['email'],
+                'uid' => (int) $user['User_ID'],
                 'exp' => $decoded->exp ?? null,
             ], 200);
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return $this->respond([
                 'authenticated' => false,
                 'message' => 'Invalid token'

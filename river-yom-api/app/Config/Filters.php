@@ -28,7 +28,7 @@ class Filters extends BaseFilters
         
         'csrf'          => CSRF::class,
         'toolbar'       => DebugToolbar::class,
-        'jwt'      => \App\Filters\JwtAuth::class,
+        'jwt'           => \App\Filters\JwtAuth::class,
         'honeypot'      => Honeypot::class,
         'invalidchars'  => InvalidChars::class,
         'secureheaders' => SecureHeaders::class,

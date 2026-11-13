@@ -340,7 +340,7 @@ const prepareChartDataForGate = (rawData: any[], targetStaCode: string) => {
   };
   
   useEffect(() => {
-    (window as any).renderChartPart = renderChartPart;
+    (window as any).renderGateChartPart = renderChartPart;
   }, [gateApiData]);
   
 
@@ -576,19 +576,19 @@ const prepareChartDataForGate = (rawData: any[], targetStaCode: string) => {
             </div>
 
               <button 
-                onclick="window.renderChartPart('${sta_code}', 'discharge')" 
+                onclick="window.renderGateChartPart('${sta_code}', 'discharge')"
                 style="font-family: 'Prompt', sans-serif; background-color: #1e88e5; color: white; padding: 4px 10px; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s;">
                 📉 อัตราการไหล
               </button>
 
               <button 
-                onclick="window.renderChartPart('${sta_code}', 'wl_upper')" 
+                onclick="window.renderGateChartPart('${sta_code}', 'wl_upper')"
                 style="font-family: 'Prompt', sans-serif; background-color: #e53935; color: white; padding: 4px 10px; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s;">
                 📈 ระดับน้ำเหนือ
               </button>
 
               <button 
-                onclick="window.renderChartPart('${sta_code}', 'wl_lower')" 
+                onclick="window.renderGateChartPart('${sta_code}', 'wl_lower')"
                 style="font-family: 'Prompt', sans-serif; background-color: #e53935; color: white; padding: 4px 10px; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s;">
                 📈 ระดับน้ำท้าย
               </button>
@@ -651,19 +651,19 @@ const prepareChartDataForGate = (rawData: any[], targetStaCode: string) => {
             </div>
             
               <button 
-                onclick="window.renderChartPart('${item.sta_code}', 'discharge')" 
+                onclick="window.renderGateChartPart('${item.sta_code}', 'discharge')"
                 style="font-family: 'Prompt', sans-serif; background-color: #1e88e5; color: white; padding: 4px 10px; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s;">
                 📉 อัตราการไหล
               </button>
 
               <button 
-                onclick="window.renderChartPart('${item.sta_code}', 'wl_upper')" 
+                onclick="window.renderGateChartPart('${item.sta_code}', 'wl_upper')"
                 style="font-family: 'Prompt', sans-serif; background-color: #e53935; color: white; padding: 4px 10px; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s;">
                 📈 ระดับน้ำเหนือ
               </button>
 
               <button 
-                onclick="window.renderChartPart('${item.sta_code}', 'wl_lower')" 
+                onclick="window.renderGateChartPart('${item.sta_code}', 'wl_lower')"
                 style="font-family: 'Prompt', sans-serif; background-color: #e53935; color: white; padding: 4px 10px; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s;">
                 📈 ระดับน้ำท้าย
               </button>

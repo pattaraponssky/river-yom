@@ -8,13 +8,16 @@ import ImageComponent from '../../components/Image';
 import PdfViewer from '../../components/PdfViewer';
 import { reportMenus } from '@/lib/menuFloating';
 import { API_URL, formatThaiDay } from '@/lib/utility';
+import { useClientDate } from '@/components/hooks/useClientDate';
 
 export default function Report() {
+    const clientDate = useClientDate();
+
     return (
     <>
         <Container maxWidth="xl" sx={{ py: 2 }}>
       <Typography id="card-daily" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main',textAlign:{md:"left",xs:"center"},fontSize:{ md:24 , xs:19 }}}>
-        รายงานสถานการณ์น้ำจากสำนักงานชลประทานที่ 3 วันที่ {formatThaiDay(Date())}
+        รายงานสถานการณ์น้ำจากสำนักงานชลประทานที่ 3 วันที่ {clientDate ? formatThaiDay(clientDate.toString()) : ''}
       </Typography>
         <Box sx={BoxStyle} id="dams-report">
         <Grid container spacing={1}>

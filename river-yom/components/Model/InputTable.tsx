@@ -253,7 +253,7 @@ export default function RainInputTable() {
       // *** DEBUGGING STEP: Log data sent to API ***
       console.log("Data sent to API:", postData);
       
-      const response = await axios.post(MODEL_INPUT_API, postData);
+      const response = await axios.post(MODEL_INPUT_API, postData, { withCredentials: true });
       
       // *** DEBUGGING STEP: Log API Response ***
       console.log("API Response (Save):", response.data);
@@ -307,7 +307,7 @@ export default function RainInputTable() {
       
       // --- STEP 1: Synchronize data from main sources before reading (POST) ---
       try {
-          const syncResponse = await axios.post(UPDATE_FROM_MAIN_API);
+          const syncResponse = await axios.post(UPDATE_FROM_MAIN_API, null, { withCredentials: true });
           const syncMsg = `✅ [Sync Success] ${syncResponse.data.message}`;
           setMessages((prev) => ({ ...prev, update: syncMsg }));
       } catch (error: unknown) {
@@ -329,7 +329,7 @@ export default function RainInputTable() {
       const hasDataLoaded = { rain: false, flow: false };
 
       // 3. ดึงข้อมูลจากตาราง Model Input Data (API GET)
-      const resInputData = await axios.get(MODEL_INPUT_API);
+      const resInputData = await axios.get(MODEL_INPUT_API, { withCredentials: true });
       if (resInputData.data && resInputData.data.status === 'success' && Array.isArray(resInputData.data.data)) {
           modelInputData = resInputData.data.data;
       }

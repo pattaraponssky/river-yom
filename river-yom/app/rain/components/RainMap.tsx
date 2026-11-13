@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { API_URL, formatThaiDay, Path_URL } from "@/lib/utility";
+import { useClientDate } from "@/components/hooks/useClientDate";
 import { alpha, Avatar, Box, Grid, List, ListItem, ListItemAvatar, ListItemText, Typography, useTheme } from "@mui/material";
 import ApexCharts from 'apexcharts';
 
@@ -21,13 +22,6 @@ interface LongdoMapProps {
 }
 
 // Define currentDate with the current datetime
-const currentDate = new Date();
-const formattedDate = currentDate.toLocaleDateString('th-TH', {
-  weekday: 'long', // แสดงวันในสัปดาห์ เช่น จันทร์
-  year: 'numeric', 
-  month: 'long', 
-  day: 'numeric'
-});
 interface RainDataItem {
   sta_code: string;
   datetime: string;
@@ -38,6 +32,15 @@ interface RainDataItem {
 }
 
 const RainMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,height }) => {
+  const clientDate = useClientDate();
+  const formattedDate = clientDate
+    ? clientDate.toLocaleDateString('th-TH', {
+        weekday: 'long', // แสดงวันในสัปดาห์ เช่น จันทร์
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })
+    : '';
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const [JsonDataList, setJsonDataList] = useState<any[]>([]);
   const [isMapReady, setIsMapReady] = useState<boolean>(false);
@@ -240,11 +243,11 @@ const RainMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,heig
 
 
 
-  const chartsInstances: Record<string, Record<string, ApexCharts>> = {};
+  const chartsInstances = useRef<Record<string, Record<string, ApexCharts>>>({}).current;
 
   const renderChartPart = (sta_code: string, type: 'rain_mm' | 'rain_series') => {
     const chartId = `chart-${type}-${sta_code}`;
-    const element = document.querySelector(`#${chartId}`) as HTMLElement;
+    const element = document.getElementById(chartId) as HTMLElement;
     if (!element) {
       console.warn(`ไม่พบ element ${chartId}`);
       return;
@@ -281,8 +284,8 @@ const RainMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,heig
     chartsInstances[sta_code] = {}; // ✅ เคลียร์ object
   
     // ✅ ซ่อนทุก div
-    ['rain_mm', 'rainSeries'].forEach(t => {
-      const el = document.querySelector(`#chart-${t}-${sta_code}`) as HTMLElement;
+    ['rain_mm', 'rain_series'].forEach(t => {
+      const el = document.getElementById(`chart-${t}-${sta_code}`) as HTMLElement;
       if (el) el.style.display = 'none';
     });
   
@@ -336,7 +339,7 @@ const RainMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,heig
   };
   
   useEffect(() => {
-    (window as any).renderChartPart = renderChartPart;
+    (window as any).renderRainChartPart = renderChartPart;
   }, [rainApiData]);
   
 
@@ -559,13 +562,13 @@ const RainMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,heig
               <div><b>📉 ปริมาณน้ำฝน:</b> <span style="color: #1e88e5; font-weight: bold;">${rain_mm || "-"} มม.</span></div>
            </div>
               <button 
-                onclick="window.renderChartPart('${sta_code}', 'rain_mm')" 
+                onclick="window.renderRainChartPart('${sta_code}', 'rain_mm')"
                 style="font-family: Prompt; background-color: #1e88e5; color: white; padding: 4px 10px; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s;">
                 ปริมาณน้ำฝน
               </button>
 
               <button 
-                onclick="window.renderChartPart('${sta_code}', 'rain_series')" 
+                onclick="window.renderRainChartPart('${sta_code}', 'rain_series')"
                 style="font-family: Prompt; background-color: #e53935; color: white; padding: 4px 10px; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s;">
                 ปริมาณน้ำฝนสะสม
               </button>
@@ -626,13 +629,13 @@ const RainMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,heig
            </div>
             <div style="margin-top: 10px; gap: 5px;">
               <button 
-                onclick="window.renderChartPart('${item.sta_code}', 'rain_mm')" 
+                onclick="window.renderRainChartPart('${item.sta_code}', 'rain_mm')"
                 style="font-family: Prompt; background-color: #1e88e5; color: white; padding: 4px 10px; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s;">
                 ปริมาณน้ำฝน
               </button>
 
               <button 
-                onclick="window.renderChartPart('${item.sta_code}', 'rain_series')" 
+                onclick="window.renderRainChartPart('${item.sta_code}', 'rain_series')"
                 style="font-family: Prompt; background-color: #e53935; color: white; padding: 4px 10px; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s;">
                 ปริมาณน้ำฝนสะสม
               </button>

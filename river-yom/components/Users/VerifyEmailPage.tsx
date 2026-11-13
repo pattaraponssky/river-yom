@@ -1,22 +1,22 @@
 // VerifyEmailPage.tsx
 import React, { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom"; // ต้องติดตั้ง react-router-dom
+import { useRouter, useSearchParams } from "next/navigation";
 import { Box, Typography, CircularProgress, Alert, Paper, Button } from "@mui/material";
 import { API_URL } from '../../lib/utility';
 
 const VerifyEmailPage: React.FC = () => {
-  const location = useLocation();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token");
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
   const [message, setMessage] = useState("");
   const [username, setUsername] = useState("");
+  const missingToken = !token;
+  const displayStatus = missingToken ? "error" : status;
+  const displayMessage = missingToken ? "ลิงก์ยืนยันไม่สมบูรณ์ หรือไม่มี Token" : message;
 
   useEffect(() => {
-    const queryParams = new URLSearchParams(location.search);
-    const token = queryParams.get("token");
-
     if (!token) {
-      setStatus("error");
-      setMessage("ลิงก์ยืนยันไม่สมบูรณ์ หรือไม่มี Token");
       return;
     }
 
@@ -32,22 +32,18 @@ const VerifyEmailPage: React.FC = () => {
           setStatus("success");
           setMessage(result.message || "ยืนยันอีเมลสำเร็จ! บัญชีของคุณพร้อมใช้งานแล้ว");
           setUsername(result.username || "");
-          console.log("Verification successful:", result);
-          
         } else {
           setStatus("error");
           setMessage(result.message || "เกิดข้อผิดพลาดในการยืนยันอีเมล");
-          console.log("Verification failed:", result);
-          
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         setStatus("error");
-        setMessage(`ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้: ${err.message}`);
+        setMessage(`ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้: ${err instanceof Error ? err.message : "ไม่ทราบสาเหตุ"}`);
       }
     };
 
     verifyToken();
-  }, [location.search]); // Re-run if query params change
+  }, [token]);
 
   return (
     <Box
@@ -64,16 +60,16 @@ const VerifyEmailPage: React.FC = () => {
         <Typography variant="h5" sx={{ fontWeight: "bold", mb: 2, color: "#28378B",fontFamily: "Prompt"  }}>
           สถานะการยืนยันอีเมล
         </Typography>
-        {status === "loading" && (
+        {displayStatus === "loading" && (
           <Box>
             <CircularProgress sx={{ mb: 2 }} />
             <Typography>กำลังตรวจสอบลิงก์ยืนยัน...</Typography>
           </Box>
         )}
-        {status === "success" && (
+        {displayStatus === "success" && (
           <Alert severity="success" sx={{ mb: 2 }}>
             <Typography sx={{ fontFamily: "Prompt" }}>
-              {message}
+              {displayMessage}
               {username && (
                 <Box component="span" sx={{ display: "block", mt: 1 }}>
                   ชื่อผู้ใช้ของคุณ: <strong>{username}</strong>
@@ -83,13 +79,16 @@ const VerifyEmailPage: React.FC = () => {
             </Typography>
           </Alert>
         )}
-        {status === "error" && (
+        {displayStatus === "error" && (
           <Alert severity="error" sx={{ mb: 2 }}>
-            <Typography sx={{fontSize:"1.1rem", fontFamily: "Prompt" }}>{message}</Typography>
+            <Typography sx={{fontSize:"1.1rem", fontFamily: "Prompt" }}>{displayMessage}</Typography>
           </Alert>
         )}
-        {/* อาจเพิ่มปุ่มกลับหน้า Login หรือ Home */}
-        <Button variant="contained" href="/" sx={{ fontSize:"1.1rem",mt: 2, fontFamily: "Prompt" }}>
+        <Button
+          variant="contained"
+          onClick={() => router.push('/dashboard')}
+          sx={{ fontSize: "1.1rem", mt: 2, fontFamily: "Prompt" }}
+        >
           กลับสู่หน้าหลัก
         </Button>
       </Paper>

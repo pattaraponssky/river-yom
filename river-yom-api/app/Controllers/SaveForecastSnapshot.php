@@ -10,19 +10,8 @@ class SaveForecastSnapshot extends BaseController
 {
     use ResponseTrait;
 
-    // เปลี่ยน key ได้ตามใจเลย
-    private const API_KEY = 'RIDFORECAST!@#';
-
-    public function run($key = null)
+    public function run()
     {
-        // ตรวจสอบ API Key
-        if ($key !== self::API_KEY) {
-            return $this->respond([
-                'status'  => 'error',
-                'message' => 'Invalid or missing API key'
-            ], 403);
-        }
-
         $db = \Config\Database::connect();
         $today = date('Y-m-d'); // เช่น 2025-12-10
 

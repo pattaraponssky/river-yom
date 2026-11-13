@@ -44,8 +44,8 @@ const RegisterDialog: React.FC<RegisterDialogProps> = ({ open, onClose }) => {
       return;
     }
 
-    if (password.length < 6) {
-      setSnackbar({ open: true, message: "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร", severity: "error" });
+    if (password.length < 8) {
+      setSnackbar({ open: true, message: "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร", severity: "error" });
       return;
     }
 

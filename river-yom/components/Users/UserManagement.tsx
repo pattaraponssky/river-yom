@@ -162,7 +162,7 @@ const UserManagement: React.FC = () => {
     if (!newUser.Username.trim()) errors.Username = "กรุณากรอก Username";
     if (!newUser.Name.trim()) errors.Name = "กรุณากรอกชื่อ";
     if (!newUser.email.includes("@")) errors.email = "อีเมลไม่ถูกต้อง";
-    if (newUser.password.length < 6) errors.password = "รหัสผ่านต้อง 6 ตัวอักษรขึ้นไป";
+    if (newUser.password.length < 8) errors.password = "รหัสผ่านต้อง 8 ตัวอักษรขึ้นไป";
     if (![1, 2].includes(newUser.iduser_level)) errors.iduser_level = "ระดับต้องเป็น 1 หรือ 2";
     setAddFormErrors(errors);
     return Object.keys(errors).length === 0;

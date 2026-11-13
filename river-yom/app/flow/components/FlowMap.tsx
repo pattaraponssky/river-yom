@@ -231,7 +231,7 @@ const prepareChartDataForFlow = (rawData: any[], targetStaCode: string) => {
 
 
 
-  const chartsInstances: Record<string, Record<string, ApexCharts>> = {};
+  const chartsInstances = useRef<Record<string, Record<string, ApexCharts>>>({}).current;
 
   const renderChartPart = (sta_code: string, type: 'discharge' | 'wl') => {
     const safeStaCode = sta_code.replace(/\./g, '_');
@@ -274,7 +274,7 @@ const prepareChartDataForFlow = (rawData: any[], targetStaCode: string) => {
   
     // ✅ ซ่อนทุก div
     ['discharge', 'wl'].forEach(t => {
-      const el = document.querySelector(`[id="chart-${t}-${sta_code}"]`) as HTMLElement;
+      const el = document.getElementById(`chart-${t}-${safeStaCode}`) as HTMLElement;
       if (el) el.style.display = 'none';
     });
   
@@ -328,7 +328,7 @@ const prepareChartDataForFlow = (rawData: any[], targetStaCode: string) => {
   };
   
   useEffect(() => {
-    (window as any).renderChartPart = renderChartPart;
+    (window as any).renderFlowChartPart = renderChartPart;
   }, [flowApiData]);
   
 
@@ -527,7 +527,7 @@ const prepareChartDataForFlow = (rawData: any[], targetStaCode: string) => {
       const position = { lat: parseFloat(lat), lon: parseFloat(long) };
       const latest = latestDataMap.get(sta_code);
   
-      const latestDateStr = latest?.date ? new Date(latest.date).toISOString().slice(0, 10) : null;
+      const latestDateStr = latest?.datetime ? new Date(latest.datetime).toISOString().slice(0, 10) : null;
       const isToday = latestDateStr === todayStr;
   
       const discharge = isToday && latest?.discharge != null && parseFloat(latest.discharge) !== 0
@@ -557,13 +557,13 @@ const prepareChartDataForFlow = (rawData: any[], targetStaCode: string) => {
             </div>
 
               <button 
-                onclick="window.renderChartPart('${sta_code}', 'discharge')" 
+                onclick="window.renderFlowChartPart('${sta_code}', 'discharge')"
                 style="font-family: 'Prompt', sans-serif; background-color: #1e88e5; color: white; padding: 4px 10px; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s;">
                 📉 อัตราการไหล
               </button>
 
               <button 
-                onclick="window.renderChartPart('${sta_code}', 'wl')" 
+                onclick="window.renderFlowChartPart('${sta_code}', 'wl')"
                 style="font-family: 'Prompt', sans-serif; background-color: #e53935; color: white; padding: 4px 10px; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s;">
                 📈 ระดับน้ำ
               </button>
@@ -621,13 +621,13 @@ const prepareChartDataForFlow = (rawData: any[], targetStaCode: string) => {
                 <div><b>📈 ระดับน้ำ:</b> <span style="color: #e53935; font-weight: bold;">${item.wl || "-"} ม.รทก.</span></div>
             </div>
               <button 
-                onclick="window.renderChartPart('${item.sta_code}', 'discharge')" 
+                onclick="window.renderFlowChartPart('${item.sta_code}', 'discharge')"
                 style="font-family: 'Prompt', sans-serif; background-color: #1e88e5; color: white; padding: 4px 10px; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s;">
                 📉 อัตราการไหล
               </button>
 
               <button 
-                onclick="window.renderChartPart('${item.sta_code}', 'wl')" 
+                onclick="window.renderFlowChartPart('${item.sta_code}', 'wl')"
                 style="font-family: 'Prompt', sans-serif; background-color: #e53935; color: white; padding: 4px 10px; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s;">
                 📈 ระดับน้ำ
               </button>

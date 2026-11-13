@@ -1,5 +1,6 @@
   import React, { useEffect, useRef, useState } from "react";
   import { API_URL, formatThaiDay, Path_URL } from "@/lib/utility";
+  import { useClientDate } from "@/components/hooks/useClientDate";
   import { alpha, Avatar, Box, Grid, List, ListItem, ListItemAvatar, ListItemText, Typography, useTheme } from "@mui/material";
   import ApexCharts from 'apexcharts';
 
@@ -21,13 +22,6 @@
   }
 
   // Define currentDate with the current datetime
-  const currentDate = new Date();
-  const formattedDate = currentDate.toLocaleDateString('th-TH', {
-  weekday: 'long', // แสดงวันในสัปดาห์ เช่น จันทร์
-  year: 'numeric', 
-  month: 'long', 
-  day: 'numeric'
-  });
   interface ReservoirDataItem {
   res_code: string;
   datetime: string;
@@ -38,6 +32,15 @@
   }
 
   const ReservoirMap: React.FC<LongdoMapProps> = ({mapKey, stationType, JsonPaths ,height }) => {
+  const clientDate = useClientDate();
+  const formattedDate = clientDate
+    ? clientDate.toLocaleDateString('th-TH', {
+        weekday: 'long', // แสดงวันในสัปดาห์ เช่น จันทร์
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })
+    : '';
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const [JsonDataList, setJsonDataList] = useState<any[]>([]);
   const [isMapReady, setIsMapReady] = useState<boolean>(false);
@@ -336,7 +339,7 @@
   };
 
   useEffect(() => {
-    (window as any).renderChartPart = renderChartPart;
+    (window as any).renderReservoirChartPart = renderChartPart;
   }, [reservoirApiData]);
 
 
@@ -564,19 +567,19 @@
               </div>
           <div style="margin-top: 10px; gap: 5px;">
               <button 
-                onclick="window.renderChartPart('${res_code}', 'volume')"
+                onclick="window.renderReservoirChartPart('${res_code}', 'volume')"
                 style="background-color: #43a047; color: white; padding: 4px 10px; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s;">
                 🏞️ ปริมาณน้ำ
               </button>
 
               <button 
-                onclick="window.renderChartPart('${res_code}', 'inflow')" 
+                onclick="window.renderReservoirChartPart('${res_code}', 'inflow')"
                 style="background-color: #1e88e5; color: white; padding: 4px 10px; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s;">
                 📉 น้ำไหลเข้า
               </button>
 
               <button 
-                onclick="window.renderChartPart('${res_code}', 'outflow')" 
+                onclick="window.renderReservoirChartPart('${res_code}', 'outflow')"
                 style="background-color: #e53935; color: white; padding: 4px 10px; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s;">
                 📈 น้ำระบาย
               </button>
@@ -646,19 +649,19 @@
           </div>
         <div style="margin-top: 10px; gap: 5px;">
           <button 
-            onclick="window.renderChartPart('${item.res_code}', 'volume')" 
+            onclick="window.renderReservoirChartPart('${item.res_code}', 'volume')"
             style="background-color: #43a047; color: white; padding: 4px 10px; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s;">
             🏞️ ปริมาณน้ำ
           </button>
 
           <button 
-            onclick="window.renderChartPart('${item.res_code}', 'inflow')" 
+            onclick="window.renderReservoirChartPart('${item.res_code}', 'inflow')"
             style="background-color: #1e88e5; color: white; padding: 4px 10px; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s;">
             📉 น้ำไหลเข้า
           </button>
 
           <button 
-            onclick="window.renderChartPart('${item.res_code}', 'outflow')" 
+            onclick="window.renderReservoirChartPart('${item.res_code}', 'outflow')"
             style="background-color: #e53935; color: white; padding: 4px 10px; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s;">
             📈 น้ำระบาย
           </button>

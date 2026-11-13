@@ -64,6 +64,7 @@ const EditUser: React.FC = () => {
   const { currentUser, setCurrentUser, loading: authLoading } = useAuth();
   const [user, setUser] = useState<User | null>(null);
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -131,6 +132,9 @@ const EditUser: React.FC = () => {
       if (user.password.length < 8) {
         errs.password = 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร';
       }
+      if (!currentPassword) {
+        errs.currentPassword = 'กรุณากรอกรหัสผ่านปัจจุบัน';
+      }
       if (user.password !== confirmPassword) {
         errs.confirmPassword = 'รหัสผ่านไม่ตรงกัน';
       }
@@ -153,9 +157,11 @@ const EditUser: React.FC = () => {
 
     const csrfToken = getCookie('csrf_cookie_name');
 
-    const payload: User = { ...user };
+    const payload: User & { current_password?: string } = { ...user };
     if (!payload.password?.trim()) {
       delete payload.password;
+    } else {
+      payload.current_password = currentPassword;
     }
 
     try {
@@ -186,6 +192,7 @@ const EditUser: React.FC = () => {
 
       setUser((prev) => (prev ? { ...prev, password: '' } : null));
       setConfirmPassword('');
+      setCurrentPassword('');
       setIsDirty(false);
       setSuccess(true);
     } catch (err: any) {
@@ -376,6 +383,41 @@ const EditUser: React.FC = () => {
           <Divider sx={{ mb: 2.5, opacity: 0.4 }} />
 
           <Grid container spacing={2.5}>
+            {user.password && (
+              <Grid size={{ xs: 12 }}>
+                <TextField
+                  label="รหัสผ่านปัจจุบัน"
+                  name="currentPassword"
+                  type={showPassword ? 'text' : 'password'}
+                  value={currentPassword}
+                  onChange={(e) => {
+                    setCurrentPassword(e.target.value);
+                    setIsDirty(true);
+                    if (fieldErrors.currentPassword) {
+                      setFieldErrors((prev) => {
+                        const next = { ...prev };
+                        delete next.currentPassword;
+                        return next;
+                      });
+                    }
+                  }}
+                  fullWidth
+                  autoComplete="current-password"
+                  error={Boolean(fieldErrors.currentPassword)}
+                  helperText={fieldErrors.currentPassword || 'จำเป็นเมื่อต้องการเปลี่ยนรหัสผ่าน'}
+                  slotProps={{
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <LockIcon sx={{ fontSize: 20, color: primary }} />
+                        </InputAdornment>
+                      ),
+                    },
+                  }}
+                />
+              </Grid>
+            )}
+
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 label="รหัสผ่านใหม่"

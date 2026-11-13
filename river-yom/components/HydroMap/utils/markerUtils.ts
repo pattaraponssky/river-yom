@@ -18,8 +18,10 @@ export const createToggleMenu = (
       },
     ],
     label: '📌 แสดงข้อมูล',
-    change: (item: { check: boolean }) => {
-      onChange(!!item?.check);
+    change: (item: { value: string } | null) => {
+      // Longdo returns the selected button when enabled, or null when disabled.
+      // `check` is the initial option, not the current toggle state.
+      onChange(item !== null);
     },
   });
 };

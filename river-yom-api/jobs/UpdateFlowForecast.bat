@@ -1,17 +1,16 @@
 @echo off
+setlocal
 echo ===============================
 echo เริ่มอัพเดท Flow Forecast Data...
 echo ===============================
-curl -s https://wms-yom-right.rid.go.th/river-yom-api/api/flow_forecast/import_forecast
+curl -s https://wms-yom-right.rid.go.th/river-yom-api/jobs/flow_forecast/import_forecast
 echo.
 
-@echo off
 echo ===============================
 echo เก็บผล Flow Forecast Data...
 echo ===============================
-curl -s https://wms-yom-right.rid.go.th/river-yom-api/snapshot/run/RIDFORECAST!@#
+curl -s https://wms-yom-right.rid.go.th/river-yom-api/snapshot/run
 echo.
 
-
 echo งานทั้งหมดเสร็จสิ้น!
-
+endlocal

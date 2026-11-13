@@ -45,20 +45,7 @@ abstract class BaseController extends Controller
         // Do Not Edit This Line
         parent::initController($request, $response, $logger);
 
-        // ✅ เพิ่ม CORS headers
-        header('Access-Control-Allow-Origin: http://localhost:3000');
-        // header('Access-Control-Allow-Origin: http://localhost:3000');
-        header('Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE');
-        header('Access-Control-Allow-Headers: Content-Type, Authorization');
-        header('Access-Control-Allow-Credentials: true');
-
-        // ✅ ตอบกลับ preflight request
-        if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-            http_response_code(200);
-            exit;
-        }
-
-        // คุณสามารถ preload session หรืออื่น ๆ ได้ตรงนี้
-        // $this->session = service('session');
+        // CORS is handled by Config\Cors and the global cors filter.
+        // Do not hardcode Access-Control-Allow-Origin here.
     }
 }

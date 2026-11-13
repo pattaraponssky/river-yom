@@ -11,7 +11,7 @@ class Cors extends BaseConfig
         'supportsCredentials' => true,
         'allowedHeaders' => ['Content-Type', 'Authorization', 'X-Requested-With', 'X-CSRF-TOKEN'],
         'exposedHeaders' => [],
-        'allowedMethods' => ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],  // เพิ่ม OPTIONS ด้วย
+        'allowedMethods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
         'maxAge' => 7200,
     ];
 }

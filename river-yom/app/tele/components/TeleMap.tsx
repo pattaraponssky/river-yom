@@ -328,7 +328,7 @@ const prepareChartDataForTele = (rawData: any[], targetStaCode: string) => {
   };
   
   useEffect(() => {
-    (window as any).renderChartPart = renderChartPart;
+    (window as any).renderTeleChartPart = renderChartPart;
   }, [teleApiData]);
   
 
@@ -557,13 +557,13 @@ const prepareChartDataForTele = (rawData: any[], targetStaCode: string) => {
             </div>
 
               <button 
-                onclick="window.renderChartPart('${sta_code}', 'discharge')" 
+                onclick="window.renderTeleChartPart('${sta_code}', 'discharge')"
                 style="font-family: 'Prompt', sans-serif; background-color: #1e88e5; color: white; padding: 4px 10px; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s;">
                 📉 อัตราการไหล
               </button>
 
               <button 
-                onclick="window.renderChartPart('${sta_code}', 'wl')" 
+                onclick="window.renderTeleChartPart('${sta_code}', 'wl')"
                 style="font-family: 'Prompt', sans-serif; background-color: #e53935; color: white; padding: 4px 10px; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s;">
                 📈 ระดับน้ำ
               </button>
@@ -621,13 +621,13 @@ const prepareChartDataForTele = (rawData: any[], targetStaCode: string) => {
                 <div><b>📈 ระดับน้ำ:</b> <span style="color: #e53935; font-weight: bold;">${item.wl || "-"} ม.รทก.</span></div>
             </div>
               <button 
-                onclick="window.renderChartPart('${item.sta_code}', 'discharge')" 
+                onclick="window.renderTeleChartPart('${item.sta_code}', 'discharge')"
                 style="font-family: 'Prompt', sans-serif; background-color: #1e88e5; color: white; padding: 4px 10px; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s;">
                 📉 อัตราการไหล
               </button>
 
               <button 
-                onclick="window.renderChartPart('${item.sta_code}', 'wl')" 
+                onclick="window.renderTeleChartPart('${item.sta_code}', 'wl')"
                 style="font-family: 'Prompt', sans-serif; background-color: #e53935; color: white; padding: 4px 10px; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s;">
                 📈 ระดับน้ำ
               </button>

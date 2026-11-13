@@ -32,6 +32,7 @@ $data3 = fetchApiData($apiUrl3);
 
 $stations = ['Y.15'];
 $flowData = [];
+$ratingCurveDates = [];
 
 // 2. **ปรับปรุง Logic การประมวลผลข้อมูล Flow จาก model_input_data**
 if (isset($data3['data']) && is_array($data3['data'])) {
@@ -48,6 +49,8 @@ if (isset($data3['data']) && is_array($data3['data'])) {
             // ใช้ 'value' สำหรับค่า Flow
             // เก็บข้อมูลในรูปแบบ [station][d/m/Y] = value
             $flowData[$record['sta_code']][$formattedDate] = floatval($record['value'] ?? 0);
+            $ratingCurveDates[$record['sta_code']][$formattedDate] =
+                ($record['flow_source'] ?? null) === 'rating_curve';
         }
     }
 }
@@ -155,7 +158,8 @@ foreach ($stations as $station) {
         $valueFlow = $flowData[$station][$formattedDate] ?? 0;
         
         // **Logic การปรับปรุง**: ถ้าเป็น Gate หรือ T.13 และค่าปัจจุบันเป็น 0 (หรือไม่มีข้อมูล) ให้ใช้ค่าล่าสุดที่ไม่เป็นศูนย์
-        if ($isGateOrT13 && ($valueFlow == 0)) {
+        if ($isGateOrT13 && ($valueFlow == 0)
+            && empty($ratingCurveDates[$station][$formattedDate])) {
             $valueFlow = $lastNonZeroFlow;
         }
 

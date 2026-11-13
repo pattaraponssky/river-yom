@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Box,
   Typography,
@@ -19,56 +19,58 @@ import LockIcon from "@mui/icons-material/Lock";
 import { API_URL } from '../../lib/utility';
 
 const ResetPasswordPage: React.FC = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const queryToken = searchParams.get("token");
   const theme = useTheme();
   const primary = theme.palette.primary.main;
 
-  const [token, setToken] = useState("");
+  const [validatedToken, setValidatedToken] = useState<string | null>(null);
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [status, setStatus] = useState<"validating" | "idle" | "submitting" | "success" | "error">("validating");
   const [message, setMessage] = useState("");
+  const missingToken = !queryToken;
+  const displayStatus = missingToken ? "error" : status;
+  const displayMessage = missingToken ? "ไม่พบ Token รีเซ็ตรหัสผ่าน" : message;
 
   // ตรวจสอบ token กับ backend ครั้งเดียวตอนโหลดหน้า
   useEffect(() => {
-    const queryParams = new URLSearchParams(location.search);
-    const t = queryParams.get("token");
-
-    if (!t) {
-      setStatus("error");
-      setMessage("ไม่พบ Token รีเซ็ตรหัสผ่าน");
+    if (!queryToken) {
       return;
     }
-
-    setToken(t);
-    setStatus("validating");
 
     fetch(`${API_URL}/user/validateResetToken`, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ token: t }).toString(),
+      body: new URLSearchParams({ token: queryToken }).toString(),
     })
       .then((res) => res.json())
       .then((result) => {
         if (result.valid) {
+          setValidatedToken(queryToken);
           setStatus("idle");
           setMessage("");
         } else {
+          setValidatedToken(null);
           setStatus("error");
           setMessage(result.message || "Token ไม่ถูกต้องหรือหมดอายุ");
         }
       })
       .catch(() => {
+        setValidatedToken(null);
         setStatus("error");
         setMessage("ไม่สามารถตรวจสอบ Token ได้ กรุณาลองใหม่ภายหลัง");
       });
-  }, [location.search]);
+  }, [queryToken]);
 
   const handleSubmit = async () => {
-    if (!password || password.length < 6) {
-      setMessage("รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร");
+    if (!queryToken) {
+      return;
+    }
+    if (!password || password.length < 8) {
+      setMessage("รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร");
       setStatus("error");
       return;
     }
@@ -84,7 +86,7 @@ const ResetPasswordPage: React.FC = () => {
       const res = await fetch(`${API_URL}/user/resetPassword`, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({ token, password }).toString(),
+        body: new URLSearchParams({ token: queryToken, password }).toString(),
       });
 
       const result = await res.json();
@@ -95,13 +97,14 @@ const ResetPasswordPage: React.FC = () => {
       } else {
         throw new Error(result.message || "เกิดข้อผิดพลาด");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       setStatus("error");
-      setMessage(err.message);
+      setMessage(err instanceof Error ? err.message : "เกิดข้อผิดพลาด");
     }
   };
 
-  const isFormStage = status === "idle" || status === "submitting" || status === "error";
+  const tokenValid = validatedToken !== null && validatedToken === queryToken;
+  const isFormStage = tokenValid && (status === "idle" || status === "submitting" || status === "error");
 
   return (
     <Box
@@ -133,7 +136,7 @@ const ResetPasswordPage: React.FC = () => {
           ตั้งรหัสผ่านใหม่
         </Typography>
 
-        {status === "validating" ? (
+        {displayStatus === "validating" ? (
           <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2, py: 3 }}>
             <CircularProgress />
             <Typography sx={{ fontFamily: "Prompt", color: "text.secondary", fontSize: "0.9rem" }}>
@@ -142,21 +145,21 @@ const ResetPasswordPage: React.FC = () => {
           </Box>
         ) : (
           <>
-            {status === "error" && (
+            {displayStatus === "error" && (
               <Alert severity="error" sx={{ mb: 2, textAlign: "left", fontFamily: "Prompt" }}>
-                {message}
+                {displayMessage}
               </Alert>
             )}
 
-            {status === "success" && (
+            {displayStatus === "success" && (
               <>
                 <Alert severity="success" sx={{ mb: 2, textAlign: "left", fontFamily: "Prompt" }}>
-                  {message}
+                  {displayMessage}
                 </Alert>
                 <Button
                   fullWidth
                   variant="contained"
-                  onClick={() => navigate("/")}
+                  onClick={() => router.push('/dashboard')}
                   sx={{
                     mt: 1,
                     fontFamily: "Prompt",
@@ -173,7 +176,7 @@ const ResetPasswordPage: React.FC = () => {
             )}
 
             {/* แสดงฟอร์มได้ตราบใดที่ token ยัง valid อยู่ (idle / submitting / error หลัง submit ผิดพลาด) */}
-            {isFormStage && token && (
+            {isFormStage && (
               <>
                 <TextField
                   label="รหัสผ่านใหม่"

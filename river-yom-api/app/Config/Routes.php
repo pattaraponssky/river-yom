@@ -33,13 +33,13 @@ $routes->group('api/daily', function($routes) {
 //////Reservoir API//////
 $routes->get('api/reservoir_info', 'ReservoirInfo::index');
 $routes->get('api/reservoir_info/(:segment)', 'ReservoirInfo::show/$1');
-$routes->post('api/reservoir_info', 'ReservoirInfo::create');
-$routes->put('api/reservoir_info/(:segment)', 'ReservoirInfo::update/$1');
-$routes->patch('api/reservoir_info/(:segment)', 'ReservoirInfo::update/$1');
-$routes->delete('api/reservoir_info/(:segment)', 'ReservoirInfo::delete/$1');
+$routes->post('api/reservoir_info', 'ReservoirInfo::create', ['filter' => 'jwt:2']);
+$routes->put('api/reservoir_info/(:segment)', 'ReservoirInfo::update/$1', ['filter' => 'jwt:2']);
+$routes->patch('api/reservoir_info/(:segment)', 'ReservoirInfo::update/$1', ['filter' => 'jwt:2']);
+$routes->delete('api/reservoir_info/(:segment)', 'ReservoirInfo::delete/$1', ['filter' => 'jwt:2']);
 
-$routes->post('/api/reservoir_preview_update', 'API::previewUpdate');
-$routes->put('/api/reservoir_update_data', 'ReservoirAPI::updateData');
+$routes->post('/api/reservoir_preview_update', 'API::previewUpdate', ['filter' => 'jwt:2']);
+$routes->put('/api/reservoir_update_data', 'ReservoirAPI::updateData', ['filter' => 'jwt:2']);
 $routes->get('/api/reservoir_years', 'ReservoirAPI::reservoir_years'); 
 $routes->get('/api/reservoir_data/(:segment)', 'ReservoirAPI::reservoirData/$1'); 
 $routes->get('/api/reservoir_rc/(:segment)', 'ReservoirAPI::reservoirRC/$1');
@@ -49,13 +49,13 @@ $routes->get('/api/reservoir_data_last_14_days', 'ReservoirAPI::reservoirDataLas
 //////Flow API//////
 $routes->get('api/flow_info', 'FlowInfo::index');
 $routes->get('api/flow_info/(:segment)', 'FlowInfo::show/$1');
-$routes->post('api/flow_info', 'FlowInfo::create');
-$routes->put('api/flow_info/(:segment)', 'FlowInfo::update/$1');
-$routes->patch('api/flow_info/(:segment)', 'FlowInfo::update/$1');
-$routes->delete('api/flow_info/(:segment)', 'FlowInfo::delete/$1');
+$routes->post('api/flow_info', 'FlowInfo::create', ['filter' => 'jwt:2']);
+$routes->put('api/flow_info/(:segment)', 'FlowInfo::update/$1', ['filter' => 'jwt:2']);
+$routes->patch('api/flow_info/(:segment)', 'FlowInfo::update/$1', ['filter' => 'jwt:2']);
+$routes->delete('api/flow_info/(:segment)', 'FlowInfo::delete/$1', ['filter' => 'jwt:2']);
 
-$routes->post('/api/flow_preview_update', 'API::previewUpdate');
-$routes->put('/api/flow_update_data', 'FlowAPI::updateData');
+$routes->post('/api/flow_preview_update', 'API::previewUpdate', ['filter' => 'jwt:2']);
+$routes->put('/api/flow_update_data', 'FlowAPI::updateData', ['filter' => 'jwt:2']);
 $routes->get('/api/flow_info', 'FlowAPI::flow_info'); 
 $routes->get('/api/flow_data/(:segment)', 'FlowAPI::flowData/$1'); 
 $routes->get('/api/flow_hourly_data_last_7_days', 'FlowAPI::flowHourlyDataLast7Days');
@@ -74,13 +74,13 @@ $routes->post('api/flow_forecast', 'FlowForecast::create');
 //////Tele API//////
 $routes->get('api/tele_info', 'TeleInfo::index');
 $routes->get('api/tele_info/(:segment)', 'TeleInfo::show/$1');
-$routes->post('api/tele_info', 'TeleInfo::create');
-$routes->put('api/tele_info/(:segment)', 'TeleInfo::update/$1');
-$routes->patch('api/tele_info/(:segment)', 'TeleInfo::update/$1');
-$routes->delete('api/tele_info/(:segment)', 'TeleInfo::delete/$1');
+$routes->post('api/tele_info', 'TeleInfo::create', ['filter' => 'jwt:2']);
+$routes->put('api/tele_info/(:segment)', 'TeleInfo::update/$1', ['filter' => 'jwt:2']);
+$routes->patch('api/tele_info/(:segment)', 'TeleInfo::update/$1', ['filter' => 'jwt:2']);
+$routes->delete('api/tele_info/(:segment)', 'TeleInfo::delete/$1', ['filter' => 'jwt:2']);
 
-$routes->post('/api/tele_preview_update', 'API::previewUpdate');
-$routes->put('/api/tele_update_data', 'TeleAPI::updateData');
+$routes->post('/api/tele_preview_update', 'API::previewUpdate', ['filter' => 'jwt:2']);
+$routes->put('/api/tele_update_data', 'TeleAPI::updateData', ['filter' => 'jwt:2']);
 $routes->get('/api/tele_info', 'TeleAPI::tele_info'); 
 $routes->get('/api/tele_data/(:segment)', 'TeleAPI::teleData/$1'); 
 $routes->get('/api/tele_years', 'TeleAPI::tele_years'); 
@@ -100,13 +100,13 @@ $routes->post('api/tele_forecast', 'TeleForecast::create');
 //////Gate API//////
 $routes->get('api/gate_info', 'GateInfo::index');
 $routes->get('api/gate_info/(:segment)', 'GateInfo::show/$1');
-$routes->post('api/gate_info', 'GateInfo::create');
-$routes->put('api/gate_info/(:segment)', 'GateInfo::update/$1');
-$routes->patch('api/gate_info/(:segment)', 'GateInfo::update/$1');
-$routes->delete('api/gate_info/(:segment)', 'GateInfo::delete/$1');
+$routes->post('api/gate_info', 'GateInfo::create', ['filter' => 'jwt:2']);
+$routes->put('api/gate_info/(:segment)', 'GateInfo::update/$1', ['filter' => 'jwt:2']);
+$routes->patch('api/gate_info/(:segment)', 'GateInfo::update/$1', ['filter' => 'jwt:2']);
+$routes->delete('api/gate_info/(:segment)', 'GateInfo::delete/$1', ['filter' => 'jwt:2']);
 
-$routes->post('/api/gate_preview_update', 'API::previewUpdate');
-$routes->put('/api/gate_update_data', 'GateAPI::updateData');
+$routes->post('/api/gate_preview_update', 'API::previewUpdate', ['filter' => 'jwt:2']);
+$routes->put('/api/gate_update_data', 'GateAPI::updateData', ['filter' => 'jwt:2']);
 $routes->get('/api/gate_info', 'GateAPI::gate_info'); 
 $routes->get('/api/gate_data/(:segment)', 'GateAPI::gateData/$1');
 $routes->get('/api/gate_hourly_data/(:segment)', 'GateAPI::gateHourlyData/$1'); 
@@ -119,13 +119,13 @@ $routes->get('/api/gate_opening_all_latest', 'GateAPI::openingLatestAll');
 //////Rain API//////
 $routes->get('api/rain_info', 'RainInfo::index');
 $routes->get('api/rain_info/(:segment)', 'RainInfo::show/$1');
-$routes->post('api/rain_info', 'RainInfo::create');
-$routes->put('api/rain_info/(:segment)', 'RainInfo::update/$1');
-$routes->patch('api/rain_info/(:segment)', 'RainInfo::update/$1');
-$routes->delete('api/rain_info/(:segment)', 'RainInfo::delete/$1');
+$routes->post('api/rain_info', 'RainInfo::create', ['filter' => 'jwt:2']);
+$routes->put('api/rain_info/(:segment)', 'RainInfo::update/$1', ['filter' => 'jwt:2']);
+$routes->patch('api/rain_info/(:segment)', 'RainInfo::update/$1', ['filter' => 'jwt:2']);
+$routes->delete('api/rain_info/(:segment)', 'RainInfo::delete/$1', ['filter' => 'jwt:2']);
 
-$routes->post('/api/rain_preview_update', 'API::previewUpdate');
-$routes->put('/api/rain_update_data', 'RainAPI::updateData');
+$routes->post('/api/rain_preview_update', 'API::previewUpdate', ['filter' => 'jwt:2']);
+$routes->put('/api/rain_update_data', 'RainAPI::updateData', ['filter' => 'jwt:2']);
 $routes->get('/api/rain_info', 'RainAPI::rain_info');
 $routes->get('/api/rain_data/(:segment)', 'RainAPI::rainData/$1');
 $routes->get('/api/rain_monthly/(:segment)',  'RainAPI::monthly/$1');
@@ -135,14 +135,14 @@ $routes->get('/api/rain_data_last_7_days', 'RainAPI::rainDataLast7Days');
 $routes->get('/api/rain_data_last_14_days', 'RainAPI::rainDataLast14Days');
 
 //////Sea API//////
-$routes->post('/api/sea_preview_update', 'API::previewUpdate');
-$routes->put('/api/sea_update_data', 'SeaAPI::updateData');
+$routes->post('/api/sea_preview_update', 'API::previewUpdate', ['filter' => 'jwt:2']);
+$routes->put('/api/sea_update_data', 'SeaAPI::updateData', ['filter' => 'jwt:2']);
 $routes->get('api/sea_info', 'SeaInfo::index');
 $routes->get('api/sea_info/(:segment)', 'SeaInfo::show/$1');
-$routes->post('api/sea_info', 'SeaInfo::create');
-$routes->put('api/sea_info/(:segment)', 'SeaInfo::update/$1');
-$routes->patch('api/sea_info/(:segment)', 'SeaInfo::update/$1');
-$routes->delete('api/sea_info/(:segment)', 'SeaInfo::delete/$1');
+$routes->post('api/sea_info', 'SeaInfo::create', ['filter' => 'jwt:2']);
+$routes->put('api/sea_info/(:segment)', 'SeaInfo::update/$1', ['filter' => 'jwt:2']);
+$routes->patch('api/sea_info/(:segment)', 'SeaInfo::update/$1', ['filter' => 'jwt:2']);
+$routes->delete('api/sea_info/(:segment)', 'SeaInfo::delete/$1', ['filter' => 'jwt:2']);
 $routes->get('/api/sea_info', 'SeaAPI::sea_info');
 $routes->get('/api/sea_data/(:segment)', 'SeaAPI::seaData/$1');
 $routes->get('/api/sea_years', 'SeaAPI::sea_years');
@@ -159,21 +159,23 @@ $routes->group('user', function($routes) {
     $routes->post('resetPassword', 'User::resetPassword');
     $routes->post('validateResetToken', 'User::validateResetToken');
     $routes->get('checkAuth', 'User::checkAuth');
-    $routes->get('getUserByUsername/(:segment)', 'User::getUserByUsername/$1');
+});
+
+$routes->group('user', ['filter' => 'jwt'], function($routes) {
     $routes->put('updateUser/(:any)', 'User::updateUser/$1');
+});
+
+$routes->group('user', ['filter' => 'jwt:2'], function($routes) {
+    $routes->get('getUserByUsername/(:segment)', 'User::getUserByUsername/$1');
     $routes->get('users', 'User::getAllUsers');
     $routes->put('users/(:num)', 'User::updateUserById/$1');
     $routes->get('user_temp', 'User::user_temp');
     $routes->post('approve/(:num)', 'User::approve/$1');
     $routes->delete('reject/(:num)', 'User::reject/$1');
-    
 });
 
-$routes->resource('api/model_input_data', [
-    'controller' => 'ModelInputDataController',
-    'only' => ['index', 'create'] // อนุญาตเฉพาะ GET (index) และ POST (create)
-]);
-
+$routes->get('api/model_input_data', 'ModelInputDataController::index', ['filter' => 'jwt']);
+$routes->post('api/model_input_data', 'ModelInputDataController::create', ['filter' => 'jwt']);
 $routes->post('api/model_input_data/update-from-main', 'ModelInputDataController::updateFromMain');
 $routes->get('verify-email', 'User::verifyEmail');
 
@@ -196,15 +198,15 @@ $routes->group('jobs', function($routes) {
 });
 
 $routes->group('/api/forecast', function ($routes) {
-    $routes->post('import-csv',  'FlowForecastController::importFromCsv');
+    $routes->post('import-csv',  'FlowForecastController::importFromCsv', ['filter' => 'jwt:2']);
     $routes->get('data',         'FlowForecastController::getForecastData');
     $routes->get('latest',       'FlowForecastController::getLatest');
     $routes->get('preview-csv',  'FlowForecastController::previewCsv');
-    $routes->delete('clear',     'FlowForecastController::clearForecast');
+    $routes->delete('clear',     'FlowForecastController::clearForecast', ['filter' => 'jwt:2']);
 });
 
 // $routes->group('/api/equipment', ['filter' => 'jwt'], function ($routes) {
-$routes->group('/api/equipments',  function ($routes) {
+$routes->group('/api/equipments', ['filter' => 'jwt'], function ($routes) {
     $routes->get('/', 'Equipment::index');                
     $routes->post('/', 'Equipment::create');
     $routes->get('(:num)', 'Equipment::show/$1'); 
@@ -229,19 +231,19 @@ $routes->get('api/stations', 'Stations::index');
 $routes->get('api/stations/(:segment)', 'Equipment::byStation/$1');
 $routes->get('api/stations/(:segment)', 'Stations::show/$1');
 
-$routes->post('api/report/upload', 'Report::upload');
-$routes->get('api/report/files', 'Report::listFiles');
+$routes->post('api/report/upload', 'Report::upload', ['filter' => 'jwt:2']);
+$routes->get('api/report/files', 'Report::listFiles', ['filter' => 'jwt:2']);
 
-$routes->post('api/station_photo/upload', 'StationPhoto::upload');
+$routes->post('api/station_photo/upload', 'StationPhoto::upload', ['filter' => 'jwt:2']);
 
 $routes->group('aboutus', function($routes) {
     $routes->get('/', 'AboutUs::index');
-    $routes->put('update/(:num)', 'AboutUs::update/$1');
+    $routes->put('update/(:num)', 'AboutUs::update/$1', ['filter' => 'jwt:2']);
 });
 
 $routes->options('(:any)', 'CorsController::preflight');
 
-$routes->get('snapshot/run/(:segment)', 'SaveForecastSnapshot::run/$1'); //RIDFORECAST!@#
+$routes->get('snapshot/run', 'SaveForecastSnapshot::run');
 
 // Email Alert Routes
 $routes->get('jobs/dailyFloodAlert',  'EmailAlertController::sendDailyAlert');

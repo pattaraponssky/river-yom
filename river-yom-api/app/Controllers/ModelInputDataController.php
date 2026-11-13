@@ -8,6 +8,7 @@ use App\Models\RainModel;
 use App\Models\GateModel;
 use App\Models\FlowModel;
 use App\Models\TeleModel;
+use App\Libraries\Y15RatingCurve;
 
 
 class ModelInputDataController extends ResourceController
@@ -93,7 +94,7 @@ class ModelInputDataController extends ResourceController
                 foreach ($flowData as $item) {
                     $sta_code = (string) ($item['sta_code'] ?? '');
                     $date     = $this->toDateOnly($item['date'] ?? null);
-                    $value    = isset($item['discharge']) && $item['discharge'] !== '' && $item['discharge'] !== null
+                    $value    = is_numeric($item['discharge'] ?? null)
                                 ? (float) $item['discharge']
                                 : null;
 
@@ -110,6 +111,10 @@ class ModelInputDataController extends ResourceController
 
                     if (!$sta_code || !$date) {
                         continue;
+                    }
+
+                    if ($sta_code === 'Y.15' && ($value === null || $value == 0)) {
+                        $value = Y15RatingCurve::discharge($actualData['wl'] ?? null) ?? $value;
                     }
 
                     $record = [
@@ -264,6 +269,21 @@ class ModelInputDataController extends ResourceController
             ->where('data_type', 'flow')
             ->whereIn('date', $flowDateKeys)
             ->findAll();
+
+        // Apply the same fallback to existing input rows, including manual zero values.
+        $flowModel = new FlowModel();
+        foreach ($flowData as &$record) {
+            if ($record['sta_code'] === 'Y.15'
+                && (!is_numeric($record['value']) || (float) $record['value'] == 0)) {
+                $actualData = $flowModel->getActualFlowData('Y.15', $record['date']);
+                $convertedFlow = Y15RatingCurve::discharge($actualData['wl'] ?? null);
+                if ($convertedFlow !== null) {
+                    $record['value'] = $convertedFlow;
+                    $record['flow_source'] = 'rating_curve';
+                }
+            }
+        }
+        unset($record);
 
         $allData = array_merge($rainData, $flowData);
 

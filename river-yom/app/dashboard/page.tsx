@@ -12,6 +12,7 @@ import GateCard from '@/components/Dashboard/GateCard';
 import FloatingMenu from '@/components/Dashboard/FloatingMenu';
 import TeleCard from '@/components/Dashboard/TeleCard';
 import { dashboardMenus } from '@/lib/menuFloating';
+import { useClientDate } from '@/components/hooks/useClientDate';
 
 const BASE_PATH = "/river-yom";
 const JsonPaths = [
@@ -22,6 +23,7 @@ const JsonPaths = [
 export default function Dashboard() {
   const mapKey = process.env.NEXT_PUBLIC_LONGDO_MAP_KEY!;
   const [dailySummary, setDailySummary] = useState<any>(null);
+  const clientDate = useClientDate();
 
   // โหลด dailySummary
   useEffect(() => {
@@ -38,7 +40,7 @@ export default function Dashboard() {
   <>
     <Container maxWidth="xl" sx={{ py: { xs: 1.5, sm: 2 } }}>
       <Typography id="card-daily" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main', textAlign: { md: 'left', xs: 'center' }, fontSize: { xs: 16, sm: 20, md: 24 }, mb: { xs: 1, sm: 1.5 } }}>
-        ภาพรวมสถานการณ์น้ำ วันที่ {formatThaiDay(Date())}
+        ภาพรวมสถานการณ์น้ำ วันที่ {clientDate ? formatThaiDay(clientDate.toString()) : ''}
       </Typography>
         <Box sx={{ minHeight: { xs: 0, md: 120 } }}>
           <DashboardCards data={dailySummary} />
