@@ -174,7 +174,7 @@ $routes->group('user', ['filter' => 'jwt:2'], function($routes) {
     $routes->delete('reject/(:num)', 'User::reject/$1');
 });
 
-$routes->get('api/model_input_data', 'ModelInputDataController::index', ['filter' => 'jwt']);
+$routes->get('api/model_input_data', 'ModelInputDataController::index');
 $routes->post('api/model_input_data', 'ModelInputDataController::create', ['filter' => 'jwt']);
 $routes->post('api/model_input_data/update-from-main', 'ModelInputDataController::updateFromMain');
 $routes->get('verify-email', 'User::verifyEmail');

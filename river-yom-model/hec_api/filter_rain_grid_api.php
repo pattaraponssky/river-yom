@@ -89,7 +89,7 @@ function find_file_by_date($base_dir, $date, $prefix = "p24h.d01.") {
 $current_date = date("Ymd");
 
 // กำหนดที่อยู่ของไฟล์ที่ต้องการตรวจสอบ
-$base_dir = "./rain_grid/";
+$base_dir = __DIR__ . "/rain_grid/";
 
 // ค้นหาไฟล์ที่มีชื่อจากวันที่ปัจจุบัน
 $filename = find_file_by_date($base_dir, $current_date);
@@ -108,7 +108,7 @@ if (!$filename) {
 
 if (!$filename) {
     echo json_encode(["error" => "ไม่พบไฟล์ย้อนหลัง 3 วัน"]);
-    exit;
+    return;
 }
 
 // ถ้าพบไฟล์แล้ว ให้ทำการโหลดไฟล์ CSV

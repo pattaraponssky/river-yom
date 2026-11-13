@@ -336,24 +336,32 @@ class API extends Controller
 
         // 5. Flow: นับจำนวนสถานีที่ wl มากกว่าที่กำหนด
         $wlThresholds = [
-            'Y.4' => 1.8,
-            'Y.15' => 3.5,
-            'Y.50' => 1.5,
-            'Y.16' => 2.4,
-            'Y.64' => 1.5,
-            'Y.51' => 1.5,
-            'Y.17' => 1.5,
+            // ม.รทก.; keep aligned with FLOW_WARN_LEVELS.crisis in warnLevels.ts.
+            'Y.4' => 51.48,
+            'Y.15' => 46.05,
+            'Y.50' => 40.78,
+            'Y.16' => 39.30,
+            'Y.64' => 38.00,
+            'Y.51' => 42.00,
+            'Y.17' => 41.80,
         ];
 
         $stationsOverWL = 0;
         $flowToday = $flowModel->where('datetime', $todayDT)->findAll(); // ✅ แก้เป็น datetime 07:00
         foreach ($flowToday as $f) {
-            if (isset($wlThresholds[$f['sta_code']]) && $f['wl'] > $wlThresholds[$f['sta_code']]) {
+            if (isset($wlThresholds[$f['sta_code']]) && is_numeric($f['wl']) && $f['wl'] > $wlThresholds[$f['sta_code']]) {
                 $stationsOverWL++;
             }
         }
 
+        $teleModel = new TeleModel();
+        $thaNangNgam = $teleModel->getTodayTeleDataByStationCodes(['YR.05'])[0] ?? null;
+        $thaNangNgamLevel = is_numeric($thaNangNgam['wl'] ?? null)
+            ? (float) $thaNangNgam['wl'] : null;
+
         return $this->respond([
+            'tha_nang_ngam_water_level' => $thaNangNgamLevel,
+            'tha_nang_ngam_datetime' => $thaNangNgam['datetime'] ?? null,
             'datetime' => $today,
             'avg_rain_mm' => round($avgRain['avg_rain'], 2),
             'discharge_gate' => $dischargeSummaryGate,

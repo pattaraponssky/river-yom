@@ -53,8 +53,8 @@ const DashboardCards: React.FC<DashboardCardsProps> = ({ data, loading = false, 
           subTitle: 'ฝนเฉลี่ยวันนี้',
           value: '7',
           unit: 'สถานี',
-          value_data: 8.23,
-          // value_data: data.avg_rain_mm ?? '—',
+          // value_data: 8.23,
+          value_data: data.avg_rain_mm ?? '—',
           unit_data: 'มม.',
           image: `${Path_URL}/images/icons/rain_station_icon.png`,
           gradient: 'linear-gradient(135deg, #ffd54f, #ff8f00)',
@@ -62,24 +62,14 @@ const DashboardCards: React.FC<DashboardCardsProps> = ({ data, loading = false, 
         },
         {
           title: 'สถานีติดตั้งโครงการ',
-          subTitle: 'ระบายน้ำรวม',
-          value: '6',
-          unit: 'สถานี',
-          value_data: data.discharge_flow
-            ? [
-                '01',
-                '02',
-                '03',
-                '04',
-                '05',
-                '06',
-              ]
-                .reduce((sum: number, code: string) => {
-                  return sum + parseFloat(data.discharge_flow[code] || '0');
-                }, 0)
-                .toFixed(2)
+          subTitle: 'ระดับน้ำสะพานท่านางงาม (YR.05)',
+          value: '',
+          unit: '',
+          value_data: data.tha_nang_ngam_water_level != null
+            && Number.isFinite(Number(data.tha_nang_ngam_water_level))
+            ? Number(data.tha_nang_ngam_water_level).toFixed(2)
             : '—',
-          unit_data: 'ลบ.ม./วินาที',
+          unit_data: 'ม.รทก.',
           image: `${Path_URL}/images/icons/tele_station_icon.png`,
           gradient: 'linear-gradient(135deg, #64b5f6, #1976d2)',
           link: '/tele',

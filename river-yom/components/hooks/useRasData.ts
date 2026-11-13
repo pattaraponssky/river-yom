@@ -56,9 +56,9 @@ export function thaiTodayYMD(): string {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Bangkok' }).format(new Date());
 }
 
-/** จุดเริ่ม forecast = 07:00 ของวันนี้ (เวลาไทย) */
+/** จุดเริ่ม forecast = 08:00 ของวันนี้ (เวลาไทย) */
 export function forecastStartTs(): number {
-  return toTs(`${thaiTodayYMD()}T07:00:00`);
+  return toTs(`${thaiTodayYMD()}T08:00:00`);
 }
 
 /** สร้าง array ของวันที่ย้อนหลัง n วัน (เวลาไทย) รูปแบบ "YYYY-MM-DD" เรียง เก่า → ใหม่ */

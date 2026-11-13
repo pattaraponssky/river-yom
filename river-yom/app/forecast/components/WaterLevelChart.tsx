@@ -97,7 +97,7 @@ const WaterLevelChart: React.FC<Props> = ({ data, chartHeight = 550 }) => {
       });
   }, []);
 
-  // วันปัจจุบัน (RAS เริ่ม 07:00) แสดงเฉพาะ 07:00 เป็นต้นไป
+  // วันปัจจุบัน แสดงผลพยากรณ์เฉพาะ 08:00 เป็นต้นไป
   // ส่วนวันถัดไปแสดงข้อมูลทั้งหมดตามที่มี (00:00 - 23:00)
   const startFilterDate = thaiTodayYMD();
 
@@ -109,7 +109,7 @@ const WaterLevelChart: React.FC<Props> = ({ data, chartHeight = 550 }) => {
         if (date !== startFilterDate) return true;
         const timePart = item.time.split("T")[1] ?? "";
         const hour = Number(timePart.slice(0, 2));
-        return hour >= 7;
+        return hour >= 8;
       }),
     [data, selectedStation, startFilterDate]
   );

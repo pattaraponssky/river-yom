@@ -11,6 +11,10 @@
   # 🔒 ป้องกันการเข้าถึงโฟลเดอร์สำคัญโดยตรง
   RewriteRule ^(backup)/ - [F,L]
 
+  # Let backend requests reach their own PHP files and rewrite rules.
+  # [L] stops this directory's SPA fallback while allowing child .htaccess rules.
+  RewriteRule ^(?:river-yom-api|river-yom-model)(?:/|$) - [L]
+
   # ✅ ถ้าไฟล์หรือโฟลเดอร์มีอยู่จริง ให้ส่งตรง
   RewriteCond %{REQUEST_FILENAME} -f [OR]
   RewriteCond %{REQUEST_FILENAME} -d

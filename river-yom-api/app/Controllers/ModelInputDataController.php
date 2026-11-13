@@ -8,7 +8,7 @@ use App\Models\RainModel;
 use App\Models\GateModel;
 use App\Models\FlowModel;
 use App\Models\TeleModel;
-use App\Libraries\Y15RatingCurve;
+use App\Libraries\FlowRatingCurve;
 
 
 class ModelInputDataController extends ResourceController
@@ -43,7 +43,7 @@ class ModelInputDataController extends ResourceController
         // $allRainStations = ['390220', '380012', '120160', 'KRMT', 'LKBU', 'YOM007', 'YOM008'];
         // $allFlowStations = ['Y.15', 'Y.16', 'Y.17', 'Y.4', 'Y.50', 'Y.51', 'Y.64'];
         $allRainStations = ['120160'];
-        $allFlowStations = ['Y.15'];
+        $allFlowStations = ['Y.15', 'Y.50', 'Y.16', 'Y.64', 'Y.51', 'Y.17'];
         $allGateStations = ['tng', 'wst'];
         $allTeleStations = ['YR.01', 'YR.02', 'YR.03', 'YR.04', 'YR.05', 'YR.06'];
         
@@ -113,8 +113,8 @@ class ModelInputDataController extends ResourceController
                         continue;
                     }
 
-                    if ($sta_code === 'Y.15' && ($value === null || $value == 0)) {
-                        $value = Y15RatingCurve::discharge($actualData['wl'] ?? null) ?? $value;
+                    if (($value === null || $value == 0)) {
+                        $value = FlowRatingCurve::discharge($sta_code, $actualData['wl'] ?? null) ?? $value;
                     }
 
                     $record = [
@@ -273,10 +273,9 @@ class ModelInputDataController extends ResourceController
         // Apply the same fallback to existing input rows, including manual zero values.
         $flowModel = new FlowModel();
         foreach ($flowData as &$record) {
-            if ($record['sta_code'] === 'Y.15'
-                && (!is_numeric($record['value']) || (float) $record['value'] == 0)) {
-                $actualData = $flowModel->getActualFlowData('Y.15', $record['date']);
-                $convertedFlow = Y15RatingCurve::discharge($actualData['wl'] ?? null);
+            if (!is_numeric($record['value']) || (float) $record['value'] == 0) {
+                $actualData = $flowModel->getActualFlowData($record['sta_code'], $record['date']);
+                $convertedFlow = FlowRatingCurve::discharge($record['sta_code'], $actualData['wl'] ?? null);
                 if ($convertedFlow !== null) {
                     $record['value'] = $convertedFlow;
                     $record['flow_source'] = 'rating_curve';

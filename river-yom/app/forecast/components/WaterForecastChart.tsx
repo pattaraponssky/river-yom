@@ -11,7 +11,7 @@ import { ApexOptions } from 'apexcharts';
 import dynamic from 'next/dynamic';
 import CenteredLoading from '@/components/Layout/CenteredLoading';
 import { titleStyle } from '@/theme/style';
-import { ForecastSnapshot, toTs, thaiTodayYMD } from '@/components/hooks/useRasData';
+import { ForecastSnapshot, toTs, forecastStartTs } from '@/components/hooks/useRasData';
 import { TELE_WARN_LEVELS, getWarnLevel } from '@/lib/warnLevels';
 
 const ReactApexChart = dynamic(() => import('react-apexcharts'), { ssr: false });
@@ -82,13 +82,6 @@ const ARCHIVE_COLORS = ['#CFD8DC', '#90A4AE', '#607D8B'];
 
 // ─── Helpers ──────────────────────────────────────────────────
 
-/** จุดเริ่ม forecast = 07:00 ของวันนี้ (เวลาไทย) ตรงกับข้อมูลในไฟล์ RAS */
-function forecastStartTs(): number {
-  return toTs(`${thaiTodayYMD()}T07:00:00`);
-}
-
-
-
 // ─── Chart options builder ────────────────────────────────────
 
 function buildOptions(
@@ -138,7 +131,11 @@ function buildOptions(
       style: { fontSize: '16px', fontWeight: 700 },
     },
     stroke: { width: [3, 3, 2, 2, 2], curve: 'smooth', dashArray: [0, 8, 6, 6, 6] },
-    xaxis:  { type: 'datetime', labels: { format: 'dd MMM' } },
+    xaxis: {
+      type: 'datetime',
+      min: tofTs - 7 * 24 * 60 * 60 * 1000,
+      labels: { format: 'dd MMM HH:mm', datetimeUTC: true },
+    },
     yaxis: {
       min: Math.max(0, minData - 0.2),
       max: baseMax + 0.3,
@@ -153,7 +150,7 @@ function buildOptions(
       xaxis: [{
         x: tofTs,
         borderColor: '#FF0000',
-        label: { position: 'top', offsetY: -10, borderColor: '#000', style: { color: '#fff', background: '#FF0000', fontSize: '14px' }, text: 'TOF' },
+        label: { position: 'top', offsetY: -10, borderColor: '#000', style: { color: '#fff', background: '#FF0000', fontSize: '14px' }, text: 'TOF 08:00' },
       }],
       yaxis: yAnnotations,
     },
@@ -170,7 +167,7 @@ const WaterForecastChart: React.FC<Props> = ({ today, archive }) => {
   const [viewMode,         setViewMode]         = useState<ViewMode>('all');
   const [selectedStation,  setSelectedStation]  = useState<string>('YR.05');
 
-  const tofTs = useMemo(forecastStartTs, []);
+  const tofTs = forecastStartTs();
 
   // const stations = Object.keys(STATION_MAPPING);
   const stations = STATION_META.map(m => m.staCode);
@@ -179,7 +176,8 @@ const WaterForecastChart: React.FC<Props> = ({ today, archive }) => {
   function buildSeries(station: string) {
 
     const todayAll = (today?.points ?? [])
-      .filter(p => p.station === station)
+      .filter(p => p.station === station
+        && toTs(p.time) >= tofTs - 7 * 24 * 60 * 60 * 1000)
       .sort((a, b) => toTs(a.time) - toTs(b.time))
       .map(p => ({ x: toTs(p.time), y: parseFloat(p.elevation.toFixed(2)) }));
 

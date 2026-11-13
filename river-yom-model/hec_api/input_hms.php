@@ -4,7 +4,7 @@ header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
@@ -13,11 +13,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 function fetchData($url) {
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
+    // SSL verification bypass requested for this model input endpoint only.
+    if ($url === 'https://wms-yom-right.rid.go.th/river-yom-api/api/model_input_data') {
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+    }
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_FAILONERROR, true);
     curl_setopt($ch, CURLOPT_TIMEOUT, 30); // เพิ่ม Timeout เผื่อ API ช้า
     curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10); // เพิ่ม Connection Timeout
 
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     $curlError = curl_error($ch);
@@ -66,27 +72,31 @@ while ($current_loop_date <= $display_and_data_end_date_ce) {
 
 // **แก้ไข URL ตามที่ร้องขอ**
 $rid_api_url = "https://wms-yom-right.rid.go.th/river-yom-api/api/model_input_data";
-$rid_data_response = fetchData($rid_api_url); 
-// เนื่องจาก API นี้อาจมีการจัดโครงสร้างข้อมูลที่แตกต่างกัน (เช่น มี 'data' key)
-$rid_data_raw = isset($rid_data_response['data']) && is_array($rid_data_response['data']) ? $rid_data_response['data'] : (is_array($rid_data_response) ? $rid_data_response : []);
+$rid_data_response = $modelInputData ?? fetchData($rid_api_url);
+if (!isset($rid_data_response['data']) || !is_array($rid_data_response['data']) || !$rid_data_response['data']) {
+    http_response_code(502);
+    echo json_encode(['status' => 'error', 'message' => 'Cannot read model input data; rainfall was not calculated.']);
+    exit;
+}
+$rid_data_raw = $rid_data_response['data'];
 
 // --- รวมข้อมูลจาก API ทั้งสองแหล่งเข้าด้วยกัน (แต่ตอนนี้ใช้แหล่งเดียว) ---
 $all_rain_data_by_station_date = [];
 foreach ($rid_data_raw as $record) {
     if (isset($record['sta_code']) && isset($record['date']) && isset($record['data_type']) && $record['data_type'] === 'rain') {
         // ใช้ date แทน date และตรวจสอบ data_type ต้องเป็น 'rain' เท่านั้น
-        $key = $record['sta_code'] . '_' . $record['date'];
+        $key = $record['sta_code'] . '_' . substr($record['date'], 0, 10);
         $all_rain_data_by_station_date[$key] = floatval($record['value'] ?? 0);
     }
 }
 
 // --- สัดส่วน Subbasin ---
 $subbasin_ratios = [
-    'SB-01' => ['P.7A' => 0.3621, 'wst' => 0.2679, 'Y.03' => 0.3700],
-    'SB-02' => ['wst' => 0.9456, 'Y.01' => 0.0544 ],
-    'SB-03' => ['wst' => 0.2152, 'Y.04' => 0.1138, 'Y.01' => 0.0533, 'Y.05' => 0.0333, 'Y.02' => 0.2321, 'Y.03' => 0.3523],
-    'SB-04' => ['P.7A' => 0.2879, 'wst' => 0.0067, 'Y.03' => 0.7055],
-    'SB-05' => ['tng' => 0.0194, 'Y.04' => 0.0973, 'Y.06' => 0.1802, 'Y.03' => 0.7032],
+    'SB-01' => ['120160' => 0.3621, 'wst' => 0.2679, 'YR.03' => 0.3700],
+    'SB-02' => ['wst' => 0.9456, 'YR.01' => 0.0544 ],
+    'SB-03' => ['wst' => 0.2152, 'YR.04' => 0.1138, 'YR.01' => 0.0533, 'YR.05' => 0.0333, 'YR.02' => 0.2321, 'YR.03' => 0.3523],
+    'SB-04' => ['120160' => 0.2879, 'wst' => 0.0067, 'YR.03' => 0.7055],
+    'SB-05' => ['tng' => 0.0194, 'YR.04' => 0.0973, 'YR.06' => 0.1802, 'YR.03' => 0.7032],
 ];
 
 // --- คำนวณค่า Subbasin รายวัน ---

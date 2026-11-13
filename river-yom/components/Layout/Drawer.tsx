@@ -42,7 +42,7 @@ interface DrawerProps {
 }
 
 const MainItems = [
-  { icon: <HomeIcon fontSize="small" />, text: "หน้าแรก", path: "/" },
+  { icon: <HomeIcon fontSize="small" />, text: "หน้าแรก", path: "/home" },
 ];
 
 const publicMenuItems = [

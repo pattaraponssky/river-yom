@@ -22,7 +22,8 @@ Options -Indexes
 	RewriteEngine On
 
 	# Block direct access to application and sensitive directories
-	RewriteRule ^(app|database|vendor|jobs|writable|tests|\.git)(/|$) - [F,L]
+	# /jobs/... are controller routes; physical .bat files remain denied above.
+	RewriteRule ^(app|database|vendor|writable|tests|\.git)(/|$) - [F,L]
 
 	# If you installed CodeIgniter in a subfolder, you will need to
 	# change the following line to match the subfolder you need.

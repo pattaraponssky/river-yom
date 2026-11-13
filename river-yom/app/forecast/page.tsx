@@ -70,7 +70,7 @@ export default function Dashboard() {
     .filter(p => {
       const river = (p.river ?? '').toString().trim();
       // return river === 'Yom River';
-      return river === 'YOM';
+      return river === 'YOM' && toTs(p.time) >= forecastStartTs();
       
     })
     .map(p => ({
