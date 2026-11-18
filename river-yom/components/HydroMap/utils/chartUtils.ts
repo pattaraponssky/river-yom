@@ -301,31 +301,34 @@ export const renderChart = async (
     chart: {
       type: chartType,
       height: 220,
+      fontFamily: 'Prompt, sans-serif',
       zoom: { enabled: false },
       toolbar: { show: false },
     },
-    title: { text: title, align: 'center' },
+    title: { text: title, align: 'center', style: { fontFamily: 'Prompt, sans-serif' } },
     series: [{ name: title, data: seriesData }],
     xaxis: {
       type: 'datetime',
-      labels: { datetimeUTC: false, format: 'dd MMM' },
+      labels: { datetimeUTC: false, format: 'dd MMM', style: { fontFamily: 'Prompt, sans-serif' } },
     },
     yaxis: {
       min: yAxisRange.min,
       max: yAxisRange.max,
+      labels: { style: { fontFamily: 'Prompt, sans-serif' } },
     },
     colors: [color],
     annotations: buildWaterLevelAnnotations(type, code),
     dataLabels: {
       enabled: true,
       offsetY: -20,
-      style: { fontSize: '12px', colors: ['#304758'] },
+      style: { fontSize: '12px', fontFamily: 'Prompt, sans-serif', colors: ['#304758'] },
     },
     plotOptions: {
       bar: { borderRadius: 3, dataLabels: { position: 'top' } },
     },
     markers: { size: 5, colors: [color], strokeColors: '#fff', strokeWidth: 2 },
     tooltip: {
+      style: { fontFamily: 'Prompt, sans-serif' },
       x: {
         formatter: (val: number) =>
           new Date(val).toLocaleDateString('th-TH', {

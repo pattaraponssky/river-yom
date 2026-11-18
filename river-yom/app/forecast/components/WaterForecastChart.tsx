@@ -5,13 +5,12 @@ import React, { useState, useMemo } from 'react';
 import {
   Card, Box, Typography, Grid,
   ToggleButton, ToggleButtonGroup, useTheme,
-  Chip,
 } from '@mui/material';
 import { ApexOptions } from 'apexcharts';
 import dynamic from 'next/dynamic';
 import CenteredLoading from '@/components/Layout/CenteredLoading';
 import { titleStyle } from '@/theme/style';
-import { ForecastSnapshot, toTs, forecastStartTs } from '@/components/hooks/useRasData';
+import { ForecastSnapshot, WaterLevelPoint, toTs, forecastStartTs } from '@/components/hooks/useRasData';
 import { TELE_WARN_LEVELS, getWarnLevel } from '@/lib/warnLevels';
 
 const ReactApexChart = dynamic(() => import('react-apexcharts'), { ssr: false });
@@ -78,9 +77,17 @@ function buildThresholdMap(): Map<string, ThresholdData> {
 
 const THRESHOLD_MAP = buildThresholdMap();
 
-const ARCHIVE_COLORS = ['#CFD8DC', '#90A4AE', '#607D8B'];
+const DAY_MS = 24 * 60 * 60 * 1000;
+const YESTERDAY_COLOR = '#90A4AE';
+const stations = STATION_META.map(meta => meta.staCode);
 
-// ─── Helpers ──────────────────────────────────────────────────
+function stationPoints(points: WaterLevelPoint[], station: string, start: number, end: number) {
+  return points
+    .filter(point => point.station === station)
+    .map(point => ({ x: toTs(point.time), y: Number(point.elevation.toFixed(2)) }))
+    .filter(point => point.x >= start && point.x < end)
+    .sort((a, b) => a.x - b.x);
+}
 
 // ─── Chart options builder ────────────────────────────────────
 
@@ -89,6 +96,7 @@ function buildOptions(
   allSeriesData: { x: number; y: number }[],
   isDark: boolean,
   tofTs: number,
+  historyStart: number,
 ): ApexOptions {
   const thr      = THRESHOLD_MAP.get(stationCode);
   const vals     = allSeriesData.map(d => d.y);
@@ -130,10 +138,9 @@ function buildOptions(
       align: 'center',
       style: { fontSize: '16px', fontWeight: 700 },
     },
-    stroke: { width: [3, 3, 2, 2, 2], curve: 'smooth', dashArray: [0, 8, 6, 6, 6] },
     xaxis: {
       type: 'datetime',
-      min: tofTs - 7 * 24 * 60 * 60 * 1000,
+      min: historyStart,
       labels: { format: 'dd MMM HH:mm', datetimeUTC: true },
     },
     yaxis: {
@@ -169,44 +176,41 @@ const WaterForecastChart: React.FC<Props> = ({ today, archive }) => {
 
   const tofTs = forecastStartTs();
 
-  // const stations = Object.keys(STATION_MAPPING);
-  const stations = STATION_META.map(m => m.staCode);
-  // ─── Series builder ──────────────────────────────────────────
+  const historyStart = tofTs - 7 * DAY_MS;
+  const yesterdayTofTs = tofTs - DAY_MS;
+  const yesterdayDate = new Date(yesterdayTofTs).toISOString().slice(0, 10);
+  const yesterday = archive.find(snapshot => snapshot.date === yesterdayDate);
 
-  function buildSeries(station: string) {
+  const allSeriesMap = useMemo(() => {
+    return Object.fromEntries(stations.map(station => {
+      const todayPoints = today?.points ?? [];
+      const observed = stationPoints(todayPoints, station, historyStart, tofTs);
+      const forecast = stationPoints(todayPoints, station, tofTs, Infinity);
+      const previousForecast = stationPoints(
+        yesterday?.points ?? [], station, yesterdayTofTs, Infinity,
+      );
 
-    const todayAll = (today?.points ?? [])
-      .filter(p => p.station === station
-        && toTs(p.time) >= tofTs - 7 * 24 * 60 * 60 * 1000)
-      .sort((a, b) => toTs(a.time) - toTs(b.time))
-      .map(p => ({ x: toTs(p.time), y: parseFloat(p.elevation.toFixed(2)) }));
+      const series = [
+        { name: 'ค่าตรวจวัดจริง', data: observed, color: '#1E88E5' },
+        { name: 'ค่าพยากรณ์ (วันนี้)', data: forecast, color: '#66BB6A' },
+      ];
+      if (previousForecast.length) {
+        series.push({ name: 'ค่าพยากรณ์ (เมื่อวาน)', data: previousForecast, color: YESTERDAY_COLOR });
+      }
 
-    const observed = todayAll.filter(d => d.x <  tofTs);
-    const forecast = todayAll.filter(d => d.x >= tofTs);
+      return [station, series];
+    }));
+  }, [today, yesterday, historyStart, yesterdayTofTs, tofTs]);
 
-
-    return [
-      { name: 'ค่าตรวจวัดจริง',      data: observed, color: '#1E88E5' },
-      { name: 'ค่าพยากรณ์ (วันนี้)', data: forecast,  color: '#66BB6A' },
-    ];
-  }
+  const hasYesterdayForecast = Object.values(allSeriesMap).some(series => series.length === 3);
 
   function buildStrokeOptions(seriesCount: number): ApexOptions['stroke'] {
     return {
-      width:     [5, 5, ...Array(seriesCount - 2).fill(2.5)],
-      curve:     'smooth',
+      width: [5, 5, ...Array(seriesCount - 2).fill(2.5)],
+      curve: 'smooth',
       dashArray: [0, 8, ...Array(seriesCount - 2).fill(5)],
     };
   }
-
-  // ─── โหมดแสดงทั้งหมด ─────────────────────────────────────────
-
-  const allSeriesMap = useMemo(() => {
-    const m: Record<string, ReturnType<typeof buildSeries>> = {};
-    stations.forEach(sta => { m[sta] = buildSeries(sta); });
-    return m;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [today, archive, tofTs]);
 
   // ─── Render ───────────────────────────────────────────────────
   if (!today && archive.length === 0) return <CenteredLoading />;
@@ -240,14 +244,14 @@ const WaterForecastChart: React.FC<Props> = ({ today, archive }) => {
             <Box sx={{ width: 36, height: 0, borderTop: '3px dashed #66BB6A', borderRadius: 99 }} />
             <Typography sx={{ fontFamily: 'Prompt', fontSize: '0.8rem' }}>พยากรณ์ (วันนี้)</Typography>
           </Box>
-          {archive.map((snap, i) => (
-            <Box key={snap.date} sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-              <Box sx={{ width: 36, height: 0, borderTop: `2px dashed ${ARCHIVE_COLORS[Math.min(i, ARCHIVE_COLORS.length-1)]}` }} />
+          {hasYesterdayForecast && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+              <Box sx={{ width: 36, height: 0, borderTop: `2px dashed ${YESTERDAY_COLOR}` }} />
               <Typography sx={{ fontFamily: 'Prompt', fontSize: '0.8rem' }}>
-                พยากรณ์ {snap.date}
+                พยากรณ์ {yesterdayDate}
               </Typography>
             </Box>
-          ))}
+          )}
         </Box>
       </Box>
 
@@ -257,7 +261,7 @@ const WaterForecastChart: React.FC<Props> = ({ today, archive }) => {
           {stations.map(code => {
             const series      = allSeriesMap[code];
             const allData     = series.flatMap(s => s.data);
-            const baseOptions = buildOptions(code, allData, isDark, tofTs);
+            const baseOptions = buildOptions(code, allData, isDark, tofTs, historyStart);
             const options: ApexOptions = {
               ...baseOptions,
               stroke: buildStrokeOptions(series.length),
@@ -323,9 +327,9 @@ const WaterForecastChart: React.FC<Props> = ({ today, archive }) => {
 
           {/* Single chart */}
           {(() => {
-            const series      = buildSeries(selectedStation);
+            const series      = allSeriesMap[selectedStation];
             const allData     = series.flatMap(s => s.data);
-            const baseOptions = buildOptions(selectedStation, allData, isDark, tofTs);
+            const baseOptions = buildOptions(selectedStation, allData, isDark, tofTs, historyStart);
             const options: ApexOptions = {
               ...baseOptions,
               stroke: buildStrokeOptions(series.length),

@@ -9,6 +9,9 @@ import {
   alpha,
   useTheme,
 } from '@mui/material';
+import type { StationHistoryContext } from '@/components/Data/StationHistoryDialog';
+import { StationReadingChange } from '@/components/Data/StationReadingChange';
+import { useYesterdayStationReading } from '@/components/hooks/useYesterdayStationReading';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { GateStationConfig } from '@/lib/gateConfig';
 import { API_URL, Path_URL } from '@/lib/utility';
@@ -17,7 +20,7 @@ import { GATE_WARN_LEVELS, WarnLevel } from '@/lib/warnLevels';
 
 interface GateOpeningData {
   sta_code: string;
-  date: string;
+  datetime: string;
   wl_upper?: number;
   wl_lower?: number;
   discharge?: number;
@@ -208,9 +211,10 @@ const WaterLevelLine: React.FC<{
 const WaterLevelBar: React.FC<{
   label: string;
   value: number | null;
-  unit?: string;
+  previous?: number | null;
+  history: StationHistoryContext & { metric: 'wl_upper' | 'wl_lower' };
   color: string;
-}> = ({ label, value, unit = 'ม.รทก.', color }) => (
+}> = ({ label, value, previous, history, color }) => (
   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 0.75 }}>
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
       <WaterIcon sx={{ fontSize: '1rem', color }} />
@@ -218,9 +222,12 @@ const WaterLevelBar: React.FC<{
         {label}
       </Typography>
     </Box>
-    <Typography sx={{ fontFamily: 'Prompt', fontWeight: 700, fontSize: '1rem', color }}>
-      {value != null ? `${value} ${unit}` : '-'}
-    </Typography>
+    <Box sx={{ textAlign: 'right', justifyContent: 'flex-end' }}>
+      <Typography sx={{ fontFamily: 'Prompt', fontWeight: 700, fontSize: '1rem', color }}>
+        {value != null ? `${value} ม.รทก.` : '-'}
+      </Typography>
+      <StationReadingChange value={value} previous={previous} history={history} unit="ม." />
+    </Box>
   </Box>
 );
 
@@ -256,6 +263,11 @@ const GateOpeningDisplay: React.FC<GateOpeningDisplayProps> = ({ config }) => {
     return () => clearInterval(interval);
   }, [fetchData]);
 
+  const yesterday = useYesterdayStationReading('gate', config.sta_code,
+    data?.sta_code === config.sta_code ? data.datetime : undefined);
+  const history: StationHistoryContext = {
+    type: 'gate', stationCode: config.sta_code, currentTime: data?.datetime, previousTime: yesterday?.datetime,
+  };
   const totalDischarge = data?.discharge ?? null;
   const openGates = data
     ? config.gates.filter(g => {
@@ -566,8 +578,8 @@ const GateOpeningDisplay: React.FC<GateOpeningDisplayProps> = ({ config }) => {
           <Typography sx={{ fontFamily: 'Prompt', fontWeight: 600, fontSize: '0.85rem', mb: 0.5, color: 'text.secondary' }}>
             ระดับน้ำ
           </Typography>
-          <WaterLevelBar label="ระดับน้ำเหนือประตู" value={data?.wl_upper ?? null} color="#1565C0" />
-          <WaterLevelBar label="ระดับน้ำท้ายประตู" value={data?.wl_lower ?? null} color="#0288D1" />
+          <WaterLevelBar label="ระดับน้ำเหนือประตู" value={data?.wl_upper ?? null} previous={yesterday?.wl_upper} history={{ ...history, metric: 'wl_upper' }} color="#1565C0" />
+          <WaterLevelBar label="ระดับน้ำท้ายประตู" value={data?.wl_lower ?? null} previous={yesterday?.wl_lower} history={{ ...history, metric: 'wl_lower' }} color="#0288D1" />
         </Grid>
 
         <Grid size={{ xs: 12, sm: 5 }}>
@@ -581,6 +593,9 @@ const GateOpeningDisplay: React.FC<GateOpeningDisplayProps> = ({ config }) => {
             <Typography sx={{ fontFamily: 'Prompt', fontSize: '0.8rem', color: '#1565C0', mt: 0.25 }}>
               ลบ.ม./วินาที
             </Typography>
+            <Box sx={{ justifyContent: 'center' }}>
+              <StationReadingChange value={totalDischarge} previous={yesterday?.discharge} history={{ ...history, metric: 'discharge' }} unit="ลบ.ม./วินาที" />
+            </Box>
           </Box>
         </Grid>
       </Grid>

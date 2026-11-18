@@ -283,16 +283,18 @@ const prepareChartDataForTele = (rawData: any[], targetStaCode: string) => {
   
     // ✅ สร้างกราฟใหม่
     const chart = new ApexCharts(element, {
-      chart: { type: types, height: 200 ,Zoom: { enabled: false }},
-      title: { text: title },
+      chart: { type: types, height: 200, fontFamily: 'Prompt, sans-serif', Zoom: { enabled: false }},
+      title: { text: title, style: { fontFamily: 'Prompt, sans-serif' } },
       series: [{ name: title, data: seriesData }],
-      xaxis: { type: 'datetime' },
+      xaxis: { type: 'datetime', labels: { style: { fontFamily: 'Prompt, sans-serif' } } },
+      yaxis: { labels: { style: { fontFamily: 'Prompt, sans-serif' } } },
       colors: [color],
       dataLabels: {
         enabled: true,
         offsetY: -10,
         style: {
           fontSize: '12px',
+          fontFamily: 'Prompt, sans-serif',
           colors: ["#304758"]
         }
       },
@@ -315,6 +317,7 @@ const prepareChartDataForTele = (rawData: any[], targetStaCode: string) => {
         }
       },
       tooltip: {
+        style: { fontFamily: 'Prompt, sans-serif' },
         x: { format: 'dd MMM yyyy' },
         y: {
           formatter: (val: number) => `${Math.abs(val).toFixed(2).toLocaleString()} มม.`,

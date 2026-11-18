@@ -6,6 +6,8 @@ import { Box, Typography, Skeleton } from '@mui/material';
 import OpacityIcon from '@mui/icons-material/Opacity';
 import WaterIcon   from '@mui/icons-material/Water';
 import StreamIcon  from '@mui/icons-material/Stream';
+import type { StationHistoryContext } from './StationHistoryDialog';
+import { StationReadingChange } from './StationReadingChange';
 
 // ─── Types ────────────────────────────────────────────────────
 
@@ -18,6 +20,9 @@ interface WarnLevels {
 
 interface TeleMetricCardsProps {
   wl?:         number | null;
+  history?: StationHistoryContext;
+  yesterdayWl?: number | null;
+  yesterdayDischarge?: number | null;
   discharge?:  number | null;
   rain?:       number | null;
   rain_sum?:   number | null;
@@ -69,9 +74,11 @@ interface MetricCardProps {
   loading?: boolean;
   status?:  StatusKey;
   accent?:  string;
+  previous?: number | null;
+  history?: StationHistoryContext & { metric: 'wl' | 'discharge' };
 }
 
-function MetricCard({ icon, label, value, unit, loading, status, accent = '#E6F1FB' }: MetricCardProps) {
+function MetricCard({ icon, label, value, unit, loading, status, accent = '#E6F1FB', previous, history }: MetricCardProps) {
   return (
     <Box
       sx={{
@@ -112,6 +119,7 @@ function MetricCard({ icon, label, value, unit, loading, status, accent = '#E6F1
             </Typography>
           </Box>
         )}
+        {!loading && <StationReadingChange value={value} previous={previous} history={history} unit={unit === 'ม.รทก.' ? 'ม.' : unit} />}
       </Box>
     </Box>
   );
@@ -128,12 +136,16 @@ interface CardDef {
   unit:    string;
   accent:  string;
   status?: StatusKey;
+  previous?: number | null;
 }
 
 // ─── Main Component ───────────────────────────────────────────
 
 const TeleMetricCards: React.FC<TeleMetricCardsProps> = ({
   wl,
+  yesterdayWl,
+  history,
+  yesterdayDischarge,
   discharge,
   rain,
   rain_sum,
@@ -151,12 +163,14 @@ const TeleMetricCards: React.FC<TeleMetricCardsProps> = ({
       unit:   'ม.รทก.',
       accent: '#E6F1FB',
       status: wlStatus,
+      previous: yesterdayWl,
     }] : []),
     ...(discharge !== undefined ? [{
       key:    'discharge',
       icon:   <StreamIcon  sx={{ fontSize: 20, color: '#0F6E56' }} />,
       label:  'อัตราการไหล',
       value:  discharge,
+      previous: yesterdayDischarge,
       unit:   'ลบ.ม./วินาที',
       accent: '#E1F5EE',
     }] : []),
@@ -191,6 +205,8 @@ const TeleMetricCards: React.FC<TeleMetricCardsProps> = ({
           unit={c.unit}
           accent={c.accent}
           status={c.status}
+          previous={c.previous}
+          history={history && (c.key === 'wl' || c.key === 'discharge') ? { ...history, metric: c.key } : undefined}
           loading={loading}
         />
       ))}

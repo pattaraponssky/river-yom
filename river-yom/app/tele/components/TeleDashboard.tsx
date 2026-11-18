@@ -8,6 +8,7 @@ import {
   Paper, CircularProgress, Alert, Divider,
   IconButton, Tooltip, Stack, SelectChangeEvent,
 } from '@mui/material';
+import StationUpdateBadge from '@/components/Data/StationUpdateBadge';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { API_URL, DEFAULT_STATION_PHOTO, Path_URL, resolvePhotoUrl } from '@/lib/utility';
 import { useTheme, alpha } from '@mui/material';
@@ -16,6 +17,7 @@ import CameraViewer from '@/components/Data/CameraViewer';
 import { STATION_CAMERAS } from '@/lib/cameraConfig';
 import StationCrossSectionChart from '@/components/Data/StationCrossSectionChart';
 import StationCoordinates from '@/components/Data/Stationcoordinates';
+import { useYesterdayStationReading } from '@/components/hooks/useYesterdayStationReading';
 import TeleMetricCards from '@/components/Data/Telemetriccards';
 import { TELE_WARN_LEVELS } from '../../../lib/warnLevels';
 import StationSelector, { StationOption } from '@/components/Data/StationSelector';
@@ -50,7 +52,6 @@ export default function TeleDashboard() {
   const [loading,      setLoading]      = useState(false);
   const [infoLoading,  setInfoLoading]  = useState(true);
   const [error,        setError]        = useState<string | null>(null);
-  const [lastUpdate,   setLastUpdate]   = useState<Date | null>(null);
   
   // โหลดรายชื่อสถานี
   useEffect(() => {
@@ -86,7 +87,6 @@ export default function TeleDashboard() {
           discharge: data.discharge,
           rain_mm: data.rain_mm,
         });
-        setLastUpdate(new Date());
       } else {
         setLatest(null);
       }
@@ -111,6 +111,9 @@ export default function TeleDashboard() {
       name: g.sta_name,
       subLabel: [g.district, g.province].filter(Boolean).join(', ') || undefined,
     }));
+
+  const currentReading = latest?.sta_code === selectedCode ? latest : null;
+  const yesterday = useYesterdayStationReading('tele', selectedCode, currentReading?.datetime);
 
   const selectedInfo = teleInfoList.find(g => g.sta_code === selectedCode) ?? null;
   const cameras = selectedCode ? (STATION_CAMERAS[selectedCode] ?? []) : [];
@@ -158,29 +161,6 @@ export default function TeleDashboard() {
           </Tooltip>
         </Box>
 
-        {/* Row 2: Last update */}
-        {lastUpdate && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mt: 1, pl: 0.5 }}>
-            <Box
-                sx={{
-                  width: 10,
-                  height: 10,
-                  borderRadius: '50%',
-                  bgcolor: 'success.main',
-                  flexShrink: 0,
-                }}
-              />
-              <Typography
-                sx={{
-                  fontFamily: 'Prompt',
-                  fontSize: '1rem',
-                  color: 'text.disabled',
-                }}
-              >
-              ข้อมูลอัปเดตล่าสุด: {latest?.datetime ?? 'กำลังโหลด...'}
-            </Typography>
-          </Box>
-        )}
       </Box>
       {error && <Alert severity="error" sx={{ mb: 2, fontFamily: 'Prompt' }}>{error}</Alert>}
 
@@ -227,6 +207,11 @@ export default function TeleDashboard() {
                         transform: 'scale(1.03)',
                       },
                     }}
+                  />
+
+                  <StationUpdateBadge
+                    datetime={latest && String(latest.sta_code) === selectedCode ? latest.datetime : undefined}
+                    loading={loading}
                   />
 
                   {/* Overlay */}
@@ -379,8 +364,11 @@ export default function TeleDashboard() {
           <Grid size={{ xs: 12, md: 8 }} >
             <Stack spacing={2}>
                 <TeleMetricCards
-                  wl={latest?.wl}
-                  discharge={latest?.discharge}
+                  wl={currentReading?.wl}
+                  history={{ type: 'tele', stationCode: selectedCode, currentTime: currentReading?.datetime, previousTime: yesterday?.datetime }}
+                  yesterdayWl={yesterday?.wl}
+                  yesterdayDischarge={yesterday?.discharge}
+                  discharge={currentReading?.discharge}
                   rain={latest?.rain_mm}
                   warnLevels={TELE_WARN_LEVELS[selectedCode]}
                   loading={loading}

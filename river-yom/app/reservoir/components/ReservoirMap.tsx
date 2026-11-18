@@ -295,16 +295,18 @@
 
     // ✅ สร้างกราฟใหม่
     const chart = new ApexCharts(element, {
-      chart: { type: types, height: 215 ,toolbar: { show: false },zoom:{enabled:false ,allowMouseWheelZoom: false,  },},
-      title: { text: title },
+      chart: { type: types, height: 215, fontFamily: 'Prompt, sans-serif', toolbar: { show: false },zoom:{enabled:false ,allowMouseWheelZoom: false,  },},
+      title: { text: title, style: { fontFamily: 'Prompt, sans-serif' } },
       series: [{ name: title, data: seriesData }],
-      xaxis: { type: 'datetime' },
+      xaxis: { type: 'datetime', labels: { style: { fontFamily: 'Prompt, sans-serif' } } },
+      yaxis: { labels: { style: { fontFamily: 'Prompt, sans-serif' } } },
       colors: [color],
       dataLabels: {
         enabled: true,
         offsetY: -20,
         style: {
           fontSize: '12px',
+          fontFamily: 'Prompt, sans-serif',
           colors: ["#304758"]
         }
       },
@@ -327,6 +329,7 @@
         }
       },
       tooltip: {
+        style: { fontFamily: 'Prompt, sans-serif' },
         x: { format: 'dd MMM yyyy' },
         y: {
           formatter: (val: number) => `${Math.abs(val).toFixed(2).toLocaleString()} ล้าน ลบ.ม.`,

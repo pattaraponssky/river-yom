@@ -8,6 +8,7 @@ import {
   Paper, CircularProgress, Alert, Divider,
   IconButton, Tooltip, Stack, SelectChangeEvent,
 } from '@mui/material';
+import StationUpdateBadge from '@/components/Data/StationUpdateBadge';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { API_URL, DEFAULT_STATION_PHOTO, Path_URL, resolvePhotoUrl } from '@/lib/utility';
 import { useTheme, alpha } from '@mui/material';
@@ -52,7 +53,6 @@ export default function RainDashboard() {
   const [loading,      setLoading]      = useState(false);
   const [infoLoading,  setInfoLoading]  = useState(true);
   const [error,        setError]        = useState<string | null>(null);
-  const [lastUpdate,   setLastUpdate]   = useState<Date | null>(null);
   
   // โหลดรายชื่อสถานี
   useEffect(() => {
@@ -89,7 +89,6 @@ export default function RainDashboard() {
           rain: data.rain_mm,
           rain_sum: data.rain_sum,
         });
-        setLastUpdate(new Date());
       } else {
         setLatest(null);
       }
@@ -165,29 +164,6 @@ export default function RainDashboard() {
           </Tooltip>
         </Box>
 
-        {/* Row 2: Last update */}
-        {lastUpdate && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mt: 1, pl: 0.5 }}>
-            <Box
-                sx={{
-                width: 10,
-                height: 10,
-                borderRadius: '50%',
-                bgcolor: 'success.main',
-                flexShrink: 0,
-                }}
-            />
-            <Typography
-                sx={{
-                fontFamily: 'Prompt',
-                fontSize: '1rem',
-                color: 'text.disabled',
-                }}
-            >
-              ข้อมูลอัปเดตล่าสุด: {latest?.datetime ?? 'กำลังโหลด...'}
-            </Typography>
-          </Box>
-        )}
       </Box>
       {error && <Alert severity="error" sx={{ mb: 2, fontFamily: 'Prompt' }}>{error}</Alert>}
 
@@ -234,6 +210,12 @@ export default function RainDashboard() {
                         transform: 'scale(1.03)',
                       },
                     }}
+                  />
+
+                  <StationUpdateBadge
+                    datetime={latest && String(latest.sta_code) === selectedCode ? latest.datetime : undefined}
+                    loading={loading}
+                    staleAfterHours={48}
                   />
 
                   {/* Overlay */}

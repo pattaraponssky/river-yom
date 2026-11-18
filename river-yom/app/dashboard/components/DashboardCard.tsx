@@ -3,6 +3,8 @@
 import React from 'react';
 import { Grid, Skeleton, Box, Typography } from '@mui/material';
 import { Path_URL } from '../../../lib/utility';
+import { StationReadingChange } from '@/components/Data/StationReadingChange';
+import { useYesterdayStationReading } from '@/components/hooks/useYesterdayStationReading';
 import DashboardCard from '../../../components/Dashboard/DashboardCard';
 
 interface DashboardCardsProps {
@@ -13,6 +15,7 @@ interface DashboardCardsProps {
 
 const DashboardCards: React.FC<DashboardCardsProps> = ({ data, loading = false, error = null }) => {
   // สร้าง array การ์ดจากข้อมูลจริง (dynamic)
+  const yesterday = useYesterdayStationReading('tele', 'YR.05', data?.tha_nang_ngam_datetime);
   const cardData = data
     ? [
         {
@@ -73,6 +76,8 @@ const DashboardCards: React.FC<DashboardCardsProps> = ({ data, loading = false, 
           image: `${Path_URL}/images/icons/tele_station_icon.png`,
           gradient: 'linear-gradient(135deg, #64b5f6, #1976d2)',
           link: '/tele',
+          comparison: <StationReadingChange value={data.tha_nang_ngam_water_level} previous={yesterday?.wl}
+            history={{ type: 'tele', metric: 'wl', stationCode: 'YR.05', currentTime: data.tha_nang_ngam_datetime, previousTime: yesterday?.datetime }} unit="ม." />,
         },
         
       ]

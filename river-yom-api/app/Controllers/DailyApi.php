@@ -19,6 +19,36 @@ class DailyApi extends ResourceController
 {
     protected $format = 'json';
 
+    public function stationHistory(string $type, string $staCode)
+    {
+        $sources = [
+            'tele' => ['tele_data', 'datetime, wl, discharge'],
+            'flow' => ['flow_data', 'datetime, wl, discharge'],
+            'gate' => ['gate_data', 'datetime, wl_upper, wl_lower, discharge'],
+        ];
+        if (!isset($sources[$type])) {
+            return $this->failNotFound('ไม่รองรับประเภทสถานีนี้');
+        }
+
+        $timestamp = filter_var($this->request->getGet('end'), FILTER_VALIDATE_INT);
+        if ($timestamp === false || $timestamp < 946684800 || $timestamp > 4102444800) {
+            return $this->failValidationErrors('เวลาอ้างอิงไม่ถูกต้อง');
+        }
+
+        [$table, $columns] = $sources[$type];
+        $end = (new \DateTimeImmutable('@' . $timestamp))->setTimezone(new \DateTimeZone('Asia/Bangkok'));
+        $data = db_connect()->table($table)
+            ->select($columns)
+            ->where('sta_code', $staCode)
+            ->where('datetime >=', $end->modify('-48 hours')->format('Y-m-d H:i:s'))
+            ->where('datetime <=', $end->format('Y-m-d H:i:s'))
+            ->orderBy('datetime', 'ASC')
+            ->get()
+            ->getResultArray();
+
+        return $this->respond(['data' => $data]);
+    }
+
     // 🔧 helper: query ที่ตาราง datetime ให้ตรงเวลา 07:00 ของวันที่กำหนด (ใช้สำหรับดูย้อนหลัง)
     protected function whereDateAt7($model, string $staCode, string $date, string $codeField = 'sta_code')
     {
@@ -201,6 +231,7 @@ class DailyApi extends ResourceController
         }
 
         $isLatestMode = ($date === null);
+        $exactDay = $this->request->getGet('exact_day') === '1';
 
         if ($isLatestMode) {
             $date = $this->getLatestDate(new GateModel(), $staCode, 'sta_code');
@@ -220,7 +251,9 @@ class DailyApi extends ResourceController
                 $daily = $this->getLatestRecord(new GateModel(), $gate['sta_code'], 'sta_code');
             } else {
                 $daily = $this->whereDateAt7($dataModel, $gate['sta_code'], $date, 'sta_code');
-                if (!$daily || (isset($daily['discharge']) && $daily['discharge'] == 0)) {
+                if ($exactDay && substr($daily['datetime'] ?? '', 0, 10) !== $date) {
+                    $daily = null;
+                } elseif (!$exactDay && (!$daily || (isset($daily['discharge']) && $daily['discharge'] == 0))) {
                     $yesterday = date('Y-m-d', strtotime($date . ' -1 day'));
                     $daily = $this->whereDateAt7($dataModel, $gate['sta_code'], $yesterday, 'sta_code');
                 }

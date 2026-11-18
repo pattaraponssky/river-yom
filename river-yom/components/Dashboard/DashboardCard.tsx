@@ -22,6 +22,7 @@ interface DashboardCardProps {
   unit_data: string;
   image: string;
   link: string;
+  comparison?: React.ReactNode;
   // gradient ลบออกเพราะไม่ใช้แล้ว
 }
 
@@ -34,6 +35,7 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
   unit_data,
   image,
   link,
+  comparison,
 }) => {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
@@ -53,7 +55,6 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
   const accentColor = theme.palette.primary.main;
 
   return (
-    <Link href={link} style={{ textDecoration: 'none' }}>
       <Tooltip title={`ไปยังรายละเอียด ${title}`} arrow placement="top">
         <Paper
           elevation={3}
@@ -72,6 +73,9 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
             },
           }}
         >
+          <Box component={Link} href={link} aria-label={`ไปยังรายละเอียด ${title}`}
+            sx={{ position: 'absolute', inset: 0, zIndex: 1, borderRadius: 'inherit',
+              '&:focus-visible': { outline: '2px solid', outlineColor: 'primary.main', outlineOffset: -3 } }} />
           <Box
             sx={{
               p: { xs: 1.5, sm: 3 },
@@ -185,6 +189,12 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
                 </Typography>
               </Stack>
 
+              {comparison && (
+                <Box sx={{ justifyContent: { xs: 'flex-end', sm: 'flex-start' }, position: 'relative', zIndex: 2, pointerEvents: 'none', '& button': { pointerEvents: 'auto' } }}>
+                  {comparison}
+                </Box>
+              )}
+
               {/* ข้อมูลรอง (value + unit) */}
               <Stack
                 direction="row"
@@ -219,7 +229,6 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
           </Box>
         </Paper>
       </Tooltip>
-    </Link>
   );
 };
 

@@ -20,6 +20,7 @@ import {
 } from "@mui/material";
 import ReservoirChart from "@/app/reservoir/components/ReservoirChartData";
 import ReservoirExportTable from "@/app/reservoir/components/ReservoirTableData";
+import StationUpdateBadge from "@/components/Data/StationUpdateBadge";
 import CenteredLoading from "@/components/Layout/CenteredLoading";
 import { API_URL, DEFAULT_STATION_PHOTO, Path_URL, resolvePhotoUrl } from "@/lib/utility";
 import { fontInfo, titleStyle, textStyle, HeaderCellStyle } from "@/theme/style";
@@ -36,6 +37,7 @@ const DataReservoirStation: React.FC<DataReservoirStationProps> = ({ propsSelect
 
   const [stations, setStations] = useState<any[]>([]);
   const [selectedStation, setSelectedStation] = useState<string | null>(null);
+  const [latestReading, setLatestReading] = useState<{ code: string; datetime: string | null } | null>(null);
   const [availableYears, setAvailableYears] = useState<string[]>([]);
   const [startYear, setStartYear] = useState<string>("");
   const [endYear, setEndYear] = useState<string>("");
@@ -98,6 +100,25 @@ const DataReservoirStation: React.FC<DataReservoirStationProps> = ({ propsSelect
       .then(data => setStations(data.data))
       .catch(err => console.error(err));
   }, []);
+
+  useEffect(() => {
+    if (!selectedStation) return;
+    const controller = new AbortController();
+    setLatestReading(null);
+
+    fetch(`${API_URL}/api/daily/reservoir?res_code=${encodeURIComponent(selectedStation)}`, {
+      signal: controller.signal,
+    })
+      .then(async response => response.ok ? (await response.json()).data?.datetime ?? null : null)
+      .then(datetime => {
+        if (!controller.signal.aborted) setLatestReading({ code: selectedStation, datetime });
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setLatestReading({ code: selectedStation, datetime: null });
+      });
+
+    return () => controller.abort();
+  }, [selectedStation]);
 
   // ดึงปีที่มีข้อมูลทันทีเมื่อเปลี่ยนสถานี (ให้ dropdown ปีใช้งานได้ทันที)
   useEffect(() => {
@@ -245,7 +266,7 @@ const DataReservoirStation: React.FC<DataReservoirStationProps> = ({ propsSelect
       <Grid container spacing={2}>
         {/* ซ้าย: รูปภาพของอ่างเก็บน้ำ */}
         <Grid size={{xs:12, sm:12, md:4}}>
-          <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
+          <Box sx={{ position: "relative", display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
             <img
               src={
                 station
@@ -262,6 +283,12 @@ const DataReservoirStation: React.FC<DataReservoirStationProps> = ({ propsSelect
               }}
               onError={(e) => (e.currentTarget.src = DEFAULT_STATION_PHOTO)}
             />
+            {station && (
+              <StationUpdateBadge
+                datetime={latestReading?.code === station.res_code ? latestReading?.datetime : null}
+                loading={latestReading?.code !== station.res_code}
+              />
+            )}
           </Box>
           
         </Grid>

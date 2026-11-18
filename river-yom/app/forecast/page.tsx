@@ -23,7 +23,7 @@ import { useClientDate } from '@/components/hooks/useClientDate';
 const WARNING_STATIONS = ['Y.15', 'Y.16', 'Y.4', 'Y.50', 'Y.64', 'YR.01', 'YR.02', 'YR.03', 'YR.04', 'YR.05', 'YR.06'];
 
 export default function Dashboard() {
-  const { today, archive, loading, error } = useRasData(3); // archive ย้อนหลัง 3 วัน
+  const { today, archive, loading, error } = useRasData(1);
   const clientDate = useClientDate();
 
   // ─── คำนวณค่า max / peak / trend จาก forecast วันนี้ ────

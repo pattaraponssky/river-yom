@@ -21,18 +21,21 @@ import {
 import { API_URL, Path_URL } from '../../lib/utility';
 import { textStyle } from '../../theme/style';
 import { useTheme } from '@mui/material';
+import { StationReadingChange } from '@/components/Data/StationReadingChange';
+import { thaiTodayYMD } from '@/components/hooks/useRasData';
 import SourceIcon from '@mui/icons-material/Source';
 
 interface TeleData {
   sta_name: string;
   sta_code: string;
-  river: string;
+  datetime: string | null;
   wl: number;
   rain_mm: number;
   discharge: number;
 }
 
 const TeleCard: React.FC = () => {
+  const [previous, setPrevious] = useState<Record<string, Pick<TeleData, "wl" | "discharge" | "datetime">>>({});
   const [data, setData] = useState<TeleData[]>([]);
   const [totalDcToday, setTotalDcToday] = useState<number>(0);
   const theme = useTheme();
@@ -46,12 +49,36 @@ const TeleCard: React.FC = () => {
 
   // Fetch API
   useEffect(() => {
+    const today = thaiTodayYMD();
+    const previousDay = new Date(`${today}T00:00:00Z`);
+    previousDay.setUTCDate(previousDay.getUTCDate() - 1);
+    const yesterday = previousDay.toISOString().slice(0, 10);
+    const controller = new AbortController();
+
+    fetch(`${API_URL}/api/daily/tele/${yesterday}`, { signal: controller.signal })
+      .then(res => res.ok ? res.json() : null)
+      .then(json => {
+        if (controller.signal.aborted || !Array.isArray(json?.data)) return;
+        setPrevious(Object.fromEntries(
+          json.data
+            .filter((row: TeleData) => row.datetime?.slice(0, 10) === yesterday)
+            .map((row: TeleData) => [row.sta_code, { wl: row.wl, discharge: row.discharge, datetime: row.datetime }])
+        ));
+      })
+      .catch(err => {
+        if (!controller.signal.aborted) console.error(err);
+      });
+    return () => controller.abort();
+  }, []);
+
+  useEffect(() => {
     fetch(`${API_URL}/api/daily/tele`)
       .then((res) => res.json())
       .then((json) => {
         const fetchedData = json.data.map((d: any) => ({
           sta_name: d.sta_name,
           sta_code: d.sta_code,
+          datetime: d.datetime,
           wl: parseFloat(d.wl),
           rain_mm: parseFloat(d.rain_mm),
           discharge: parseFloat(d.discharge),
@@ -74,6 +101,8 @@ const TeleCard: React.FC = () => {
       maximumFractionDigits: decimals,
     });
   };
+
+  const today = thaiTodayYMD();
 
   return (
     <Box sx={{ mx: "auto", mb: { xs: 1.5, sm: 2 } }}>
@@ -239,13 +268,21 @@ const TeleCard: React.FC = () => {
               </TableHead>
 
               <TableBody>
-                {data.map((tele, i) => {
+                {data.map(tele => {
+                  const yesterday = tele.datetime?.slice(0, 10) === today ? previous[tele.sta_code] : undefined;
+                  const history = { type: 'tele' as const, stationCode: tele.sta_code, currentTime: tele.datetime, previousTime: yesterday?.datetime };
                   return (
-                    <TableRow key={i} hover>
+                    <TableRow key={tele.sta_code} hover>
                       <TableCell sx={{...textStyle,lineHeight:{md:"2.2rem",xs:"1.2rem",whiteSpace: "nowrap",}}}>{tele.sta_name}</TableCell>
                       <TableCell sx={{...textStyle,lineHeight:{md:"2.2rem",xs:"1.2rem"}}}>{tele.sta_code}</TableCell>
-                      <TableCell sx={{...textStyle,lineHeight:{md:"2.2rem",xs:"1.2rem"}}} align="center">{numberFormat(tele.wl, 2)}</TableCell>
-                      <TableCell sx={{...textStyle,lineHeight:{md:"2.2rem",xs:"1.2rem"}}} align="center">{numberFormat(tele.discharge, 2)}</TableCell>
+                      <TableCell sx={{...textStyle,lineHeight:{md:"1.4rem",xs:"1.2rem"}}} align="center" style={{ justifyContent: 'center' }}>
+                        {numberFormat(tele.wl, 2)}
+                        <StationReadingChange value={tele.wl} previous={yesterday?.wl} history={{ ...history, metric: 'wl' }} unit="ม." compact />
+                      </TableCell>
+                      <TableCell sx={{...textStyle,lineHeight:{md:"1.4rem",xs:"1.2rem"}}} align="center" style={{ justifyContent: 'center' }}>
+                        {numberFormat(tele.discharge, 2)}
+                        <StationReadingChange value={tele.discharge} previous={yesterday?.discharge} history={{ ...history, metric: 'discharge' }} unit="ลบ.ม./วินาที" compact />
+                      </TableCell>
                       <TableCell sx={{...textStyle,lineHeight:{md:"2.2rem",xs:"1.2rem"}}} align="center">{numberFormat(tele.rain_mm, 2)}</TableCell>
                     </TableRow>
                   );
