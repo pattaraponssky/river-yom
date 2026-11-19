@@ -27,9 +27,8 @@ interface FlowData {
   discharge: number;
 }
 
-const FlowCard: React.FC = () => {
+const FlowCard: React.FC<{ flowStationsOverWl: number }> = ({ flowStationsOverWl }) => {
   const [data, setData] = useState<FlowData[]>([]);
-  const [flowStationsOverWl, setFlowStationsOverWl] = useState<number>(0);
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const primary = theme.palette.primary.main;
@@ -51,12 +50,12 @@ const FlowCard: React.FC = () => {
     ];
 
   useEffect(() => {
-    Promise.all([
-      fetch(`${API_URL}/api/daily/flow`).then((res) => res.json()),
-      fetch(`${API_URL}/api/dailySummary`).then((res) => res.json()),
-    ])
-      .then(([flowJson, summaryJson]) => {
-        // --- ข้อมูลน้ำท่า ---
+    fetch(`${API_URL}/api/daily/flow`)
+      .then(res => {
+        if (!res.ok) throw new Error(`daily/flow failed: ${res.status}`);
+        return res.json();
+      })
+      .then(flowJson => {
         const fetchedData = flowJson.data
         .filter((d: any) => allowStaCodes.includes(d.sta_code))
         .map((d: any) => ({
@@ -68,10 +67,6 @@ const FlowCard: React.FC = () => {
         }));
         setData(fetchedData);
 
-        // --- ข้อมูลจำนวนสถานีที่น้ำล้นตลิ่ง ---
-        if (summaryJson && summaryJson.flow_stations_over_wl !== undefined) {
-          setFlowStationsOverWl(parseInt(summaryJson.flow_stations_over_wl));
-        }
       })
       .catch((err) => console.error("Fetch error:", err));
   }, []);

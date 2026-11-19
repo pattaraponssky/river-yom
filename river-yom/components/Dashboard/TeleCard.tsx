@@ -34,8 +34,14 @@ interface TeleData {
   discharge: number;
 }
 
-const TeleCard: React.FC = () => {
-  const [previous, setPrevious] = useState<Record<string, Pick<TeleData, "wl" | "discharge" | "datetime">>>({});
+export interface DashboardTeleReading {
+  sta_code: string;
+  datetime: string | null;
+  wl: number | null;
+  discharge: number | null;
+}
+
+const TeleCard: React.FC<{ previous: Record<string, DashboardTeleReading> }> = ({ previous }) => {
   const [data, setData] = useState<TeleData[]>([]);
   const [totalDcToday, setTotalDcToday] = useState<number>(0);
   const theme = useTheme();
@@ -46,30 +52,6 @@ const TeleCard: React.FC = () => {
   const cardColor = isDark
     ? `linear-gradient(135deg, ${theme.palette.background.paper}88, ${theme.palette.background.paper}cc)` // โปร่งแสงเข้ม
     : "#E3F2FD"; // ใช้ gradient เดิมใน light
-
-  // Fetch API
-  useEffect(() => {
-    const today = thaiTodayYMD();
-    const previousDay = new Date(`${today}T00:00:00Z`);
-    previousDay.setUTCDate(previousDay.getUTCDate() - 1);
-    const yesterday = previousDay.toISOString().slice(0, 10);
-    const controller = new AbortController();
-
-    fetch(`${API_URL}/api/daily/tele/${yesterday}`, { signal: controller.signal })
-      .then(res => res.ok ? res.json() : null)
-      .then(json => {
-        if (controller.signal.aborted || !Array.isArray(json?.data)) return;
-        setPrevious(Object.fromEntries(
-          json.data
-            .filter((row: TeleData) => row.datetime?.slice(0, 10) === yesterday)
-            .map((row: TeleData) => [row.sta_code, { wl: row.wl, discharge: row.discharge, datetime: row.datetime }])
-        ));
-      })
-      .catch(err => {
-        if (!controller.signal.aborted) console.error(err);
-      });
-    return () => controller.abort();
-  }, []);
 
   useEffect(() => {
     fetch(`${API_URL}/api/daily/tele`)

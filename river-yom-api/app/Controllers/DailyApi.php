@@ -19,6 +19,37 @@ class DailyApi extends ResourceController
 {
     protected $format = 'json';
 
+    public function mapStationReadings()
+    {
+        $sources = [
+            'rain' => ['rain_data', 'reading.rain_mm'],
+            'flow' => ['flow_data', 'reading.wl, reading.discharge'],
+            'gate' => ['gate_data', 'reading.wl_upper, reading.wl_lower, reading.discharge'],
+            'tele' => ['tele_data', 'reading.wl, reading.discharge, reading.rain_mm'],
+        ];
+        $db = db_connect();
+        $now = new \DateTimeImmutable('now', new \DateTimeZone('Asia/Bangkok'));
+        $start = $now->modify('-14 days')->setTime(0, 0)->format('Y-m-d H:i:s');
+        $data = [];
+
+        foreach ($sources as $type => [$table, $columns]) {
+            $latest = $db->table($table)
+                ->select('sta_code, MAX(datetime) AS datetime')
+                ->where('datetime >=', $start)
+                ->where('datetime <=', $now->format('Y-m-d H:i:s'))
+                ->groupBy('sta_code')
+                ->getCompiledSelect();
+
+            $data[$type] = $db->table($table . ' reading')
+                ->select('reading.sta_code, reading.datetime, ' . $columns)
+                ->join('(' . $latest . ') latest', 'latest.sta_code = reading.sta_code AND latest.datetime = reading.datetime', 'inner', false)
+                ->get()
+                ->getResultArray();
+        }
+
+        return $this->respond(['data' => $data]);
+    }
+
     public function stationHistory(string $type, string $staCode)
     {
         $sources = [

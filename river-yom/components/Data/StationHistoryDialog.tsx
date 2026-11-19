@@ -10,7 +10,8 @@ const Chart = dynamic(() => import('react-apexcharts'), {
   ssr: false,
   loading: () => <Box sx={{ textAlign: 'center', py: 5 }}><CircularProgress size={24} /></Box>,
 });
-const WINDOW_MS = 48 * 60 * 60 * 1000;
+const HOUR_MS = 60 * 60 * 1000;
+const WINDOW_MS = 48 * HOUR_MS;
 const timeZone = 'Asia/Bangkok';
 const dateTime = new Intl.DateTimeFormat('th-TH', {
   timeZone, day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
@@ -62,12 +63,18 @@ export default function StationHistoryDialog({ history, current, previous, onClo
         if (!response.ok) throw new Error('history');
         const { data } = await response.json();
         if (!Array.isArray(data)) throw new Error('history');
-        return data.flatMap(row => {
+        const hourly = new Map<number, { x: number; y: number }>();
+        for (const row of data) {
           const x = stationTimestamp(row.datetime);
           const value = row[metric];
           const y = Number(value);
-          return x >= start && x <= end && value != null && value !== '' && Number.isFinite(y) ? [{ x, y }] : [];
-        });
+          if (!(x >= start && x <= end) || value == null || value === '' || !Number.isFinite(y)) continue;
+
+          const hour = Math.floor(x / HOUR_MS);
+          const sample = hourly.get(hour);
+          if (!sample || x < sample.x) hourly.set(hour, { x, y });
+        }
+        return Array.from(hourly.values());
       })
       .then(points => { if (!controller.signal.aborted) setRows(points); })
       .catch(() => { if (!controller.signal.aborted) { setError(true); setRows([]); } });
@@ -99,7 +106,7 @@ export default function StationHistoryDialog({ history, current, previous, onClo
       <DialogTitle id="station-history-title">{label}ย้อนหลัง 48 ชั่วโมง · {stationCode}</DialogTitle>
       <DialogContent dividers>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-          {dateTime.format(start)} – {dateTime.format(end)} น. ตามเวลาไทย
+          ข้อมูลรายชั่วโมง · {dateTime.format(start)} – {dateTime.format(end)} น. ตามเวลาไทย
         </Typography>
         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 1 }}>
           {references.map(point => (

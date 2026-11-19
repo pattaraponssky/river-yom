@@ -1,114 +1,68 @@
 import { useEffect, useState } from 'react';
 import { API_URL } from '@/lib/utility';
-import { StationInfo, RainDataItem, FlowDataItem, GateDataItem, TeleDataItem } from '../hydro';
+import type { StationInfo, RainDataItem, FlowDataItem, GateDataItem, TeleDataItem } from '../hydro';
+
+interface MapReadings {
+  flow: FlowDataItem[];
+  rain: RainDataItem[];
+  gate: GateDataItem[];
+  tele: TeleDataItem[];
+}
+
+const emptyReadings: MapReadings = { flow: [], rain: [], gate: [], tele: [] };
+const emptyInfo: Record<keyof MapReadings, StationInfo[]> = { flow: [], rain: [], gate: [], tele: [] };
 
 export const useHydroData = () => {
-  const [flowInfo, setFlowInfo] = useState<StationInfo[]>([]);
-  const [gateInfo, setGateInfo] = useState<StationInfo[]>([]);
-  const [rainInfo, setRainInfo] = useState<StationInfo[]>([]);
-  const [teleInfo, setTeleInfo] = useState<StationInfo[]>([]);
-
-  const [latestRainData, setLatestRainData] = useState<RainDataItem[]>([]);
-  const [latestFlowData, setLatestFlowData] = useState<FlowDataItem[]>([]);
-  const [latestGateData, setLatestGateData] = useState<GateDataItem[]>([]);
-  const [latestTeleData, setLatestTeleData] = useState<TeleDataItem[]>([]);
-
-  const [rainData14d, setRainData14d] = useState<RainDataItem[]>([]);
-  const [flowData14d, setFlowData14d] = useState<FlowDataItem[]>([]);
-  const [gateData14d, setGateData14d] = useState<GateDataItem[]>([]);
-  const [teleData14d, setTeleData14d] = useState<TeleDataItem[]>([]);
+  const [info, setInfo] = useState(emptyInfo);
+  const [readings, setReadings] = useState(emptyReadings);
 
   useEffect(() => {
-    const fetchAll = async () => {
-      const [info, data14d] = await Promise.all([
-        Promise.allSettled([
-          fetch(`${API_URL}/api/flow_info`).then(r => r.json()),
-          fetch(`${API_URL}/api/rain_info`).then(r => r.json()),
-          fetch(`${API_URL}/api/gate_info`).then(r => r.json()),
-          fetch(`${API_URL}/api/tele_info`).then(r => r.json()),
-        ]),
-        Promise.allSettled([
-          fetch(`${API_URL}/api/rain_data_last_14_days`).then(r => r.json()),
-          fetch(`${API_URL}/api/flow_data_last_14_days`).then(r => r.json()),
-          fetch(`${API_URL}/api/gate_data_last_14_days`).then(r => r.json()),
-          fetch(`${API_URL}/api/tele_data_last_14_days`).then(r => r.json()),
-        ]),
-      ]);
+    const controller = new AbortController();
 
-      // info
-      setFlowInfo(info[0].status === 'fulfilled' ? info[0].value.data : []);
-      setRainInfo(info[1].status === 'fulfilled' ? info[1].value.data : []);
-      setGateInfo(info[2].status === 'fulfilled' ? info[2].value.data : []);
-      setTeleInfo(info[3].status === 'fulfilled' ? info[3].value.data : []);
+    async function load(path: string) {
+      const response = await fetch(`${API_URL}/api/${path}`, { signal: controller.signal });
+      if (!response.ok) throw new Error(`${path}: ${response.status}`);
+      return (await response.json()).data;
+    }
 
-      // 14 days + latest
-      if (data14d[0].status === 'fulfilled' && data14d[0].value.status === 'success') {
-        const data = data14d[0].value.data;
-        setRainData14d(data);
-        setLatestRainData(getLatest(data));
-      }
-      if (data14d[1].status === 'fulfilled' && data14d[1].value.status === 'success') {
-        const data = data14d[1].value.data;
-        setFlowData14d(data);
-        setLatestFlowData(getLatest(data));
-      }
-      if (data14d[2].status === 'fulfilled' && data14d[2].value.status === 'success') {
-        const data = data14d[2].value.data;
-        setGateData14d(data);
-        setLatestGateData(getLatest(data));
-      }
-      if (data14d[3].status === 'fulfilled' && data14d[3].value.status === 'success') {
-        const data = data14d[3].value.data;
-        setTeleData14d(data);
-        setLatestTeleData(getLatest(data));
-        console.log(`teleData14d โหลดแล้ว (${data.length} รายการ)`, data);
-      }
-    };
+    const types = ['flow', 'rain', 'gate', 'tele'] as const;
+    for (const type of types) {
+      load(`${type}_info`)
+        .then(rows => {
+          if (!controller.signal.aborted && Array.isArray(rows)) {
+            setInfo(current => ({ ...current, [type]: rows }));
+          }
+        })
+        .catch(error => { if (!controller.signal.aborted) console.error(error); });
+    }
 
-    fetchAll();
+    async function loadReadings() {
+      try {
+        const data = await load('map-station-readings');
+        if (!types.every(type => Array.isArray(data?.[type]))) {
+          throw new Error('Invalid map-station-readings response');
+        }
+        if (!controller.signal.aborted) setReadings(data);
+      } catch {
+        if (controller.signal.aborted) return;
+
+        // Older API deployments can still supply readings without loading chart history.
+        await Promise.allSettled(types.map(async type => {
+          const rows = await load(`daily/${type}`);
+          if (!controller.signal.aborted && Array.isArray(rows)) {
+            setReadings(current => ({ ...current, [type]: rows }));
+          }
+        }));
+      }
+    }
+
+    void loadReadings();
+    return () => controller.abort();
   }, []);
 
-    useEffect(() => {
-    if (rainData14d.length > 0) {
-        (window as any).rainDataLast14d = rainData14d;
-        console.log(`window.rainDataLast14d อัปเดตแล้ว (${rainData14d.length} รายการ)`);
-    }
-    }, [rainData14d]);
-
-    useEffect(() => {
-    if (flowData14d.length > 0) {
-        (window as any).flowDataLast14d = flowData14d;
-        console.log(`window.flowDataLast14d อัปเดตแล้ว (${flowData14d.length} รายการ)`);
-    }
-    }, [flowData14d]);
-
-    useEffect(() => {
-    if (gateData14d.length > 0) {
-        (window as any).gateDataLast14d = gateData14d;
-        console.log(`window.gateDataLast14d อัปเดตแล้ว (${gateData14d.length} รายการ)`);
-    }
-    }, [gateData14d]);
-
-    useEffect(() => {
-    if (teleData14d.length > 0) {
-        (window as any).teleDataLast14d = teleData14d;
-        console.log(`window.teleDataLast14d อัปเดตแล้ว (${teleData14d.length} รายการ)`);
-    }
-    }, [teleData14d]);
-
-  const getLatest = <T extends { sta_code: string; datetime: string }>(arr: T[]) => {
-    const map = new Map<string, T>();
-    arr.forEach(item => {
-      const exist = map.get(item.sta_code);
-      if (!exist || new Date(item.datetime) > new Date(exist.datetime)) map.set(item.sta_code, item);
-    });
-    return Array.from(map.values());
-  };
-
   return {
-    flowInfo, gateInfo, rainInfo, teleInfo,
-    latestRainData, latestFlowData, latestGateData, latestTeleData,
-    teleData14d, rainData14d, flowData14d, gateData14d,
-
+    flowInfo: info.flow, gateInfo: info.gate, rainInfo: info.rain, teleInfo: info.tele,
+    latestRainData: readings.rain, latestFlowData: readings.flow,
+    latestGateData: readings.gate, latestTeleData: readings.tele,
   };
 };

@@ -1,6 +1,6 @@
+import { formatReadingTime, formatReadingValue } from '../utils/readingUtils';
 import { useEffect, useRef } from 'react';
 import { Path_URL } from '@/lib/utility';
-import { formatThaiDay } from '@/lib/utility';
 import { StationInfo, FlowDataItem } from '../hydro';
 
 
@@ -13,9 +13,8 @@ const addFlowMarkers = (
 ) => {
   if (!map || !flowInfo?.length) return;
 
-  const todayStr = new Date().toISOString().slice(0, 10);
   const latestMap = new Map<string, FlowDataItem>(
-    latestFlowData.map((item) => [item.sta_code, item])
+    latestFlowData.map((item) => [String(item.sta_code), item])
   );
 
   flowInfo.forEach((station) => {
@@ -24,24 +23,11 @@ const addFlowMarkers = (
 
     if (isNaN(position.lat) || isNaN(position.lon)) return;
 
-    const latest = latestMap.get(sta_code);
-    let isToday = false;
-    if (latest?.datetime) {
-      const parsedDate = new Date(latest.datetime);
-      if (!isNaN(parsedDate.getTime())) {
-        isToday = parsedDate.toISOString().slice(0, 10) === todayStr;
-      }
-    }
+    const latest = latestMap.get(String(sta_code));
+    const discharge = formatReadingValue(latest?.discharge);
+    const wl = formatReadingValue(latest?.wl);
 
-    const discharge = isToday && latest?.discharge != null && parseFloat(latest.discharge) !== 0
-      ? parseFloat(latest.discharge).toFixed(2)
-      : '-';
-
-    const wl = isToday && latest?.wl != null && parseFloat(latest.wl) !== 0
-      ? parseFloat(latest.wl).toFixed(2)
-      : '-';
-
-    const safeStaCode = sta_code.replace(/\./g, '_');
+    const safeStaCode = String(sta_code).replace(/\./g, '_');
 
     const marker = new window.longdo.Marker(position, {
       title: `<img src="${Path_URL}/images/icons/flow_station_icon.png" style="width:25px;height:25px;vertical-align:middle;margin-right:5px" /> 
@@ -49,7 +35,7 @@ const addFlowMarkers = (
 
       detail: `
         <div style="font-size:1rem;">
-          <b>ข้อมูลประจำวันที่ ${formatThaiDay(todayStr)}</b>
+          <b>${formatReadingTime(latest?.datetime)}</b>
         </div>
         <div style="font-size:0.9rem;line-height:1.4rem;">
           <div><b>รหัสสถานี:</b> <span style="color:#4caf50;font-weight:bold;">${sta_code || '-'}</span></div>

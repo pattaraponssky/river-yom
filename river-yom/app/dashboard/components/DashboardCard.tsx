@@ -4,18 +4,20 @@ import React from 'react';
 import { Grid, Skeleton, Box, Typography } from '@mui/material';
 import { Path_URL } from '../../../lib/utility';
 import { StationReadingChange } from '@/components/Data/StationReadingChange';
-import { useYesterdayStationReading } from '@/components/hooks/useYesterdayStationReading';
+import { thaiTodayYMD } from '@/components/hooks/useRasData';
+import type { DashboardTeleReading } from '@/components/Dashboard/TeleCard';
 import DashboardCard from '../../../components/Dashboard/DashboardCard';
 
 interface DashboardCardsProps {
   data: any;
+  yesterdayYR05?: DashboardTeleReading;
   loading?: boolean;   // เพิ่ม prop นี้เพื่อบอกว่ากำลังโหลด
   error?: string | null; // ถ้ามี error จาก fetch
 }
 
-const DashboardCards: React.FC<DashboardCardsProps> = ({ data, loading = false, error = null }) => {
+const DashboardCards: React.FC<DashboardCardsProps> = ({ data, yesterdayYR05, loading = false, error = null }) => {
   // สร้าง array การ์ดจากข้อมูลจริง (dynamic)
-  const yesterday = useYesterdayStationReading('tele', 'YR.05', data?.tha_nang_ngam_datetime);
+  const yesterday = data?.tha_nang_ngam_datetime?.slice(0, 10) === thaiTodayYMD() ? yesterdayYR05 : undefined;
   const cardData = data
     ? [
         {

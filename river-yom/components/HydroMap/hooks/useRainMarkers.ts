@@ -1,6 +1,6 @@
+import { formatReadingTime, formatReadingValue } from '../utils/readingUtils';
 import { useEffect, useRef } from 'react';
 import { Path_URL } from '@/lib/utility';
-import { formatThaiDay } from '@/lib/utility';
 import { StationInfo, RainDataItem } from '../hydro';
 
 
@@ -12,11 +12,8 @@ const addRainMarkers = (
 ) => {
   if (!map || !rainInfo?.length) return;
 
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1); // ลบ 1 วัน
-  const yesterdayStr = yesterday.toISOString().slice(0, 10);
   const latestMap = new Map<string, RainDataItem>(
-    latestRainData.map((item) => [item.sta_code, item])
+    latestRainData.map((item) => [String(item.sta_code), item])
   );
 
   rainInfo.forEach((station) => {
@@ -25,25 +22,13 @@ const addRainMarkers = (
 
     if (isNaN(position.lat) || isNaN(position.lon)) return;
 
-    const latest = latestMap.get(sta_code);
-    let isToday = false;
-    if (latest?.datetime) {
-      const parsedDate = new Date(latest.datetime);
-      if (!isNaN(parsedDate.getTime())) {
-        isToday = parsedDate.toISOString().slice(0, 10) === yesterdayStr;
-      }
-    }
-
-    const rainValue = latest?.rain_mm != null ? parseFloat(latest.rain_mm) : NaN;
-    const rain_mm = 
-      isToday && !isNaN(rainValue)
-        ? rainValue.toFixed(2)          // แสดง 0.00 ถ้าเป็น 0, หรือค่าอื่นตามจริง
-        : '-';
+    const latest = latestMap.get(String(sta_code));
+    const rain_mm = formatReadingValue(latest?.rain_mm);
 
     // เปลี่ยนไอคอนตามว่ามีฝนหรือไม่ (ตัวอย่าง logic เดิม)
     const iconFile = parseFloat(rain_mm) > 0 ? 'rain_station_icon.png' : 'sun_station_icon.png';
 
-    const safeStaCode = sta_code.replace(/\./g, '_');
+    const safeStaCode = String(sta_code).replace(/\./g, '_');
 
     const marker = new window.longdo.Marker(position, {
       title: `<img src="${Path_URL}/images/icons/rain_station_icon.png" style="width:25px;height:25px;vertical-align:middle;margin-right:5px" /> 
@@ -51,7 +36,7 @@ const addRainMarkers = (
 
       detail: `
         <div style="font-size:1rem;">
-          <b>ข้อมูลประจำวันที่ ${formatThaiDay(yesterdayStr)}</b>
+          <b>${formatReadingTime(latest?.datetime)}</b>
         </div>
         <div style="font-size:0.9rem;line-height:1.4rem;">
           <div><b>รหัสสถานี:</b> <span style="color:#4caf50;font-weight:bold;">${sta_code || '-'}</span></div>

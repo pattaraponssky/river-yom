@@ -13,6 +13,7 @@ $routes->get('api/filterRas', 'API::getFilteredRasOutput');
 $routes->get('api/dailySummary', 'API::dailySummary');
 
 ///Daily Api///
+$routes->get('api/map-station-readings', 'DailyApi::mapStationReadings');
 $routes->get('api/station-history/(:segment)/(:segment)', 'DailyApi::stationHistory/$1/$2');
 
 $routes->group('api/daily', function($routes) {

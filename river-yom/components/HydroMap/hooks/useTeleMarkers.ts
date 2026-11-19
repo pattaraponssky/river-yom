@@ -1,6 +1,6 @@
+import { formatReadingTime, formatReadingValue, readingNumber } from '../utils/readingUtils';
 import { useEffect, useRef } from 'react';
 import { Path_URL } from '@/lib/utility';
-import { formatThaiDay } from '@/lib/utility';
 import { StationInfo, TeleDataItem } from '../hydro';
 import { TELE_WARN_LEVELS, getWarnLevel, formatBankRow } from '@/lib/warnLevels';
 
@@ -13,9 +13,8 @@ const addTeleMarkers = (
 ) => {
   if (!map || !teleInfo?.length) return;
 
-  const todayStr = new Date().toISOString().slice(0, 10);
   const latestMap = new Map<string, TeleDataItem>(
-    latestTeleData.map((item) => [item.sta_code, item])
+    latestTeleData.map((item) => [String(item.sta_code), item])
   );
 
   teleInfo.forEach((station) => {
@@ -24,33 +23,16 @@ const addTeleMarkers = (
 
     if (isNaN(position.lat) || isNaN(position.lon)) return;
 
-    const latest = latestMap.get(sta_code);
-    let isToday = false;
-    if (latest?.datetime) {
-      const parsedDate = new Date(latest.datetime);
-      if (!isNaN(parsedDate.getTime())) { // ✅ เช็คว่าแปลงได้จริงก่อน (ไม่ใช่ Invalid Date)
-        isToday = parsedDate.toISOString().slice(0, 10) === todayStr;
-      }
-    }
-
-
-    const discharge = isToday && latest?.discharge != null && parseFloat(latest.discharge) !== 0
-      ? parseFloat(latest.discharge).toFixed(2)
-      : '-';
-
-    const wl = isToday && latest?.wl != null && parseFloat(latest.wl) !== 0
-      ? parseFloat(latest.wl).toFixed(2)
-      : '-';
-
-    const rain_mm = isToday && latest?.rain_mm != null && parseFloat(latest.rain_mm) !== 0
-      ? parseFloat(latest.rain_mm).toFixed(2)
-      : '-';
+    const latest = latestMap.get(String(sta_code));
+    const discharge = formatReadingValue(latest?.discharge);
+    const wl = formatReadingValue(latest?.wl);
+    const rain_mm = formatReadingValue(latest?.rain_mm);
 
     // ระดับตลิ่ง + เทียบระดับน้ำกับตลิ่ง (แถวเดียว)
-    const wlNum = wl !== '-' ? parseFloat(wl) : null;
+    const wlNum = readingNumber(latest?.wl);
     const bankRow = formatBankRow(TELE_WARN_LEVELS, sta_code, wlNum);
 
-    const safeStaCode = sta_code.replace(/\./g, '_');
+    const safeStaCode = String(sta_code).replace(/\./g, '_');
 
     const getWaterLevelIcon = (wl: number | null) => {
       if (wl == null || isNaN(wl)) {
@@ -78,12 +60,7 @@ const addTeleMarkers = (
       return `${Path_URL}/images/icons/tele_station_icon_green.png`;
     };
 
-    const wlValue =
-      isToday && latest?.wl != null
-        ? parseFloat(latest.wl)
-        : null;
-
-    const iconUrl = getWaterLevelIcon(wlValue);
+    const iconUrl = getWaterLevelIcon(wlNum);
 
     const marker = new window.longdo.Marker(position, {
       title: `<img src="${iconUrl}" style="width:25px;height:25px;vertical-align:middle;margin-right:5px" /> 
@@ -91,7 +68,7 @@ const addTeleMarkers = (
 
       detail: `
         <div style="font-size:1rem;">
-          <b>ข้อมูลประจำวันที่ ${formatThaiDay(todayStr)}</b>
+          <b>${formatReadingTime(latest?.datetime)}</b>
         </div>
         <div style="font-size:0.9rem;line-height:1.4rem;">
           <div><b>รหัสสถานี:</b> <span style="color:#4caf50;font-weight:bold;">${sta_code || '-'}</span></div>
