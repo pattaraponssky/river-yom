@@ -9,6 +9,7 @@ import {
   IconButton, Tooltip, Stack, SelectChangeEvent,
 } from '@mui/material';
 import StationUpdateBadge from '@/components/Data/StationUpdateBadge';
+import StationPageSkeleton from '@/components/Data/StationPageSkeleton';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { API_URL, DEFAULT_STATION_PHOTO, Path_URL, resolvePhotoUrl } from '@/lib/utility';
 import { useTheme, alpha } from '@mui/material';
@@ -53,18 +54,23 @@ export default function GateDashboard() {
   const [selectedCode, setSelectedCode] = useState<string>('tng');
   const [latest,       setLatest]       = useState<GateLatest | null>(null);
   const [loading,      setLoading]      = useState(false);
+  const [infoError, setInfoError] = useState(false);
   const [infoLoading,  setInfoLoading]  = useState(true);
   const [error,        setError]        = useState<string | null>(null);
   
   // โหลดรายชื่อสถานี
   useEffect(() => {
     fetch(`${API_URL}/api/gate_info`)
-      .then(r => r.json())
+      .then(r => {
+        if (!r.ok) throw new Error(`gate_info failed: ${r.status}`);
+        return r.json();
+      })
       .then(json => {
         const list: GateInfo[] = json.data || [];
         setGateInfoList(list);
         // if (list.length > 0) setSelectedCode(list[0].sta_code);
       })
+      .catch(() => setInfoError(true))
       .finally(() => setInfoLoading(false));
   }, []);
 
@@ -104,13 +110,7 @@ export default function GateDashboard() {
   const gateConfig = selectedCode ? GATE_STATION_CONFIGS[selectedCode] : null;
   const cameras = selectedCode ? (STATION_CAMERAS[selectedCode] ?? []) : [];
 
-  if (infoLoading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
+  if (infoLoading) return <StationPageSkeleton metrics={0} />;
 
   return (
     <Box>
@@ -148,6 +148,7 @@ export default function GateDashboard() {
         </Box>
 
       </Box>
+      {infoError && <Alert severity="warning" sx={{ mb: 2 }}>โหลดรายชื่อสถานีไม่สำเร็จ</Alert>}
       {error && <Alert severity="error" sx={{ mb: 2, fontFamily: 'Prompt' }}>{error}</Alert>}
 
       {selectedInfo && (
@@ -353,7 +354,7 @@ export default function GateDashboard() {
             <Stack spacing={2}>
               {/* การเปิดบาน */}
                 {gateConfig ? (
-                        <GateOpeningDisplay config={gateConfig} />
+                        <GateOpeningDisplay key={gateConfig.sta_code} config={gateConfig} />
                 ) : (
                   <>
                      <Paper sx={{ p: 2.5, borderRadius: 2 }}>

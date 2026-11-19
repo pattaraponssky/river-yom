@@ -3,10 +3,11 @@
 
 import { Box } from '@mui/material';
 import dynamic from 'next/dynamic';
+import StationPageSkeleton from '@/components/Data/StationPageSkeleton';
 
 const RainStation = dynamic(
   () => import('./RainStation'),
-  { ssr: false } 
+  { ssr: false, loading: () => <StationPageSkeleton metrics={2} /> }
 );
 
 export default function RainPage() {

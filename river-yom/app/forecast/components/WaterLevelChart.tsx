@@ -10,14 +10,14 @@ import {
   Button,
 } from "@mui/material";
 import { ArrowBack, ArrowForward } from "@mui/icons-material";
-import CenteredLoading from "@/components/Layout/CenteredLoading";
+import { ForecastPlotSkeleton, ForecastSkeleton } from './ForecastSkeleton';
 import { Path_URL, formatThaiDay } from "@/lib/utility";
 import { titleStyle } from "@/theme/style";
 import dynamic from "next/dynamic";
 import { FLOW_WARN_LEVELS, TELE_WARN_LEVELS, getWarnLevel } from '../../../lib/warnLevels';
 import { STATION_MAPPING, thaiTodayYMD } from '@/components/hooks/useRasData';
 
-const ApexChart = dynamic(() => import('react-apexcharts'), { ssr: false });
+const ApexChart = dynamic(() => import('react-apexcharts'), { ssr: false, loading: () => <ForecastPlotSkeleton /> });
 
 interface WaterLevelData {
   time: string;
@@ -376,7 +376,7 @@ const WaterLevelChart: React.FC<Props> = ({ data, chartHeight = 550 }) => {
     },
   ];
 
-  if (loading) return <CenteredLoading />;
+  if (loading) return <ForecastSkeleton section="station" />;
 
   return (
     <Box>

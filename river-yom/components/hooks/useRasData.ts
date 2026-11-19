@@ -22,6 +22,9 @@ export interface RasData {
   today:    ForecastSnapshot | null;
   archive:  ForecastSnapshot[];        // เรียงจากเก่า → ใหม่
   loading:  boolean;
+  archiveLoading: boolean;
+  profile: WaterLevelPoint[] | null;
+  profileError: boolean;
   error:    string | null;
 }
 
@@ -88,7 +91,7 @@ function parseDateString(raw: string | undefined): string | null {
 }
 
 /** parse CSV text → WaterLevelPoint[] */
-function parseCsv(csvText: string): WaterLevelPoint[] {
+function parseCsv(csvText: string, scope: "stations" | "full" | "profile"): WaterLevelPoint[] {
   const result = Papa.parse<Record<string, string>>(csvText, {
     header:          true,
     skipEmptyLines:  true,
@@ -98,86 +101,108 @@ function parseCsv(csvText: string): WaterLevelPoint[] {
 
   return result.data
     .map(row => {
-      const time         = parseDateString(row['Date']);
       const crossSection = Number(row['Cross Section']?.trim());
       const elevation    = parseFloat(row['Water_Elevation']?.trim());
       const river        = (row['River'] ?? '').trim();
 
-      // ทิ้งเฉพาะ row ที่ข้อมูลพื้นฐานไม่ครบ
-      if (!time || isNaN(crossSection) || isNaN(elevation)) return null;
-
-      // station เป็น '' ถ้า crossSection ไม่อยู่ใน mapping
+      if (!Number.isFinite(crossSection) || !Number.isFinite(elevation)) return null;
       const station = CROSS_TO_STATION.get(crossSection) ?? '';
+      if (scope === 'stations' && !station) return null;
+      if (scope === 'profile' && river !== 'YOM') return null;
 
+      const time = parseDateString(row['Date']);
+      if (!time) return null;
       return { time, station, elevation, crossSection, river };
     })
     .filter((p): p is WaterLevelPoint => p !== null);
 }
 
-/** ดึงและ parse CSV จาก URL เดียว (คืน null ถ้า fetch ล้มเหลว) */
-async function fetchCsv(url: string): Promise<WaterLevelPoint[] | null> {
+async function fetchCsv(url: string, signal: AbortSignal, scope: 'stations' | 'full' | 'profile') {
   try {
-    const res = await fetch(url, { cache: 'no-store' });
+    const res = await fetch(url, { cache: 'no-store', signal });
     if (!res.ok) return null;
-    return parseCsv(await res.text());
+    const points = parseCsv(await res.text(), scope);
+    return points.length ? points : null;
   } catch {
     return null;
   }
 }
 
-// ─── Hook ─────────────────────────────────────────────────────
+const rasPath = `${Path_URL}/ras-output`;
+const currentCsv = `${rasPath}/output_ras.csv`;
+const stationCsv = (date: string) => `${rasPath}/archive/output_ras_stations_${date}.csv`;
 
-/**
- * โหลด forecast CSV วันนี้ + archive ย้อนหลัง `archiveDays` วัน
- *
- * โครงสร้างไฟล์ที่คาดหวัง:
- *   /ras-output/output_ras.csv
- *   /ras-output/archive/output_ras_YYYY-MM-DD.csv
- */
-export function useRasData(archiveDays = 3): RasData {
-  const [today,   setToday]   = useState<ForecastSnapshot | null>(null);
+export function useRasData(archiveDays = 3, loadProfile = false): RasData {
+  const [today, setToday] = useState<ForecastSnapshot | null>(null);
   const [archive, setArchive] = useState<ForecastSnapshot[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error,   setError]   = useState<string | null>(null);
+  const [archiveLoading, setArchiveLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [profile, setProfile] = useState<WaterLevelPoint[] | null>(null);
+  const [profileError, setProfileError] = useState(false);
 
   useEffect(() => {
-    let cancelled = false;
+    const controller = new AbortController();
+    const { signal } = controller;
+    const date = thaiTodayYMD();
 
-    const load = async () => {
-      setLoading(true);
-      setError(null);
+    setLoading(true);
+    setArchiveLoading(true);
+    setError(null);
+    setToday(null);
+    setArchive([]);
+    setProfile(null);
+    setProfileError(false);
 
-      try {
-        const todayStr = thaiTodayYMD();
-
-        // โหลดทุกไฟล์พร้อมกัน
-        const [todayPoints, ...archiveResults] = await Promise.all([
-          fetchCsv(`${Path_URL}/ras-output/output_ras.csv`),
-          ...pastDates(archiveDays).map(date =>
-            fetchCsv(`${Path_URL}/ras-output/archive/output_ras_${date}.csv`)
-              .then(points => ({ date, points }))
-          ),
-        ]);
-
-        if (cancelled) return;
-        setToday(todayPoints ? { date: todayStr, points: todayPoints } : null);
-
-        setArchive(
-          (archiveResults as { date: string; points: WaterLevelPoint[] | null }[])
-            .filter(r => r.points !== null)
-            .map(r => ({ date: r.date, points: r.points! }))
-        );
-
-      } catch (err: any) {
-        if (!cancelled) setError(err.message ?? 'โหลดข้อมูลล้มเหลว');
-      } finally {
-        if (!cancelled) setLoading(false);
+    async function loadToday() {
+      let points = await fetchCsv(stationCsv(date), signal, 'stations');
+      if (signal.aborted) return;
+      if (!points) {
+        const full = await fetchCsv(currentCsv, signal, 'full');
+        if (signal.aborted) return;
+        points = full?.filter(point => point.station) ?? null;
+        setProfile(full?.filter(point => point.river === 'YOM') ?? []);
+        setProfileError(!full);
       }
-    };
 
-    load();
-    return () => { cancelled = true; };
+      setToday(points?.length ? { date, points } : null);
+      setError(points?.length ? null : 'ไม่พบข้อมูลพยากรณ์ของสถานีวันนี้');
+      setLoading(false);
+    }
+
+    const todayRequest = loadToday();
+
+    async function loadArchive() {
+      const snapshots = await Promise.all(pastDates(archiveDays).map(async date => {
+        let points = await fetchCsv(stationCsv(date), signal, 'stations');
+        if (!points && !signal.aborted) await todayRequest;
+        if (!points && !signal.aborted) {
+          points = await fetchCsv(`${rasPath}/archive/output_ras_${date}.csv`, signal, 'stations');
+        }
+        return points ? { date, points } : null;
+      }));
+      if (!signal.aborted) {
+        setArchive(snapshots.filter((snapshot): snapshot is ForecastSnapshot => snapshot !== null));
+        setArchiveLoading(false);
+      }
+    }
+
+    void loadArchive();
+    return () => controller.abort();
   }, [archiveDays]);
 
-  return { today, archive, loading, error };
+  const needsProfile = loadProfile && !loading && profile === null;
+  useEffect(() => {
+    if (!needsProfile) return;
+
+    const controller = new AbortController();
+    fetchCsv(currentCsv, controller.signal, 'profile').then(points => {
+      if (controller.signal.aborted) return;
+      setProfile(points ?? []);
+      setProfileError(!points);
+    });
+    return () => controller.abort();
+  }, [needsProfile]);
+
+  return { today, archive, loading, archiveLoading, error, profile, profileError };
 }

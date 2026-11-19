@@ -8,6 +8,7 @@ import {
   IconButton, Tooltip, Stack, SelectChangeEvent,
 } from '@mui/material';
 import StationUpdateBadge from '@/components/Data/StationUpdateBadge';
+import StationPageSkeleton from '@/components/Data/StationPageSkeleton';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { API_URL, DEFAULT_STATION_PHOTO, Path_URL, resolvePhotoUrl } from '@/lib/utility';
 import CameraViewer from '@/components/Data/CameraViewer';
@@ -48,18 +49,23 @@ export default function FlowDashboard() {
   const [selectedCode, setSelectedCode] = useState<string>('Y.15');
   const [latest,       setLatest]       = useState<FlowLatest | null>(null);
   const [loading,      setLoading]      = useState(false);
+  const [infoError, setInfoError] = useState(false);
   const [infoLoading,  setInfoLoading]  = useState(true);
   const [error,        setError]        = useState<string | null>(null);
   
   // โหลดรายชื่อสถานี
   useEffect(() => {
     fetch(`${API_URL}/api/flow_info`)
-      .then(r => r.json())
+      .then(r => {
+        if (!r.ok) throw new Error(`flow_info failed: ${r.status}`);
+        return r.json();
+      })
       .then(json => {
         const list: FlowInfo[] = json.data || [];
         setFlowInfoList(list);
         // if (list.length > 0) setSelectedCode(list[0].sta_code);
       })
+      .catch(() => setInfoError(true))
       .finally(() => setInfoLoading(false));
   }, []);
 
@@ -116,13 +122,7 @@ export default function FlowDashboard() {
   const selectedInfo = flowInfoList.find(g => g.sta_code === selectedCode) ?? null;
   const cameras = selectedCode ? (STATION_CAMERAS[selectedCode] ?? []) : [];
 
-  if (infoLoading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
+  if (infoLoading) return <StationPageSkeleton metrics={3} />;
 
   return (
     <Box>
@@ -160,6 +160,7 @@ export default function FlowDashboard() {
         </Box>
 
       </Box>
+      {infoError && <Alert severity="warning" sx={{ mb: 2 }}>โหลดรายชื่อสถานีไม่สำเร็จ</Alert>}
       {error && <Alert severity="error" sx={{ mb: 2, fontFamily: 'Prompt' }}>{error}</Alert>}
 
       {selectedInfo && (
@@ -362,12 +363,12 @@ export default function FlowDashboard() {
           <Grid size={{ xs: 12, md: 8 }} >
             <Stack spacing={2}>
                 <TeleMetricCards
-                  wl={currentReading?.wl}
+                  wl={currentReading?.wl ?? (loading ? null : undefined)}
                   history={{ type: 'flow', stationCode: selectedCode, currentTime: currentReading?.datetime, previousTime: yesterday?.datetime }}
                   yesterdayWl={yesterday?.wl}
                   yesterdayDischarge={yesterday?.discharge}
-                  discharge={currentReading?.discharge}
-                  rain={latest?.rain}
+                  discharge={currentReading?.discharge ?? (loading ? null : undefined)}
+                  rain={latest?.rain ?? (loading ? null : undefined)}
                   warnLevels={FLOW_WARN_LEVELS[selectedCode]}
                   loading={loading}
                 />

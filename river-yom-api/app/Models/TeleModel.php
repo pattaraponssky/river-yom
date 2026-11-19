@@ -15,33 +15,35 @@ class TeleModel extends Model
         return $this->db->table('tele_info')->get()->getResultArray();
     }
 
-    public function getTodayTeleDataByStationCodes(array $staCodes): array
+    public function getTodayTeleDataByStationCodes(array $staCodes, ?\DateTimeImmutable $asOf = null): array
     {
-        $today = date('Y-m-d');
+        $today = $asOf ? $asOf->format('Y-m-d') : date('Y-m-d');
+        $latestTime = $asOf ? $asOf->format('Y-m-d H:i:s') : date('Y-m-d H:i:s');
+        $morning = $today . ' 07:00:00';
         $result = [];
 
         foreach ($staCodes as $staCode) {
-
-            // 1. ลองดึงข้อมูลเวลา 07:00 ของวันนี้ก่อน
-            $data = $this->db->table($this->table)
-                ->where('sta_code', $staCode)
-                ->where('datetime', $today . ' 07:00:00')
-                ->get()
-                ->getRowArray();
-
-            // 2. ถ้าไม่มีข้อมูล 07:00 ให้ดึงข้อมูลล่าสุดแทน
-            if (empty($data)) {
+            $data = null;
+            if ($asOf === null || $morning <= $latestTime) {
                 $data = $this->db->table($this->table)
                     ->where('sta_code', $staCode)
-                    ->where('datetime <=', date('Y-m-d H:i:s'))
-                    ->orderBy('datetime', 'DESC')
-                    ->limit(1)
+                    ->where('datetime', $morning)
                     ->get()
                     ->getRowArray();
             }
 
-            // 3. ถ้ามีข้อมูล ให้เพิ่มเข้า result
-            if (!empty($data)) {
+            if (!$data) {
+                $query = $this->db->table($this->table)
+                    ->where('sta_code', $staCode)
+                    ->where('datetime <=', $latestTime);
+                if ($asOf !== null) {
+                    $query->where('datetime >=', $today . ' 00:00:00');
+                }
+
+                $data = $query->orderBy('datetime', 'DESC')->limit(1)->get()->getRowArray();
+            }
+
+            if ($data) {
                 $result[] = $data;
             }
         }

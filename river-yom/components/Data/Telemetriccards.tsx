@@ -108,7 +108,7 @@ function MetricCard({ icon, label, value, unit, loading, status, accent = '#E6F1
           {label}
         </Typography>
         {loading ? (
-          <Skeleton width={80} height={36} sx={{ borderRadius: 1 }} />
+          <Skeleton animation="wave" width={80} height={36} sx={{ borderRadius: 1 }} />
         ) : (
           <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.75 }}>
             <Typography sx={{ fontFamily: 'Prompt', fontSize: '1.75rem', fontWeight: 600, color: 'text.primary', lineHeight: 1.15 }}>

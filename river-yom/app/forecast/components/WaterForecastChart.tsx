@@ -8,12 +8,12 @@ import {
 } from '@mui/material';
 import { ApexOptions } from 'apexcharts';
 import dynamic from 'next/dynamic';
-import CenteredLoading from '@/components/Layout/CenteredLoading';
+import { ForecastPlotSkeleton, ForecastSkeleton } from './ForecastSkeleton';
 import { titleStyle } from '@/theme/style';
 import { ForecastSnapshot, WaterLevelPoint, toTs, forecastStartTs } from '@/components/hooks/useRasData';
 import { TELE_WARN_LEVELS, getWarnLevel } from '@/lib/warnLevels';
 
-const ReactApexChart = dynamic(() => import('react-apexcharts'), { ssr: false });
+const ReactApexChart = dynamic(() => import('react-apexcharts'), { ssr: false, loading: () => <ForecastPlotSkeleton /> });
 
 // ─── Types ────────────────────────────────────────────────────
 
@@ -213,7 +213,7 @@ const WaterForecastChart: React.FC<Props> = ({ today, archive }) => {
   }
 
   // ─── Render ───────────────────────────────────────────────────
-  if (!today && archive.length === 0) return <CenteredLoading />;
+  if (!today && archive.length === 0) return <ForecastSkeleton section="forecast" />;
 
   return (
     <Box>

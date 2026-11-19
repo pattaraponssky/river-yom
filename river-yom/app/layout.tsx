@@ -12,13 +12,15 @@ const prompt = Prompt({
   display: 'swap',
 });
 
+const siteIcon = '/river-yom/logo_rid.png';
+
 export const metadata: Metadata = {
   title: 'RID03 ระบบสนับสนุนการตัดสินใจ',
   description: 'ระบบสนับสนุนการตัดสินใจในการบริหารจัดการน้ำแม่ยมฝั่งขวา กรมชลประทาน',
   icons: {
-    icon: '/logo_rid.png',          
-    shortcut: '/logo_rid.png',
-    apple: '/logo_rid.png',
+    icon: { url: siteIcon, type: 'image/png' },
+    shortcut: siteIcon,
+    apple: siteIcon,
   },
 };
 

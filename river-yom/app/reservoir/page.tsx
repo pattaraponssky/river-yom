@@ -3,10 +3,11 @@
 
 import { Box } from '@mui/material';
 import dynamic from 'next/dynamic';
+import StationPageSkeleton from '@/components/Data/StationPageSkeleton';
 
 const ReservoirStation = dynamic(
   () => import('./ReservoirStation'),
-  { ssr: false }   // ปิด SSR สำหรับ component นี้
+  { ssr: false, loading: () => <StationPageSkeleton metrics={0} /> }
 );
 export default function ReservoirPage() {
   return <Box sx={{ p: 1, maxWidth: 'xl', mx: 'auto', width: '100%'}}>

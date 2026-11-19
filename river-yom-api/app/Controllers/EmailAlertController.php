@@ -57,11 +57,12 @@ class EmailAlertController extends ResourceController
         $teleModel  = new TeleModel();      // ← เพิ่ม
         $userModel  = new UserModel();
 
-        // 1. หาวันที่ล่าสุด (ใช้จาก Flow ก่อน ถ้าไม่มีค่อยใช้วันนี้)
-        $latest = $dataModel->selectMax('datetime')->first();
-        $date   = $latest ? substr($latest['datetime'], 0, 10) : date('Y-m-d');
+        $now = new \DateTimeImmutable('now', new \DateTimeZone('Asia/Bangkok'));
+        $date = $now->format('Y-m-d');
+        $latestTime = $now->format('Y-m-d H:i:s');
 
         $alerts = [];
+        $stationCount = 0;
 
         // ─────────────────────────────────────────────
         // 2.1 ตรวจสอบสถานี Flow (เดิม)
@@ -77,14 +78,15 @@ class EmailAlertController extends ResourceController
                 ->first();
 
             // ถ้าไม่เจอแบบ date เปล่า ลองหาแบบมีเวลา 07:00
-            if (!$daily) {
+            if (!$daily && $date . ' 07:00:00' <= $latestTime) {
                 $daily = $dataModel
                     ->where('sta_code', $sta_code)
                     ->where('datetime', $date . ' 07:00:00')
                     ->first();
             }
 
-            if (!$daily) continue;
+            if (!$daily || substr($daily['datetime'] ?? '', 0, 10) !== $date) continue;
+            $stationCount++;
 
             $wl         = (float) ($daily['wl'] ?? 0);
             $discharge  = (float) ($daily['discharge'] ?? 0);
@@ -117,7 +119,7 @@ class EmailAlertController extends ResourceController
         $teleCodes = array_column($teleStations, 'sta_code');
 
         // ดึงข้อมูลวันนี้ (จะพยายามเอา 07:00 ก่อน แล้วค่อยเอาล่าสุด)
-        $teleDataList = $teleModel->getTodayTeleDataByStationCodes($teleCodes);
+        $teleDataList = $teleModel->getTodayTeleDataByStationCodes($teleCodes, $now);
 
         // แปลงเป็น map ง่าย ๆ
         $teleDataMap = [];
@@ -134,7 +136,8 @@ class EmailAlertController extends ResourceController
             }
 
             $daily = $teleDataMap[$sta_code] ?? null;
-            if (!$daily) continue;
+            if (!$daily || substr($daily['datetime'] ?? '', 0, 10) !== $date) continue;
+            $stationCount++;
 
             $wl        = (float) ($daily['wl'] ?? 0);
             $discharge = (float) ($daily['discharge'] ?? 0);
@@ -160,6 +163,16 @@ class EmailAlertController extends ResourceController
         }
 
         // 3. ส่งอีเมล
+        if ($stationCount === 0) {
+            return $this->respond([
+                'status' => 'success',
+                'datetime' => $date,
+                'alert_count' => 0,
+                'sent_to' => 0,
+                'alerts' => [],
+                'message' => 'ยังไม่มีข้อมูลสถานีของวันนี้',
+            ]);
+        }
         $hasAlert = !empty($alerts);
 
         $users = $userModel->where('Status', 1)->findAll();
@@ -304,7 +317,7 @@ class EmailAlertController extends ResourceController
                 </tr>";
             }
         } else {
-            $tableRows = "<tr><td colspan='5' style='padding:16px;text-align:center;color:#388E3C;font-size:1.1em;'>✅ ไม่พบสถานีที่มีระดับน้ำเกินเกณฑ์ในวันนี้</td></tr>";
+            $tableRows = "<tr><td colspan='5' style='padding:16px;text-align:center;color:#388E3C;font-size:1.1em;'>✅ ไม่พบระดับน้ำหรืออัตราการไหลเกินเกณฑ์จากสถานีที่มีข้อมูลวันนี้</td></tr>";
         }
 
         return "
@@ -334,7 +347,7 @@ class EmailAlertController extends ResourceController
                             <p style='margin:10px 0 0;color:#555;line-height:1.6;'>
                                 " . ($hasAlert
                                     ? "ระบบตรวจพบสถานีวัดน้ำท่าที่มีระดับน้ำ <strong>เกินเกณฑ์การเฝ้าระวัง</strong> กรุณาตรวจสอบและดำเนินการตามความเหมาะสม"
-                                    : "รายงานสถานการณ์น้ำประจำวัน ทุกสถานีอยู่ในเกณฑ์ปกติ") . "
+                                    : "รายงานสถานการณ์น้ำประจำวันจากสถานีที่มีข้อมูลวันนี้") . "
                             </p>
                         </td>
                     </tr>

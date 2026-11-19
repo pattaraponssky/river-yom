@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import {
+  Alert,
   Container,
   Box,
   Grid,
@@ -21,7 +22,7 @@ import {
 import ReservoirChart from "@/app/reservoir/components/ReservoirChartData";
 import ReservoirExportTable from "@/app/reservoir/components/ReservoirTableData";
 import StationUpdateBadge from "@/components/Data/StationUpdateBadge";
-import CenteredLoading from "@/components/Layout/CenteredLoading";
+import StationPageSkeleton, { StationChartSkeleton } from "@/components/Data/StationPageSkeleton";
 import { API_URL, DEFAULT_STATION_PHOTO, Path_URL, resolvePhotoUrl } from "@/lib/utility";
 import { fontInfo, titleStyle, textStyle, HeaderCellStyle } from "@/theme/style";
 
@@ -36,6 +37,8 @@ const DataReservoirStation: React.FC<DataReservoirStationProps> = ({ propsSelect
   const isDark = theme.palette.mode === "dark";
 
   const [stations, setStations] = useState<any[]>([]);
+  const [stationsLoading, setStationsLoading] = useState(true);
+  const [stationsError, setStationsError] = useState(false);
   const [selectedStation, setSelectedStation] = useState<string | null>(null);
   const [latestReading, setLatestReading] = useState<{ code: string; datetime: string | null } | null>(null);
   const [availableYears, setAvailableYears] = useState<string[]>([]);
@@ -52,7 +55,7 @@ const DataReservoirStation: React.FC<DataReservoirStationProps> = ({ propsSelect
   const [allAvailableYears, setAllAvailableYears] = useState<string[]>([]);
 
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [, setLoading] = useState(false);
+  const [chartLoading, setLoading] = useState(false);
   const [yearError, setYearError] = useState<string>("");
 
   const [initialLoad, setInitialLoad] = useState(false);
@@ -68,8 +71,7 @@ const DataReservoirStation: React.FC<DataReservoirStationProps> = ({ propsSelect
 
   useEffect(() => {
     if (!initialLoad && selectedStation && startYear && endYear) {
-      fetchReservoirData(startYear, endYear);
-      setIsSubmitted(true);
+      void handleShowData();
       setInitialLoad(true); // ป้องกันไม่ให้ทำซ้ำ
     }
   }, [selectedStation, startYear, endYear, initialLoad]);
@@ -93,12 +95,21 @@ const DataReservoirStation: React.FC<DataReservoirStationProps> = ({ propsSelect
     }
   }, [selectedStation]);
 
-  // ดึงรายชื่ออ่างเก็บน้ำ
   useEffect(() => {
-    fetch(`${API_URL}/api/reservoir_info`)
-      .then(res => res.json())
-      .then(data => setStations(data.data))
-      .catch(err => console.error(err));
+    const controller = new AbortController();
+    fetch(`${API_URL}/api/reservoir_info`, { signal: controller.signal })
+      .then(res => {
+        if (!res.ok) throw new Error(`reservoir_info failed: ${res.status}`);
+        return res.json();
+      })
+      .then(json => {
+        if (controller.signal.aborted) return;
+        if (!Array.isArray(json.data)) throw new Error("Invalid reservoir_info response");
+        setStations(json.data);
+      })
+      .catch(() => { if (!controller.signal.aborted) setStationsError(true); })
+      .finally(() => { if (!controller.signal.aborted) setStationsLoading(false); });
+    return () => controller.abort();
   }, []);
 
   useEffect(() => {
@@ -148,9 +159,10 @@ const DataReservoirStation: React.FC<DataReservoirStationProps> = ({ propsSelect
   const fetchReservoirData = async (start: string, end: string) => {
     const apiUrl = `${API_URL}/api/reservoir_data/${selectedStation}?startYear=${start}&endYear=${end}`;
     const res = await fetch(apiUrl);
+    if (!res.ok) throw new Error(`reservoir_data failed: ${res.status}`);
     const data = await res.json();
 
-    if (!data || !Array.isArray(data.data)) return;
+    if (!Array.isArray(data?.data)) throw new Error("Invalid reservoir_data response");
 
     const BASE_YEAR = 2000;
     const rawData = data.data;
@@ -258,7 +270,10 @@ const DataReservoirStation: React.FC<DataReservoirStationProps> = ({ propsSelect
     setEndYear(e.target.value);
   };
 
-  if (!stations.length) return <CenteredLoading />;
+  if (stationsLoading) return <StationPageSkeleton metrics={0} />;
+  if (!stations.length) {
+    return <Alert severity={stationsError ? "warning" : "info"}>{stationsError ? "โหลดรายชื่ออ่างเก็บน้ำไม่สำเร็จ" : "ยังไม่มีข้อมูลอ่างเก็บน้ำ"}</Alert>;
+  }
 
   const station = selectedStation ? stations.find(s => s.res_code === selectedStation) : null;
   return (
@@ -401,7 +416,8 @@ const DataReservoirStation: React.FC<DataReservoirStationProps> = ({ propsSelect
       </Grid>
   
       <Divider sx={{ my: 3 }} />
-        {isSubmitted && !yearError && chartData1 && chartData2 && chartData3 && (
+        {chartLoading && <StationChartSkeleton />}
+        {!chartLoading && isSubmitted && !yearError && chartData1 && chartData2 && chartData3 && (
         <Box sx={{ marginTop: 4 }}>
           <Typography sx={{ fontWeight: "bold", ...titleStyle, mb: 3 }}>
             กราฟแสดงสถิติข้อมูลของสถานี{" "}
@@ -425,7 +441,7 @@ const DataReservoirStation: React.FC<DataReservoirStationProps> = ({ propsSelect
       )}
 
       {/* ข้อความเมื่อยังไม่กดแสดงผล */}
-      {!isSubmitted && selectedStation && (
+      {!chartLoading && !isSubmitted && selectedStation && (
         <Box sx={{ textAlign: "center", mt: 10 }}>
           <Typography sx={{ fontFamily: "Prompt", fontSize: "1.3rem", color: "#555" }}>
             กรุณาเลือกสถานี ช่วงปี และกดปุ่ม <strong style={{ color: "#01579b" }}>"แสดงผล"</strong>

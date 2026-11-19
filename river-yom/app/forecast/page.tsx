@@ -3,7 +3,7 @@
 
 import '@/app/globals.css';
 import { Container, Box, Typography } from '@mui/material';
-import { Path_URL, formatThaiDay } from '../../lib/utility';
+import { formatThaiDay } from '../../lib/utility';
 import { BoxStyle } from '@/theme/style';
 import FloatingMenu from '@/components/Dashboard/FloatingMenu';
 import FloodWarningTable from './components/WarningTable';
@@ -12,8 +12,8 @@ import LongProfileChart from './components/LongProfile';
 import WaterLevelChart from './components/WaterLevelChart';
 import { forecastMenus } from '@/lib/menuFloating';
 
-import { useMemo } from 'react';
-import CenteredLoading from '@/components/Layout/CenteredLoading';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { ForecastSkeleton } from './components/ForecastSkeleton';
 import { Alert } from '@mui/material';
 import { useRasData, forecastStartTs, toTs } from '@/components/hooks/useRasData';
 import { useClientDate } from '@/components/hooks/useClientDate';
@@ -23,7 +23,26 @@ import { useClientDate } from '@/components/hooks/useClientDate';
 const WARNING_STATIONS = ['Y.15', 'Y.16', 'Y.4', 'Y.50', 'Y.64', 'YR.01', 'YR.02', 'YR.03', 'YR.04', 'YR.05', 'YR.06'];
 
 export default function Dashboard() {
-  const { today, archive, loading, error } = useRasData(1);
+  const profileSection = useRef<HTMLDivElement>(null);
+  const [loadProfile, setLoadProfile] = useState(false);
+  const { today, archive, loading, archiveLoading, error, profile, profileError } = useRasData(1, loadProfile);
+  const forecastLoading = !today && archive.length === 0 && (loading || archiveLoading);
+
+  useEffect(() => {
+    const section = profileSection.current;
+    if (!section || typeof IntersectionObserver === 'undefined') {
+      setLoadProfile(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry?.isIntersecting) return;
+      setLoadProfile(true);
+      observer.disconnect();
+    }, { rootMargin: '240px 0px' });
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, []);
   const clientDate = useClientDate();
 
   // ─── คำนวณค่า max / peak / trend จาก forecast วันนี้ ────
@@ -63,23 +82,18 @@ export default function Dashboard() {
   }, [today]);
 
   // ─── แปลงข้อมูลสำหรับ LongProfile (forecast วันนี้เท่านั้น) ──
- const forecastLongProfile = useMemo(() => {
-  if (!today) return [];
+  const forecastLongProfile = useMemo(() => {
+    if (!profile) return [];
+    const tofTs = forecastStartTs();
 
-  return today.points
-    .filter(p => {
-      const river = (p.river ?? '').toString().trim();
-      // return river === 'Yom River';
-      return river === 'YOM' && toTs(p.time) >= forecastStartTs();
-      
-    })
-    .map(p => ({
-      CrossSection: p.crossSection,
-      River:        (p.river ?? '').toString().trim(),
-      Date:         p.time.replace('T', ' '),
-      WaterLevel:   p.elevation,
-    }));
-}, [today]);
+    return profile
+      .filter(point => toTs(point.time) >= tofTs)
+      .map(point => ({
+        CrossSection: point.crossSection,
+        Date: point.time.replace('T', ' '),
+        WaterLevel: point.elevation,
+      }));
+  }, [profile]);
 
   // ─── แปลงข้อมูลสำหรับ WaterLevelChart ───────────────────────
   const waterLevelChartData = useMemo(() => {
@@ -90,8 +104,6 @@ export default function Dashboard() {
       elevation: p.elevation,
     }));
   }, [today]);
-
-  if (loading) return <CenteredLoading />;
 
   return (
     <Container maxWidth="xl" sx={{ py: 2 }}>
@@ -106,23 +118,39 @@ export default function Dashboard() {
       )}
 
       <Box sx={BoxStyle} id="flood-warning">
-        <FloodWarningTable
-          maxLevels={maxElevations}
-          waterTrends={waterTrends}
-          waterPeaks={waterPeaks}
-        />
+        {loading ? <ForecastSkeleton section="warning" /> : (
+          <FloodWarningTable
+            maxLevels={maxElevations}
+            waterTrends={waterTrends}
+            waterPeaks={waterPeaks}
+          />
+        )}
       </Box>
 
       <Box sx={BoxStyle} id="forecast-chart">
-        <WaterForecastChart today={today} archive={archive} />
+        {forecastLoading ? <ForecastSkeleton section="forecast" /> : (
+          today || archive.length > 0
+            ? <WaterForecastChart today={today} archive={archive} />
+            : <Alert severity="info">ยังไม่มีข้อมูลสำหรับกราฟพยากรณ์</Alert>
+        )}
       </Box>
 
-      <Box sx={BoxStyle} id="profile-chart">
-        <LongProfileChart waterData={forecastLongProfile} />
+      <Box sx={BoxStyle} id="profile-chart" ref={profileSection}>
+        {profileError ? <Alert severity="warning">โหลดข้อมูลรูปตัดตามยาวไม่สำเร็จ</Alert> : (
+          !loadProfile || profile === null ? <ForecastSkeleton section="profile" /> : (
+            forecastLongProfile.length
+              ? <LongProfileChart waterData={forecastLongProfile} />
+              : <Alert severity="info">ยังไม่มีข้อมูลพยากรณ์สำหรับรูปตัดตามยาว</Alert>
+          )
+        )}
       </Box>
 
       <Box sx={BoxStyle} id="water-level">
-        <WaterLevelChart data={waterLevelChartData} />
+        {loading ? <ForecastSkeleton section="station" /> : (
+          today ? <WaterLevelChart data={waterLevelChartData} /> : (
+            <Alert severity="info">ยังไม่มีข้อมูลระดับน้ำรายชั่วโมง</Alert>
+          )
+        )}
       </Box>
 
       <FloatingMenu menus={forecastMenus} />

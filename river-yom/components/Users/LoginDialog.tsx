@@ -5,7 +5,6 @@ import {
   TextField,
   Button,
   Typography,
-  useMediaQuery,
   useTheme,
   Snackbar,
   Alert,
@@ -26,14 +25,13 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose, onLoginSuccess
   const [forgotOpen, setForgotOpen] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [snackbar, setSnackbar] = useState({ 
-    open: false, 
-    message: "", 
-    severity: "success" as "success" | "error" | "info" | "warning" 
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success" as "success" | "error" | "info" | "warning"
   });
 
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isDarkMode = theme.palette.mode === "dark";
 
   // path รูปพื้นหลังฝั่งซ้าย (ตอนนี้ใช้รูปเดียวกันทั้ง light/dark)
@@ -80,19 +78,22 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose, onLoginSuccess
         onClose={onClose}
         maxWidth="md"
         fullWidth
-        PaperProps={{
-          sx: { 
-            borderRadius: "1.5rem", 
-            overflow: "hidden",
+        scroll="paper"
+        slotProps={{
+          paper: {
+            sx: {
+              m: { xs: 1.5, sm: 3 },
+              width: { xs: "calc(100% - 24px)", sm: "calc(100% - 48px)" },
+              maxWidth: { xs: 520, md: 900 },
+              maxHeight: { xs: "calc(100% - 24px)", sm: "calc(100% - 48px)" },
+              borderRadius: { xs: 2.5, md: "1.5rem" },
+              overflowX: "hidden",
+              overflowY: "auto",
+            },
           },
         }}
       >
-        <Box
-          display="flex"
-          flexDirection={isMobile ? "column" : "row"}
-          height={isMobile ? "auto" : 600}
-          sx={{ bgcolor: "background.default" }}
-        >
+        <Box sx={{ display: "flex", flexShrink: 0, minHeight: { md: 600 }, bgcolor: "background.default" }}>
           {/* ส่วนซ้าย - รูปภาพ / พื้นหลัง */}
           <Box
             flex={1}
@@ -104,7 +105,7 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose, onLoginSuccess
               backgroundPosition: "center",
               backgroundRepeat: "no-repeat",
               minHeight: "30vh",
-              display: { xs: "none", sm: "block" }, // ซ่อนบน mobile จอเล็กมากถ้าพื้นที่ไม่พอ (ปรับได้ตามต้องการ)
+              display: { xs: "none", md: "block" }, // ซ่อนบน mobile จอเล็กมากถ้าพื้นที่ไม่พอ (ปรับได้ตามต้องการ)
               ...(isDarkMode && {
                 position: "relative",
                 "&:after": {
@@ -121,11 +122,11 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose, onLoginSuccess
           {/* ส่วนขวา - ฟอร์ม */}
           <Box
             flex={1}
-            p={4}
+            p={{ xs: 2.5, sm: 4 }}
             display="flex"
             flexDirection="column"
             justifyContent="center"
-            sx={{ 
+            sx={{
               bgcolor: "background.paper",
               color: "text.primary",
             }}
@@ -178,9 +179,9 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose, onLoginSuccess
               LOGIN
             </Button>
 
-            <Typography 
-              variant="body2" 
-              align="center" 
+            <Typography
+              variant="body2"
+              align="center"
               color="text.secondary"
               sx={{ ...textStyle }}
             >
@@ -198,9 +199,9 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose, onLoginSuccess
               </Button>
             </Typography>
 
-            <Typography 
-              variant="body2" 
-              align="center" 
+            <Typography
+              variant="body2"
+              align="center"
               color="text.secondary"
               sx={{ mt: 1, ...textStyle }}
             >

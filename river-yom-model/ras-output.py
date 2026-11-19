@@ -1,6 +1,8 @@
 import win32com.client
 import csv
 from datetime import datetime, timedelta
+from pathlib import Path
+from ras_station_output import publish_station_csv
 
 # === เชื่อมต่อกับ HEC-RAS ===
 hec = win32com.client.Dispatch("RAS630.HECRASController")
@@ -80,3 +82,8 @@ with open(csv_file, mode="w", newline="", encoding="utf-8") as file:
     writer.writerows(data)
 
 print(f"\nบันทึกค่าระดับน้ำลงไฟล์ CSV เรียบร้อย: {csv_file}")
+
+try:
+    print(f"Station CSV: {publish_station_csv(Path(csv_file))}")
+except (OSError, ValueError, StopIteration) as error:
+    print(f"Station CSV could not be published: {error}")

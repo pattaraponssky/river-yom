@@ -1,10 +1,11 @@
 'use client';
 import { Box } from '@mui/material';
 import dynamic from 'next/dynamic';
+import StationPageSkeleton from '@/components/Data/StationPageSkeleton';
 
 const FlowStation = dynamic(
   () => import('./FlowStation'),
-  { ssr: false }   // ปิด SSR สำหรับ component นี้
+  { ssr: false, loading: () => <StationPageSkeleton metrics={3} /> }
 );
 
 export default function FlowPage() {

@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   TextField, Button, Box, Typography, Stack,
-  useMediaQuery, useTheme, Snackbar, Alert
+  useTheme, Snackbar, Alert
 } from "@mui/material";
 import { API_URL, Path_URL } from '../../lib/utility';
 import { textStyle } from '../../theme/style';
@@ -30,7 +30,6 @@ const RegisterDialog: React.FC<RegisterDialogProps> = ({ open, onClose }) => {
   });
 
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isDarkMode = theme.palette.mode === "dark";
 
   const handleCloseSnackbar = () => {
@@ -93,12 +92,25 @@ const RegisterDialog: React.FC<RegisterDialogProps> = ({ open, onClose }) => {
         onClose={() => { if (!loading) onClose(); }}
         maxWidth="md"
         fullWidth
-        PaperProps={{ sx: { borderRadius: "1.5rem", overflow: "hidden" } }}
+        scroll="paper"
+        slotProps={{
+          paper: {
+            sx: {
+              m: { xs: 1.5, sm: 3 },
+              width: { xs: "calc(100% - 24px)", sm: "calc(100% - 48px)" },
+              maxWidth: { xs: 520, md: 900 },
+              maxHeight: { xs: "calc(100% - 24px)", sm: "calc(100% - 48px)" },
+              borderRadius: { xs: 2.5, md: "1.5rem" },
+              overflowX: "hidden",
+              overflowY: "auto",
+            },
+          },
+        }}
       >
-        <Box display="flex" flexDirection={isMobile ? "column" : "row"} height={isMobile ? "auto" : 600}>
+        <Box sx={{ display: "flex", flexShrink: 0, minHeight: { md: 600 }, bgcolor: "background.default" }}>
           <Box
             flex={1}
-            p={2}
+            p={{ xs: 0.5, sm: 1, md: 2 }}
             display="flex"
             flexDirection="column"
             justifyContent="center"
@@ -113,7 +125,7 @@ const RegisterDialog: React.FC<RegisterDialogProps> = ({ open, onClose }) => {
               </Typography>
             </Box>
 
-            <DialogContent>
+            <DialogContent sx={{ px: { xs: 2, sm: 3 } }}>
               <Stack spacing={2}>
                 <TextField
                   label="Name"
@@ -166,7 +178,7 @@ const RegisterDialog: React.FC<RegisterDialogProps> = ({ open, onClose }) => {
               </Stack>
             </DialogContent>
 
-            <DialogActions sx={{ justifyContent: "space-between", px: 3, pb: 2 }}>
+            <DialogActions sx={{ justifyContent: "space-between", px: { xs: 2, sm: 3 }, pb: 2 }}>
               <Button onClick={onClose} color="inherit" disabled={loading} sx={{ ...textStyle, fontFamily: "Prompt" }}>
                 ยกเลิก
               </Button>
@@ -192,7 +204,7 @@ const RegisterDialog: React.FC<RegisterDialogProps> = ({ open, onClose }) => {
               backgroundSize: "cover",
               backgroundPosition: "center",
               backgroundRepeat: "no-repeat",
-              display: { xs: "none", sm: "block" }, // ซ่อนตอนจอมือถือแคบ กันฟอร์มถูกดันลงล่าง
+              display: { xs: "none", md: "block" }, // ซ่อนตอนจอมือถือแคบ กันฟอร์มถูกดันลงล่าง
               ...(isDarkMode && {
                 position: "relative",
                 "&:after": {

@@ -9,6 +9,7 @@ import {
   IconButton, Tooltip, Stack, SelectChangeEvent,
 } from '@mui/material';
 import StationUpdateBadge from '@/components/Data/StationUpdateBadge';
+import StationPageSkeleton from '@/components/Data/StationPageSkeleton';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { API_URL, DEFAULT_STATION_PHOTO, Path_URL, resolvePhotoUrl } from '@/lib/utility';
 import { useTheme, alpha } from '@mui/material';
@@ -51,18 +52,23 @@ export default function RainDashboard() {
   const [selectedCode, setSelectedCode] = useState<string>('390220');
   const [latest,       setLatest]       = useState<RainLatest | null>(null);
   const [loading,      setLoading]      = useState(false);
+  const [infoError, setInfoError] = useState(false);
   const [infoLoading,  setInfoLoading]  = useState(true);
   const [error,        setError]        = useState<string | null>(null);
   
   // โหลดรายชื่อสถานี
   useEffect(() => {
     fetch(`${API_URL}/api/rain_info`)
-      .then(r => r.json())
+      .then(r => {
+        if (!r.ok) throw new Error(`rain_info failed: ${r.status}`);
+        return r.json();
+      })
       .then(json => {
         const list: RainInfo[] = json.data || [];
         setRainInfoList(list);
         // if (list.length > 0) setSelectedCode(list[0].sta_code);
       })
+      .catch(() => setInfoError(true))
       .finally(() => setInfoLoading(false));
   }, []);
 
@@ -119,14 +125,7 @@ export default function RainDashboard() {
   const selectedInfo = rainInfoList.find(g => g.sta_code === selectedCode) ?? null;
   const cameras = selectedCode ? (STATION_CAMERAS[selectedCode] ?? []) : [];
 
-  if (infoLoading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-  
+  if (infoLoading) return <StationPageSkeleton metrics={2} />;
 
   return (
     <Box>
@@ -165,6 +164,7 @@ export default function RainDashboard() {
         </Box>
 
       </Box>
+      {infoError && <Alert severity="warning" sx={{ mb: 2 }}>โหลดรายชื่อสถานีไม่สำเร็จ</Alert>}
       {error && <Alert severity="error" sx={{ mb: 2, fontFamily: 'Prompt' }}>{error}</Alert>}
 
       {selectedInfo && (
@@ -369,8 +369,8 @@ export default function RainDashboard() {
           <Grid size={{ xs: 12, md: 8 }} >
             <Stack spacing={2}>
                 <TeleMetricCards
-                  rain={latest?.rain}
-                  rain_sum={latest?.rain_sum}
+                  rain={latest?.rain ?? (loading ? null : undefined)}
+                  rain_sum={latest?.rain_sum ?? (loading ? null : undefined)}
                   loading={loading}
                 />
               <Paper sx={{ p: 2, borderRadius: 2 ,mt: 2}}>

@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo, useRef, use } from "react";
 import Papa from "papaparse";
 import { Box, Button, MenuItem, Select, Typography } from "@mui/material";
 import { ArrowBack, ArrowForward } from "@mui/icons-material";
-import CenteredLoading from "@/components/Layout/CenteredLoading";
+import { ForecastPlotSkeleton, ForecastSkeleton } from './ForecastSkeleton';
 import { Path_URL, formatThaiDateTime, formatThaiDay } from "@/lib/utility";
 import { titleStyle } from "@/theme/style";
 import dynamic from "next/dynamic";
@@ -31,7 +31,7 @@ interface Props {
 
 const ApexChart = dynamic(() => import("react-apexcharts"), {
   ssr: false,
-  loading: () => <CenteredLoading />,
+  loading: () => <ForecastPlotSkeleton height={500} />,
 });
 
 const LongProfileChart: React.FC<Props> = ({ waterData, chartHeight = 500, isDark }) => {
@@ -682,7 +682,7 @@ const LongProfileChart: React.FC<Props> = ({ waterData, chartHeight = 500, isDar
     ];
   }, [profileData]);
 
-  if (loading) return <CenteredLoading />;
+  if (loading) return <ForecastSkeleton section="profile" />;
 
   return (
     <Box>

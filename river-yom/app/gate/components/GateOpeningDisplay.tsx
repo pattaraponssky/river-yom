@@ -12,6 +12,7 @@ import {
 import type { StationHistoryContext } from '@/components/Data/StationHistoryDialog';
 import { StationReadingChange } from '@/components/Data/StationReadingChange';
 import { useYesterdayStationReading } from '@/components/hooks/useYesterdayStationReading';
+import { StationChartSkeleton } from '@/components/Data/StationPageSkeleton';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { GateStationConfig } from '@/lib/gateConfig';
 import { API_URL, Path_URL } from '@/lib/utility';
@@ -234,7 +235,7 @@ const WaterLevelBar: React.FC<{
 // ─── Main Component ────────────────────────────────────────────
 const GateOpeningDisplay: React.FC<GateOpeningDisplayProps> = ({ config }) => {
   const [data, setData]       = useState<GateOpeningData | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError]     = useState<string | null>(null);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const warnLevels: WarnLevel | undefined = GATE_WARN_LEVELS[config.sta_code];
@@ -334,6 +335,8 @@ const GateOpeningDisplay: React.FC<GateOpeningDisplayProps> = ({ config }) => {
 
   // เทียบสัดส่วนกับความสูงบานประตู (GATE_FRAME_H) แล้วแปลงเป็น % ของช่องทั้งหมด (ROW_H)
   const linePctInRow = (value: number) => (pctForLevel(value) * WATER_SCALE_H) / ROW_H;
+
+  if (loading && data?.sta_code !== config.sta_code) return <StationChartSkeleton height={485} />;
 
   return (
     <Paper sx={{ p: 2.5, borderRadius: 2, mt: 2 }}>

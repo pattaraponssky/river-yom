@@ -9,6 +9,7 @@ import {
   IconButton, Tooltip, Stack, SelectChangeEvent,
 } from '@mui/material';
 import StationUpdateBadge from '@/components/Data/StationUpdateBadge';
+import StationPageSkeleton from '@/components/Data/StationPageSkeleton';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { API_URL, DEFAULT_STATION_PHOTO, Path_URL, resolvePhotoUrl } from '@/lib/utility';
 import { useTheme, alpha } from '@mui/material';
@@ -50,18 +51,23 @@ export default function TeleDashboard() {
   const [selectedCode, setSelectedCode] = useState<string>('YR.01');
   const [latest,       setLatest]       = useState<TeleLatest | null>(null);
   const [loading,      setLoading]      = useState(false);
+  const [infoError, setInfoError] = useState(false);
   const [infoLoading,  setInfoLoading]  = useState(true);
   const [error,        setError]        = useState<string | null>(null);
   
   // โหลดรายชื่อสถานี
   useEffect(() => {
     fetch(`${API_URL}/api/tele_info`)
-      .then(r => r.json())
+      .then(r => {
+        if (!r.ok) throw new Error(`tele_info failed: ${r.status}`);
+        return r.json();
+      })
       .then(json => {
         const list: TeleInfo[] = json.data || [];
         setTeleInfoList(list);
         // if (list.length > 0) setSelectedCode(list[0].sta_code);
       })
+      .catch(() => setInfoError(true))
       .finally(() => setInfoLoading(false));
   }, []);
 
@@ -118,13 +124,7 @@ export default function TeleDashboard() {
   const selectedInfo = teleInfoList.find(g => g.sta_code === selectedCode) ?? null;
   const cameras = selectedCode ? (STATION_CAMERAS[selectedCode] ?? []) : [];
 
-  if (infoLoading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
+  if (infoLoading) return <StationPageSkeleton metrics={3} />;
 
   return (
     <Box>
@@ -162,6 +162,7 @@ export default function TeleDashboard() {
         </Box>
 
       </Box>
+      {infoError && <Alert severity="warning" sx={{ mb: 2 }}>โหลดรายชื่อสถานีไม่สำเร็จ</Alert>}
       {error && <Alert severity="error" sx={{ mb: 2, fontFamily: 'Prompt' }}>{error}</Alert>}
 
       {selectedInfo && (
@@ -364,12 +365,12 @@ export default function TeleDashboard() {
           <Grid size={{ xs: 12, md: 8 }} >
             <Stack spacing={2}>
                 <TeleMetricCards
-                  wl={currentReading?.wl}
+                  wl={currentReading?.wl ?? (loading ? null : undefined)}
                   history={{ type: 'tele', stationCode: selectedCode, currentTime: currentReading?.datetime, previousTime: yesterday?.datetime }}
                   yesterdayWl={yesterday?.wl}
                   yesterdayDischarge={yesterday?.discharge}
-                  discharge={currentReading?.discharge}
-                  rain={latest?.rain_mm}
+                  discharge={currentReading?.discharge ?? (loading ? null : undefined)}
+                  rain={latest?.rain_mm ?? (loading ? null : undefined)}
                   warnLevels={TELE_WARN_LEVELS[selectedCode]}
                   loading={loading}
                 />

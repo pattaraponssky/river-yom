@@ -7,7 +7,7 @@ import { Box, Typography, Chip, Skeleton } from '@mui/material';
 import { Path_URL } from '@/lib/utility';
 import dynamic from 'next/dynamic';
 
-const ApexChart = dynamic(() => import('react-apexcharts'), { ssr: false });
+const ApexChart = dynamic(() => import('react-apexcharts'), { ssr: false, loading: () => <Skeleton animation="wave" variant="rounded" height={385} /> });
 
 // ─── Types ────────────────────────────────────────────────────
 interface WarnLevel {
@@ -436,7 +436,7 @@ const pointAnnotations = useMemo(() => {
 
   // ─── Loading ─────────────────────────────────────────────────
   if (groundLoading) {
-    return <Skeleton variant="rounded" height={chartHeight} sx={{ borderRadius: 2 }} />;
+    return <Skeleton animation="wave" variant="rounded" height={chartHeight} sx={{ borderRadius: 2 }} />;
   }
   
   if (groundData.length === 0) return null;

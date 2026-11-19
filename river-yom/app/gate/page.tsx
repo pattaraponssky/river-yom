@@ -2,10 +2,11 @@
 'use client';
 import { Box } from '@mui/material';
 import dynamic from 'next/dynamic';
+import StationPageSkeleton from '@/components/Data/StationPageSkeleton';
 
 const GateStation = dynamic(
   () => import('./GateStation'),
-  { ssr: false }   // ปิด SSR สำหรับ component นี้
+  { ssr: false, loading: () => <StationPageSkeleton metrics={0} /> }
 );
 
 export default function GatePage() {
