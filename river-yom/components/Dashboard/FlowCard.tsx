@@ -1,3 +1,5 @@
+import DashboardTableStatus from "./DashboardTableStatus";
+import { Skeleton } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { API_URL, Path_URL } from '../../lib/utility';
 import { textStyle, titleStyle } from '../../theme/style';
@@ -27,7 +29,8 @@ interface FlowData {
   discharge: number;
 }
 
-const FlowCard: React.FC<{ flowStationsOverWl: number }> = ({ flowStationsOverWl }) => {
+const FlowCard: React.FC<{ flowStationsOverWl: number | null; summaryLoading: boolean }> = ({ flowStationsOverWl, summaryLoading }) => {
+  const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [data, setData] = useState<FlowData[]>([]);
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
@@ -50,12 +53,14 @@ const FlowCard: React.FC<{ flowStationsOverWl: number }> = ({ flowStationsOverWl
     ];
 
   useEffect(() => {
-    fetch(`${API_URL}/api/daily/flow`)
+    const controller = new AbortController();
+    fetch(`${API_URL}/api/daily/flow`, { signal: controller.signal })
       .then(res => {
         if (!res.ok) throw new Error(`daily/flow failed: ${res.status}`);
         return res.json();
       })
       .then(flowJson => {
+        if (controller.signal.aborted) return;
         const fetchedData = flowJson.data
         .filter((d: any) => allowStaCodes.includes(d.sta_code))
         .map((d: any) => ({
@@ -66,9 +71,13 @@ const FlowCard: React.FC<{ flowStationsOverWl: number }> = ({ flowStationsOverWl
           discharge: parseFloat(d.discharge),
         }));
         setData(fetchedData);
+        setStatus("ready");
 
       })
-      .catch((err) => console.error("Fetch error:", err));
+      .catch(() => {
+        if (!controller.signal.aborted) setStatus("error");
+      });
+    return () => controller.abort();
   }, []);
 
   const numberFormat = (num: number, decimals = 2) => {
@@ -175,7 +184,7 @@ const FlowCard: React.FC<{ flowStationsOverWl: number }> = ({ flowStationsOverWl
                       WebkitTextFillColor: 'transparent',
                     }}
                   >
-                  {flowStationsOverWl}
+                  {summaryLoading ? <Skeleton width={40} sx={{ mx: "auto" }} /> : flowStationsOverWl ?? "—"}
                 </Typography>
               </Grid>
               <Grid size={{ xs: 3 }} textAlign="right">
@@ -235,7 +244,8 @@ const FlowCard: React.FC<{ flowStationsOverWl: number }> = ({ flowStationsOverWl
                 </TableRow>
               </TableHead>
 
-              <TableBody>
+              <TableBody aria-busy={status === "loading"}>
+                <DashboardTableStatus columns={5} loading={status === "loading"} error={status === "error"} empty={data.length === 0} />
                 {data.map((flow, i) => (
                   <TableRow key={i} hover>
                     <TableCell sx={{ textAlign: "center", ...textStyle, lineHeight:{md:"1.94rem",xs:"1.2rem"} }}>{flow.sta_code}</TableCell>

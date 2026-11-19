@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { Alert, Box, Skeleton } from '@mui/material';
 import { useThemeMode } from '@/contexts/ThemeContext';
 import { useFlowMarkers } from '@/components/HydroMap/hooks/useFlowMarkers';
 import { useGateMarkers } from '@/components/HydroMap/hooks/useGateMarkers';
@@ -17,7 +18,7 @@ import { useTeleMarkers } from '@/components/HydroMap/hooks/useTeleMarkers';
 
 const HydroMap: React.FC<HydroMapProps> = ({ mapKey, JsonPaths, height }) => {
   const { mode } = useThemeMode();
-  const { map, isReady, mapContainerRef } = useLongdoMap(mapKey);
+  const { map, isReady, hasError, mapContainerRef } = useLongdoMap(mapKey);
 
   const hydroData = useHydroData();
   const { jsonDataList } = useGeoJsonLoader(JsonPaths); // ← เอา jsonDataList มาใช้ตรงนี้
@@ -75,10 +76,18 @@ const HydroMap: React.FC<HydroMapProps> = ({ mapKey, JsonPaths, height }) => {
   useTeleMarkers(map, hydroData.teleInfo, hydroData.latestTeleData, showTele);
   
   return (
-    <div
-      ref={mapContainerRef}
-      style={{ width: '100%', height: height || '85vh' }}
-    />
+    <Box aria-busy={!isReady && !hasError} sx={{ position: 'relative', width: '100%', height: height || '85vh' }}>
+      <Box ref={mapContainerRef} sx={{ width: '100%', height: '100%' }} />
+      {!isReady && (
+        <Box sx={{ position: 'absolute', inset: 0 }}>
+          {hasError ? (
+            <Alert severity="warning">โหลดแผนที่ไม่สำเร็จ</Alert>
+          ) : (
+            <Skeleton animation="wave" variant="rounded" width="100%" height="100%" aria-label="กำลังโหลดแผนที่" />
+          )}
+        </Box>
+      )}
+    </Box>
   );
 };
 

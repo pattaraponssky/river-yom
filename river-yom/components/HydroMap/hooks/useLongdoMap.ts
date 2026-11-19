@@ -3,35 +3,52 @@ import { useEffect, useRef, useState } from 'react';
 export const useLongdoMap = (mapKey: string) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<any>(null);
-  const [isReady, setIsReady] = useState(false);
+  const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
-    if (document.querySelector('#longdoMapScript')) {
+    function initMap() {
+      if (!window.longdo?.Map || !mapContainerRef.current) {
+        setHasError(true);
+        return;
+      }
+
+      try {
+        setMap(new window.longdo.Map({
+          placeholder: mapContainerRef.current,
+          language: 'th',
+        }));
+      } catch {
+        setHasError(true);
+      }
+    }
+
+    if (window.longdo?.Map) {
       initMap();
       return;
     }
 
-    const script = document.createElement('script');
-    script.id = 'longdoMapScript';
-    script.src = `https://api.longdo.com/map/?key=${mapKey}`;
-    script.async = true;
-    document.body.appendChild(script);
+    const existingScript = document.querySelector<HTMLScriptElement>('#longdoMapScript');
+    const script = existingScript ?? document.createElement('script');
 
-    script.onload = () => {
-      window.longdo = (window as any).longdo;
-      initMap();
+    function handleError() {
+      script.remove();
+      setHasError(true);
+    }
+
+    script.addEventListener('load', initMap);
+    script.addEventListener('error', handleError);
+    if (!existingScript) {
+      script.id = 'longdoMapScript';
+      script.src = `https://api.longdo.com/map/?key=${mapKey}`;
+      script.async = true;
+      document.body.appendChild(script);
+    }
+
+    return () => {
+      script.removeEventListener('load', initMap);
+      script.removeEventListener('error', handleError);
     };
   }, [mapKey]);
 
-  const initMap = () => {
-    if (!window.longdo?.Map || !mapContainerRef.current) return;
-    const newMap = new window.longdo.Map({
-      placeholder: mapContainerRef.current,
-      language: 'th',
-    });
-    setMap(newMap);
-    setIsReady(true);
-  };
-
-  return { map, isReady, mapContainerRef };
+  return { map, isReady: map !== null, hasError, mapContainerRef };
 };

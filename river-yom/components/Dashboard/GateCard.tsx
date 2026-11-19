@@ -1,3 +1,5 @@
+import DashboardTableStatus from "./DashboardTableStatus";
+import { Skeleton } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import {
   alpha,
@@ -34,6 +36,7 @@ interface GateData {
 }
 
 const GateCard: React.FC = () => {
+  const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [data, setData] = useState<GateData[]>([]);
   const [totalDcToday, setTotalDcToday] = useState<number>(0);
   const theme = useTheme();
@@ -47,9 +50,14 @@ const GateCard: React.FC = () => {
 
   // Fetch API
   useEffect(() => {
-    fetch(`${API_URL}/api/daily/gate`)
-      .then((res) => res.json())
+    const controller = new AbortController();
+    fetch(`${API_URL}/api/daily/gate`, { signal: controller.signal })
+      .then(res => {
+        if (!res.ok) throw new Error(`daily/gate failed: ${res.status}`);
+        return res.json();
+      })
       .then((json) => {
+        if (controller.signal.aborted) return;
         const fetchedData = json.data.map((d: any) => ({
           sta_name: d.sta_name,
           sta_code: d.sta_code,
@@ -59,6 +67,7 @@ const GateCard: React.FC = () => {
           rain_mm: parseFloat(d.rain_mm),
         }));
         setData(fetchedData);
+        setStatus("ready");
 
         const total = fetchedData.reduce(
           (sum: number, d: GateData) => sum + (d.discharge || 0),
@@ -66,7 +75,10 @@ const GateCard: React.FC = () => {
         );
         setTotalDcToday(total);
       })
-      .catch((err) => console.error("Fetch error:", err));
+      .catch(() => {
+        if (!controller.signal.aborted) setStatus("error");
+      });
+    return () => controller.abort();
   }, []);
 
   const numberFormat = (num: number, decimals = 2) => {
@@ -165,7 +177,7 @@ const GateCard: React.FC = () => {
                       WebkitTextFillColor: 'transparent',
                     }}
                   >
-                  {numberFormat(totalDcToday, 2)}
+                  {status === "loading" ? <Skeleton width={48} sx={{ mx: "auto" }} /> : status === "error" || data.length === 0 ? "—" : numberFormat(totalDcToday, 2)}
                 </Typography>
               </Grid>
               <Grid size={{ xs: 3 }} textAlign="right">
@@ -226,7 +238,8 @@ const GateCard: React.FC = () => {
                 </TableRow>
               </TableHead>
 
-              <TableBody>
+              <TableBody aria-busy={status === "loading"}>
+                <DashboardTableStatus columns={6} loading={status === "loading"} error={status === "error"} empty={data.length === 0} />
                 {data.map((gate, i) => {
                   return (
                     <TableRow key={i} hover>

@@ -23,19 +23,28 @@ const JsonPaths = [
 
 export default function Dashboard() {
   const mapKey = process.env.NEXT_PUBLIC_LONGDO_MAP_KEY!;
+  const [summaryStatus, setSummaryStatus] = useState<"loading" | "ready" | "error">("loading");
   const [dailySummary, setDailySummary] = useState<any>(null);
   const [yesterdayTele, setYesterdayTele] = useState<Record<string, DashboardTeleReading>>({});
   const clientDate = useClientDate();
 
   // โหลด dailySummary
   useEffect(() => {
-    fetch(`${API_URL}/api/dailySummary`)
+    const controller = new AbortController();
+    fetch(`${API_URL}/api/dailySummary`, { signal: controller.signal })
       .then((res) => {
         if (!res.ok) throw new Error(`dailySummary failed: ${res.status}`);
         return res.json();
       })
-      .then((json) => setDailySummary(json))
-      .catch((err) => console.error("Failed to load dailySummary:", err));
+      .then(json => {
+        if (controller.signal.aborted) return;
+        setDailySummary(json);
+        setSummaryStatus("ready");
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setSummaryStatus("error");
+      });
+    return () => controller.abort();
   }, []);
 
   useEffect(() => {
@@ -68,7 +77,12 @@ export default function Dashboard() {
         ภาพรวมสถานการณ์น้ำ วันที่ {clientDate ? formatThaiDay(clientDate.toString()) : ''}
       </Typography>
         <Box sx={{ minHeight: { xs: 0, md: 120 } }}>
-          <DashboardCards data={dailySummary} yesterdayYR05={yesterdayTele["YR.05"]} />
+          <DashboardCards
+            data={dailySummary}
+            yesterdayYR05={yesterdayTele["YR.05"]}
+            loading={summaryStatus === "loading"}
+            error={summaryStatus === "error" ? "โหลดข้อมูลภาพรวมไม่สำเร็จ" : null}
+          />
         </Box>
       <Grid size={{xs:12, md:6}}>
         <Box id="map" sx={{
@@ -87,7 +101,10 @@ export default function Dashboard() {
             <TeleCard previous={yesterdayTele} />
           </Grid>
           <Grid size={{xs:12, md:6}}>
-            <FlowCard flowStationsOverWl={Number(dailySummary?.flow_stations_over_wl ?? 0)} />
+            <FlowCard
+              flowStationsOverWl={dailySummary?.flow_stations_over_wl == null ? null : Number(dailySummary.flow_stations_over_wl)}
+              summaryLoading={summaryStatus === "loading"}
+            />
           </Grid>
             <Grid size={{xs:12, md:6}}>
             <RainCard />

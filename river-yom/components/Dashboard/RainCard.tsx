@@ -1,3 +1,5 @@
+import DashboardTableStatus from "./DashboardTableStatus";
+import { Skeleton } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import {
   Avatar,
@@ -36,6 +38,7 @@ interface RainData {
 }
 
 const RainCard: React.FC = () => {
+  const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [dataRain, setDataRain] = useState<RainData[]>([]);
   const [sumRainToday, setSumRainToday] = useState<number>(0);
   const [avgRainSum, setAvgRainSum] = useState<number>(0);
@@ -49,35 +52,37 @@ const RainCard: React.FC = () => {
     : "#E3F2FD"; // ใช้ gradient เดิมใน light
 
   // ดึงข้อมูลจาก API
-  const fetchRainData = async () => {
-    try {
-      const res = await fetch(`${API_URL}/api/daily/rain`);
-      const json = await res.json();
+  useEffect(() => {
+    const controller = new AbortController();
+    const fetchRainData = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/daily/rain`, { signal: controller.signal });
+        if (!res.ok) throw new Error(`daily/rain failed: ${res.status}`);
+        const json = await res.json();
 
-      if (json?.data) {
+        if (controller.signal.aborted) return;
+        if (!Array.isArray(json?.data)) throw new Error("Invalid daily/rain response");
         setDataRain(json.data);
 
         const totalRain = json.data.reduce(
           (sum: number, r: RainData) => sum + parseFloat(r.rain_mm || "0"),
           0
         );
-
         const totalRainSum = json.data.reduce((sum: number, r: RainData) => {
-        const valueStr = String(r.rain_sum ?? "0"); // แปลงเป็น string เสมอ
-        const cleaned = valueStr.replace(/,/g, "");
-        return sum + parseFloat(cleaned || "0");
-      }, 0);
+          const value = String(r.rain_sum ?? "0").replace(/,/g, "");
+          return sum + parseFloat(value || "0");
+        }, 0);
 
         setSumRainToday(totalRain / json.data.length || 0);
         setAvgRainSum(totalRainSum / json.data.length || 0);
+        setStatus("ready");
+      } catch {
+        if (!controller.signal.aborted) setStatus("error");
       }
-    } catch (error) {
-      console.error("Error fetching rain data:", error);
-    }
-  };
+    };
 
-  useEffect(() => {
-    fetchRainData();
+    void fetchRainData();
+    return () => controller.abort();
   }, []);
 
   const numberFormat = (value: number | string, decimals = 2) =>
@@ -162,7 +167,7 @@ const RainCard: React.FC = () => {
                       WebkitTextFillColor: 'transparent',
                     }}
                   >
-                  {numberFormat(sumRainToday, 2)}
+                  {status === "loading" ? <Skeleton width={48} sx={{ mx: "auto" }} /> : status === "error" || dataRain.length === 0 ? "—" : numberFormat(sumRainToday, 2)}
                 </Typography>
               </Grid>
               <Grid size={{ xs: 3 }} textAlign="right">
@@ -183,7 +188,7 @@ const RainCard: React.FC = () => {
                       WebkitTextFillColor: 'transparent',
                     }}
                   >
-                  {numberFormat(avgRainSum, 2)}
+                  {status === "loading" ? <Skeleton width={48} sx={{ mx: "auto" }} /> : status === "error" || dataRain.length === 0 ? "—" : numberFormat(avgRainSum, 2)}
                 </Typography>
               </Grid>
               <Grid size={{ xs: 3 }} textAlign="right">
@@ -250,7 +255,8 @@ const RainCard: React.FC = () => {
                 </TableRow>
               </TableHead>
 
-              <TableBody>
+              <TableBody aria-busy={status === "loading"}>
+                <DashboardTableStatus columns={4} loading={status === "loading"} error={status === "error"} empty={dataRain.length === 0} />
                 {dataRain.map((row, i) => (
                   <TableRow key={i} hover>
                     <TableCell sx={{...textStyle,whiteSpace: "nowrap",lineHeight:{md:"1.94rem",xs:"1.2rem"}}}>{row.name}</TableCell>

@@ -1,3 +1,4 @@
+import DashboardTableStatus from "./DashboardTableStatus";
 import React, { useEffect, useState } from "react";
 import {
   alpha,
@@ -42,6 +43,7 @@ export interface DashboardTeleReading {
 }
 
 const TeleCard: React.FC<{ previous: Record<string, DashboardTeleReading> }> = ({ previous }) => {
+  const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [data, setData] = useState<TeleData[]>([]);
   const [totalDcToday, setTotalDcToday] = useState<number>(0);
   const theme = useTheme();
@@ -54,9 +56,14 @@ const TeleCard: React.FC<{ previous: Record<string, DashboardTeleReading> }> = (
     : "#E3F2FD"; // ใช้ gradient เดิมใน light
 
   useEffect(() => {
-    fetch(`${API_URL}/api/daily/tele`)
-      .then((res) => res.json())
+    const controller = new AbortController();
+    fetch(`${API_URL}/api/daily/tele`, { signal: controller.signal })
+      .then(res => {
+        if (!res.ok) throw new Error(`daily/tele failed: ${res.status}`);
+        return res.json();
+      })
       .then((json) => {
+        if (controller.signal.aborted) return;
         const fetchedData = json.data.map((d: any) => ({
           sta_name: d.sta_name,
           sta_code: d.sta_code,
@@ -66,6 +73,7 @@ const TeleCard: React.FC<{ previous: Record<string, DashboardTeleReading> }> = (
           discharge: parseFloat(d.discharge),
         }));
         setData(fetchedData);
+        setStatus("ready");
 
         const total = fetchedData.reduce(
           (sum: number, d: TeleData) => sum + (d.discharge || 0),
@@ -73,7 +81,10 @@ const TeleCard: React.FC<{ previous: Record<string, DashboardTeleReading> }> = (
         );
         setTotalDcToday(total);
       })
-      .catch((err) => console.error("Fetch error:", err));
+      .catch(() => {
+        if (!controller.signal.aborted) setStatus("error");
+      });
+    return () => controller.abort();
   }, []);
 
   const numberFormat = (num: number, decimals = 2) => {
@@ -249,7 +260,8 @@ const TeleCard: React.FC<{ previous: Record<string, DashboardTeleReading> }> = (
                 </TableRow>
               </TableHead>
 
-              <TableBody>
+              <TableBody aria-busy={status === "loading"}>
+                <DashboardTableStatus columns={5} loading={status === "loading"} error={status === "error"} empty={data.length === 0} />
                 {data.map(tele => {
                   const yesterday = tele.datetime?.slice(0, 10) === today ? previous[tele.sta_code] : undefined;
                   const history = { type: 'tele' as const, stationCode: tele.sta_code, currentTime: tele.datetime, previousTime: yesterday?.datetime };

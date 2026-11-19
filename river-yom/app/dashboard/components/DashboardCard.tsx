@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Grid, Skeleton, Box, Typography } from '@mui/material';
+import { Grid, Skeleton, Box, Paper, Stack, Typography } from '@mui/material';
 import { Path_URL } from '../../../lib/utility';
 import { StationReadingChange } from '@/components/Data/StationReadingChange';
 import { thaiTodayYMD } from '@/components/hooks/useRasData';
@@ -88,13 +88,33 @@ const DashboardCards: React.FC<DashboardCardsProps> = ({ data, yesterdayYR05, lo
   // แสดง loading skeleton
   if (loading) {
     return (
-      <Grid container spacing={{ xs: 1.5, sm: 2 }}>
-        {[...Array(4)].map((_, i) => (
-          <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={i}>
-            <Skeleton
-              variant="rectangular"
-              sx={{ height: { xs: 96, sm: 220 }, borderRadius: { xs: 2, sm: 4 } }}
-            />
+      <Grid container spacing={{ xs: 1.5, sm: 2 }} aria-busy="true" aria-label="กำลังโหลดสรุปสถานการณ์น้ำ">
+        {Array.from({ length: 4 }, (_, index) => (
+          <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={index} aria-hidden="true">
+            <Paper
+              variant="outlined"
+              sx={{
+                height: '100%',
+                p: { xs: 1.5, sm: 3 },
+                borderRadius: { xs: 2, sm: 3 },
+                display: 'flex',
+                flexDirection: { xs: 'row', sm: 'column' },
+                alignItems: { xs: 'center', sm: 'stretch' },
+                gap: { xs: 1.25, sm: 2 },
+              }}
+            >
+              <Stack direction="row" spacing={{ xs: 1.25, sm: 2 }} alignItems="center" sx={{ flex: 1, minWidth: 0 }}>
+                <Skeleton animation="wave" variant="rounded" sx={{ width: { xs: 40, sm: 60 }, height: { xs: 40, sm: 60 }, flexShrink: 0 }} />
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Skeleton animation="wave" width="85%" />
+                  <Skeleton animation="wave" width="65%" />
+                </Box>
+              </Stack>
+              <Stack direction="row" spacing={0.75} alignItems="baseline">
+                <Skeleton animation="wave" width={58} sx={{ fontSize: { xs: '1.35rem', sm: '2.125rem' } }} />
+                <Skeleton animation="wave" width={28} />
+              </Stack>
+            </Paper>
           </Grid>
         ))}
       </Grid>
